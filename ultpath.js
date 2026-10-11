@@ -87,7 +87,7 @@
       inner: { name: '氣海天崩', d: '施放時回 20% 生命、30% 魔力；最後一擊讓 6 公尺內的敵人暈 2 秒，打中的行壁直接碎掉。', go: P => { R.healP(P.hpMax * 0.2); P.mp = Math.min(P.mpMax, P.mp + P.mpMax * 0.3); const n = Math.min(6, near(P.x, P.z, 12).length); later(P => { near(P.x, P.z, 6).forEach(e => st(e, 'stun', 2)); ((W().F && W().F.props) || []).forEach(p => { if (p.alive && p.kind === 'plug' && Math.hypot(p.x - P.x, p.z - P.z) < 6 && R.hitProp) R.hitProp(p, 1e9, false); }); }, 320 + n * 160); } }
     },
     bard: {
-      aria: { name: '詠嘆狂想', d: '你和隊友多一層 30% 生命的護盾、清掉變慢和看不清楚；10 秒內受到的傷害 −20%。', go: (P, b) => { if (T().heal) T().heal({ _id: 'ultp:aria', shield: 0.3, allyShield: 0.3, cleanse: 1 }, P, W(), b); buff(P, 'aria', { t: 10, def: 0.2, color: '#FFB8E0' }); } },
+      aria: { name: '詠嘆狂想', d: '你和隊友多一層 30% 生命的護盾、清掉變慢和看不清楚。', go: (P, b) => { if (T().heal) T().heal({ _id: 'ultp:aria', shield: 0.3, allyShield: 0.3, cleanse: 1 }, P, W(), b); } },   // 2026-10-11 作者：拿掉 10 秒內受到的傷害 −20%（吟遊詩人大招不要增傷減傷）
       drummer: { name: '戰鼓狂想', d: '震擊多敲三下（6 公尺、擊退）；技能冷卻減少 30%。', go: (P, b) => { for (let i = 0; i < 3; i++) later(P => { R.fx('ring', P.x, 0.1, P.z, { r: 6, color: '#FF9A5A' }); R.aoe(P.x, P.z, 6, b * 0.8, { kb: 2, primary: false }); shake(0.25); }, 1600 + i * 300);   /* 2026-10-11 作者：吟遊詩人大招傷害減半（1.6→0.8） */ P.skillCd = (P.skillCd || 0) * 0.7; if (P.skCd) P.skCd = P.skCd.map(c => (c || 0) * 0.7); } },
       serane: { name: '奏域狂想', d: '腳下展開 10 秒的奏域：裡面回血、灼傷敵人。', go: (P, b) => { if (R.addZone) R.addZone({ kind: 'sanct', x: P.x, z: P.z, r: 6, life: 10, dmg: b * 0.25 });   /* 2026-10-11 作者：吟遊詩人大招傷害減半 */ R.fx('ring', P.x, 0.1, P.z, { r: 6, color: '#FFB8E0' }); } }
     },
