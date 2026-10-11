@@ -9,7 +9,7 @@
 //   寫樂譜的時候普攻、技能照常放出去（普攻是一發普通的音符）。
 // - 出手的順序：按下技能或普攻 → 演奏（照樂譜彈出聲音，2 秒；這段時間可以走、翻滾，不能普攻）→ 發出攻擊；下一次技能或普攻再演奏、再發出。
 //   樂譜是空的：普攻不會發出任何攻擊；技能照常馬上放。攻速每 +1% 演奏快 1%（+100% 攻速只要一半的時間）。
-//   2026-10-11 作者：每次演奏花 5 點魔力；普攻本身不再耗魔力（寫樂譜時的普攻也不耗）。
+//   2026-10-11 作者：每次演奏花魔力（後來改成照樂譜算，見下面第二批）；普攻本身不再耗魔力。
 //   普攻：演奏完照樂譜一個一個往前方射出音符（每個隔 0.2 秒、吃攻速；方向在前方 5 度內飄）。射的期間可以馬上開始下一次演奏，
 //         但一次只能有一段演奏。攻擊音符碰到敵人、撞牆或飛到最遠都會炸開（四分半徑 2 公尺、二分 4 公尺，二分傷害兩倍，算技能傷害）；
 //         四分增益音符每個給你和隊友最大魔力 10% 的護盾，二分的再回同樣多的生命（2026-10-11 作者）。
@@ -28,6 +28,13 @@
 // - 聲音（2026-10-11 作者）：只有演奏的時候有聲音；發出攻擊、音符打中敵人都不出聲。
 // - 和弦各有顏色：五線譜的外框（演奏中）、底下的字跟著和弦的顏色；五線譜底下列出現在這份樂譜演奏完技能會得到的加成。
 // - 大招狂想曲（2026-10-11 作者）：拿掉增傷、減傷；回復你和隊友「你最大魔力 35%」的生命與魔力，並讓你和隊友得到一倍的樂譜技能加成（10 秒，跟一般技能演奏的加成分開、可以疊）；震擊傷害減半。
+// - 2026-10-11 作者（第二批）：
+//   和弦換成：大三 C、小三 Cm、七 Cmaj7、九 Cmaj9、十一 Dm11，每個和弦自己一組 4 拍／6 拍的和弦進行（CH 的 prog）；和弦、協奏音小聲 10%、主旋律大聲 5%。
+//   每次演奏的魔力照樂譜算：八分 0.5、四分 1.5、二分 5（HUD 武器那一行顯示「每次演奏耗魔」）。寫樂譜的時候普攻只記音符、不發出攻擊。
+//   普攻的加成套在演奏發出的音符上：一次普攻射幾發（多重、子彈 +1…），經過一個音符就發出幾顆那個音符（增益音符的護盾一顆音符算一次）。
+//   技能數值照最大魔力（拿掉 bard1008.js「效果隨魔力上限變強」的倍率）：治療、護盾＝最大魔力的 %（隊友也照你的最大魔力），
+//   強化的 +% 每 100 點最大魔力算一次，技能傷害 × 最大魔力 ÷ 100。終曲改成前方 90 度、半徑 6 公尺的扇形聲波（新的型 cone）；
+//   安可：你和隊友回復「你最大魔力 30%」的生命、你再回 15% 魔力，冷卻 30 秒。技能說明照參數重寫（descOf）。
 // 放在最後面（main.js 前面）：包在 R.attack、R.castSlot、R.useSkill、R.fire、R.updateShots、R.hurtEnemy、R.calcPlayer、R.step、R.hudTick 最外面。
 (function (R) {
   const W = () => R.W, $ = id => document.getElementById(id);
@@ -42,12 +49,14 @@
   const melody = (P, notes, v) => { try { R.playMelody && R.playMelody(inst(P), notes, v || 0.09); } catch (e) { } };
 
   // ---------- 和弦 ----------
+  // 2026-10-11 作者：小三和弦改 Cm、七和弦改 Cmaj7、九和弦改 Cmaj9、十一和弦改 Dm11；每個和弦一組 4 拍／6 拍的和弦進行（prog），conc＝協奏音
+  const CMAJ_SC = [0, 2, 4, 5, 7, 9, 11];
   const CH = [
-    { id: 'maj', name: '大三和弦', sym: 'C', col: '#FF8A5A', lv: 1, tones: [60, 64, 67, 72, 76, 79, 84], sc: [0, 2, 4, 5, 7, 9, 11] },
-    { id: 'min', name: '小三和弦', sym: 'Am', col: '#5AE8B0', lv: 1, tones: [57, 60, 64, 69, 72, 76, 81], sc: [0, 2, 4, 5, 7, 9, 11] },
-    { id: 'sev', name: '七和弦', sym: 'G7', col: '#C08AFF', lv: 20, tones: [55, 59, 62, 65, 67, 71, 74], sc: [0, 2, 4, 5, 7, 9, 11] },
-    { id: 'nin', name: '九和弦', sym: 'Dm9', col: '#6AB8FF', lv: 30, tones: [62, 65, 69, 72, 76, 77, 81], sc: [0, 2, 4, 5, 7, 9, 11] },
-    { id: 'ele', name: '十一和弦', sym: 'C11', col: '#FFD86A', lv: 40, tones: [60, 64, 67, 70, 74, 77, 79], sc: [0, 2, 4, 5, 7, 9, 10] }
+    { id: 'maj', name: '大三和弦', sym: 'C', col: '#FF8A5A', lv: 1, tones: [60, 64, 67, 72, 76, 79, 84], sc: CMAJ_SC, prog: { 4: ['C', 'F', 'G', 'C'], 6: ['C', 'Em', 'F', 'G', 'Am', 'C'] } },
+    { id: 'min', name: '小三和弦', sym: 'Cm', col: '#5AE8B0', lv: 1, tones: [60, 63, 67, 72, 75, 79, 84], sc: [0, 2, 3, 5, 7, 9, 11], conc: [60, 62, 63, 65, 63, 62], prog: { 4: ['Cm', 'Dm', 'Bdim', 'Cm'], 6: ['Cm', 'Em', 'Dm', 'Bdim', 'Am', 'Cm'] } },
+    { id: 'sev', name: '七和弦', sym: 'Cmaj7', col: '#C08AFF', lv: 20, tones: [60, 64, 67, 71, 72, 76, 79], sc: CMAJ_SC, prog: { 4: ['Cmaj7', 'Am7', 'Dm7', 'Cmaj7'], 6: ['Cmaj7', 'Am7', 'Dm7', 'G7', 'Em7', 'Cmaj7'] } },
+    { id: 'nin', name: '九和弦', sym: 'Cmaj9', col: '#6AB8FF', lv: 30, tones: [60, 64, 67, 71, 74, 76, 79], sc: CMAJ_SC, prog: { 4: ['Cmaj9', 'Am9', 'Dm9', 'Cmaj9'], 6: ['Cmaj9', 'Fmaj9', 'Em9', 'Am9', 'Dm9', 'Cmaj9'] } },
+    { id: 'ele', name: '十一和弦', sym: 'Dm11', col: '#FFD86A', lv: 40, tones: [62, 65, 69, 72, 74, 76, 79], sc: CMAJ_SC, prog: { 4: ['Dm11', 'G11sus', 'Cmaj9#11', 'Dm11'], 6: ['Dm11', 'G11sus', 'Cmaj9#11', 'Fmaj9#11', 'G11sus', 'Dm11'] } }
   ];
   // 演奏的時候整段一起升高或降低 d 個音階（沿著和弦的音階走，不會走出調）；d 每段演奏選一次（±1、±2）
   const pickShift = () => (Math.random() < 0.5 ? -1 : 1) * (Math.random() < 0.5 ? 1 : 2);
@@ -96,7 +105,7 @@
   const REC_T = 10, HOLD = 0.45;
   const startRec = P => {
     ST.rec = { t: 0, notes: [], beats: 0 }; ST.perf = null;
-    toast((SV().notes ? '重新錄製樂譜' : '開始寫樂譜') + '：10 秒內的普攻、技能都會記成音符（一個小節 ' + capOf(P) + ' 拍；再按住 X 提早寫完）');
+    toast((SV().notes ? '重新錄製樂譜' : '開始寫樂譜') + '：10 秒內的普攻、技能都會記成音符（普攻只記音符、不發出攻擊；一個小節 ' + capOf(P) + ' 拍；再按住 X 提早寫完）');
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2.6, color: '#FFB8E0' }); melody(P, [[72, 0, 0.15], [79, 0.12, 0.35]], 0.08);
   };
   const endRec = (P, why) => {
@@ -119,26 +128,33 @@
   const baseRate = P => { const b = R.WEAPONS && P.item && R.WEAPONS[P.item.base]; return (b && b.rate) || (P.ws && P.ws.rate) || 1; };
   const spdK = P => Math.max(0.25, (P.ws && P.ws.rate ? P.ws.rate : 1) / baseRate(P));
   const perfDur = P => Math.max(0.3, Math.min(4, 2 * (P.pv && P.pv.bdFast ? 0.8 : 1) * (P.pv && P.pv.bdRhythm ? 0.7 : 1) / spdK(P)));
-  const PERF_MP = 5;   // 每次演奏花的魔力（2026-10-11 作者）
-  // 每一拍的和弦（低音區，聲部接得順）：4 拍 C→F→G→C、6 拍 C→Em→F→G→Am→C
-  const CHD = { C: [48, 52, 55], Em: [47, 52, 55], F: [48, 53, 57], G: [47, 50, 55], Am: [48, 52, 57] };
-  const PROG = { 4: ['C', 'F', 'G', 'C'], 6: ['C', 'Em', 'F', 'G', 'Am', 'C'] };
+  // 每次演奏的魔力（2026-10-11 作者：照樂譜算——八分 0.5、四分 1.5、二分 5）
+  const perfCost = notes => Math.round((notes || []).reduce((a, n) => a + (n.d < 1 ? 0.5 : n.d < 2 ? 1.5 : 5), 0) * 10) / 10;
+  R.bardPerfCost = () => perfCost(SV().notes);
+  // 每一拍的和弦（低音區）：照和弦的 prog（CH）
+  const CHD = { C: [48, 52, 55], Em: [47, 52, 55], F: [48, 53, 57], G: [47, 50, 55], Am: [48, 52, 57],
+    Cm: [48, 51, 55], Dm: [50, 53, 57], Bdim: [47, 50, 53],
+    Cmaj7: [48, 52, 55, 59], Am7: [45, 48, 52, 55], Dm7: [50, 53, 57, 60], G7: [43, 47, 50, 53], Em7: [47, 50, 52, 55],
+    Cmaj9: [48, 52, 55, 59, 62], Am9: [45, 48, 52, 55, 59], Dm9: [50, 53, 57, 60, 64], Fmaj9: [41, 45, 48, 52, 55], Em9: [40, 47, 50, 54, 55],
+    Dm11: [38, 45, 48, 53, 55, 64], G11sus: [43, 48, 50, 53, 57], 'Cmaj9#11': [48, 52, 55, 59, 62, 66], 'Fmaj9#11': [41, 45, 48, 52, 55, 59] };
   // 協奏音 do-re-mi-fa-mi-re（再回到 do 一直繞），C 大調
   const CONC = [60, 62, 64, 65, 64, 62], CMAJ = { sc: [0, 2, 4, 5, 7, 9, 11] };
   const startPerf = (P, what) => {
     const notes = SV().notes; if (!notes || !notes.length || ST.rec || ST.perf) return false;
-    if (P.mp < PERF_MP) { const t = now(); if (t - ST.hintT > 2) { ST.hintT = t; toast('魔力不夠（演奏要 ' + PERF_MP + ' 點魔力）'); } return false; }
-    P.mp -= PERF_MP;
+    const cost = perfCost(notes);
+    if (P.mp < cost) { const t = now(); if (t - ST.hintT > 2) { ST.hintT = t; toast('魔力不夠（這段樂譜演奏一次要 ' + cost + ' 點魔力）'); } return false; }
+    P.mp -= cost;
     const dur = perfDur(P), cap = Math.max(capOf(P), notes.reduce((a, n) => a + n.d, 0)), bt = dur / cap, c = chordOf(P), dv = pickShift();
     let at = 0; const times = notes.map(n => { const t = at; at += n.d * bt; return t; });
     const mid = notes.map((n, i) => vary(midiOf(n, i, c), c, dv));
     ST.perf = Object.assign({ t: 0, dur, notes: notes.slice(), times, mid, shown: 0, pid: ++ST.pid }, what);
-    // 每一拍一個和弦（固定進行）；每半拍一個一半音量的協奏音（跟著這段的升降）
-    const len = i => Math.max(0.08, notes[i].d * bt * 0.9), prog = PROG[cap] || PROG[4], chords = [];
-    for (let b = 0; b < cap; b++) (CHD[prog[b % prog.length]] || CHD.C).forEach(m => chords.push([m, b * bt, bt * 0.95]));
-    const conc = []; for (let h = 0; h < cap * 2; h++) conc.push([vary(CONC[h % CONC.length], CMAJ, dv), h * bt / 2, bt / 2 * 0.9]);
-    melody(P, notes.map((n, i) => [mid[i], times[i], len(i)]).concat(chords), 0.085);
-    melody(P, conc, 0.0425);
+    // 每一拍一個和弦（照和弦的進行）；每半拍一個協奏音（跟著這段的升降）
+    // 音量（2026-10-11 作者）：主旋律 +5%、和弦 −10%、協奏 −10%；和弦的音越多每個音越小聲（整體聽起來一樣大）
+    const len = i => Math.max(0.08, notes[i].d * bt * 0.9), prog = (c.prog && (c.prog[cap] || c.prog[4])) || CH[0].prog[4];
+    melody(P, notes.map((n, i) => [mid[i], times[i], len(i)]), 0.085 * 1.05);
+    for (let b = 0; b < cap; b++) { const ch = CHD[prog[b % prog.length]] || CHD.C; melody(P, ch.map(m => [m, b * bt, bt * 0.95]), 0.085 * 0.9 * Math.sqrt(3 / ch.length)); }
+    const cc = c.conc || CONC, conc = []; for (let h = 0; h < cap * 2; h++) conc.push([vary(cc[h % cc.length], c, dv), h * bt / 2, bt / 2 * 0.9]);
+    melody(P, conc, 0.0425 * 0.9);
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.2, color: c.col });
     return true;
   };
@@ -182,34 +198,30 @@
     s.ncol = col;
     if (s.mesh && s.mesh.isSprite) { s.mesh.material = noteMat(glyph, col); const k = n.d >= 2 ? 1.7 : n.d >= 1 ? 1.45 : 1.25; s.mesh.scale.set(k, k, 1); }
   };
-  // 普攻：演奏完把樂譜的音排進佇列，一個一個往前方射（迴響長笛：排兩輪）；佇列裡還有就接在後面
+  // 普攻（2026-10-11 作者）：演奏中經過一個音符，就借原本的普攻發出那一顆——一次普攻射幾發（多重、子彈 +1…）就發出幾顆（普攻的加成套在音符上）；
+  // 方向照那一發、再在 5 度內飄。迴響長笛：同一顆隔一下再補一輪（ST.q）。
   const GAP = 0.2, SPREAD = 5 * Math.PI / 180;
   const gapOf = P => GAP / spdK(P);
-  const enqueue = (P, o, notes, mid) => {
-    const rounds = leg(P) === 'lg_echo' ? 2 : 1;
-    ST.qO = { o: Object.assign({}, o), off: Math.hypot(o.x - P.x, o.z - P.z) };
-    const was = ST.q.length;
-    const pid = ST.perf ? ST.perf.pid : ST.pid;
-    for (let r = 0; r < rounds; r++) notes.forEach((n, i) => ST.q.push({ n, i, m: mid && mid[i], pid }));
-    if (R.num) R.num(P.x, 2.6, P.z, '♫×' + notes.length * rounds, 'crit');
-    if (!was) { const f = fireNote(P); ST.qT = gapOf(P); return f; }
-    return null;
-  };
   // 發出攻擊的那一下不出聲：武器、技能的音效和旋律先關掉（2026-10-11 作者：發出攻擊時沒有聲音）
   const hush = f => { const sf = R.sfx, pm = R.playMelody, ps = R.playSfx; R.sfx = () => { }; R.playMelody = () => { }; if (ps) R.playSfx = () => { }; try { return f(); } finally { R.sfx = sf; R.playMelody = pm; if (ps) R.playSfx = ps; } };
-  const fireNote = P => {
-    const it = ST.q.shift(); if (!it || !ST.qO) return null;
-    const n = it.n, a = P.aimA + (Math.random() - 0.5) * SPREAD, off = ST.qO.off;
-    const s = hush(() => fi0(Object.assign({}, ST.qO.o, { x: P.x + Math.sin(a) * off, z: P.z + Math.cos(a) * off, a, _bd: 1 })));
+  const noteShot = (P, o, n) => {
+    const a = (o.a != null ? o.a : P.aimA) + (Math.random() - 0.5) * SPREAD;
+    const s = hush(() => fi0(Object.assign({}, o, { a, _bd: 1 })));
     if (s) {
       dress(s, n);
       // 攻擊音符：四分半徑 2 公尺、二分 4 公尺（傷害兩倍）；碰到敵人、撞牆、飛到最遠都炸
       if (n.d >= 1 && n.k === 'a') { const big = n.d >= 2 ? 2 : 1, m = nk(P, 'a'); s.bdBoom = { r: 2 * big * areaK(P), dmg: (s.dmg || 0) * big * m, col: '#FF6A5A', wall: 1 }; }
     }
-    // 增益音符：你和隊友最大魔力 10% 的護盾（二分再回同樣多的生命）；同一段演奏累加，下一段演奏刷新
-    if (n.d >= 1 && n.k === 'b') { const v = P.mpMax * 0.1 * healK(P) * nk(P, 'b'); shieldAll(P, v, n.d >= 2 ? v : 0, 8, 'atk:' + it.pid); }
     return s;
   };
+  const noteAtk = (P, n, pid, echo) => {
+    const cd = P.atkCd; ST.rel = { n, k: 0 }; ST.inRel = true; P.atkCd = 0;
+    try { hush(() => freeMp(P, () => at0())); } catch (e) { } finally { ST.rel = null; ST.inRel = false; P.atkCd = cd; }
+    // 增益音符：你和隊友最大魔力 10% 的護盾（二分再回同樣多的生命）——一顆音符算一次（不照發數）；同一段演奏累加，下一段演奏刷新
+    if (n.d >= 1 && n.k === 'b') { const v = P.mpMax * 0.1 * healK(P) * nk(P, 'b'); shieldAll(P, v, n.d >= 2 ? v : 0, 8, 'atk:' + pid); }
+    if (!echo && leg(P) === 'lg_echo') { if (!ST.q.length) ST.qT = gapOf(P); ST.q.push({ n, pid }); }
+  };
+  const fireNote = P => { const it = ST.q.shift(); if (it) noteAtk(P, it.n, it.pid, true); };
   // 技能：照樂譜算倍率
   // 同一種音符重複：第一個全額、第二個一半、第三個起 1/4（2 個＝1.5、4 個＝2、8 個＝3）
   const dim = n => (n <= 0 ? 0 : n === 1 ? 1 : 1.5 + 0.25 * (n - 2));
@@ -273,17 +285,60 @@
     if (ak === 1 && hk === 1 && bk === 1 && dk === 1) return null;
     s = Object.assign({}, s);
     if (ak !== 1) AREA.forEach(k => { if (typeof s[k] === 'number') s[k] *= ak; });
-    if (hk !== 1) PCT.forEach(k => { if (typeof s[k] === 'number') s[k] = k === 'pct' || k === 'allies' ? Math.min(1, s[k] * hk) : s[k] * hk; });
+    if (hk !== 1) PCT.forEach(k => { if (typeof s[k] === 'number') s[k] *= hk; });   // 回的量照最大魔力算（mpArgs），超過生命上限的部分 healP 會截掉
     if (bk !== 1 && (type === 'buff' || type === 'aura')) { MUL.forEach(k => { if (typeof s[k] === 'number' && s[k] > 1) s[k] = 1 + (s[k] - 1) * bk; }); ADD.forEach(k => { if (typeof s[k] === 'number') s[k] *= bk; }); }
     return [s, typeof pw === 'number' ? pw * dk : pw];
+  };
+  // 照最大魔力（2026-10-11 作者：拿掉「效果隨魔力上限變強」，所有技能的數值都跟最大魔力掛勾）：
+  // - 自己回的生命、護盾、每秒回血、吸回來的血：原本是「生命上限的 %」→ 改成「最大魔力的 %」（參數 × 最大魔力 ÷ 生命上限）；奏域、聖詠圈回的量也是
+  // - 隊友回的生命、護盾：「你最大魔力的 %」（固定量，R.aidAlly 送給電腦隊友和連線隊友）
+  // - 強化：傷害、移動、攻速的 +%，暴擊率、減傷，每 100 點最大魔力算一次（減傷最多 75%）；技能傷害 × 最大魔力 ÷ 100
+  const mpArgs = (type, s, P, pw) => {
+    const mp = P.mpMax || 0, K = mp / 100, toHp = P.hpMax > 0 ? mp / P.hpMax : 1, o = Object.assign({}, s);
+    ['pct', 'shield', 'regen', 'selfHeal'].forEach(k => { if (typeof o[k] === 'number') o[k] *= toHp; });
+    if (type === 'zone' && o.zone === 'sanct') o.healK = (o.healK || 1) * toHp;
+    if (type === 'buff' || type === 'aura') {
+      MUL.forEach(k => { if (typeof o[k] === 'number' && o[k] > 1) o[k] = 1 + (o[k] - 1) * K; });
+      if (typeof o.crit === 'number') o.crit = Math.min(1, o.crit * K); if (typeof o.def === 'number') o.def = Math.min(0.75, o.def * K);
+    }
+    let ally = null;
+    if (type === 'heal' && (o.allies > 0 || o.allyShield > 0)) { ally = { h: (o.allies || 0) * mp, s: (o.allyShield || 0) * mp }; o.allies = 0; o.allyShield = 0; }
+    return [o, typeof pw === 'number' ? pw * K : pw, ally];
+  };
+  // 終曲（2026-10-11 作者）：朝前方 arc（90 度）、半徑 r 的扇形聲波，連續 waves 波（每一波照你當下的位置和方向）
+  const later = (R.SKILL_KIT && R.SKILL_KIT.later) || ((f, ms) => setTimeout(f, ms));
+  const fan = (x, z, a, arc, r, col) => {
+    const w = W(); if (!window.THREE || !w.scene || !w.dyn) return;
+    const TH = THREE, mk = (r0, r1) => { const m = new TH.Mesh(new TH.RingGeometry(r0, r1, 28, 1, a - Math.PI / 2 - arc / 2, arc), new TH.MeshBasicMaterial({ color: col || '#FFB8E0', transparent: true, opacity: 0, depthWrite: false, side: TH.DoubleSide, blending: TH.AdditiveBlending, fog: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.12, z); w.scene.add(m); return m; };
+    const parts = [[mk(0.15, 1), 0.28], [mk(0.88, 1), 0.95], [mk(0.6, 0.66), 0.7], [mk(0.34, 0.39), 0.5]];   // 淡的扇面、外緣一道亮的聲波、裡面兩道細的
+    let t = 0; const life = 0.42, run = w.run;
+    w.dyn.push(dt => {
+      t += dt; const k = Math.min(1, t / life), sc = r * (0.3 + 0.7 * Math.sqrt(k)), done = k >= 1 || W().run !== run;
+      parts.forEach(([m, op]) => { m.scale.set(sc, sc, 1); m.material.opacity = op * (1 - k); if (done) { if (m.parent) m.parent.remove(m); m.geometry.dispose(); m.material.dispose(); } });
+      return !done;
+    });
+  };
+  if (!T.cone) T.cone = (s, P, w, pw) => {
+    const arc = s.arc || Math.PI / 2, r = s.r || 6, n = s.waves || 1;
+    const one = () => {
+      const w2 = W(), a = P.aimA, inArc = (x, z, pad) => { const dx = x - P.x, dz = z - P.z, d = Math.hypot(dx, dz); if (d > r + pad) return false; if (d < 0.6) return true; let da = Math.atan2(dx, dz) - a; while (da > Math.PI) da -= Math.PI * 2; while (da < -Math.PI) da += Math.PI * 2; return Math.abs(da) <= arc / 2 + Math.atan2(pad, d); };
+      fan(P.x, P.z, a, arc, r, s.color);
+      (w2.enemies || []).forEach(e => { if (!e.dead && inArc(e.x, e.z, e.def.size * 0.5)) R.hurtEnemy(e, pw * s.k, { kb: s.kb, stun: s.stun }); });
+      ((w2.F && w2.F.props) || []).forEach(p => { if (p.alive && inArc(p.x, p.z, 0.4) && R.hitProp) R.hitProp(p, pw * s.k, true); });
+      if (R.shake) R.shake(0.08);
+    };
+    for (let i = 0; i < n; i++) { if (i === 0) one(); else later(one, i * (s.gap || 300)); }
   };
   Object.keys(T).forEach(type => {
     const f = T[type]; if (type === 'combo' || typeof f !== 'function') return;
     T[type] = function (s, P, w, pw, ...a) {
       if (!IS(P) || P !== W().P || !s || typeof s !== 'object') return f.call(this, s, P, w, pw, ...a);
       if (s.trio) ST.trioT = now() + 0.4;   // 三重奏：接下來射出的音符撞到敵人會炸開
-      const r = scaleArgs(type, s, P, pw); if (!r) return f.call(this, s, P, w, pw, ...a);
-      return f.call(this, r[0], P, w, r[1], ...a);
+      const r = scaleArgs(type, s, P, pw) || [s, pw], [s2, pw2, ally] = mpArgs(type, r[0], P, r[1]);
+      const out = f.call(this, s2, P, w, pw2, ...a);
+      // 隊友：照你的最大魔力回固定量（電腦隊友、連線隊友都走 R.aidAlly）
+      if (ally && out !== false && R.nearAllies && R.aidAlly) R.nearAllies(P, 7).forEach(al => { R.aidAlly(al, { healAbs: ally.h, shieldAbs: ally.s, shieldT: 6 }); if (R.fx) R.fx('ring', al.x, 0.1, al.z, { r: 1.2, color: '#FFE8A0' }); });
+      return out;
     };
   });
 
@@ -303,25 +358,25 @@
     const sk = R.SKILLS[id]; if (!sk) return raw(i);
     if (cdOf(P, i) > 0) return raw(i);   // 還在冷卻：照原本的（不放）
     const m = castMods(P, notes);
-    if (P.mp < sk.mp * (1 + m.mpx) + PERF_MP) { toast('魔力不夠（技能 ' + Math.ceil(sk.mp * (1 + m.mpx)) + '＋演奏 ' + PERF_MP + '）'); return; }
+    const pc = perfCost(notes);
+    if (P.mp < sk.mp * (1 + m.mpx) + pc) { toast('魔力不夠（技能 ' + Math.ceil(sk.mp * (1 + m.mpx)) + '＋演奏 ' + pc + '）'); return; }
     startPerf(P, { kind: 'skill', i, id });
   };
   R.useSkill = (...a) => { const P = W().P; if (!IS(P) || !W().run) return us0(...a); return slotCast(P, 0); };
   R.castSlot = i => { const P = W().P; if (!IS(P) || !(i >= 1) || !W().run) return cs0(i); return slotCast(P, i); };
   // 普攻：寫樂譜的時候照常射一發（記成八分音符）；有樂譜就先演奏（演奏的時候不能普攻）、演奏完一個一個射出樂譜的音；樂譜是空的就不射
   const at0 = R.attack;
-  // 普攻不耗魔力（2026-10-11 作者：魔力改成每次演奏花 5 點）：借原本的普攻之前把魔力補到夠扣，扣完還原
+  // 普攻不耗魔力（2026-10-11 作者：魔力改成每次演奏照樂譜花）：借原本的普攻之前把魔力補到夠扣，扣完還原
   const freeMp = (P, f) => { const mp0 = P.mp, need = (P.ws && P.ws.mp) || 0; if (P.mp < need) P.mp = need; try { return f(); } finally { P.mp = mp0; } };
   R.attack = (...a) => {
     const P = W().P; if (!IS(P) || !W().run || ST.release) return at0(...a);
-    if (ST.rec) return freeMp(P, () => at0(...a));
+    // 寫樂譜的時候（2026-10-11 作者）：普攻只記一個八分音符、不發出攻擊（照攻速算下一下）
+    if (ST.rec) { if (P.atkCd > 0 || P.dead || P.knockT > 0 || P.stance > 0) return; P.atkCd = 1 / Math.max(0.2, (P.ws && P.ws.rate) || 1); if (P.h) P.h.recoil = 1; addNote(P, { d: 0.5, k: 'n' }); return; }
     if (P.atkCd > 0 || P.dead || P.knockT > 0 || P.stance > 0) return;
-    if (!SV().notes || !SV().notes.length) { const t = now(); if (t - ST.hintT > 4) { ST.hintT = t; toast('樂譜是空的，普攻不會發出攻擊——按住 X 寫一段樂譜（寫的時候普攻照常）'); } P.atkCd = 0.3; return; }
+    if (!SV().notes || !SV().notes.length) { const t = now(); if (t - ST.hintT > 4) { ST.hintT = t; toast('樂譜是空的，普攻不會發出攻擊——按住 X 寫一段樂譜（寫的時候普攻只記音符）'); } P.atkCd = 0.3; return; }
     if (ST.perf) return;
     if (!startPerf(P, { kind: 'atk' })) P.atkCd = 0.3;
   };
-  // 演奏中經過一個音符：發出那一顆的普攻（2026-10-11 作者）。借原本的普攻算出位置、速度、傷害，攔下來換成這一顆音符；聲音由演奏負責，這一下不出聲
-  const noteAtk = (P, n, m) => { const cd = P.atkCd; ST.release = [n]; ST.relMid = [m]; ST.inRel = true; P.atkCd = 0; try { hush(() => freeMp(P, () => at0())); } catch (e) { } finally { ST.release = null; ST.inRel = false; P.atkCd = cd; } };
   const perfDone = P => {
     const p = ST.perf; ST.perf = null;
     if (chordOf(P).id === 'ele') P.mp = Math.min(P.mpMax, P.mp + P.mpMax * 0.05);
@@ -332,14 +387,12 @@
       try { ok = hush(() => castNow(P, p.i)); } finally { const m = ST.cast; ST.cast = null; if (ok) post(P, p.i, p.id, m, p.pid); }
     }
   };
-  // 主要的那一發：寫樂譜的時候記一個八分音符；演奏完的那一下換成音符的佇列（同一下的其他發不射）；演奏中不射
+  // 普攻的每一發（primary）：經過音符的那一下換成那顆音符（射幾發就換幾顆）；演奏中其他時候不射
   const fi0 = R.fire;
   R.fire = o => {
     const P = W().P;
     if (!o || o._bd || o.owner !== 'p' || !o.primary || !IS(P) || !W().run) return fi0(o);
-    const t = now(), first = t - ST.lastShotT > 0.06; if (first) ST.lastShotT = t;   // 一次普攻射好幾發的只算一次
-    if (first && ST.rec) { addNote(P, { d: 0.5, k: 'n' }); return fi0(o); }
-    if (ST.inRel) { if (!ST.release) return null; const notes = ST.release; ST.release = null; return enqueue(P, o, notes, ST.relMid); }
+    if (ST.inRel) { const r = ST.rel; if (!r) return null; r.k++; return noteShot(P, o, r.n); }
     if (ST.perf && !ST.rec) return null;
     return fi0(o);
   };
@@ -391,7 +444,7 @@
     if (ST.rec) { ST.rec.t += dt; if (ST.rec.t >= REC_T) endRec(P); }
     if (ST.perf) {
       const p = ST.perf; p.t += dt;
-      while (p.shown < p.notes.length && p.t >= p.times[p.shown]) { const k = p.shown++, n = p.notes[k]; if (R.num) R.num(P.x + (Math.random() - 0.5) * 0.8, 2.2, P.z, n.d < 1 ? '♪' : n.d < 2 ? '♩' : '♫', n.k === 'a' ? 'crit' : 'heal'); noteAtk(P, n, p.mid[k]); }
+      while (p.shown < p.notes.length && p.t >= p.times[p.shown]) { const k = p.shown++, n = p.notes[k]; if (R.num) R.num(P.x + (Math.random() - 0.5) * 0.8, 2.2, P.z, n.d < 1 ? '♪' : n.d < 2 ? '♩' : '♫', n.k === 'a' ? 'crit' : 'heal'); noteAtk(P, n, p.pid); }
       if (p.t >= p.dur) perfDone(P);
     }
     if (ST.q.length) { ST.qT -= dt; while (ST.q.length && ST.qT <= 0) { fireNote(P); ST.qT += gapOf(P); } } else ST.qT = 0;
@@ -404,13 +457,13 @@
     if (!SV().notes) return '樂譜是空的：按住 X 寫樂譜';
     if (ST.q.length && !ST.perf) return '射出音符中（還有 ' + ST.q.length + ' 個）——可以開始下一次演奏';
     if (ST.perf) return '演奏中' + (ST.perf.kind === 'skill' && R.SKILLS[ST.perf.id] ? '（' + R.SKILLS[ST.perf.id].name + '）' : '（普攻）') + ' ' + Math.max(0, ST.perf.dur - ST.perf.t).toFixed(1) + ' 秒';
-    return '出手會先演奏 ' + perfDur(P).toFixed(1) + ' 秒再發出';
+    return '出手會先演奏 ' + perfDur(P).toFixed(1) + ' 秒（耗魔 ' + perfCost(SV().notes) + '）再發出';
   };
   const C = R.CORE && R.CORE.bard;
   if (C) Object.assign(C, {
     name: '和弦', col: '#FFB8E0',   // 職業條的顏色跟著和弦（gauge 回傳的 col）
-    help: P => '和弦與樂譜：X 點一下換和弦／大小調（大三＝傷害、小三＝恢復與護盾、20 級七和弦＝範圍、30 級九和弦＝技能急速、40 級十一和弦＝演奏回魔）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
-      + capOf(P) + ' 拍）。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒、花 5 點魔力，可以走、翻滾，不能普攻；攻速越快演奏越快）→ 發出。普攻演奏中經過一個音符就射出那一顆（普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。護盾每段演奏刷新、不疊。'
+    help: P => '和弦與樂譜：X 點一下換和弦／大小調（C 大三＝傷害、Cm 小三＝恢復與護盾、20 級 Cmaj7 七和弦＝範圍、30 級 Cmaj9 九和弦＝技能急速、40 級 Dm11 十一和弦＝演奏回魔）；技能數值照最大魔力（治療、護盾＝最大魔力的 %，強化的 +% 每 100 點最大魔力算一次，技能傷害 × 最大魔力 ÷ 100）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
+      + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速越快演奏越快；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。護盾每段演奏刷新、不疊。'
       + ({ aria: '詠嘆詩人：增益音符效果 ×1.5。', drummer: '戰鼓手：攻擊音符效果 ×1.5。', serane: '奏域師：八分音符的攻速維持兩倍久。' }[P && P.adv] || ''),
     step() { }, onCast() { }, play() { },
     act() { },
@@ -489,6 +542,8 @@
     if (b && b.classList.contains('bd-on')) b.classList.remove('bd-on', 'rec', 'perf');   // 舊版留下的和弦樣子
     try {
       draw(P);
+      // 武器那一行（hud.js 寫「每發 X 魔力」）：吟遊詩人的普攻不耗魔，改寫成每次演奏耗魔（2026-10-11 作者）
+      const sm = $('r-weapon') && $('r-weapon').querySelector('small'); if (sm && /每發 [\d.]+ 魔力/.test(sm.innerHTML)) sm.innerHTML = sm.innerHTML.replace(/每發 [\d.]+ 魔力/, SV().notes && SV().notes.length ? '每次演奏耗魔 ' + perfCost(SV().notes) : '每次演奏耗魔 0（樂譜是空的）');
       // 放在畫面左邊、職業特效的條（#core-g）正上方，不擋中間的技能列；左上的資訊框底下留空
       const vis = el => { if (!el) return null; const q = el.getBoundingClientRect(); return q.width && q.height ? q : null; }, r = vis($('core-g')), rt = vis($('r-tl'));
       const top0 = rt && rt.height ? rt.bottom + 6 : 6;
@@ -498,5 +553,54 @@
   };
   { const L = R.SKILL_LIB && R.SKILL_LIB.bd_chord, K = R.SKILLS && R.SKILLS.bd_chord, d = '一次撥三條弦，三個音符扇形飛出去，撞到敵人炸開（半徑 3 公尺）。';
     if (L) { L.name = '三重奏'; L.desc = d; L.p = Object.assign({}, L.p, { trio: 1 }); } if (K) { K.name = '三重奏'; K.desc = d; } }
-  R.bardChord = { ST, SV, vary, dim, gainsOf, scaleArgs, chordOf, castMods, tally, nextChord, startRec, endRec, perfDur, capOf, spdK };
+  // 武器說明：吟遊詩人的樂器普攻不耗魔力，改寫「每發消耗魔力」那一行（2026-10-11 作者：每次演奏照樂譜耗魔）
+  { const il0 = R.itemLines; if (typeof il0 === 'function') R.itemLines = function (it) { const L = il0.apply(this, arguments); try { const w = it && it.kind === 'weapon' && R.WEAPONS[it.base]; if (w && (w.cls || []).includes('bard') && Array.isArray(L)) return L.map(t => (/^每發消耗魔力/.test(t) ? '普攻不耗魔力；每次演奏照樂譜耗魔（八分 0.5、四分 1.5、二分 5）' : t)); } catch (e) { } return L; }; }
+  // 終曲：前方 90 度、半徑 6 公尺的扇形聲波（四波）；安可：你和隊友回「你最大魔力 30%」的生命、你再回 15% 魔力，冷卻 30 秒（2026-10-11 作者）
+  { const L = R.SKILL_LIB || {}, SK = R.SKILLS || {};
+    if (L.bd_finale) { L.bd_finale.type = 'cone'; L.bd_finale.p = { r: 6, arc: Math.PI / 2, k: 0.9, waves: 4, gap: 300, kb: 0.5, color: '#FFB8E0' }; }
+    if (L.bd_encore) { L.bd_encore.p = { pct: 0.3, allies: 0.3, mp: 0.15, color: '#FFE8A0' }; L.bd_encore.cd = 30; if (SK.bd_encore) SK.bd_encore.cd = 30; } }
+  // 技能說明：照參數寫出照最大魔力算的數字（治療、護盾＝最大魔力的 %；強化 +% 每 100 點最大魔力；有傷害的加一句）
+  const fmt = x => { const v = Math.round(x * 1000) / 10; return String(v % 1 ? v.toFixed(1) : v); };
+  const healTxt = p => {
+    const L = [];
+    if (p.pct && p.allies && Math.abs(p.pct - p.allies) < 1e-6) L.push('你和附近隊友回復「你最大魔力 ' + fmt(p.pct) + '%」的生命');
+    else { if (p.pct) L.push('你回復「最大魔力 ' + fmt(p.pct) + '%」的生命'); if (p.allies) L.push('附近隊友回復「你最大魔力 ' + fmt(p.allies) + '%」的生命'); }
+    if (p.shield && p.allyShield && Math.abs(p.shield - p.allyShield) < 1e-6) L.push('你和隊友得到「你最大魔力 ' + fmt(p.shield) + '%」的護盾');
+    else { if (p.shield) L.push('你得到「最大魔力 ' + fmt(p.shield) + '%」的護盾'); if (p.allyShield) L.push('隊友得到「你最大魔力 ' + fmt(p.allyShield) + '%」的護盾'); }
+    if (p.mp) L.push('你再回復「最大魔力 ' + fmt(p.mp) + '%」的魔力');
+    if (p.cleanse) L.push('清掉不良狀態');
+    return L.join('，');
+  };
+  const buffTxt = p => {
+    const L = [];
+    if (p.dmg > 1) L.push('傷害 +' + fmt(p.dmg - 1) + '%'); if (p.speed > 1) L.push('移動 +' + fmt(p.speed - 1) + '%'); if (p.rate > 1) L.push('攻速 +' + fmt(p.rate - 1) + '%');
+    if (p.crit) L.push('暴擊率 +' + fmt(p.crit) + '%'); if (p.def) L.push('受到的傷害 −' + fmt(p.def) + '%');
+    let t = (p.t ? p.t + ' 秒內' : '') + L.join('、') + (L.length ? '（每 100 點最大魔力）' : '');
+    if (p.regen) t += (L.length ? '，' : '') + '每秒回復「最大魔力 ' + fmt(p.regen) + '%」的生命';
+    return t;
+  };
+  const partTxt = (type, p) => (type === 'heal' ? healTxt(p) : type === 'buff' ? buffTxt(p) : type === 'guard' ? (p.t ? p.t + ' 秒內不受傷' : '') + (p.cleanse ? '、解除不良狀態' : '')
+    : type === 'zone' && p.zone === 'sanct' ? '站在裡面（半徑 ' + p.r + ' 公尺）每 0.5 秒回復「最大魔力 ' + fmt(0.05 * (p.healK || 1)) + '%」的生命、灼傷進來的敵人' : '');
+  const SUPT = ['heal', 'buff', 'guard'];
+  const descOf = l => {
+    const S = R.SKILLS[l.id]; if (!S) return;
+    let d = String(S.desc || '').replace(/（效果隨魔力上限變強）/g, '').replace(/（傷害 × 最大魔力 ÷ 100）/g, '');   // 重寫第二次的時候先拿掉上次加的
+    const parts = l.type === 'combo' ? (l.p.parts || []) : [[l.type, l.p]];
+    const sup = parts.filter(([t, p]) => SUPT.includes(t) || (t === 'zone' && p && p.zone === 'sanct')).map(([t, p]) => partTxt(t, p || {})).filter(Boolean);
+    const hurt = parts.some(([t, p]) => p && p.k > 0);
+    if (l.id === 'bd_finale') d = '整首曲子的高潮：朝前方 90 度、半徑 6 公尺的扇形，連續四波聲波。';
+    if (l.id === 'bd_encore') d = '觀眾喊安可：';
+    if (sup.length) {
+      // 原本的說明：前面的（二轉…）留著、冒號前的那句留著；組合技留第一個傷害的子句；數字的部分換成照最大魔力的
+      const pre = (d.match(/^（[^）]*）/) || [''])[0], body = d.slice(pre.length), hasC = /[：:]/.test(body), head = hasC ? body.split(/[：:]/)[0] : '';
+      const keepDmg = l.type === 'combo' ? parts.filter(([t, p]) => !SUPT.includes(t) && t !== 'zone').length : 0;
+      const dmgClause = keepDmg && hasC ? (body.split(/[：:]/)[1] || '').split(/[，；、,。]/)[0] : '';
+      d = pre + (head ? head + '：' : '') + (dmgClause && !/回復|生命|護盾/.test(dmgClause) ? dmgClause + '；' : '') + sup.join('；') + '。';
+    }
+    if (hurt) d = d.replace(/。?$/, '。') + '（傷害 × 最大魔力 ÷ 100）';
+    S.desc = d;
+  };
+  const redesc = () => Object.values(R.SKILL_LIB || {}).forEach(l => { if (l && l.cls === 'bard' && l.p) try { descOf(l); } catch (e) { } });
+  redesc(); setTimeout(redesc, 0);
+  R.bardChord = { ST, SV, vary, dim, gainsOf, scaleArgs, mpArgs, chordOf, castMods, tally, nextChord, startRec, endRec, perfDur, capOf, spdK, perfCost, descOf, CH, CHD };
 })(window.R);
