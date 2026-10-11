@@ -45,7 +45,9 @@
   if (cs0) R.castSlot = i => { const P = W().P, b = P && P.skCd ? P.skCd[i] || 0 : 0, r = cs0(i); if (P && P.skCd && (P.skCd[i] || 0) > b + 0.01) { const c = col(P.cls); burst(P, c); castName(skName(R.slotSkill ? R.slotSkill(P, i) : ''), c); } return r; };
 
   // ---------- 大招量表 ----------
-  const gain = v => { const P = W().P, run = W().run; if (!P || !run || P.dead || P.ulting) return; const was = P.ult || 0; P.ult = Math.min(100, was + v); if (was < 100 && P.ult >= 100) { R.toast && R.toast('大招準備好了（V）', col(P.cls)); R.sfx && R.sfx('chest'); } };
+  // 2026-10-11 作者：所有職業的大招需要的能量翻倍（每一下集到的量 ÷ 2）；集滿的提示在下面（大招集滿了！按 V），這裡只出聲
+  const ULT_COST = 2;
+  const gain = v => { const P = W().P, run = W().run; if (!P || !run || P.dead || P.ulting) return; const was = P.ult || 0; P.ult = Math.min(100, was + v / ULT_COST); if (was < 100 && P.ult >= 100) { R.sfx && R.sfx('chest'); } };
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, raw, o) => { const h0 = e && e.hp, r = he0(e, raw, o), P = W().P; if (e && P && h0 > e.hp) gain(Math.min(3, 1.4 * (h0 - Math.max(0, e.hp)) / Math.max(1, meter(P)))); return r; };
   const ke0 = R.killEnemy;

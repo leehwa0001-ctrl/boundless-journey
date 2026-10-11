@@ -3,7 +3,9 @@
 //   2026-10-11 作者：製作樂譜、更換和弦的按鍵改成 X——原本在 R（右鍵、手機的 R 鈕），技能改放 3～6、最多四招；現在 R 變回一般的技能格（跟其他職業一樣五格）。
 // - 寫樂譜：10 秒內記下出手——普攻一下＝八分音符（半拍）、基礎冷卻 13 秒以內的技能＝四分音符（一拍）、13 秒以上＝二分音符（兩拍）；
 //   一個小節 4 拍（被動「樂譜延長」多 2 拍），下一個音放不下就寫完。攻擊技能的音符是紅的、增益（守、治）是綠的、普攻是金的；音高照和弦，
-//   演奏的時候整段樂譜一起升高或降低 1～2 個音階（每次演奏隨機選一個方向，同一段不會忽升忽降）；第一個音和最後一個音同時彈出和弦。
+//   演奏的時候整段樂譜一起升高或降低 1～2 個音階（每次演奏隨機選一個方向，同一段不會忽升忽降）。
+//   2026-10-11 作者：每一拍彈一個和弦（固定的進行，不跟著選的和弦、也不升降）：4 拍 C→F→G→C；6 拍（樂譜延長）C→Em→F→G→Am→C。
+//   每半拍一個一半音量的協奏音 do-re-mi-fa-mi-re（一直繞），跟著這段演奏的升降一起升降。
 //   寫樂譜的時候普攻、技能照常放出去（普攻是一發普通的音符）。
 // - 出手的順序：按下技能或普攻 → 演奏（照樂譜彈出聲音，2 秒；這段時間可以走、翻滾，不能普攻）→ 發出攻擊；下一次技能或普攻再演奏、再發出。
 //   樂譜是空的：普攻不會發出任何攻擊；技能照常馬上放。攻速每 +1% 演奏快 1%（+100% 攻速只要一半的時間）。
@@ -25,7 +27,7 @@
 // - 2026-10-11 作者：技能「和弦」改名「三重奏」，射出的音符撞到敵人炸開（半徑 3 公尺）。
 // - 聲音（2026-10-11 作者）：只有演奏的時候有聲音；發出攻擊、音符打中敵人都不出聲。
 // - 和弦各有顏色：五線譜的外框（演奏中）、底下的字跟著和弦的顏色；五線譜底下列出現在這份樂譜演奏完技能會得到的加成。
-// - 大招狂想曲（2026-10-11 作者）：拿掉增傷、減傷；改成回復你和隊友「你最大魔力 50%」的生命與魔力，並讓你和隊友得到兩倍的樂譜技能加成（10 秒）。
+// - 大招狂想曲（2026-10-11 作者）：拿掉增傷、減傷；回復你和隊友「你最大魔力 35%」的生命與魔力，並讓你和隊友得到一倍的樂譜技能加成（10 秒，跟一般技能演奏的加成分開、可以疊）；震擊傷害減半。
 // 放在最後面（main.js 前面）：包在 R.attack、R.castSlot、R.useSkill、R.fire、R.updateShots、R.hurtEnemy、R.calcPlayer、R.step、R.hudTick 最外面。
 (function (R) {
   const W = () => R.W, $ = id => document.getElementById(id);
@@ -118,6 +120,11 @@
   const spdK = P => Math.max(0.25, (P.ws && P.ws.rate ? P.ws.rate : 1) / baseRate(P));
   const perfDur = P => Math.max(0.3, Math.min(4, 2 * (P.pv && P.pv.bdFast ? 0.8 : 1) * (P.pv && P.pv.bdRhythm ? 0.7 : 1) / spdK(P)));
   const PERF_MP = 5;   // 每次演奏花的魔力（2026-10-11 作者）
+  // 每一拍的和弦（低音區，聲部接得順）：4 拍 C→F→G→C、6 拍 C→Em→F→G→Am→C
+  const CHD = { C: [48, 52, 55], Em: [47, 52, 55], F: [48, 53, 57], G: [47, 50, 55], Am: [48, 52, 57] };
+  const PROG = { 4: ['C', 'F', 'G', 'C'], 6: ['C', 'Em', 'F', 'G', 'Am', 'C'] };
+  // 協奏音 do-re-mi-fa-mi-re（再回到 do 一直繞），C 大調
+  const CONC = [60, 62, 64, 65, 64, 62], CMAJ = { sc: [0, 2, 4, 5, 7, 9, 11] };
   const startPerf = (P, what) => {
     const notes = SV().notes; if (!notes || !notes.length || ST.rec || ST.perf) return false;
     if (P.mp < PERF_MP) { const t = now(); if (t - ST.hintT > 2) { ST.hintT = t; toast('魔力不夠（演奏要 ' + PERF_MP + ' 點魔力）'); } return false; }
@@ -126,10 +133,12 @@
     let at = 0; const times = notes.map(n => { const t = at; at += n.d * bt; return t; });
     const mid = notes.map((n, i) => vary(midiOf(n, i, c), c, dv));
     ST.perf = Object.assign({ t: 0, dur, notes: notes.slice(), times, mid, shown: 0, pid: ++ST.pid }, what);
-    // 第一個音、最後一個音同時彈出和弦（低八度的三個和弦音）
-    const len = i => Math.max(0.08, notes[i].d * bt * 0.9), chord = i => c.tones.slice(0, 3).map(m => [m - 12, times[i], Math.max(0.3, len(i))]);
-    const last = notes.length - 1;
-    melody(P, notes.map((n, i) => [mid[i], times[i], len(i)]).concat(chord(0), last > 0 ? chord(last) : []), 0.085);
+    // 每一拍一個和弦（固定進行）；每半拍一個一半音量的協奏音（跟著這段的升降）
+    const len = i => Math.max(0.08, notes[i].d * bt * 0.9), prog = PROG[cap] || PROG[4], chords = [];
+    for (let b = 0; b < cap; b++) (CHD[prog[b % prog.length]] || CHD.C).forEach(m => chords.push([m, b * bt, bt * 0.95]));
+    const conc = []; for (let h = 0; h < cap * 2; h++) conc.push([vary(CONC[h % CONC.length], CMAJ, dv), h * bt / 2, bt / 2 * 0.9]);
+    melody(P, notes.map((n, i) => [mid[i], times[i], len(i)]).concat(chords), 0.085);
+    melody(P, conc, 0.0425);
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.2, color: c.col });
     return true;
   };
@@ -234,24 +243,25 @@
   };
 
   // ---------- 大招狂想曲（classes2b.js 的 R.ULTS.bard 呼叫；2026-10-11 作者：拿掉增傷、減傷） ----------
-  // 回復：你最大魔力 50%（× 小三和弦、增益四分的恢復加成 ×2）的生命與魔力，給你和 12 公尺內的隊友；
-  // 兩倍的樂譜技能加成 10 秒：攻速、傷害（增益二分的「增益 +%」也兩倍、乘在上面）、你自己的技能冷卻減少、增益二分的護盾與回血。
+  // 回復：你最大魔力 35%（× 小三和弦、增益四分的恢復加成）的生命與魔力，給你和 12 公尺內的隊友；
+  // 一倍的樂譜技能加成 10 秒（2026-10-11 作者：原本兩倍，減半）：攻速、傷害（增益二分的「增益 +%」乘在上面）、你自己的技能冷卻減少、增益二分的護盾與回血。
+  // 掛在自己的 id（bd:ult、ult:段號），跟一般技能演奏的加成分開、可以疊。
   R.bardUlt = P => {
     const m = castMods(P, SV().notes || []), hk = healK(P), c = chordOf(P), pid = ++ST.pid;
-    const H = P.mpMax * 0.5 * hk * (1 + 2 * (m.heal - 1)), bk = 1 + 2 * (m.buff - 1);
-    const rate = 1 + 2 * (m.rate - 1) * bk, dmg = 1 + 2 * (m.dmg - 1) * bk, sh = 2 * P.mpMax * 0.1 * m.ally * hk, t = 10;
+    const H = P.mpMax * 0.35 * hk * m.heal, bk = m.buff;
+    const rate = 1 + (m.rate - 1) * bk, dmg = 1 + (m.dmg - 1) * bk, sh = P.mpMax * 0.1 * m.ally * hk, t = 10;
     if (R.healP) R.healP(H + sh); P.mp = Math.min(P.mpMax, P.mp + H);
     if (sh > 0) shieldAll(P, sh, 0, 0.01, 'ult:' + pid);
     // 直接掛在 P.sb（不走 SKILL_TYPES.buff：那裡吟遊詩人的增益會再照魔力上限放大，就不是剛好兩倍了）；時間到 skillbook.js 會還原攻速
     if (rate > 1 || dmg > 1) { P.sb = P.sb || {}; const old = P.sb['bd:ult']; if (old && old.rate && P.ws) P.ws.rate /= old.rate; P.sb['bd:ult'] = Object.assign({ left: t, t, color: c.col }, rate > 1 && P.ws ? { rate } : {}, dmg > 1 ? { dmg } : {}); if (rate > 1 && P.ws) P.ws.rate *= rate; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2, color: c.col }); }
-    if (m.cdCut > 0) { const f = Math.max(0.1, 1 - 2 * m.cdCut); if (P.skillCd > 0) P.skillCd *= f; if (P.skCd) P.skCd = P.skCd.map(x => (x || 0) * f); }
+    if (m.cdCut > 0) { const f = Math.max(0.1, 1 - m.cdCut); if (P.skillCd > 0) P.skillCd *= f; if (P.skCd) P.skCd = P.skCd.map(x => (x || 0) * f); }
     (R.nearAllies ? R.nearAllies(P, 12) : []).forEach(al => {
       if (!R.aidAlly) return;
       R.aidAlly(al, Object.assign({ healAbs: H + sh, mpAbs: H, shieldAbs: sh, shKey: 'ult:' + pid, shieldT: t }, al.remote != null ? { rateK: rate, rateT: t, dmgK: dmg, dmgT: t } : {}));
       if (al.remote == null) { allyMod(al, 'rate', rate, t); allyMod(al, 'dmg', dmg, t); }
     });
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 12, color: c.col });
-    if (R.num) R.num(P.x, 2.8, P.z, '♫ 狂想曲 ×2', 'heal');
+    if (R.num) R.num(P.x, 2.8, P.z, '♫ 狂想曲', 'heal');
   };
 
   // ---------- 技能的型：和弦（範圍、恢復）＋樂譜（傷害、範圍、恢復、增益） ----------
