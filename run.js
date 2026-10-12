@@ -111,20 +111,25 @@
     let cnt = 0, cap = 4 + 2 * g.lv + R.alliesUp().length;   // 一間房最多幾隻
     const put = (id, o) => { const [x, z] = R.roomPoint(r, { away: W.P, min: 5 }); const e = R.spawnEnemy(id, x, z, r.i, Object.assign({ quiet: dormant }, o)); cnt++; if (dormant) { e.dormant = true; e.aggro = false; } return e; };
     let n = r.type === 'ore' ? 2 : r.type === 'chest' || r.type === 'trap' ? 2 : 3 + g.lv + Math.floor(f / 2) + Math.floor(Math.random() * 3) + R.alliesUp().length;   // 隊友越多，怪也越多
+    const RC = R.ruinRoomCount ? R.ruinRoomCount(r, run) : null;   // 2026-10-13 遺跡整改（ruinis.js）：每間房的數量照分級的表
+    if (RC != null) { n = RC; cap = Math.max(cap, n + 2); }
+    else {
     if (run.type === 'maze') n = Math.round(n * 0.8);   // 迷宮型的房間多，每間少放一點
     if (r.big) { n = Math.round(n * 1.6); cap += 4; }   // 跨兩格的大廳
+    }
+    let envPut = false; if (RC != null && n > 0 && run.env && Math.random() < 0.7) { n--; envPut = true; }   // 環境生物算在數量裡
     if (r.type === 'ore') for (let i = 0; i < 2 + g.lv; i++) put('kousaku');
     let lantern = false, elite = false, guard = 0;
     while (n > 0 && guard++ < 80 && cnt < cap) {
       const id = pickId(pool, run);
       if (id === 'chochin') { if (lantern || Math.random() < 0.5) continue; lantern = true; }
-      if (R.ENEMIES[id].elite) { if (elite || r.type !== 'fight' || n < 3) continue; elite = true; put(id); n -= 3; continue; }   // 精英（牛鬼）一間最多一隻，抵三隻
+      if (R.ENEMIES[id].elite) { if (elite || r.type !== 'fight' || n < (RC != null ? 1 : 3)) continue; elite = true; put(id); n -= RC != null ? 1 : 3; continue; }   // 精英（牛鬼）一間最多一隻，抵三隻
       if (id === 'kamaitachi') { if (n < 3) continue; ['trip', 'cut', 'heal'].forEach(role => put('kamaitachi', { role })); n -= 3; continue; }
       if (id === 'okuriinu') { const k = Math.min(n, 3); for (let i = 0; i < k; i++) put('okuriinu'); n -= k; continue; }
-      if (id === 'kodama') { const k = 2 + Math.floor(Math.random() * 3); for (let i = 0; i < k; i++) put('kodama'); n -= Math.ceil(k / 2); continue; }   // 木魂成群，兩隻算一隻
-      put(id); n--;
+      if (id === 'kodama') { const k = RC != null ? Math.min(n, 2 + Math.floor(Math.random() * 3)) : 2 + Math.floor(Math.random() * 3); for (let i = 0; i < k; i++) put('kodama'); n -= RC != null ? k : Math.ceil(k / 2); continue; }   // 木魂成群，兩隻算一隻
+      put(id); n -= RC != null ? Math.max(1, Math.min(n, (R.ENEMIES[id] && R.ENEMIES[id].pack) || 1)) : 1;   // 成群的（鐵齒鼠）整群算進數量
     }
-    if (run.env) { const envs = Object.keys(R.ENEMIES).filter(k => R.ENEMIES[k].env === run.env && !R.ENEMIES[k].boss), envId = envs[Math.floor(Math.random() * envs.length)]; if (envId && Math.random() < 0.7) put(envId); }   // 同一種環境可能有好幾種生物
+    if (run.env && (RC == null || envPut)) { const envs = Object.keys(R.ENEMIES).filter(k => R.ENEMIES[k].env === run.env && !R.ENEMIES[k].boss), envId = envs[Math.floor(Math.random() * envs.length)]; if (envId && (envPut || Math.random() < 0.7)) put(envId); }   // 同一種環境可能有好幾種生物
   };
   // 一層開始時：房間裡本來就有遺跡生物在活動；通道裡也有在遊蕩的
   R.populateFloor = () => {

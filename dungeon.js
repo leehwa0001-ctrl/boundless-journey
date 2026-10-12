@@ -3,7 +3,7 @@
 // 五種形式長得不一樣：高塔型是圓形的塔室與懸在深淵上的橋；城區型是街道、房子與廣場；
 // 迷宮型是彎來彎去、長滿樹根的窄道；陵墓型是一排排石柱與石棺；浮島型是浮在海上的島與吊橋。
 (function (R) {
-  const CW = 38, CH = 32, TS = 2, DOOR = 4.4;
+  const RK = 1.75, CW = 66, CH = 56, TS = 2, DOOR = 4.4;   // 2026-10-13 遺跡整改：房間 ×1.75（RK），格子間距跟著放大（38×32 → 66×56，取 TS 的倍數）
   const VOID = 0, FLOOR = 1, WALL = 2, PIT = 3;
   const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -86,9 +86,9 @@
     if (g.nest && last) end.nest = 1;
     // 尺寸、形狀、位置（hx、hz：半寬、半深）
     rooms.forEach(r => {
-      const hs = r.type === 'boss' ? [15, 12] : r.type === 'lord' ? [13.5, 11] : r.type === 'start' ? [8, 7] : r.type === 'chest' ? [7.5, 6.5] : r.type === 'deep' ? (r.nest ? [12.5, 10] : [10, 8]) : r.type === 'stairs' ? [9.5, 8] : [rnd(10.5, 15), rnd(8.5, 12)];
+      const hs0 = r.type === 'boss' ? [15, 12] : r.type === 'lord' ? [13.5, 11] : r.type === 'start' ? [8, 7] : r.type === 'chest' ? [7.5, 6.5] : r.type === 'deep' ? (r.nest ? [12.5, 10] : [10, 8]) : r.type === 'stairs' ? [9.5, 8] : [rnd(10.5, 15), rnd(8.5, 12)]; const hs = [hs0[0] * RK, hs0[1] * RK];
       const big = form.big || 1;
-      r.hx = Math.min(16.5, hs[0] * big); r.hz = Math.min(13, hs[1] * big);
+      r.hx = Math.min(16.5 * RK, hs[0] * big); r.hz = Math.min(13 * RK, hs[1] * big);
       r.shape = r.type === 'boss' || r.type === 'lord' ? form.boss : ['start', 'chest', 'stairs', 'deep', 'trap'].includes(r.type) ? (Array.isArray(form.calm) ? pick(form.calm) : form.calm) : pick(form.shapes);
       r.seed = Math.random() * 10;
       r.x = r.gx * CW; r.z = r.gy * CH; r.w = r.hx * 2; r.h = r.hz * 2;
@@ -100,7 +100,7 @@
       shuffle(rooms.filter(r => r.type === 'fight' || r.type === 'trap' || r.type === 'ore')).slice(0, nBig).forEach(r => {
         const free = DIRS.filter(d => { const k = K(r.gx + d[0], r.gy + d[1]); return !at.has(k) && !taken.has(k); }); if (!free.length) return;
         const d = pick(free); taken.add(K(r.gx + d[0], r.gy + d[1])); r.big = 1;
-        if (d[0]) { r.x += d[0] * CW / 2; r.hx = CW / 2 + rnd(10, 13); r.hz = rnd(10.5, 13); } else { r.z += d[1] * CH / 2; r.hz = CH / 2 + rnd(8, 10.5); r.hx = rnd(12, 15.5); }
+        if (d[0]) { r.x += d[0] * CW / 2; r.hx = CW / 2 + rnd(10, 13) * RK; r.hz = rnd(10.5, 13) * RK; } else { r.z += d[1] * CH / 2; r.hz = CH / 2 + rnd(8, 10.5) * RK; r.hx = rnd(12, 15.5) * RK; }
         r.shape = pick(['hall', 'plaza', 'rect', 'octagon']); r.w = r.hx * 2; r.h = r.hz * 2;
       });
     }
@@ -863,6 +863,6 @@
     const edge = new TH.Mesh(new TH.TorusGeometry(2.4, 0.07, 4, 4), lam(th.accent, { emissive: th.accent, emissiveIntensity: 0.8 })); edge.rotation.set(Math.PI / 2, 0, Math.PI / 4); edge.position.set(x, 0.1, z); group.add(edge);
     F.stairs = { x, z, room, edge, sealed: false };
   };
-  R.CELL = { CW, CH, DOOR, TS };
+  R.CELL = { CW, CH, DOOR, TS, RK };
   R.TILE = { VOID, FLOOR, WALL, PIT };
 })(window.R);

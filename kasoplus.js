@@ -162,6 +162,7 @@
   const inRoom = r => W().enemies.filter(e => !e.dead && e.room === r.i && !(e.def && (e.def.boss || e.def.human)) && !isLord(e)).length;
   const more = (r, dormant) => {
     if (!r || r.kxMore || r.type === 'boss' || guest()) return; r.kxMore = 1;
+    if (R.ruinRoomCount && R.ruinRoomCount(r, W().run) != null) return;   // 2026-10-13 遺跡整改（ruinis.js）：每間房的數量照表，不再多加五成
     const n = Math.round(inRoom(r) * 0.5), w = W();
     for (let i = 0; i < n; i++) {
       const [x, z] = R.roomPoint(r, { away: w.P, min: 5 }), e = R.spawnEnemy(pickId(), x, z, r.i, { quiet: dormant });

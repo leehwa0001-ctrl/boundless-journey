@@ -9,7 +9,7 @@
 // 放在 dungeon.js、zones.js、lordfloor.js、kasoplus.js 後面（包 R.carve、R.genFloor、R.buildFloor、R.onBossDown 最外面）。
 (function (R) {
   const W = () => R.W, rnd = Math.random, pick = a => a[Math.floor(rnd() * a.length)];
-  const C = R.CELL || { CW: 38, CH: 32, TS: 2 }, CW = C.CW, CH = C.CH;
+  const C = R.CELL || { CW: 38, CH: 32, TS: 2 }, CW = C.CW, CH = C.CH, RK = C.RK || 1;   // RK：dungeon.js 的房間倍率（2026-10-13 ×1.75）
   const DIRS = [[0, -1, 'n'], [1, 0, 'e'], [0, 1, 's'], [-1, 0, 'w']], OPP = { n: 's', s: 'n', e: 'w', w: 'e' };
   const want = (run, F) => {
     const g = run && run.grade; if (!g || !g.lords || !F || F.last || g.id === 'hunt' || (run.site && run.site.id === 'kanko') || !R.lordFloorsOf) return false;
@@ -27,9 +27,9 @@
       for (const d of DIRS.slice().sort(() => rnd() - 0.5)) {
         const horiz = !!d[0], cell = i => [E.gx + d[0] * i, E.gy + d[1] * i], at = i => { const [gx, gy] = cell(i); return [gx * CW, gy * CH]; };
         const L = [];
-        for (let i = 1; i <= k; i++) { const [x, z] = at(i), hx = horiz ? 9.5 : 10.5, hz = horiz ? 8.5 : 8; L.push({ role: 'mob', gx: cell(i)[0], gy: cell(i)[1], x, z, hx: hx + rnd() * 1.5, hz: hz + rnd() * 1, shape: run.type === 'tower' || run.type === 'island' ? 'circle' : pick(['rect', 'hall', 'octagon']) }); }
-        { const [x1, z1] = at(k + 1), [x2, z2] = at(k + 2); L.push({ role: 'hall', gx: cell(k + 1)[0], gy: cell(k + 1)[1], x: (x1 + x2) / 2, z: (z1 + z2) / 2, hx: horiz ? CW / 2 + 11 : 16.5, hz: horiz ? 14.5 : CH / 2 + 10, shape: form.boss }); }
-        { const [x, z] = at(k + 3); L.push({ role: 'exit', gx: cell(k + 3)[0], gy: cell(k + 3)[1], x, z, hx: 9.5, hz: 8, shape: calm() }); }
+        for (let i = 1; i <= k; i++) { const [x, z] = at(i), hx = (horiz ? 9.5 : 10.5) * RK, hz = (horiz ? 8.5 : 8) * RK; L.push({ role: 'mob', gx: cell(i)[0], gy: cell(i)[1], x, z, hx: hx + rnd() * 1.5 * RK, hz: hz + rnd() * RK, shape: run.type === 'tower' || run.type === 'island' ? 'circle' : pick(['rect', 'hall', 'octagon']) }); }
+        { const [x1, z1] = at(k + 1), [x2, z2] = at(k + 2); L.push({ role: 'hall', gx: cell(k + 1)[0], gy: cell(k + 1)[1], x: (x1 + x2) / 2, z: (z1 + z2) / 2, hx: horiz ? CW / 2 + 11 * RK : 16.5 * RK, hz: horiz ? 14.5 * RK : CH / 2 + 10 * RK, shape: form.boss }); }
+        { const [x, z] = at(k + 3); L.push({ role: 'exit', gx: cell(k + 3)[0], gy: cell(k + 3)[1], x, z, hx: 9.5 * RK, hz: 8 * RK, shape: calm() }); }
         if (L.some(o => clash(boxOf(o), rooms, 5))) continue;
         // 接上
         let prev = E;

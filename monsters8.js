@@ -26,8 +26,11 @@
     const e = se0(id, x, z, room, o); if (!eligible(e, o)) return e;
     const run = W().run, t = tier(e), dep = run.floor || 0;
     let n = 0;
+    if (R.ruinISAffix) n = R.ruinISAffix(e, o, t, dep);   // 2026-10-13 遺跡整改（ruinis.js）：照 IS 決定，一般的從 0 起
+    else {
     if (t === 3) n = 2; else if (t === 2) n = rnd() < 0.55 ? 1 : 0; else if (t === 1) n = rnd() < 0.3 ? 1 : 0;
     else if (rnd() < Math.min(0.2, 0.06 + 0.012 * dep)) n = rnd() < 0.3 + 0.03 * dep ? 2 : 1;
+    }
     if (!n) return e;
     const list = KEYS.slice().sort(() => rnd() - 0.5).slice(0, n);
     // 不合的組合：會自己隱形、鑽地的生物不給護盾、閃現（牠們有自己的一套）

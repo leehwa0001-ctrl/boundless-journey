@@ -49,7 +49,7 @@
     const it = R.nearestInteract();
     $('r-prompt').hidden = !it; if (it) $('r-prompt').innerHTML = '<kbd>' + (R.touch ? '互動' : '空白') + '</kbd>' + R.esc(it.label);
     const boss = R.bossForBar();
-    $('r-boss').hidden = !boss; if (boss) { $('r-boss-n').textContent = boss.def.name; $('r-boss-hp').style.width = (boss.hp / boss.hpMax * 100) + '%'; }
+    $('r-boss').hidden = !boss; if (boss) { $('r-boss-n').textContent = boss.def.name + (boss.is ? '　[IS：' + boss.is + ']' : ''); $('r-boss-hp').style.width = (boss.hp / boss.hpMax * 100) + '%'; }
     // 異常狀態力場：靠近佩特拉核心時，看不清楚
     const core = W.enemies.find(e => e.id === 'petra' && !e.dead) || (W.F && W.F.coreView);
     const near = core ? Math.max(0, 1 - Math.hypot(core.x - P.x, core.z - P.z) / 12) : 0;

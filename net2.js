@@ -39,7 +39,7 @@
 
   // ---------- 生出來 ----------
   const jsonOk = v => { try { return v != null && JSON.stringify(v).length < 2000; } catch (e) { return false; } };
-  const info = e => ({ i: e.nid, id: e.id, x: r1(e.x), z: r1(e.z), y: r1(e.yaw), r: e.room == null ? -1 : e.room, ro: e.role || 0, hu: e.netHuman || 0, hp: Math.round(e.hp), hm: Math.round(e.hpMax), dm: r1(e.dmg), sp: r1(e.speed), ld: e.leader ? 1 : 0, dr: e.dormant ? 1 : 0, ag: e.aggro ? 1 : 0, nm: (e.def && e.def.name) || '' });
+  const info = e => ({ i: e.nid, id: e.id, x: r1(e.x), z: r1(e.z), y: r1(e.yaw), r: e.room == null ? -1 : e.room, ro: e.role || 0, hu: e.netHuman || 0, hp: Math.round(e.hp), hm: Math.round(e.hpMax), dm: r1(e.dmg), sp: r1(e.speed), ld: e.leader ? 1 : 0, dr: e.dormant ? 1 : 0, ag: e.aggro ? 1 : 0, nm: (e.def && e.def.name) || '', is: e.is || 0 });   // is：遺跡生物的 IS（ruinis.js，房主決定）
   const detach = e => { const w = W(), i = w.enemies.indexOf(e); if (i >= 0) w.enemies.splice(i, 1); if (e.m && e.m.g && e.m.g.parent) e.m.g.parent.remove(e.m.g); };
   const se0 = R.spawnEnemy;
   R.spawnEnemy = (id, x, z, room, o) => {
@@ -54,7 +54,7 @@
     return e;
   };
   const setFrom = (e, s, first) => {
-    e.hp = Math.max(1, s.hp); e.hpMax = s.hm; e.dmg = s.dm; e.speed = s.sp; e.room = s.r; e.leader = !!s.ld; e.dormant = !!s.dr; e.aggro = !!s.ag;
+    e.hp = Math.max(1, s.hp); e.hpMax = s.hm; e.dmg = s.dm; e.speed = s.sp; e.room = s.r; e.leader = !!s.ld; e.dormant = !!s.dr; e.aggro = !!s.ag; if (s.is > 0) e.is = s.is;
     e.tx = s.x; e.tz = s.z; e.tyaw = s.y || 0;   // 已經有的（例如重新連線後要的整層資料）：往房主的位置走
     if (first) { e.x = s.x; e.z = s.z; e.yaw = e.tyaw; if (e.m && e.m.g) e.m.g.position.set(e.x, 0, e.z); }
     if (s.nm && e.def && e.def.name !== s.nm) e.netName = s.nm;

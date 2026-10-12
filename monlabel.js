@@ -27,9 +27,9 @@
   const makeTag = e => {
     const el = document.createElement('div'), d = e.def, rank = rankOf(e), url = R.beastIconURL(e.id, 2);
     el.className = 'mtag ' + rank;
-    el.innerHTML = (url ? '<img src="' + url + '" alt="">' : '<span class="mg">' + (d.human ? '人' : esc(d.name.slice(-1))) + '</span>') + '<b>' + (rank === 'elite' ? '◆' : '') + esc(d.name.split('・').pop()) + '</b><i><em></em></i>';
+    el.innerHTML = (url ? '<img src="' + url + '" alt="">' : '<span class="mg">' + (d.human ? '人' : esc(d.name.slice(-1))) + '</span>') + '<b>' + (rank === 'elite' ? '◆' : '') + esc(d.name.split('・').pop()) + '</b><u class="mis"></u><i><em></em></i>';
     ensureLayer().appendChild(el);
-    const t = { el, bar: el.querySelector('em'), top: null, last: -1 }; tags.set(e, t); return t;
+    const t = { el, bar: el.querySelector('em'), isEl: el.querySelector('.mis'), isV: -1, top: null, last: -1 }; tags.set(e, t); return t;
   };
   const topOf = e => {
     const s = e.m && e.m.spr;
@@ -52,6 +52,7 @@
       if (v.z > 1 || v.x < -1.1 || v.x > 1.1 || v.y < -1.1 || v.y > 1.2 || (R.fogHides && R.fogHides(e.x, e.z))) { t.el.style.display = 'none'; live.add(e); continue; }   // 濃霧裡的不顯示（fogarc.js）
       t.el.style.display = '';
       t.el.style.transform = 'translate(' + Math.round((v.x + 1) / 2 * w) + 'px,' + Math.round((1 - v.y) / 2 * h) + 'px) translate(-50%,-100%)';
+      if (t.isEl && (e.is || 0) !== t.isV) { t.isV = e.is || 0; t.isEl.textContent = t.isV ? '[IS：' + t.isV + ']' : ''; }   // 遺跡整改（ruinis.js）
       const pc = Math.max(0, Math.min(1, e.hp / e.hpMax)); if (pc !== t.last) { t.last = pc; t.bar.style.width = (pc * 100).toFixed(1) + '%'; }
       live.add(e);
     }
