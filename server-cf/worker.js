@@ -22,7 +22,8 @@ const clean = (v, n) => String(v == null ? '' : v).slice(0, n);
 // 2026-10-12 自製序號：TFL-XXXX-XXXX-XXXX = 12 碼 base32 = 60 bits = 種類 4 + 數量 12 + 流水號 12 + HMAC-SHA256 前 32 bits。
 // 金鑰只存在 wrangler secret（SERIAL_KEY）和作者本機的產生器；repo 裡沒有。
 const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
-const SER_TYPES = ['gold', 'hp', 'mp', 'potions', 'books', 'tickets', 'core', 'pack', 'raceSelect', 'unban', 'admin'];
+const SER_TYPES = ['gold', 'hp', 'mp', 'potions', 'books', 'tickets', 'core', 'pack', 'raceSelect', 'unban', 'admin', 'gear', 'achieve'];
+const SER_KINDS = ['weapon', 'armor', 'acc', 'charm', 'legend', 'lord', 'set'];   // gear：種類 3 + 稀有度 3 + 編號 10 + 流水號 8
 const SER_PACKS = ['leather', 'frame', 'guild', 'mage'], SER_TIERS = ['SR', 'SSR', 'UR'];
 async function redeemCode(code, env) {
   const H = { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
@@ -38,6 +39,7 @@ async function redeemCode(code, env) {
   const type = SER_TYPES[payload >>> 24], n = (payload >>> 12) & 4095;
   if (!type) return out({ ok: 0 });
   const r = { ok: 1, type, n };
+  if (type === 'gear') { const g = (payload >>> 8) & 0xffff; r.kind = SER_KINDS[g >>> 13]; r.rar = (g >>> 10) & 7; r.idx = g & 1023; delete r.n; if (!r.kind) return out({ ok: 0 }); }
   if (type === 'pack') r.pack = SER_PACKS[n] || 'leather';
   if (type === 'raceSelect') r.tier = SER_TIERS[n] || 'SR';
   return out(r);

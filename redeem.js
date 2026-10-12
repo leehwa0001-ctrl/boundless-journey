@@ -62,9 +62,37 @@
       case 'pack': return { pack: r.pack, name: (R.PACKS && R.PACKS[r.pack] ? R.PACKS[r.pack].name : '背包'), msg: '背包送到了。到公會的商店選要背哪一個。' };
       case 'raceSelect': return { raceSelect: r.tier, name: TIER_NAME[r.tier] + ' 種族自選券', msg: TIER_NAME[r.tier] + ' 種族自選券一張放進背包了。到公會的登記處挑一族。' };
       case 'unban': return { unban: 1, name: '清空停權', msg: '勇者證的停權解除了，公會又會派委託給你。' };
+      case 'gear': { const it = makeGear(r); return it ? { item: it, name: it.name || '裝備', msg: (it.name || '裝備') + '放進倉庫了。' } : null; }
+      case 'achieve': return { achieve: 1, name: '成就全開', msg: '全部稱號、圖鑑、領主紀錄、觀光章、動物園說明牌都解鎖了。' };
       case 'admin': return { admin: 1, name: '管理員號', msg: '這個存檔變成管理員號了。' };
     }
     return null;
+  };
+  // 裝備：編號照遊戲裡清單的順序（清單只會往後加）
+  const GEAR_LIST = kind => kind === 'weapon' || kind === 'armor' ? Object.keys(kind === 'weapon' ? R.WEAPONS : R.ARMOR)
+    : kind === 'acc' ? Object.keys(R.ACC || {}) : kind === 'charm' ? ['charm'].concat(Object.keys(R.CHARM2 || {}))
+    : kind === 'legend' ? (R.LEGENDS || []).map(l => l.id) : kind === 'lord' ? Object.keys(R.LORD_GEAR || {}) : Object.keys(R.SETS || {});
+  const makeGear = r => {
+    const id = GEAR_LIST(r.kind)[r.idx]; if (id == null) return null;
+    const rarity = Math.min(r.rar, (R.RARITY || []).length - 1), ilvl = R.LV_CAP || 100, mk = o => R.makeItem(Object.assign({ ilvl, rarity, identified: true }, o));
+    try {
+      if (r.kind === 'legend') { const l = R.LEGENDS.find(x => x.id === id), it = mk({ kind: 'weapon', base: l.base }); it.legend = id; it.name = l.name; return it; }
+      if (r.kind === 'lord') { const g = R.LORD_GEAR[id], it = mk({ kind: 'armor', base: g[1] }); it.lord = id; return it; }
+      if (r.kind === 'set') { const ab = Object.keys(R.ARMOR), it = mk({ kind: 'armor', base: ab[r.idx % ab.length] }); it.set = id; return it; }
+      return mk({ kind: r.kind, base: id });
+    } catch (e) { return null; }
+  };
+  // 成就全開：稱號、圖鑑、領主紀錄、觀光章、動物園（不給錢和裝備，那些是管理員號）
+  R.unlockAchievements = () => {
+    const s = R.S, d = (s.day || 0) + 1;
+    s.pact = s.pact || { sel: {}, best: {}, got: {}, title: null }; s.pact.got = s.pact.got || {};
+    (R.TITLES || []).forEach(t => { s.pact.got[t[0]] = s.pact.got[t[0]] || d; });
+    s.dexKills = s.dexKills || {}; Object.keys(R.ENEMIES || {}).forEach(id => { s.dexKills[id] = Math.max(s.dexKills[id] || 0, 99); });
+    s.mutaSeen = s.mutaSeen || {}; Object.keys(R.LORD_VARIANTS || {}).forEach(id => { s.mutaSeen[id] = 1; });
+    s.lordGot = s.lordGot || {}; Object.keys(R.LORD_GEAR || {}).forEach(id => { s.lordGot[id] = s.lordGot[id] || 1; });
+    s.sights = s.sights || {}; (R.SIGHTS || []).forEach(v => { s.sights[v[0]] = s.sights[v[0]] || d; });
+    s.hosuSights = s.hosuSights || {}; (R.HOSU_SIGHTS || []).forEach(v => { s.hosuSights[v[0]] = s.hosuSights[v[0]] || d; });
+    s.zooSeen = s.zooSeen || {}; Object.keys(R.ENEMIES || {}).forEach(id => { s.zooSeen[id] = 1; });
   };
   const apply = (c, h) => {
     const S = R.S;
@@ -80,6 +108,8 @@
     if (c.raceSelect && R.giveRaceSelect) R.giveRaceSelect(c.raceSelect, c.n || 1);
     if (c.core) { S.mats = S.mats || {}; S.mats.core = (S.mats.core || 0) + c.core; }
     if (c.admin && R.makeAdmin) R.makeAdmin();
+    if (c.item) { S.stash = S.stash || []; S.stash.push(c.item); }
+    if (c.achieve) R.unlockAchievements();
     R.save();
     return null;
   };
