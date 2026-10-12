@@ -221,7 +221,7 @@
     berserker: [M.skull, '#E83A3A'], gladiator: [M.swords, '#FFD27A'], onimusha: [M.oni, '#FF3A3A'], elementalist: [C.star, '#FF8A3A'], hexer: [M.eye, '#B04AE8'], waixiu: [M.shield, '#9AE8FF'],
     bishop: [C.cross, '#FFE8A0'], druid: [M.leaf, '#6FD86A'], shinkan: [M.torii, '#FF5A4A'], kensei: [M.katana, '#BFE0FF'], shadow: [M.kunai, '#8A5AC8'], yoto: [M.katana, '#B060E8'],
     templar: [M.shield, '#E8C04A'], paladin: [M.wings, '#FFE8A0'], dragoon: [M.dragon, '#5AC8FF'], fistsaint: [M.fist, '#FFB86A'], staffmonk: [C.swirl, '#C8A878'], inner: [C.swirl, '#FFD27A'],
-    aria: [C.note, '#FFB8E0'], drummer: [C.note, '#FF8A5A'], serane: [C.note, '#E888C8'], lament: [C.note, '#8A9AE8'], beastlord: [M.paw, '#C8A878'], medium: [M.ghost, '#B8A8E8'], tamer: [M.paw, '#8AC86A'], shikigami: [M.ofuda, '#E8D8A0'],
+    aria: [C.note, '#FFB8E0'], drummer: [C.note, '#FF8A5A'], serane: [C.note, '#E888C8'], beastlord: [M.paw, '#C8A878'], medium: [M.ghost, '#B8A8E8'], tamer: [M.paw, '#8AC86A'], shikigami: [M.ofuda, '#E8D8A0'],
     grandarray: [C.rune, '#7AC8E8'], warder: [M.shield, '#9AD8FF'], eidanora: [C.rune, '#5AB8E8'], runesmith: [C.rune, '#FFB86A'], spellblade: [M.swords, '#FFB86A'], entian: [M.eye, '#9AE8FF'],
     scribe: [M.ofuda, '#E8D8A0'], sealer: [M.ofuda, '#E8C048'], noxa: [C.rune, '#C8A85A'] };
   const motif = (adv, x, z, size) => {

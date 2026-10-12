@@ -43,7 +43,7 @@
 //   增益二分音符的護盾自己一格（half），下一段演奏不會把它換掉；兩段演奏的二分護盾還是不疊（新的換掉舊的）。
 //   技能傷害的魔力倍率改成 (200＋最大魔力)÷300（原本 最大魔力÷100）。
 //   戰鼓手：每次演奏加一小節鼓（4/4、八分；大鼓 3、7，小鼓 1、2、5、6，踩鈸每個八分，最後一拍過門；樂譜延長 6 拍：大鼓 3、7、11，小鼓 1、2、5、6、9、10）。
-//   悲嘆詩人（新轉職）：樂譜、和弦都是小調（C→Cm、Cmaj7→Cm7、Fmaj9→Fm9；Am、Dm11 不變），最後一拍再彈一次小調和弦收尾。
+//   （2026-10-12 作者：「悲嘆詩人」是吟遊詩人的筆誤，沒有這個轉職）吟遊詩人本身：樂譜、和弦都是小調（C→Cm、Cmaj7→Cm7、Fmaj9→Fm9；Am、Dm11 不變），最後一拍再彈一次小調和弦收尾。
 //   奏域師：開頭的和弦用管風琴。
 // 放在最後面（main.js 前面）：包在 R.attack、R.castSlot、R.useSkill、R.fire、R.updateShots、R.hurtEnemy、R.calcPlayer、R.step、R.hudTick 最外面。
 (function (R) {
@@ -81,7 +81,7 @@
   const pctOf = P => 10 + L40(P) / 2;
   const hasteOf = P => 40 + L40(P) * 1.5;
   const SV = () => { const s = R.S || {}; s.bardScore = s.bardScore || { chord: 'maj', notes: null }; return s.bardScore; };
-  // 悲嘆詩人（2026-10-12 作者）：大調的和弦換成小調（根音不變，大三度、大六度、大七度各降半音）；本來就是小調的（Am、Dm11）不變
+  // 吟遊詩人（2026-10-12 作者）：大調的和弦換成小調（根音不變，大三度、大六度、大七度各降半音）；本來就是小調的（Am、Dm11）不變
   const MINOR = { C: 'Cm', Cmaj7: 'Cm7', Fmaj9: 'Fm9' }, ROOT = { C: 0, Cmaj7: 0, Fmaj9: 5 };
   const minorize = (m, root) => { const pc = (((m - root) % 12) + 12) % 12; return pc === 4 || pc === 9 || pc === 11 ? m - 1 : m; };
   const LAM = {};
@@ -90,7 +90,7 @@
     const r = ROOT[c.sym], sc = [...new Set((c.sc || CMAJ_SC).map(p => ((minorize(p + 12, r) % 12) + 12) % 12))].sort((a, b) => a - b);
     return (LAM[c.id] = Object.assign({}, c, { sym: MINOR[c.sym], tones: c.tones.map(m => minorize(m, r)), sc, conc: (c.conc || [60, 62, 64, 65, 64, 62]).map(m => minorize(m, r)) }));
   };
-  const chordOf = P => { let c = CH.find(x => x.id === SV().chord); c = c && (P.lv || 1) >= c.lv ? c : CH[0]; return P && P.adv === 'lament' ? lamentOf(c) : c; };
+  const chordOf = P => { let c = CH.find(x => x.id === SV().chord); c = c && (P.lv || 1) >= c.lv ? c : CH[0]; return lamentOf(c); };
   const chordDesc = (c, P) => (c.id === 'maj' ? '傷害 +' + pctOf(P) + '%' : c.id === 'min' ? '恢復與護盾 +' + pctOf(P) + '%' : c.id === 'sev' ? '範圍 +' + pctOf(P) + '%' : c.id === 'nin' ? '技能急速 +' + hasteOf(P) : '每次演奏回復 5% 最大魔力');
   const areaK = P => (chordOf(P).id === 'sev' ? 1 + pctOf(P) / 100 : 1);   // 2026-10-11：大三和弦與七和弦交換
   const healK = P => (chordOf(P).id === 'min' ? 1 + pctOf(P) / 100 : 1);
@@ -187,12 +187,12 @@
     const mid = notes.map((n, i) => vary(midiOf(n, i, c), c, dv));
     ST.perf = Object.assign({ t: 0, dur, notes: notes.slice(), times, mid, shown: 0, pid: ++ST.pid }, what);
     // 2026-10-12 作者：只在開頭彈一次主和弦（照選的和弦），延音整個小節；音量比原本每拍的和弦大 10%。奏域師用管風琴。
-    // 悲嘆詩人：最後一拍再彈一次小調和弦收尾。戰鼓手：加一小節鼓。
+    // 最後一拍再彈一次小調和弦收尾。戰鼓手：加一小節鼓。
     const len = i => Math.max(0.08, notes[i].d * bt * 0.9), bar = cap * bt;
     melody(P, notes.map((n, i) => [mid[i], times[i], len(i)]), 0.085 * 1.05);
     const tonic = CHD[c.sym] || CHD.C, chV = n => 0.085 * 0.9 * 1.1 * Math.sqrt(3 / n), chI = P.adv === 'serane' ? 'organ' : inst(P);
     try { R.playMelody && R.playMelody(chI, tonic.map(m => [m, 0, bar]), chV(tonic.length)); } catch (e) { }
-    if (P.adv === 'lament' && cap > 1) { const end = CHD[c.sym] || CHD.Cm; try { R.playMelody && R.playMelody(inst(P), end.map(m => [m, (cap - 1) * bt, bt]), chV(end.length)); } catch (e) { } }
+    if (cap > 1) { const end = CHD[c.sym] || CHD.Cm; try { R.playMelody && R.playMelody(inst(P), end.map(m => [m, (cap - 1) * bt, bt]), chV(end.length)); } catch (e) { } }
     if (P.adv === 'drummer') drums(cap, bt);
     const cc = c.conc || CONC, conc = []; for (let h = 0; h < cap * 2; h++) conc.push([vary(cc[h % cc.length], c, dv), h * bt / 2, bt / 2 * 0.9]);
     melody(P, conc, 0.0425 * 0.9);
@@ -467,7 +467,9 @@
     if (src) { let h = ST.hl.get(src); if (!h) ST.hl.set(src, h = { t: now(), seen: new WeakSet() }); if (h.seen.has(e)) raw *= 0.2; else h.seen.add(e); } } return he0(e, raw, o); };
   // 九和弦：技能急速（重新算數值的時候補上）
   const cp0 = R.calcPlayer;
-  R.calcPlayer = cls => { const P = cp0(cls); try { P._bdHaste = 0; if (IS(P)) syncHaste(P); } catch (e) { } return P; };
+  // 2026-10-12：沒有「悲嘆詩人」這個轉職了；存檔裡轉成它的吟遊詩人改回未轉職，退還那顆魔力核心
+  const unLament = () => { try { const S = R.S, st = S && S.classes && S.classes.bard; if (st && st.adv === 'lament') { st.adv = null; S.mats = S.mats || {}; S.mats.core = (S.mats.core || 0) + 1; } } catch (e) { } };
+  R.calcPlayer = cls => { unLament(); const P = cp0(cls); try { P._bdHaste = 0; if (IS(P)) syncHaste(P); } catch (e) { } return P; };
 
   // ---------- 按鍵：點一下換和弦、按住寫樂譜 ----------
   const inGame = () => { const run = $('run'); return run && !run.hidden && !(R.sheetOpen && R.sheetOpen()) && !W().paused; };
@@ -515,7 +517,7 @@
     name: '和弦', col: '#FFB8E0',   // 職業條的顏色跟著和弦（gauge 回傳的 col）
     help: P => '和弦與樂譜：X 點一下換和弦／大小調（C 大三＝傷害、Am 小三＝恢復與護盾、20 級 Cmaj7 七和弦＝範圍、30 級 Fmaj9 九和弦＝技能急速、40 級 Dm11 十一和弦＝演奏回魔）；技能數值照最大魔力（治療、護盾＝最大魔力的 %，強化的 +% 每 100 點最大魔力算一次，技能傷害 ×（200＋最大魔力）÷ 300）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
       + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速每 +1% 演奏快 0.5%；演奏中按的普攻或技能會記一個、演奏完馬上接著放（技能優先）；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。護盾每段演奏刷新、不疊。'
-      + ({ aria: '詠嘆詩人：增益音符效果 ×1.5。', drummer: '戰鼓手：攻擊音符效果 ×1.5；每次演奏打一小節鼓。', serane: '奏域師：八分音符的攻速維持兩倍久；開頭的和弦用管風琴。', lament: '悲嘆詩人：和弦、樂譜都是小調，最後一拍用小調和弦收尾。' }[P && P.adv] || ''),
+      + ({ aria: '詠嘆詩人：增益音符效果 ×1.5。', drummer: '戰鼓手：攻擊音符效果 ×1.5；每次演奏打一小節鼓。', serane: '奏域師：八分音符的攻速維持兩倍久；開頭的和弦用管風琴。' }[P && P.adv] || ''),
     step() { }, onCast() { }, play() { },
     act() { },
     gauge(P) { const c = chordOf(P); return { name: '和弦 ' + c.sym, col: c.col, text: c.name + '・' + chordDesc(c, P), sub: status(P), x: ST.rec ? '按住寫完' : '換和弦／按住寫樂譜' }; }

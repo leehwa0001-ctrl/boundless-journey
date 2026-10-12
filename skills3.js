@@ -57,11 +57,6 @@
     ['dm_war', '戰陣鼓', 'bard', 18, 16, 14, 'buff', { t: 10, dmg: 1.25, crit: 0.1, color: '#FF9A6A' }, '戰陣鼓點：10 秒內傷害 +25%、暴擊率 +10%。', 'drummer'],
     ['dm_quake', '震地鼓', 'bard', 21, 10, 16, 'wave', { n: 7, step: 1.8, r: 1.8, k: 1.1, kb: 2, gap: 60, fx: 'ring', color: '#FF9A6A' }, '鼓聲沿著地面一路震過去。', 'drummer'],
     ['dm_finale', '終章大鼓', 'bard', 24, 18, 26, 'nova', { r: 5, k: 2.6, kb: 4, stun: 1, color: '#FF5A3A' }, '用盡全力的最後一擊：周圍的敵人重傷、被震飛暈眩。', 'drummer'],
-    // 悲嘆詩人（2026-10-12）
-    ['lm_weep', '淚雨', 'bard', 11, 14, 18, 'storm', { t: 5, gap: 0.5, r: 7, hitR: 1.5, k: 0.7, fx: 'spark', color: '#8AA8FF' }, '哀傷化成淚雨，一滴一滴落在附近的敵人身上（5 秒）。', 'lament'],
-    ['lm_elegy', '悼詞', 'bard', 18, 18, 16, 'buff', { t: 10, dmg: 1.2, crit: 0.08, color: '#8A9AE8' }, '為倒下的人唸悼詞：10 秒內傷害 +20%、暴擊率 +8%。', 'lament'],
-    ['lm_knell', '喪鐘', 'bard', 21, 14, 20, 'at', { range: 10, r: 3.5, k: 1.6, delay: 300, fx: 'ring', color: '#6A7AC8' }, '在準心處敲響喪鐘：延遲一下後重擊一圈敵人。', 'lament'],
-    ['lm_requiem', '安魂曲', 'bard', 24, 22, 26, 'nova', { r: 5.5, k: 2.2, kb: 2, stun: 0.8, color: '#5A6AC8' }, '整首安魂曲的最後一個和弦：周圍的敵人重傷、被震開、暈眩。', 'lament'],
     // 奏域師（瑟蘭派）：諧鳴的四種加成
     ['se_suppress', '鎮頻', 'bard', 11, 14, 16, 'mark', { range: 11, r: 4, t: 6, slow: 3, stun: 0.8, k: 0.3 }, '在奏域裡改寫對手法術的「m」頻，讓它不穩定：準心附近的敵人停頓、變慢，6 秒內受到的傷害 +30%。', 'serane'],
     ['se_amp', '共振', 'bard', 18, 18, 14, 'buff', { t: 8, dmg: 1.3, color: '#FFB8E0' }, '改寫自己法術的「k」「f」頻：施法前花得少、施法後放得大——8 秒內傷害 +30%。', 'serane'],
