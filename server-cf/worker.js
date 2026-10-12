@@ -45,10 +45,15 @@ async function redeemCode(code, env) {
   return out(r);
 }
 
+import { MjTable } from './mjtable.js';
+export { MjTable };
+
 export default {
   async fetch(req, env) {
     const u = new URL(req.url);
     if (u.pathname === '/redeem') return redeemCode(u.searchParams.get('c'), env);
+    // 雀莊的線上牌桌：/mj/桌號（一桌一個 Durable Object，和遺跡的大廳分開，互不影響）
+    if (u.pathname.startsWith('/mj/')) { const code = u.pathname.slice(4).toUpperCase().replace(/[^0-9A-Z]/g, '').slice(0, 12); if (!code) return new Response('bad', { status: 400 }); return env.MJ.get(env.MJ.idFromName(code)).fetch(new Request('https://mj/mj/' + code, req)); }
     if ((req.headers.get('Upgrade') || '').toLowerCase() !== 'websocket') return new Response('ok\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*' } });
     return env.LOBBY.get(env.LOBBY.idFromName('lobby')).fetch(req);
   }

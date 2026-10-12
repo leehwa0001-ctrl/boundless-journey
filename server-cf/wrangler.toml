@@ -8,7 +8,16 @@ compatibility_date = "2026-09-01"
 name = "LOBBY"
 class_name = "Lobby"
 
+[[durable_objects.bindings]]
+name = "MJ"
+class_name = "MjTable"
+
 # 免費方案只能用 SQLite 版的 Durable Objects
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["Lobby"]
+
+# 2026-10-13 雀莊的線上牌桌
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["MjTable"]
