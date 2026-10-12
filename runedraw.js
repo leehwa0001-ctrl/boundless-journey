@@ -45,8 +45,10 @@
       if (t === 'loop') E.auras.push({ k, pc });
     });
     const ar = 1 + E.skArea + E.loopArea; E.auras.forEach(a => { a.r = a.pc * ar; });
-    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind);
-    E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind)));
+    // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋閉環的攻擊範圍）
+    E.rangeUp = Math.max(0, ((P && P.rangeMult) || 1) - 1 + E.loopArea); E.windMul = 1 + 0.5 * E.rangeUp;
+    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul;
+    E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind))) * E.windMul;
     return E;
   };
   let EC = null, ecT = -1; const E = () => { const t = R.coreTime(); if (!EC || t !== ecT) { EC = eff(); ecT = t; } return EC; };
@@ -54,13 +56,14 @@
   const auraOf = (k) => E().auras.find(a => a.k === k);
 
   // ---------- 地面法陣（自己的 mesh） ----------
-  const ground = (x, z, r, col, op) => {
+  const ground = (x, z, r, col, op, plain) => {
     const T = window.THREE, w = W(); if (!T || !w || !w.scene) return { set() { }, rm() { }, move() { } };
     const g = new T.Group(), c = new T.Color(col);
     const m1 = new T.MeshBasicMaterial({ color: c, transparent: true, opacity: op * 0.35, depthWrite: false, side: T.DoubleSide });
     const m2 = new T.MeshBasicMaterial({ color: c, transparent: true, opacity: op, depthWrite: false, side: T.DoubleSide });
     const m3 = new T.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, side: T.DoubleSide });
     const d = new T.Mesh(new T.CircleGeometry(1, 40), m1), ring = new T.Mesh(new T.RingGeometry(0.9, 1, 48), m2), inner = new T.Mesh(new T.RingGeometry(0.55, 0.62, 6), m2), glow = new T.Mesh(new T.RingGeometry(0.85, 1, 48), m3);
+    if (plain) inner.visible = false;
     [d, ring, inner, glow].forEach(m => { m.rotation.x = -Math.PI / 2; g.add(m); });
     g.scale.set(r, 1, r); g.position.set(x, 0.07, z); w.scene.add(g);
     return {
@@ -77,7 +80,9 @@
   const isSelf = L => { if (!L) return true; const p = L.p || {}; if (p.self) return true; if (SELF_T[L.type]) return true; if (L.type === 'combo') return !(p.parts || []).some(x => !SELF_T[x[0]] && !(x[1] && x[1].self)); return false; };
   const aimPt = (P, max) => { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA) * 6, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA) * 6, d = Math.hypot(ax - P.x, az - P.z), k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
   const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea); };
-  const skRange = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return q.range || q.range0 || 10; };
+  const skRange = () => { const P = W() && W().P; return (P && P.ws && P.ws.range) || 12; };   // 所有技能：圓心在普攻射程內都能放
+  const BODY_T = { guard: 1, parry: 1, orbit: 1, storm: 1 };   // 這幾型本來就是貼身的，只能在腳下
+  const bodyOnly = L => { if (!L) return true; if (BODY_T[L.type]) return true; if (L.type === 'combo') return (L.p && L.p.parts || []).some(x => BODY_T[x[0]]); return false; };
   const rankOf = id => (R.skillRank ? R.skillRank(id) || 0 : 0);
   const coarse = () => { try { return matchMedia('(pointer: coarse)').matches && !matchMedia('(pointer: fine)').matches; } catch (e) { return false; } };
   const quick = id => { if (coarse()) return true; const s = S(); return rankOf(id) >= 1 && !!(s && s.rmQuick && s.rmQuick[id]); };   // 手機沒有滑鼠可以確認：一律快速施法
@@ -93,8 +98,11 @@
     const P = W().P; if (!P) return;
     const ax = P.aimX, az = P.aimZ, aa = P.aimA;
     if (!self) { P.aimX = x; P.aimZ = z; P.aimA = Math.atan2(x - P.x, z - P.z); }
+    // 增益／回復放在遠處：施放那一瞬間以法陣中心為準（範圍內的隊友吃到效果）
+    const px = P.x, pz = P.z, remote = self && x != null && Math.hypot(x - P.x, z - P.z) > 0.5;
+    if (remote) { P.x = x; P.z = z; }
     const c0 = cdOf(P, i), mp0 = P.mp, id = idOf(P, i);
-    try { inCast = true; if (i === 0) us0(); else cs0(i); } finally { inCast = false; if (!self) { P.aimX = ax; P.aimZ = az; P.aimA = aa; } }
+    try { inCast = true; if (i === 0) us0(); else cs0(i); } finally { inCast = false; if (remote) { P.x = px; P.z = pz; } if (!self) { P.aimX = ax; P.aimZ = az; P.aimA = aa; } }
     const c1 = cdOf(P, i);
     if (c1 > c0 + 0.01) {
       const e = E(), sk = R.SKILLS[id], h = Math.max(0, P.haste || 0), add = e.lineHaste + e.loopHaste;
@@ -106,7 +114,8 @@
   let inCast = false;
   const startCharge = (i, id, x, z, self) => {
     const P = W().P, L = libOf(id), col = R.SKILL_LIB && L && L.p && L.p.color || '#7AC8E8';
-    const r = skR(L), m = pend && pend.i === i ? pend.m : ground(self ? P.x : x, self ? P.z : z, r, col, 0.5);
+    const fol = self && Math.hypot(x - P.x, z - P.z) < 0.5;   // 放在腳下的才跟著走
+    const r = skR(L), m = pend && pend.i === i ? pend.m : ground(fol ? P.x : x, fol ? P.z : z, r, col, 0.5, true);
     pend = null;
     const dur = E().charge; let t = 0;
     chg = { i, m };
@@ -116,9 +125,9 @@
       if (W().paused) return true;
       const P2 = W().P; if (!P2 || P2.dead) { m.rm(); chg = null; return false; }
       t += dt; const k = Math.min(1, t / dur);
-      if (self) m.move(P2.x, P2.z);
-      m.set(0.5 + 0.5 * k, k);
-      if (t >= dur) { m.rm(); chg = null; release(i, x, z, self); R.fx && R.fx('pillar', self ? P2.x : x, 0, self ? P2.z : z, { color: col }); return false; }
+      if (fol) { m.move(P2.x, P2.z); x = P2.x; z = P2.z; }
+      m.set(0.5, 0);   // 預備中：原本技能特效的 50% 透明
+      if (t >= dur) { m.rm(); chg = null; release(i, x, z, self); return false; }
       return true;
     });
   };
@@ -139,21 +148,22 @@
     if (!ready(P, i, id)) return;
     clearPend();
     const L = libOf(id), self = isSelf(L);
-    if (quick(id)) { const [x, z] = self ? [P.x, P.z] : aimPt(P, skRange(L)); startCharge(i, id, x, z, self); return; }
-    const col = (L.p && L.p.color) || '#7AC8E8', [x, z] = self ? [P.x, P.z] : aimPt(P, skRange(L));
-    pend = { i, id, self, L, m: ground(x, z, skR(L), col, 0.5) };
+    const body = self && bodyOnly(L), feet = body || (self && quick(id));
+    if (quick(id)) { const [x, z] = feet ? [P.x, P.z] : aimPt(P, skRange(L)); startCharge(i, id, x, z, self); return; }
+    const col = (L.p && L.p.color) || '#7AC8E8', [x, z] = body ? [P.x, P.z] : aimPt(P, skRange(L));
+    pend = { i, id, self, body, L, m: ground(x, z, skR(L), col, 0.5, true) };
     tick(dt => {
       if (dt < 0) { clearPend(); return false; }
       if (!pend || pend.id !== id || pend.i !== i) return false;
       const P2 = W().P; if (!P2 || P2.dead) { clearPend(); return false; }
-      const [x2, z2] = pend.self ? [P2.x, P2.z] : aimPt(P2, skRange(L)); pend.m.move(x2, z2, skR(L)); pend.m.set(0.5);
+      const [x2, z2] = pend.body ? [P2.x, P2.z] : aimPt(P2, skRange(L)); pend.m.move(x2, z2, skR(L)); pend.m.set(0.5);
       return true;
     });
   };
   const confirm = () => {
     const P = W().P; if (!pend || !P) return;
     const p = pend; if (!ready(P, p.i, p.id)) { clearPend(); return; }
-    const [x, z] = p.self ? [P.x, P.z] : aimPt(P, skRange(p.L));
+    const [x, z] = p.body ? [P.x, P.z] : aimPt(P, skRange(p.L));
     startCharge(p.i, p.id, x, z, p.self);
   };
   R.useSkill = (...a) => { const P = W() && W().P; if (!isRM(P) || inCast) return R._rmUs0 ? R._rmUs0(...a) : us0(...a); return press(0); };
@@ -184,7 +194,7 @@
     if ((P.atkCd || 0) > cd0 + 0.001 && e.atkSpd > 0) P.atkCd /= 1 + e.atkSpd;
     if (e.naMp > 0 && P.mp < mp0) P.mp += (mp0 - P.mp) * e.naMp;
     const [x, z] = aimPt(P, (P.ws.range || 12)), r = 2 * (1 + e.naArea + e.loopArea), dmg = cap0.dmg * (1 + e.naDmg), dl = e.naDelay;
-    const m = ground(x, z, r, '#7AC8E8', 0.45); let t = 0;
+    const m = naRune(x, z, r); let t = 0;
     tick(dt => {
       if (dt < 0) { m.rm(); return false; }
       if (W().paused) return true;
@@ -198,6 +208,12 @@
       if (e2.coreCd) { const v = 1 / (2 + e2.atkSpd); P2.skillCd = Math.max(0, (P2.skillCd || 0) - v); if (P2.skCd) P2.skCd = P2.skCd.map(c => Math.max(0, (c || 0) - v)); }
       return false;
     });
+  };
+  // 普攻的地面法陣：畫目前的陣紋（跟閉環腳下的一樣）
+  const naRune = (x, z, r) => {
+    const rm = runeMesh(r); if (!rm) return { set() { }, rm() { } };
+    rm.g.position.set(x, 0.07, z);
+    return { set(o, k) { rm.mat.opacity = Math.min(1, o); rm.g.rotation.y += 0.03; }, rm: rm.rm };
   };
   const shieldAdd = (u, amt, max) => { if (!(amt > 0)) return; const cur = u.shield || 0; u.shield = cur >= max ? cur : Math.min(max, cur + amt); if (u === W().P) { u.buff = u.buff || {}; u.buff.shieldT = Math.max(u.buff.shieldT || 0, 6); } else u.shieldT = Math.max(u.shieldT || 0, 6); };
 
@@ -246,9 +262,11 @@
     ctx.strokeStyle = o.frame || 'rgba(160,200,230,.35)'; ctx.lineWidth = o.fw || 1.5; ctx.beginPath();
     for (let i = 0; i < 6; i++) { const [x, y] = npos(i, cx, cy, rad); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.closePath(); ctx.stroke();
     L.forEach(sh => {
-      const c = NODES[sh.n[0]].c; ctx.strokeStyle = c === '#1A1A1A' ? '#5A5A6A' : c; ctx.lineWidth = o.lw || 4;
-      if (sh.t === 'core') { const [x, y] = npos(sh.n[0], cx, cy, rad); ctx.beginPath(); ctx.arc(x, y, o.cr || 14, 0, 7); ctx.stroke(); return; }
-      ctx.beginPath(); sh.n.forEach((i, j) => { const [x, y] = npos(i, cx, cy, rad); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); if (sh.t === 'loop') { ctx.closePath(); ctx.fillStyle = (c === '#1A1A1A' ? '#5A5A6A' : c) + '33'; ctx.fill(); } ctx.stroke();
+      const c = NODES[sh.n[0]].c, cc = c === '#1A1A1A' ? '#8A8AA0' : c;
+      const path = () => { ctx.beginPath(); if (sh.t === 'core') { const [x, y] = npos(sh.n[0], cx, cy, rad); ctx.arc(x, y, o.cr || 14, 0, 7); return; } sh.n.forEach((i, j) => { const [x, y] = npos(i, cx, cy, rad); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); if (sh.t === 'loop') ctx.closePath(); };
+      if (o.glow) { path(); ctx.strokeStyle = 'rgba(0,0,0,.55)'; ctx.lineWidth = (o.lw || 4) + 4; ctx.stroke(); }   // 深色描邊，地面上也看得清楚
+      path(); if (sh.t === 'loop') { ctx.fillStyle = cc + '33'; ctx.fill(); }
+      ctx.strokeStyle = cc; ctx.lineWidth = sh.t === 'core' ? Math.max(2, (o.lw || 4) * 0.6) : (o.lw || 4); ctx.stroke();
     });
     if (o.nodes !== false) NODES.forEach((N, i) => { const [x, y] = npos(i, cx, cy, rad); ctx.fillStyle = N.c; ctx.strokeStyle = '#DDE'; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, o.nr || 6, 0, 7); ctx.fill(); ctx.stroke(); });
   };
@@ -256,10 +274,10 @@
     const T3 = window.THREE, w = W(); if (!T3 || !w.scene) return null;
     const cv = document.createElement('canvas'); cv.width = cv.height = 256; const ctx = cv.getContext('2d');
     ctx.strokeStyle = 'rgba(122,200,232,.9)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(128, 128, 124, 0, 7); ctx.stroke();
-    drawRune(ctx, 128, 128, 100, shapes(), { frame: 'rgba(122,200,232,.8)', fw: 3, lw: 7, cr: 18, nodes: false });
+    drawRune(ctx, 128, 128, 100, shapes(), { frame: 'rgba(122,200,232,.8)', fw: 3, lw: 6, cr: 8, nodes: false, glow: 1 });
     const tex = new T3.CanvasTexture(cv), mat = new T3.MeshBasicMaterial({ map: tex, transparent: true, opacity: 0.45, depthWrite: false, side: T3.DoubleSide });
     const m = new T3.Mesh(new T3.PlaneGeometry(2 * r, 2 * r), mat); m.rotation.x = -Math.PI / 2; const g = new T3.Group(); g.add(m); w.scene.add(g);
-    return { g, rm() { try { w.scene.remove(g); m.geometry.dispose(); mat.dispose(); tex.dispose(); } catch (e) { } } };
+    return { g, mat, rm() { try { w.scene.remove(g); m.geometry.dispose(); mat.dispose(); tex.dispose(); } catch (e) { } } };
   };
 
   // ---------- 繪製畫面 ----------
@@ -307,7 +325,7 @@
     ov.querySelector('#rd-side').innerHTML = '<h3>陣紋</h3><div class="sm">節點 ' + used(L) + '／' + cap(P) + '（每 5 級 +1，最多 7）。點節點＝核心（普攻）；按住左鍵拖過節點＝線段（技能）；拖回起點＝閉環（光環，起點夾角 ≥ 60°）。右鍵刪掉圖形。效果看起點的顏色。</div>'
       + (e.lines.length ? e.lines.map(l => '<div class="l"><i style="background:' + l[0] + '"></i><span><b>' + l[1] + '</b>：' + l[2] + '</span></div>').join('') : '<div class="sm">還沒畫任何陣紋。</div>')
       + (e.auras.length ? '<div class="sm">光環半徑：' + e.auras.map(a => a.k + ' ' + (Math.round(a.r * 10) / 10) + 'm').join('、') + '</div>' : '')
-      + '<h3 style="margin-top:6px">施法方式</h3><div class="sm">技能熟練度 ★1 起可選。快速施法：按下就蓄力（攻擊在滑鼠處、增益在腳下）；手動：先預覽、左鍵確認。蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒。</div>'
+      + '<h3 style="margin-top:6px">施法方式</h3><div class="sm">技能熟練度 ★1 起可選。快速施法：按下就蓄力（攻擊在滑鼠處、增益在腳下）；手動：先預覽（技能原本範圍的 50% 透明）、左鍵確認。所有技能（攻擊、增益、回復）的中心都能放在普攻射程內。蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒' + (e.rangeUp > 0 ? '（攻擊範圍 +' + Math.round(e.rangeUp * 100) + '%，前搖 +' + Math.round(e.rangeUp * 50) + '%）' : '') + '。</div><div class="sm">陣紋只會畫在普攻法陣和閉環腳下的光環上：核心是小空心圈，線段和閉環畫成線。每 +1% 攻擊範圍，普攻和技能的蓄陣前搖 +0.5%。</div>'
       + q.map(id => { const ok = rankOf(id) >= 1, on = ok && s.rmQuick[id]; return '<div class="q"><span>' + R.esc((R.SKILLS[id] || {}).name || id) + '</span><span><button data-q="' + id + '" data-v="0" class="' + (on ? '' : 'on') + '"' + (ok ? '' : ' disabled') + '>手動施法</button> <button data-q="' + id + '" data-v="1" class="' + (on ? 'on' : '') + '"' + (ok ? '' : ' disabled title="熟練度 ★1 才能選"') + '>快速施法</button></span></div>'; }).join('')
       + '<div id="rd-btn"><button data-a="clear">全部清掉</button><button data-a="close">完成（X）</button></div>';
   };
@@ -356,7 +374,7 @@
   if (C) {
     C.act = P => { if (chg) return; open(); };
     const help0 = C.help;
-    C.help = P => '陣紋：X 打開繪製畫面，在六邊形上畫核心（普攻）、線段（技能）、閉環（光環）。施法：按技能先預覽、左鍵確認、蓄力 1 秒放出（★1 起可改快速施法）；普攻是地面法陣 0.5 秒後爆開。法陣類技能仍會留下閉環的點。' + (help0 ? '｜' + help0(P).replace(/X 陣眼：[^。]*。/, '') : '');
+    C.help = P => '陣紋：X 打開繪製畫面，在六邊形上畫核心（普攻）、線段（技能）、閉環（光環）。施法：按技能先預覽（原本技能範圍、半透明）、左鍵確認、蓄力 1 秒放出（★1 起可改快速施法）；所有技能的中心都能放在普攻射程內，增益和回復放在哪裡就作用在那個圈裡的隊友。普攻是畫著你陣紋的地面法陣，0.5 秒後爆開。每 +1% 攻擊範圍，普攻和技能前搖 +0.5%。法陣類技能仍會留下閉環的點。' + (help0 ? '｜' + help0(P).replace(/X 陣眼：[^。]*。/, '') : '');
     C.gauge = P => { const e = E(), L = shapes(), sk = pend ? (R.SKILLS[pend.id] || {}).name : null; return { name: '陣紋 ' + used(L) + '／' + cap(P), v: used(L), max: cap(P), text: chg ? '蓄陣中…' : sk ? sk + '：左鍵施放、再按一次取消' : (e.lines.length ? e.lines.length + ' 個圖形生效' : '還沒畫陣紋'), x: '陣紋' }; };
   }
   // ---------- 主畫面左邊：陣紋與加成 ----------
