@@ -47,10 +47,66 @@
     R.save();
     return null;
   };
+  // 2026-10-12：作者自製的序號（不在 CODES 裡）交給連線伺服器用 HMAC 驗證，金鑰不在 repo 裡。
+  const API = 'https://taofaling-1433.1433.workers.dev/redeem?c=';
+  const TIER_NAME = { SR: 'SR', SSR: 'SSR', UR: 'UR' };
+  const describe = r => {
+    switch (r.type) {
+      case 'gold': return { gold: r.n * 100, name: (r.n * 100) + ' 費拉' };
+      case 'hp': return { potions: { hp: r.n }, name: '回復藥 ' + r.n + ' 瓶' };
+      case 'mp': return { potions: { mp: r.n }, name: '魔力藥 ' + r.n + ' 瓶' };
+      case 'potions': return { potions: { hp: r.n, mp: r.n }, name: '回復藥、魔力藥各 ' + r.n + ' 瓶' };
+      case 'books': return { books: r.n, name: '升 10 等經驗書 ' + r.n + ' 本' };
+      case 'tickets': return { tickets: r.n, name: '種族抽選券 ' + r.n + ' 張', msg: '種族抽選券 ' + r.n + ' 張放進背包了。到公會的登記處抽種族。' };
+      case 'core': return { core: r.n, name: '魔力核心 ' + r.n + ' 顆' };
+      case 'pack': return { pack: r.pack, name: (R.PACKS && R.PACKS[r.pack] ? R.PACKS[r.pack].name : '背包'), msg: '背包送到了。到公會的商店選要背哪一個。' };
+      case 'raceSelect': return { raceSelect: r.tier, name: TIER_NAME[r.tier] + ' 種族自選券', msg: TIER_NAME[r.tier] + ' 種族自選券一張放進背包了。到公會的登記處挑一族。' };
+      case 'unban': return { unban: 1, name: '清空停權', msg: '勇者證的停權解除了，公會又會派委託給你。' };
+      case 'admin': return { admin: 1, name: '管理員號', msg: '這個存檔變成管理員號了。' };
+    }
+    return null;
+  };
+  const apply = (c, h) => {
+    const S = R.S;
+    if (c.unban) { if (!(S.banUntil > S.day)) return '勇者證現在沒有停權。'; S.banUntil = 0; R.save(); return null; }
+    S.redeemed = S.redeemed || {};
+    if (S.redeemed[h]) return '這個序號這個存檔已經兌換過了。';
+    S.redeemed[h] = S.day || 1;
+    if (c.gold) S.gold += c.gold;
+    if (c.potions) { S.potions = S.potions || {}; Object.keys(c.potions).forEach(k => { S.potions[k] = (S.potions[k] || 0) + c.potions[k]; }); }
+    if (c.pack) { S.packs = S.packs || { sack: 1 }; S.packs[c.pack] = (S.packs[c.pack] || 0) + 1; }
+    if (c.books) S.xpBooks = (S.xpBooks || 0) + c.books;
+    if (c.tickets) S.raceTickets = (S.raceTickets || 0) + c.tickets;
+    if (c.raceSelect && R.giveRaceSelect) R.giveRaceSelect(c.raceSelect, c.n || 1);
+    if (c.core) { S.mats = S.mats || {}; S.mats.core = (S.mats.core || 0) + c.core; }
+    if (c.admin && R.makeAdmin) R.makeAdmin();
+    R.save();
+    return null;
+  };
+  R.redeemOnline = async code => {
+    if (!R.S) return { err: '先開始冒險（讀存檔）再兌換。' };
+    const h = 'k' + hashOf(code);
+    if (R.S.redeemed && R.S.redeemed[h]) return { err: '這個序號這個存檔已經兌換過了。' };
+    let r; try { r = await (await fetch(API + encodeURIComponent(code), { cache: 'no-store' })).json(); } catch (e) { return { err: '連不到伺服器，等一下再試。' }; }
+    const c = r && r.ok ? describe(r) : null;
+    if (!c) return { err: '序號不對。' };
+    const err = apply(c, h);
+    return err ? { err } : { c };
+  };
   const box = () => '<h3>序號兌換</h3><p class="note">公會發的序號（大小寫、空白、連字號都沒關係）。每個序號每個存檔只能兌換一次。</p>'
     + '<div class="row"><input id="rd-code" placeholder="TFL-XXXX-XXXX-XXXX" autocomplete="off" style="flex:1;min-width:12em;text-transform:uppercase;letter-spacing:.06em"><button type="button" class="btn pri" id="rd-go">兌換</button></div>';
   const go = () => {
-    const inp = $('rd-code'), code = inp ? inp.value : '', err = R.redeem(code);
+    const inp = $('rd-code'), code = inp ? inp.value : '';
+    if (!CODES.find(x => x.h === hashOf(code))) {
+      R.redeemOnline(code).then(res => {
+        if (res.err) { R.toast(res.err, '#FF9A6A'); return; }
+        const c = res.c; R.hub();
+        setTimeout(() => R.banner ? R.banner('序號兌換成功', c.msg || c.name + '已經放進背包了。') : R.toast('序號兌換成功：' + c.name), 200);
+        R.sfx && R.sfx('coin');
+      });
+      return;
+    }
+    const err = R.redeem(code);
     if (err) { R.toast(err, '#FF9A6A'); return; }
     const c = CODES.find(x => x.h === hashOf(code));
     R.hub();

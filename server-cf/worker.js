@@ -19,8 +19,34 @@ const CTRL_K = new Set(['floor', 'run', 'end', 'busy', 'wantFloor', 'hd', 'bye',
 const LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 const clean = (v, n) => String(v == null ? '' : v).slice(0, n);
 
+// 2026-10-12 自製序號：TFL-XXXX-XXXX-XXXX = 12 碼 base32 = 60 bits = 種類 4 + 數量 12 + 流水號 12 + HMAC-SHA256 前 32 bits。
+// 金鑰只存在 wrangler secret（SERIAL_KEY）和作者本機的產生器；repo 裡沒有。
+const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+const SER_TYPES = ['gold', 'hp', 'mp', 'potions', 'books', 'tickets', 'core', 'pack', 'raceSelect', 'unban', 'admin'];
+const SER_PACKS = ['leather', 'frame', 'guild', 'mage'], SER_TIERS = ['SR', 'SSR', 'UR'];
+async function redeemCode(code, env) {
+  const H = { 'content-type': 'application/json; charset=utf-8', 'access-control-allow-origin': '*', 'cache-control': 'no-store' };
+  const out = o => new Response(JSON.stringify(o), { headers: H });
+  const c = String(code || '').toUpperCase().replace(/[^0-9A-Z]/g, '').replace(/^TFL/, '').replace(/[IL]/g, '1').replace(/O/g, '0');
+  if (c.length !== 12 || !env.SERIAL_KEY) return out({ ok: 0 });
+  let v = 0n;
+  for (const ch of c) { const i = B32.indexOf(ch); if (i < 0) return out({ ok: 0 }); v = (v << 5n) | BigInt(i); }
+  const payload = Number(v >> 32n), mac = Number(v & 0xffffffffn);
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(env.SERIAL_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+  const sig = new DataView(await crypto.subtle.sign('HMAC', key, new TextEncoder().encode('tfl1:' + payload)));
+  if (sig.getUint32(0) !== mac) return out({ ok: 0 });
+  const type = SER_TYPES[payload >>> 24], n = (payload >>> 12) & 4095;
+  if (!type) return out({ ok: 0 });
+  const r = { ok: 1, type, n };
+  if (type === 'pack') r.pack = SER_PACKS[n] || 'leather';
+  if (type === 'raceSelect') r.tier = SER_TIERS[n] || 'SR';
+  return out(r);
+}
+
 export default {
   async fetch(req, env) {
+    const u = new URL(req.url);
+    if (u.pathname === '/redeem') return redeemCode(u.searchParams.get('c'), env);
     if ((req.headers.get('Upgrade') || '').toLowerCase() !== 'websocket') return new Response('ok\n', { headers: { 'content-type': 'text/plain; charset=utf-8', 'access-control-allow-origin': '*' } });
     return env.LOBBY.get(env.LOBBY.idFromName('lobby')).fetch(req);
   }
