@@ -161,6 +161,8 @@
     head.forEach(e => { if (e !== h2) sign.appendChild(e); });
     const groups = {}; TABS.forEach(t => { groups[t[0]] = []; });
     blocks.forEach(b => groups[tabOf(b.title)].push(b));
+    // 勇者證分頁：熟練度、任務成績（五軌制）往上排，緊接在勇者證後面（2026-10-13 作者：熟練度和五軌制的介面往上調）
+    { const pri = t => /^勇者證/.test(t) ? 0 : /^熟練度/.test(t) ? 1 : /^任務成績/.test(t) ? 2 : 3; groups.card = groups.card.map((b, i) => [b, i]).sort((x, y) => pri(x[0].title) - pri(y[0].title) || x[1] - y[1]).map(x => x[0]); }
     const tabs = TABS.filter(t => groups[t[0]].length);
     if (!groups[ui.tab] || !groups[ui.tab].length) ui.tab = tabs[0][0];
     const nav = document.createElement('nav'); nav.className = 'gh-noren'; nav.setAttribute('role', 'tablist');
