@@ -37,12 +37,34 @@
   };
 
   // 照 key 給護盾：同一段（同一個 key）累加，換了段號就先拿掉上一段還剩的（最多拿掉現在的護盾量）。kind 前面加上給的人，兩個吟遊詩人不會互相蓋掉
-  R.keyedShield = (o, amt, key, from) => {
+  R.keyedShield = (o, amt, key, from, dur) => {
     if (!o || !(amt > 0)) return;
     const i = String(key || '').lastIndexOf(':'), kind = (from != null ? from + '/' : '') + String(key).slice(0, i), id = String(key).slice(i + 1);
-    o._bdSh = o._bdSh || {}; let rec = o._bdSh[kind];
+    o._bdSh = o._bdSh || {}; shRecon(o); let rec = o._bdSh[kind];
+    // 2026-10-13 修：拿掉的是「上一段還剩多少」（被打掉的已經扣過），不會連別的來源（技能護盾）一起吃掉
     if (!rec || rec.id !== id) { const old = rec ? Math.min(rec.amt, o.shield || 0) : 0; o.shield = Math.max(0, (o.shield || 0) - old); rec = o._bdSh[kind] = { id, amt: 0 }; }
     const before = o.shield || 0; o.shield = Math.min(o.hpMax || before + amt, before + amt); rec.amt += o.shield - before;
+    rec.t = dur > 0 ? dur : 6;
+  };
+  // 每個來源各自記剩多少：護盾被打掉時照比例一起扣；各自時間到只拿掉自己剩的
+  const shRecon = o => {
+    const L = o && o._bdSh; if (!L) return;
+    let tot = 0; for (const k in L) tot += L[k].amt || 0;
+    const cur = Math.max(0, o.shield || 0);
+    if (tot > cur + 1e-6) { const f = tot > 0 ? cur / tot : 0; for (const k in L) L[k].amt *= f; }
+  };
+  R.shieldRecon = shRecon;
+  // 跟著遊戲時間走（暫停不會掉）：每個來源各自倒數，時間到只拿掉自己還剩的
+  const shStep0 = R.step;
+  if (typeof shStep0 === 'function') R.step = function (dt, ...a) {
+    const out = shStep0.call(this, dt, ...a);
+    try {
+      const w = W && W(); if (w && dt > 0) [w.P].concat(w.allies || []).forEach(o => {
+        if (!o || !o._bdSh) return; shRecon(o);
+        for (const k in o._bdSh) { const r = o._bdSh[k]; if (r.t != null && (r.t -= dt) <= 0) { o.shield = Math.max(0, (o.shield || 0) - Math.min(r.amt || 0, o.shield || 0)); delete o._bdSh[k]; } }
+      });
+    } catch (e) { }
+    return out;
   };
   const KEY = /^[a-z]{2,6}:\d{1,9}$/;
 

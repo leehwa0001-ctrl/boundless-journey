@@ -111,13 +111,14 @@
     }
     return h + '</div>';
   };
-  const FOOT = '<div class="row"><button type="button" class="btn pri" data-ciclose="1">知道了</button></div>';
+  // 2026-10-13 作者：【知道了】左邊多一個「技能機制說明」（classguide.js）
+  const FOOT = cls => '<div class="row">' + (R.showClassGuide ? '<button type="button" class="btn ci-gd" data-cigd="' + esc(cls) + '">技能機制說明</button>' : '') + '<button type="button" class="btn pri" data-ciclose="1">知道了</button></div>';
   // 自己的視窗（最上層）：捏角畫面、公會頁面都蓋得過去，遊戲也不用暫停
   const close = () => { const m = $('ci-modal'); if (m) m.hidden = true; };
   R.showClassInfo = cls => {
     const html = R.classInfo(cls); if (!html) return;
     let m = $('ci-modal'); if (!m) { m = document.createElement('div'); m.id = 'ci-modal'; m.innerHTML = '<div class="ci-box" role="dialog" aria-modal="true"></div>'; m.onclick = ev => { if (ev.target === m) close(); }; document.body.appendChild(m); }
-    const box = m.firstChild; box.innerHTML = html + FOOT; m.hidden = false; box.scrollTop = 0;
+    const box = m.firstChild; box.innerHTML = html + FOOT(cls); m.hidden = false; box.scrollTop = 0;
   };
   document.addEventListener('keydown', ev => { const m = $('ci-modal'); if (ev.key === 'Escape' && m && !m.hidden) { ev.stopPropagation(); close(); } }, true);
   document.addEventListener('click', ev => {

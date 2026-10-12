@@ -94,10 +94,17 @@
       evStep('和弦', () => T('按一下 <kbd>X</kbd> 換和弦（大調／小調）。', '點一下職業條換和弦。'), '#r-cls', 'cls'),
       step('寫樂譜', () => T('按住 <kbd>X</kbd> 0.45 秒開始錄：10 秒內的普攻、技能會寫成音符。', '長按職業條開始錄：10 秒內的普攻、技能會寫成音符。'), '#r-cls'),
       step('演奏', () => '之後每次出手都會先照樂譜演奏 2 秒再發出攻擊；樂譜是空的，普攻就不會出手。', null)
+    ] },
+    monk: { n: '武術家：四法與勢', ctx: inRun, steps: [   // 2026-10-13 作者：武術家也要職業提示（monkstance.js）
+      evStep('換法', () => T('按 <kbd>X</kbd> 依序換「法」：拳法 → 掌法 → 步法 → 腿法 → 拳法。', '點職業條依序換「法」：拳法 → 掌法 → 步法 → 腿法 → 拳法。'), '#r-cls', 'cls'),
+      step('四種法', () => '拳法出拳快；掌法把敵人打飛；步法每一拳往前跨一步；腿法很慢但一腳很重、範圍大。', '#r-cls'),
+      evStep('攢勢', () => T('普攻打中會累積「勢」（每下 +10，滿 100）。先用 <kbd>左鍵</kbd> 打幾下看看。', '用右搖桿普攻打中敵人，累積「勢」（每下 +10，滿 100）。'), () => touch() ? '#joy-r' : null, 'fire'),
+      step('勢爆發', () => '勢滿了再換法，換過去的那一法會「爆發」：掌法一掌把敵人打飛撞牆、步法瞬間閃到敵人面前、腿法兩腳超重擊、拳法一陣子多揮一下。畫面下方會顯示爆發還剩多久。', null),
+      step('攻速', () => '裝備和天賦的攻速對武術家沒用，會換成普攻傷害。詳細的接法在職業說明「？」→「技能機制說明」。', null)
     ] }
   };
   const ok = id => CH[id].ctx() && !(R.sheetOpen && R.sheetOpen());
-  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'arraymage', 'bard'];
+  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'arraymage', 'bard', 'monk'];
   // ---------- 畫面 ----------
   const css = document.createElement('style'); css.id = 'tu2-css';
   css.textContent = '#tu2-ring{position:fixed;z-index:9998;pointer-events:none;border:2px solid #C9A13A;border-radius:10px;box-shadow:0 0 0 3px rgba(201,161,58,.25),0 0 18px rgba(201,161,58,.45);transition:all .2s;animation:tu2p 1.4s infinite}'

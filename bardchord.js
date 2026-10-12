@@ -16,6 +16,7 @@
 //   技能（2026-10-11 作者）：每個八分音符你和隊友攻速 +10%（8 秒）；攻擊四分每個傷害與範圍 +10%；增益四分每個冷卻 −10%、恢復與護盾 +10%；
 //         攻擊二分每個耗魔 +20%、傷害與範圍 +30%、冷卻 +10%；增益二分每個增益效果 +25%，周圍的友軍（含你）得到你最大魔力 10% 的護盾、回復你最大魔力 10% 的生命。
 //         同一種音符重複：第二個效果減半、第三個起只剩 1/4（例：八分音符 2 個攻速 +15%、4 個 +20%、8 個 +30%）。
+//   （2026-10-13 修：普攻護盾、技能護盾分開記、可以疊；被打時照比例一起扣，各自 6 秒後只拿掉自己剩的）
 //   普攻、技能的音符效果各算各的、可以疊；但護盾只會刷新——新的一段演奏換掉上一段演奏給的護盾（普攻、技能分開算），攻速也是刷新。
 // - 和弦（一直有效）：大三和弦 傷害 +(10+等級/2)%、小三和弦 恢復與護盾 +(10+等級/2)%（等級算到 40 為止，最多 +30%）；
 //   20 級七和弦 範圍 +(10+等級/2)%（2026-10-11 作者：大三和弦與七和弦的效果交換）、30 級九和弦 技能急速 +(40+等級×1.5)、40 級十一和弦 每次演奏完回復 5% 最大魔力。
@@ -193,7 +194,7 @@
   };
   // key＝'atk:段號'、'skill:段號'、'ult:段號'：同一個 key 累加，換了段號就把上一段給的護盾換掉（netaid.js 的 R.keyedShield）
   const shieldAll = (P, sh, hl, range, key) => {
-    if (sh > 0) { if (R.keyedShield && key) R.keyedShield(P, sh, key); else P.shield = Math.min(P.hpMax, (P.shield || 0) + sh); P.buff = P.buff || {}; P.buff.shieldT = Math.max(P.buff.shieldT || 0, 6); }
+    if (sh > 0) { if (R.keyedShield && key) R.keyedShield(P, sh, key, null, 6); else P.shield = Math.min(P.hpMax, (P.shield || 0) + sh); P.buff = P.buff || {}; P.buff.shieldT = Math.max(P.buff.shieldT || 0, 6); }
     if (hl > 0 && R.healP) R.healP(hl);
     if (R.nearAllies && R.aidAlly) R.nearAllies(P, range || 8).forEach(al => R.aidAlly(al, { shieldAbs: sh, shKey: key, healAbs: hl, shieldT: 6, quiet: true }));
     if (sh > 0 || hl > 0) R.fx && R.fx('ring', P.x, 0.1, P.z, { r: range ? 3 : 1.6, color: '#5AE8A0' });
@@ -371,7 +372,10 @@
       if (!IS(P) || P !== W().P || !s || typeof s !== 'object') return f.call(this, s, P, w, pw, ...a);
       if (s.trio) ST.trioT = now() + 0.4;   // 三重奏：接下來射出的音符撞到敵人會炸開
       const r = scaleArgs(type, s, P, pw) || [s, pw], [s2, pw2, ally] = mpArgs(type, r[0], P, r[1]);
-      const out = f.call(this, s2, P, w, pw2, ...a);
+      // 2026-10-13 修：技能護盾不再用「取較大」蓋過普攻護盾，改成自己一格（skill:段號）疊上去
+      let skSh = 0, s3 = s2; if (s2 && typeof s2.shield === 'number' && s2.shield > 0 && R.keyedShield) { skSh = P.hpMax * s2.shield; s3 = Object.assign({}, s2); delete s3.shield; }
+      const out = f.call(this, s3, P, w, pw2, ...a);
+      if (skSh > 0 && out !== false) { R.keyedShield(P, skSh, 'skill:' + (ST.skN = (ST.skN || 0) + 1), null, 6); P.buff = P.buff || {}; P.buff.shieldT = Math.max(P.buff.shieldT || 0, 6); }
       // 隊友：照你的最大魔力回固定量（電腦隊友、連線隊友都走 R.aidAlly）
       if (ally && out !== false && R.nearAllies && R.aidAlly) R.nearAllies(P, 7).forEach(al => { R.aidAlly(al, { healAbs: ally.h, shieldAbs: ally.s, shieldT: 6 }); if (R.fx) R.fx('ring', al.x, 0.1, al.z, { r: 1.2, color: '#FFE8A0' }); });
       return out;
@@ -508,7 +512,7 @@
   if (C) Object.assign(C, {
     name: '和弦', col: '#FFB8E0',   // 職業條的顏色跟著和弦（gauge 回傳的 col）
     help: P => '和弦與樂譜：X 點一下換和弦（C 大三＝傷害、Am 小三＝恢復與護盾、20 級 Cmaj7 七和弦＝範圍、30 級 Fmaj9 九和弦＝技能急速、40 級 Dm11 十一和弦＝演奏回魔）；技能數值照最大魔力（治療、護盾＝最大魔力的 %，強化的 +% 每 100 點最大魔力算一次，技能傷害 ×（200＋最大魔力）÷ 300）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
-      + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速每 +1% 演奏快 0.5%；演奏中按的普攻或技能會記一個、演奏完馬上接著放（技能優先）；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。護盾每段演奏刷新、不疊。'
+      + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速每 +1% 演奏快 0.5%；演奏中按的普攻或技能會記一個、演奏完馬上接著放（技能優先）；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。普攻音符的護盾每段演奏刷新；技能給的護盾另外算、可以跟普攻護盾疊在一起（各自時間到才消失）。'
       + ({ aria: '詠嘆詩人：增益音符效果 ×1.5。', drummer: '戰鼓手：攻擊音符效果 ×1.5；每次演奏打一小節鼓。', serane: '奏域師：八分音符的攻速維持兩倍久；開頭的和弦用管風琴。' }[P && P.adv] || ''),
     step() { }, onCast() { }, play() { },
     act() { },
