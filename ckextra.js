@@ -62,9 +62,18 @@
     tw.inter.forEach(it => { const l = lbl(it); if (!/^走進/.test(l)) return; const n = l.replace(/^走進/, '').replace(/[（(].*$/, ''); if (seen[n]) return; seen[n] = 1; out.push({ n, x: it.x, z: it.z }); });
     return out;
   };
+  // 在屋子（W.town.room）或建築物場景（W.inside，例如公會、自己的家）裡叫車：先走出門回到街上，再搭車。
+  // 以前只處理 room：在 W.inside 裡叫車會把人傳到建築物場景外面的一片黑暗裡，還一直算在屋裡
+  const outFirst = next => {
+    if (W.inside) { if (R.exitInterior) R.exitInterior(); }
+    else if (W.town && W.town.room) CK.exitRoom();
+    else return false;
+    let n = 0; const t = setInterval(() => { if (!W.town) clearInterval(t); else if (!W.inside && !W.town.room) { clearInterval(t); setTimeout(next, 450); } else if (++n > 40) { clearInterval(t); R.toast && R.toast('請先到室外再叫馬車。'); } }, 100);
+    return true;
+  };
   const go = sp => {
     const P = W.P; if (!P) return; R.closeSheet && R.closeSheet();
-    if (W.town.room) { CK.exitRoom(); let n = 0; const t = setInterval(() => { if (W.town && !W.town.room) { clearInterval(t); go(sp); } else if (++n > 40) clearInterval(t); }, 100); return; }
+    if (outFirst(() => go(sp))) return;
     (R.fade || (f => f()))(() => {
       P.x = sp.x; P.z = sp.z; R.collide(P, 0.42); P.yv = CK.heightAt(P.x, P.z); if (P.h) P.h.g.position.set(P.x, P.yv, P.z);
       R.placeCam && R.placeCam(null); R.banner && R.banner(sp.n, '搭公會的接駁車過來了');
@@ -76,7 +85,7 @@
   R.fastTravel = () => {
     if (!ck()) return ft0 && ft0();
     if (W.run) return;
-    if (W.town.room) { CK.exitRoom(); let n = 0; const t = setInterval(() => { if (W.town && !W.town.room) { clearInterval(t); R.fastTravel(); } else if (++n > 40) clearInterval(t); }, 100); return; }
+    if (outFirst(R.fastTravel)) return;
     if (R.VEH && R.VEH.cur) { R.toast('先下車。'); return; }
     if (R.crime && R.crime.heat > 0) { R.toast('被通緝的時候，接駁車不載你。', '#FF9A6A'); return; }
     const list = spots();
