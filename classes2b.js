@@ -64,6 +64,8 @@
     ['dm_thunder', '雷鼓', 'bard', 8, 9, 14, 'nova', { r: 3.4, k: 1.3, kb: 2.5, waves: 3, gap: 280, color: '#FF9A6A' }, '連敲三下，一圈一圈的鼓聲震飛周圍的敵人。', 'drummer'],
     ['dm_march', '進行曲', 'bard', 14, 14, 12, 'buff', { t: 10, speed: 1.2, dmg: 1.1, color: '#FFB86A' }, '踩著進行曲：10 秒內移動 +20%、傷害 +10%。', 'drummer'],
     ['se_field', '奏域', 'bard', 8, 14, 20, 'zone', { zone: 'sanct', self: 1, r: 5, life: 8, k: 0.4 }, '腳下展開 8 秒的奏域：裡面回復生命、灼傷敵人。', 'serane'],
+    ['lm_dirge', '輓歌', 'bard', 8, 12, 16, 'mark', { range: 11, r: 4, t: 6, slow: 3, k: 0.5 }, '低沉的輓歌：準心附近的敵人變慢，6 秒內受到的傷害增加。', 'lament'],
+    ['lm_sorrow', '哀泣', 'bard', 14, 10, 14, 'nova', { r: 4, k: 1.1, waves: 2, gap: 350, color: '#8A9AE8' }, '兩聲哀泣從腳下擴散，震傷周圍的敵人。', 'lament'],
     ['se_resonance', '共鳴', 'bard', 14, 12, 18, 'storm', { t: 6, gap: 0.45, r: 8, hitR: 1.6, k: 0.8, fx: 'spark', color: '#FFB8E0' }, '奏域裡的共振一下一下打在附近的敵人身上（6 秒）。', 'serane'],
     // 召喚師
     ['sn_dog', '召喚・土犬', 'summoner', 1, 12, 14, 'pet', { beast: 'okuriinu', t: 14, k: 0.7, color: '#A88A5A' }, '用執念把泥土捏成一隻狗（像霍克的「土」狗）：14 秒內跟著你咬敵人。'],
@@ -147,6 +149,7 @@
       if (a === 'aria') { P.healMul = (P.healMul || 1) * 1.3; }
       if (a === 'drummer') { P.skillCdMult *= 0.88; if (P.ws) P.ws.crit += 0.06; }
       if (a === 'serane') { P.calm += 0.2; P.mpMax = Math.round(P.mpMax * 1.2); }
+      if (a === 'lament') { P.dmgMult *= 1.08; P.mpMax = Math.round(P.mpMax * 1.1); }   // 2026-10-12 悲嘆詩人
       if (a === 'beastlord') { P.petMul = 1.4; P.petLife = 1.3; }
       if (a === 'medium') P.petHeal = 0.06;
       if (a === 'tamer') { P.calm += 0.15; P.petMul = 1.2; }

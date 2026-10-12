@@ -22,7 +22,11 @@
   const FORMS = [['qb', '輕便', '奏域跟著你移動，效果 −10%'], ['cw', '沉穩', '效果 +20%'], ['tz', '拓展', '半徑 +30%']];
   R.SOUYU = { TIERS, FORMS };
   R.SKILL_MAXR = Object.assign(R.SKILL_MAXR || {}, { [ID]: 9 });
-  const star = () => (R.skillRank ? R.skillRank(ID, 'mage') : 0);
+  // 2026-10-12 作者：吟遊詩人奏域師的二轉（覺醒）跟術士諧鳴一樣——原本的「大奏域」（a2_bard_serane_0）換成同一招 9 星的奏域（BID）
+  const BID = 'a2_bard_serane_0';
+  R.SKILL_MAXR[BID] = 9;
+  const curId = () => (S() && S().cls === 'bard' ? BID : ID);
+  const star = () => (R.skillRank ? R.skillRank(curId(), S() && S().cls === 'bard' ? 'bard' : 'mage') : 0);
   const conf = () => { const s = S(); if (!s) return {}; s.souyu = s.souyu || {}; return s.souyu; };
   const pick = () => { const c = conf(), st = star(), out = new Set(); TIERS.forEach(t => { if (st >= t.star) out.add(t.opts.some(o => o[0] === c[t.star]) ? c[t.star] : t.opts[0][0]); }); return { has: k => out.has(k), form: FORMS.some(f => f[0] === c.form) ? c.form : '' }; };
   R.souyuPick = pick;
@@ -33,10 +37,14 @@
   gone.forEach(id => { delete L[id]; if (R.SKILLS) delete R.SKILLS[id]; });
   L[ID] = Object.assign(L[ID] || { id: ID, cls: 'mage', adv2: 'harmonic' }, { name: '奏域', lv: 40, cd: 18, mp: 28, type: 'souyu', p: { r: 5, life: 8 } });
   R.SKILLS[ID] = Object.assign(R.SKILLS[ID] || {}, { name: '奏域', cd: 18, mp: 28, desc: '（二轉・諧鳴）用共振圍出閉環：準心處展開 8 秒的奏域。可以練到 ★9，★0、★3、★6、★9 各選一種諧鳴（共鳴、鎮頻、定頻、轉調……），在技能書這張卡片最下面選。' });
+  if (L[BID]) {
+    L[BID] = Object.assign(L[BID], { name: '奏域', cd: 18, mp: 28, type: 'souyu', p: { r: 5, life: 8 } });
+    R.SKILLS[BID] = Object.assign(R.SKILLS[BID] || {}, { name: '奏域', cd: 18, mp: 28, desc: '（二轉・覺醒）跟術士諧鳴的奏域同一招：準心處展開 8 秒的奏域。可以練到 ★9，★0、★3、★6、★9 各選一種諧鳴（共鳴、鎮頻、定頻、轉調……），在技能書這張卡片最下面選。' });
+  }
   const op0 = R.ADV2_OPTS;
   if (op0) R.ADV2_OPTS = cls => op0(cls).filter(o => !HF.includes(o.id)).map(o => (o.id === 'harmonic' ? Object.assign({}, o, { name: '諧鳴', desc: '用共振圍出閉環的「奏域」，在裡面改寫法術的頻率。學會「奏域」（40 級）：可以練到 ★9，★0、★3、★6、★9 各從四種諧鳴選一種（共鳴、鎮頻、定頻、轉調……），再選輕便、沉穩或拓展。常駐：魔攻 +10%、魔力 +15%、技能冷卻 −5%。' }) : o));
   const sv0 = R.skillVariants;
-  if (sv0) R.skillVariants = id => (id === ID ? [] : sv0(id));   // 奏域用自己的選項，不用技能變化
+  if (sv0) R.skillVariants = id => (id === ID || id === BID ? [] : sv0(id));   // 奏域用自己的選項，不用技能變化
   const fix = s => {
     if (!s || !s.classes) return s;
     Object.values(s.classes).forEach(st => { if (st && HF.includes(st.adv2)) st.adv2 = 'harmonic'; });
@@ -129,7 +137,7 @@
     + '.sy-row button.on{outline:2px solid #E8C04A;background:rgba(232,192,74,.2);border-color:transparent}.sy-row button:disabled{opacity:.4;cursor:default}'
     + '.sy-row .sy-lock{font-size:10.5px;opacity:.7}.sy-desc{font-size:11px;opacity:.8;margin-top:4px;min-height:1.3em}';
   document.head.appendChild(css);
-  const learned = () => { const s = S(); if (!s || s.cls !== 'mage') return false; const st = s.classes && s.classes.mage; return !!(st && st.adv2 === 'harmonic' && R.skillsLearned && R.skillsLearned('mage').includes(ID)); };
+  const learned = () => { const s = S(); if (!s) return false; if (s.cls === 'bard') { const sb = s.classes && s.classes.bard; return !!(sb && sb.adv2 === 'awaken' && R.skillsLearned && R.skillsLearned('bard').includes(BID)); } if (s.cls !== 'mage') return false; const st = s.classes && s.classes.mage; return !!(st && st.adv2 === 'harmonic' && R.skillsLearned && R.skillsLearned('mage').includes(ID)); };
   const html = () => {
     const c = conf(), st = star(), p = pick();
     const stars = n => '★'.repeat(Math.min(n, 9)) || '★0';
@@ -140,7 +148,7 @@
   };
   // 2026-10-08 作者：選項放在技能書裡奏域那張卡片的最下面（不放在上面換技能的地方）
   const fill = (foot, id) => {
-    if (id !== ID || !learned()) return;
+    if (id !== curId() || !learned()) return;
     let box = foot.querySelector('.sy-box'); if (!box) { box = document.createElement('div'); box.className = 'sy-box'; foot.appendChild(box); }
     box.innerHTML = html();
     box.querySelectorAll('[data-sy]').forEach(b => { b.onclick = e => { e.stopPropagation(); const c = conf(); c[b.dataset.sy] = b.dataset.v; R.save && R.save(); fill(foot, id); }; });

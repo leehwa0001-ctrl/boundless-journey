@@ -203,7 +203,16 @@
   };
   const sfx0 = R.sfx;
   // 吟遊詩人的旋律（bard1009.js，2026-10-09）：inst＝'pluck' 撥弦（魯特琴）、'flute' 笛、'harp' 豎琴、'bell' 鐘；notes＝[[midi, 第幾秒, 長度], …]
-  R.playMelody = (inst, notes, vol) => { if (!ctx || muted()) return; const t0 = ctx.currentTime + 0.01, v = vol || 0.1; try { notes.forEach(([m, at, d]) => { const t = t0 + at; if (inst === 'flute') fue(m, t, d || 0.25, v * 0.9, sfxBus, 0.25); else if (inst === 'harp') koto(m, t, (d || 0.3) * 2.6, v, sfxBus, 0.9); else if (inst === 'bell') bell(m, t, v * 0.6, sfxBus, d || 1.2); else koto(m, t, d || 0.3, v, sfxBus, 0.45); }); } catch (e) { } };
+  // 2026-10-12 作者：吟遊詩人——奏域師開頭的和弦用管風琴（幾條正弦波的拉桿音、平的包絡、一直撐到小節結束）；戰鼓手每次演奏的鼓點
+  const organ = (m, t, d, v, dest) => { const f = mtof(m), g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.04); g.gain.setValueAtTime(v, t + Math.max(0.05, d - 0.12)); g.gain.linearRampToValueAtTime(0.0001, t + d); g.connect(dest); toRev(g, 0.7);
+    [[1, 1], [2, 0.55], [3, 0.3], [4, 0.22], [0.5, 0.35], [6, 0.08]].forEach(([h, a]) => { const s = ctx.createGain(); s.gain.value = a * 0.42; s.connect(g); osc('sine', f * h, t, t + d + 0.05, s, (Math.random() - 0.5) * 4); }); };
+  const kick = (t, v, dest) => { const o = ctx.createOscillator(), g = gainAt(t, 0.002, v, 0.32, dest); o.type = 'sine'; o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.14); o.connect(g); o.start(t); o.stop(t + 0.4); };
+  const snare = (t, v, dest) => { noiseHit(t, 0.17, v * 0.8, dest, 'highpass', 1500); const g = gainAt(t, 0.002, v * 0.5, 0.1, dest); osc('triangle', 190, t, t + 0.14, g); };
+  const hat = (t, v, dest) => { noiseHit(t, 0.045, v * 0.45, dest, 'highpass', 7500); };
+  const tom = (t, v, dest, f) => { const o = ctx.createOscillator(), g = gainAt(t, 0.002, v, 0.22, dest); o.type = 'sine'; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f * 0.6, t + 0.2); o.connect(g); o.start(t); o.stop(t + 0.3); };
+  // hits：[['k'|'s'|'h'|'t', 幾秒後, 音量倍率, 鼓的音高]]；走音效那一條（跟著「音效」音量、靜音）
+  R.playDrums = (hits, vol) => { if (!ctx || muted()) return; const t0 = ctx.currentTime + 0.01, v = vol || 0.2; try { hits.forEach(([k, at, m, f]) => { const t = t0 + at, vv = v * (m || 1); if (k === 'k') kick(t, vv, sfxBus); else if (k === 's') snare(t, vv, sfxBus); else if (k === 'h') hat(t, vv, sfxBus); else tom(t, vv, sfxBus, f || 160); }); } catch (e) { } };
+  R.playMelody = (inst, notes, vol) => { if (!ctx || muted()) return; const t0 = ctx.currentTime + 0.01, v = vol || 0.1; try { notes.forEach(([m, at, d]) => { const t = t0 + at; if (inst === 'organ') organ(m, t, d || 1, v * 0.8, sfxBus); else if (inst === 'flute') fue(m, t, d || 0.25, v * 0.9, sfxBus, 0.25); else if (inst === 'harp') koto(m, t, (d || 0.3) * 2.6, v, sfxBus, 0.9); else if (inst === 'bell') bell(m, t, v * 0.6, sfxBus, d || 1.2); else koto(m, t, d || 0.3, v, sfxBus, 0.45); }); } catch (e) { } };
   R.sfx = k => { if (!ctx || muted()) { if (sfx0) sfx0(k); return; } if (FX[k]) { try { FX[k](ctx.currentTime + 0.005); } catch (e) { } } else if (sfx0) sfx0(k); };
   const play = (k, ms) => { if (!ctx || muted() || !limit(k, ms || 40)) return; try { FX[k](ctx.currentTime + 0.005); } catch (e) { } };
   R.playSfx = play;
