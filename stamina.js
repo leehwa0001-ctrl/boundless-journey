@@ -13,10 +13,16 @@
 // - 體力條在技能列的上緣（手機在畫面最下面）；快沒了變黃、扣光變紅。
 // 2026-10-08 作者：跑步的消耗 +10%（22 → 24.2），讓「體力回復」天賦更值得點。
 // 2026-10-08 作者：防禦（格擋）改成騎士專屬——有翻滾這種無敵的動作，其他職業舉盾的效益很低；騎士完美格擋會自動盾擊（classcore.js）。
+// 2026-10-13 作者：騎士改成按住職業鍵（X，按鍵設定可以改；手機按住職業條）才防禦，Z 和手機的「防禦」鈕拿掉；
+//   防禦擋 80%、完美防禦擋 90%（不再是完全不受傷）；盾擊只在防禦中被打到時自動出手（內置冷卻 0.5 秒，classcore.js）。
 // 放在 run.js、combat.js、keybinds.js、hud2.js、hud3.js、adv2more.js 後面（包 R.dodge、R.running、R.hurtPlayer、R.attack、R.step、R.tact）。
 (function (R) {
   const W = () => R.W, $ = id => document.getElementById(id), TH = () => window.THREE;
   const MAX = 100, REGEN = 25, DELAY = 0, DODGE = 30, RUN = 24.2, RESUME = 30, ARC = 1.3;
+  const BLOCK = 0.8, PERFECT = 0.9;   // 一般防禦擋 80%、完美防禦擋 90%
+  // 這一下擋不擋得到（面前左右各 75 度、看得出從哪裡來）、是不是完美防禦（剛舉起的 0.3 秒；誓約的長槍 0.5 秒）——classcore.js 的盾擊也看這個
+  R.guardBlocks = (P, src) => !!(P && P.guard && live() && !P.dead && !((P.iframe || 0) > 0) && src && src.x != null && !src.dead && Math.abs(wrap(Math.atan2(src.x - P.x, src.z - P.z) - (P.aimA || 0))) < ARC);
+  R.guardPerfect = P => { const w = W(); return !!(P && P.guard && w.run && P.guardT0 != null && w.run.t - P.guardT0 <= ((R.legOf ? R.legOf(P) : null) === 'lg_vow' ? 0.5 : 0.3)); };
   const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   const live = () => { const w = W(); return !!(w && w.run && !w.town && w.P && !w.run.done); };
   const trained = () => (R.profLv && R.profLv.stam ? R.profLv.stam() : 0), maxOf = () => MAX + 5 * trained();
@@ -50,20 +56,21 @@
     if (P && P.guard && live() && raw > 0 && !P.dead && !((P.iframe || 0) > 0) && src && src.x != null && !src.dead) {
       const d = Math.abs(wrap(Math.atan2(src.x - P.x, src.z - P.z) - (P.aimA || 0)));
       if (d < ARC) {
-        if (w.run.t - (P.guardT0 || -9) < 0.25) {   // 完美防禦
+        if (R.guardPerfect(P)) {   // 完美防禦：擋 90%（2026-10-13）
           if (src.st) src.st.stun = Math.max(src.st.stun || 0, 0.8);
           R.fx && R.fx('ring', P.x, 1, P.z, { r: 1.6, color: '#FFE08A' }); R.fx && R.fx('spark', P.x + Math.sin(P.aimA) * 0.9, 1.1, P.z + Math.cos(P.aimA) * 0.9, { a: P.aimA, crit: true });
           R.sfx && R.sfx('crit'); R.num && R.num(P.x, 2.4, P.z, '完美防禦', 'crit'); flash(1);
-          return 0;
-        }
+          raw *= 1 - PERFECT;
+        } else {
         use(P, 8 + 60 * raw / Math.max(1, P.hpMax));
         if (P.stam <= 0) {   // 防禦被打破
           P.guard = false; P.guardLock = 1.5; P.knockT = Math.max(P.knockT || 0, 0.8);
           R.fx && R.fx('poof', P.x, 1.1, P.z, { color: '#9AD8FF', n: 14 }); R.toast && R.toast('防禦被打破了！', '#FF9A6A');
           raw *= 0.5;
         } else {
-          raw *= 1 - (P.cls === 'knight' ? 0.85 : 0.7);
+          raw *= 1 - BLOCK;
           R.fx && R.fx('spark', P.x + Math.sin(P.aimA) * 0.9, 1.1, P.z + Math.cos(P.aimA) * 0.9, { a: P.aimA }); flash(0.6);
+        }
         }
       }
     }
@@ -87,9 +94,11 @@
     return shield;
   };
   // ---------- 手機：防禦鈕 ----------
+  // 2026-10-13：拿掉「防禦」鈕，改成按住職業條（#core-g）防禦，跟電腦按住 X 一樣
   let touchGuard = false;
-  const tc0 = R.tact;
-  R.tact = a => { if (a === 'guard') { touchGuard = !touchGuard; document.querySelectorAll('[data-tact="guard"]').forEach(b => b.classList.toggle('on', touchGuard)); return; } return tc0(a); };
+  document.addEventListener('pointerdown', e => { if (e.target && e.target.closest && e.target.closest('#core-g')) touchGuard = true; });
+  ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => { touchGuard = false; }));
+  window.addEventListener('blur', () => { touchGuard = false; });
   const ensureBtn = () => {
     const br = $('r-br'); if (!br || br.querySelector('[data-tact="guard"]')) return;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'act dungeon-only touch-only'; b.dataset.tact = 'guard'; b.textContent = '防禦';
@@ -111,8 +120,8 @@
       if (!P || !live()) { if (shield && shield.parent) shield.parent.remove(shield); P && (P.guard = false); return r; }
       init(P);
       if (P.guardLock > 0) P.guardLock -= dt;
-      // 防禦：按住 Z（或手機的鈕）
-      const I = R.input || { keys: {} }, want = (!!I.keys.z || touchGuard) && P.cls === 'knight' && !P.dead && !(P.knockT > 0) && !P.jump && !(P.dashT > 0) && !(P.guardLock > 0) && !w.paused;
+      // 防禦：按住職業鍵 X（keybinds.js 改過鍵也會送 key＝x），手機按住職業條
+      const I = R.input || { keys: {} }, want = (!!I.keys.x || touchGuard) && P.cls === 'knight' && !P.dead && !(P.knockT > 0) && !P.jump && !(P.dashT > 0) && !(P.guardLock > 0) && !w.paused;
       if (want && !P.guard) { if (P.stam > 0) { P.guard = true; P.guardT0 = w.run.t; P.charging = false; } else warn(); }
       if (!want) P.guard = false;
       // 跑步扣體力
@@ -128,7 +137,7 @@
       if (m) { m.visible = !!P.guard; if (P.guard) { m.position.set(P.x, 0.95, P.z); m.rotation.y = P.aimA || 0; glow = Math.max(0, glow - dt * 3); m.material.opacity = 0.28 + glow * 0.5; m.material.color.set(glow > 0.8 ? '#FFE08A' : '#9AD8FF'); } }
       // 畫面
       hudT -= dt; if (hudT <= 0) {
-        hudT = 0.05; ensureBtn(); document.querySelectorAll('[data-tact="guard"]').forEach(b => { b.style.display = P.cls === 'knight' ? '' : 'none'; }); const el = ensureBar();
+        hudT = 0.05; const el = ensureBar();
         if (el) { const k = P.stam / P.stamMax, s = Math.round(k * 1000) / 10 + '|' + (P.stamOut ? 'o' : k < 0.3 ? 'l' : '') + (P.guard ? 'g' : ''); if (s !== last) { last = s; el.firstChild.style.width = (k * 100).toFixed(1) + '%'; el.classList.toggle('low', !P.stamOut && k < 0.3); el.classList.toggle('out', !!P.stamOut); el.classList.toggle('guard', !!P.guard); } }
       }
     } catch (e) { console.warn('[stamina]', e); }
