@@ -90,7 +90,7 @@
     const r = ROOT[c.sym], sc = [...new Set((c.sc || CMAJ_SC).map(p => ((minorize(p + 12, r) % 12) + 12) % 12))].sort((a, b) => a - b);
     return (LAM[c.id] = Object.assign({}, c, { sym: MINOR[c.sym], tones: c.tones.map(m => minorize(m, r)), sc, conc: (c.conc || [60, 62, 64, 65, 64, 62]).map(m => minorize(m, r)) }));
   };
-  const chordOf = P => { let c = CH.find(x => x.id === SV().chord); c = c && (P.lv || 1) >= c.lv ? c : CH[0]; return lamentOf(c); };
+  const chordOf = P => { let c = CH.find(x => x.id === SV().chord); c = c && (P.lv || 1) >= c.lv ? c : CH[0]; return c; };   // 2026-10-13 作者：和弦、樂譜改回大調（Am 本來就是小三和弦）
   const chordDesc = (c, P) => (c.id === 'maj' ? '傷害 +' + pctOf(P) + '%' : c.id === 'min' ? '恢復與護盾 +' + pctOf(P) + '%' : c.id === 'sev' ? '範圍 +' + pctOf(P) + '%' : c.id === 'nin' ? '技能急速 +' + hasteOf(P) : '每次演奏回復 5% 最大魔力');
   const areaK = P => (chordOf(P).id === 'sev' ? 1 + pctOf(P) / 100 : 1);   // 2026-10-11：大三和弦與七和弦交換
   const healK = P => (chordOf(P).id === 'min' ? 1 + pctOf(P) / 100 : 1);
@@ -168,14 +168,14 @@
     Cmaj9: [48, 52, 55, 59, 62], Am9: [45, 48, 52, 55, 59], Dm9: [50, 53, 57, 60, 64], Fmaj9: [41, 45, 48, 52, 55], Em9: [40, 47, 50, 54, 55],
     Dm11: [38, 45, 48, 53, 55, 64], Cm7: [48, 51, 55, 58], Fm9: [41, 44, 48, 51, 55], G11sus: [43, 48, 50, 53, 57], 'Cmaj9#11': [48, 52, 55, 59, 62, 66], 'Fmaj9#11': [41, 45, 48, 52, 55, 59] };
   // 協奏音 do-re-mi-fa-mi-re（再回到 do 一直繞），C 大調
-  const CONC = [60, 62, 64, 65, 64, 62], CMAJ = { sc: [0, 2, 4, 5, 7, 9, 11] };
+  const CONC = [60, 62, 64, 65, 64, 62], ARP = [60, 67, 64, 67], CMAJ = { sc: [0, 2, 4, 5, 7, 9, 11] };
   // 戰鼓手的鼓點（2026-10-12 作者）：4/4、直拍、八分音符；位置照八分音符數（第 1 個八分＝1）；最後一拍加四下十六分的筒鼓過門
   const DRUM = { 4: { k: [3, 7], s: [1, 2, 5, 6] }, 6: { k: [3, 7, 11], s: [1, 2, 5, 6, 9, 10] } };
   const drums = (cap, bt) => {
     if (!R.playDrums) return; const pat = DRUM[cap] || DRUM[4], e8 = bt / 2, n8 = cap * 2, H = [];
     for (let i = 1; i <= n8; i++) { const t = (i - 1) * e8; H.push(['h', t, i % 2 ? 0.9 : 0.6]); if (pat.k.includes(i)) H.push(['k', t, 1.1]); if (pat.s.includes(i)) H.push(['s', t, 0.85]); }
     [220, 180, 150, 120].forEach((f, j) => H.push(['t', (cap - 1) * bt + j * bt / 4, 0.8, f]));
-    try { R.playDrums(H, 0.2); } catch (e) { }
+    try { R.playDrums(H, 0.2 * 0.9); } catch (e) { }
   };
   const startPerf = (P, what) => {
     const notes = SV().notes; if (!notes || !notes.length || ST.rec || ST.perf) return false;
@@ -187,14 +187,15 @@
     const mid = notes.map((n, i) => vary(midiOf(n, i, c), c, dv));
     ST.perf = Object.assign({ t: 0, dur, notes: notes.slice(), times, mid, shown: 0, pid: ++ST.pid }, what);
     // 2026-10-12 作者：只在開頭彈一次主和弦（照選的和弦），延音整個小節；音量比原本每拍的和弦大 10%。奏域師用管風琴。
-    // 最後一拍再彈一次小調和弦收尾。戰鼓手：加一小節鼓。
+    // 最後一拍再彈一次和弦收尾（2026-10-13 改回大調）。戰鼓手：加一小節鼓。
     const len = i => Math.max(0.08, notes[i].d * bt * 0.9), bar = cap * bt;
     melody(P, notes.map((n, i) => [mid[i], times[i], len(i)]), 0.085 * 1.05);
     const tonic = CHD[c.sym] || CHD.C, chV = n => 0.085 * 0.9 * 1.1 * Math.sqrt(3 / n), chI = P.adv === 'serane' ? 'organ' : inst(P);
-    try { R.playMelody && R.playMelody(chI, tonic.map(m => [m, 0, bar]), chV(tonic.length)); } catch (e) { }
-    if (cap > 1) { const end = CHD[c.sym] || CHD.Cm; try { R.playMelody && R.playMelody(inst(P), end.map(m => [m, (cap - 1) * bt, bt]), chV(end.length)); } catch (e) { } }
+    try { R.playMelody && R.playMelody(chI, tonic.map(m => [m, 0, bar]), chV(tonic.length), 3 * bt); } catch (e) { }   // 2026-10-13：主和弦音量線性變小，第四拍歸零
+    if (cap > 1) { const end = CHD[c.sym] || CHD.C; try { R.playMelody && R.playMelody(inst(P), end.map(m => [m, (cap - 1) * bt, bt]), chV(end.length)); } catch (e) { } }
     if (P.adv === 'drummer') drums(cap, bt);
-    const cc = c.conc || CONC, conc = []; for (let h = 0; h < cap * 2; h++) conc.push([vary(cc[h % cc.length], c, dv), h * bt / 2, bt / 2 * 0.9]);
+    const cc = ARP, conc = [];   // 2026-10-13 作者：伴奏 Do-So-Mi-So，每半拍一個音，跟著整段的升降一起變
+     for (let h = 0; h < cap * 2; h++) conc.push([vary(cc[h % cc.length], c, dv), h * bt / 2, bt / 2 * 0.9]);
     melody(P, conc, 0.0425 * 0.9);
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.2, color: c.col });
     return true;
