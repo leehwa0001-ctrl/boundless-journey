@@ -1,12 +1,12 @@
 // 討伐令 1433：格子倉庫（2026-10-12 作者：倉庫改成像塔科夫的倉庫、搬進公寓、花錢買箱子擴充）
-// - 倉庫是 10 格寬的格子，每件東西照種類佔 W×H 格（武器長條、防具大塊、飾品護符 1×1），不能重疊。
+// - 倉庫是 14 格寬的格子，每件東西照種類佔 W×H 格（武器長條、防具大塊、飾品護符 1×1），不能重疊。
 // - 拖曳放置（滑鼠、觸控都可以），拖曳中按 R 旋轉；點一下打開那件的卡片（穿上／賣掉／上鎖／旋轉）。
 // - 「自動整理」重排全部；放不下的放到「暫放區」，東西不會不見（R.S.stash 照舊是全部物品，格子只記位置 R.S.tg）。
 // - 倉庫在公寓 302 室的收納櫃；有家之後，別的地方打開倉庫只能看身上的裝備。還沒租房子的人照舊在公會寄放。
 // - 擴充：加大倉庫（每次 +2 排）、買箱子（箱子本身佔格子，裡面有更大的格子，有的只收某一類）。
 // 放在所有包 R.hub 的檔案後面（stashux.js 後面）。
 (function (R) {
-  const COLS = 10, BASE_ROWS = 8, UP_ROWS = 2, UP_MAX = 12;
+  const COLS = 14, BASE_ROWS = 10, UP_ROWS = 2, UP_MAX = 20;   // 2026-10-13 作者：增加一些收納上限（10×8→14×10，加大次數 12→20；舊存檔多 2 排，見 tg()）
   const BOX = {
     small: { name: '小物件箱', w: 2, h: 2, iw: 4, ih: 4, price: 800, only: ['charm', 'acc'], note: '只放護符、飾品' },
     weapon: { name: '武器箱', w: 4, h: 2, iw: 6, ih: 5, price: 1800, only: ['weapon'], note: '只放武器' },
@@ -30,7 +30,7 @@
   const boxPrice = t => { const g = tg(); return Math.round(BOX[t].price * Math.pow(1.5, (g.bought[t] || 0)) / 50) * 50; };
 
   const S = () => R.S;
-  const tg = () => { const s = S(); if (!s.tg || typeof s.tg !== 'object') s.tg = { v: 1, rows: BASE_ROWS, up: 0, boxes: [], pos: {}, bought: {} }; const g = s.tg; g.boxes = g.boxes || []; g.pos = g.pos || {}; g.bought = g.bought || {}; g.rows = g.rows || BASE_ROWS; return g; };
+  const tg = () => { const s = S(); if (!s.tg || typeof s.tg !== 'object') s.tg = { v: 1, v2: 1, rows: BASE_ROWS, up: 0, boxes: [], pos: {}, bought: {} }; const g = s.tg; if (!g.v2) { g.rows = Math.max((g.rows || 8) + 2, BASE_ROWS); g.v2 = 1; } g.boxes = g.boxes || []; g.pos = g.pos || {}; g.bought = g.bought || {}; g.rows = g.rows || BASE_ROWS; return g; };
   const loose = () => { const eq = R.equippedIds(); return (S().stash || []).filter(it => !eq.has(it.id)); };
   const gridDim = key => { const g = tg(); if (key === 'main') return [COLS, g.rows]; const b = g.boxes.find(x => x.id === key); return b ? [BOX[b.t].iw, BOX[b.t].ih] : [0, 0]; };
   const allows = (key, it) => { if (key === 'main') return true; const b = tg().boxes.find(x => x.id === key); if (!b) return false; const o = BOX[b.t].only; return !o || o.includes(kindOf(it)); };

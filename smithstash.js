@@ -131,12 +131,49 @@
   const shopCards = () => document.querySelectorAll('.tk-shop [data-tkbuy], .tk-bar [data-tkup]').forEach(b => {
     if (!b.disabled) return; const m = b.textContent.match(/(\d+)\s*費拉/); if (m && S().gold < +m[1]) b.title = (b.title ? b.title + '\n' : '') + '還差 ' + (+m[1] - S().gold) + ' 費拉';
   });
+  // 寬版三欄（2026-10-13 作者：衣櫃放左邊，右邊跟以前一樣詳細裝備數值；角色數值自己點才展開；左右往外拓寬）
+  let csOpen = 0; try { csOpen = +localStorage.getItem('tfl_stash_cs') || 0; } catch (e) { }
+  let pickId = null;
+  const detail = (panel, id) => {
+    const it = id && R.itemById(id), body = $('hub-body');
+    if (!it) { panel.innerHTML = '<h3>裝備詳細</h3><p class="note">把滑鼠移到衣櫃裡的東西上（手機：點一下），這裡會顯示完整的數值、詞綴，和現在穿著的比較。</p>'; return; }
+    const orig = [...body.querySelectorAll('.item-card')].find(c => !panel.contains(c) && c.querySelector('[data-equip="' + id + '"],[data-sell="' + id + '"],[data-lock="' + id + '"]'));
+    panel.innerHTML = '<h3>裝備詳細</h3>';
+    if (orig) { const cl = orig.cloneNode(true); cl.hidden = false; cl.removeAttribute('data-tk-shown'); panel.appendChild(cl); }
+    else panel.insertAdjacentHTML('beforeend', '<div class="item-card" style="--c:' + R.rarityColor(it) + '"><b>' + esc(R.itemName(it)) + '</b>' + (R.itemInfo ? R.itemInfo(it) : '') + '</div>');
+    try {
+      const k = R.slotOf && R.slotOf(it), eq = k && R.equipped ? R.equipped(S().cls) : null, e = eq && (eq[k] || (k === 'acc' && (eq.acc || eq.acc2)));
+      if (e && e.id !== it.id) panel.insertAdjacentHTML('beforeend', '<h4 class="sw-vs">現在穿著的</h4><div class="item-card sw-eq" style="--c:' + R.rarityColor(e) + '"><b>' + esc(R.itemName(e)) + '</b>' + (R.itemInfo ? R.itemInfo(e) : '') + '</div>');
+    } catch (er) { }
+    // 卡片上的鈕：轉給原本那張卡（事件都綁在原本的卡上）
+    panel.querySelectorAll('button').forEach(b => {
+      const keyA = [...b.attributes].find(a => /^data-/.test(a.name)); if (!keyA) { b.disabled = true; return; }
+      const fw = ev => { const t = [...body.querySelectorAll('[' + keyA.name + '="' + keyA.value + '"]')].find(x => !panel.contains(x)); if (!t) return; ev.preventDefault(); ev.stopPropagation(); t.dispatchEvent(new ev.constructor(ev.type, ev)); };
+      ['click', 'pointerdown', 'pointerup', 'pointerleave', 'mousedown', 'mouseup', 'touchstart', 'touchend'].forEach(tp => b.addEventListener(tp, fw));
+    });
+  };
+  const wideLayout = body => {
+    const st = body.querySelector('.tk-stash'); if (!st || body.querySelector('.sw-cols')) return;
+    const old = body.querySelector('.st-cols'), left = old && old.querySelector('.st-left'), mid = old && old.querySelector('.st-right');
+    const cols = document.createElement('div'); cols.className = 'sw-cols';
+    const L = document.createElement('div'); L.className = 'sw-l'; const M = document.createElement('div'); M.className = 'sw-m'; const Rt = document.createElement('div'); Rt.className = 'sw-r';
+    const cap = $('hs-cap'); L.innerHTML = '<div class="gh-board sw-sign"><span class="gh-kamon">蔵</span><h2>衣櫃</h2></div>'; if (cap) L.appendChild(cap); L.appendChild(st);
+    if (mid) while (mid.firstChild) M.appendChild(mid.firstChild); else [...body.children].forEach(c => { if (c !== cols) M.appendChild(c); });
+    const panel = document.createElement('div'); panel.className = 'sw-detail'; Rt.appendChild(panel);
+    if (left) while (left.firstChild) Rt.appendChild(left.firstChild);
+    Rt.querySelectorAll('details.cs-box:not(.hs-own)').forEach(d => { d.open = !!csOpen; d.addEventListener('toggle', () => { csOpen = d.open ? 1 : 0; try { localStorage.setItem('tfl_stash_cs', csOpen); } catch (e) { } }); });
+    cols.append(L, M, Rt); if (old) old.replaceWith(cols); else body.appendChild(cols);
+    detail(panel, pickId && R.itemById(pickId) ? pickId : null);
+    const hov = e => { const el = e.target.closest && e.target.closest('.tk-it[data-tk]'); if (!el || el.dataset.tk === pickId) return; pickId = el.dataset.tk; detail(panel, pickId); };
+    st.addEventListener('mouseover', hov); st.addEventListener('pointerup', hov);
+  };
   let capObs = null;
   const stash = body => {
     const sec = body.querySelector('section.panel-doc'); if (sec) sign(sec, '蔵');
     const st = body.querySelector('.tk-stash'); if (!st) return;
     if (!$('hs-cap')) { const c = document.createElement('div'); c.id = 'hs-cap'; c.className = 'hs-cap'; st.before(c); }
     try { sellPanel(st); } catch (e) { console.warn('[smithstash]', e); }
+    try { wideLayout(body); } catch (e) { console.warn('[smithstash]', e); }
     cap(); shopCards();
     if (capObs) capObs.disconnect();
     capObs = new MutationObserver(() => { cap(); shopCards(); }); capObs.observe(st, { childList: true, subtree: true });
@@ -198,6 +235,13 @@
     '.hs-slist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:4px;max-height:320px;overflow:auto;margin:6px 0}',
     '.hs-srow{display:grid;grid-template-columns:auto 1fr auto;grid-template-rows:auto auto;column-gap:8px;align-items:center;padding:4px 8px;border-radius:4px;background:rgba(0,0,0,.3);border-left:4px solid var(--c);cursor:pointer}.hs-srow input{grid-row:1/3}.hs-srow b{color:var(--c)}.hs-srow small{grid-column:2;color:var(--dim)}.hs-srow span{grid-row:1/3;grid-column:3;color:#F0CF6A}',
     '.hs-sell .row{display:flex;gap:10px;align-items:center;justify-content:flex-end}.hs-sell .btn.red{background:#C2412D;color:#FFF;border-color:#7A2214}.hs-sell .btn.red:disabled{opacity:.5}',
+    '#hub.hs-stash .hub-body{padding-left:1vw;padding-right:1vw}',
+    '.sw-cols{display:grid;grid-template-columns:minmax(0,640px) minmax(300px,1fr) minmax(320px,28%);gap:16px;align-items:start;width:100%;max-width:98vw;margin:0 auto}',
+    '.sw-cols .panel-doc{max-width:none;margin:0}.sw-l{min-width:0}.sw-l .tk-wrap{flex-direction:column}.sw-sign{display:inline-flex;margin:0 0 6px}',
+    '.sw-r{position:sticky;top:0;display:flex;flex-direction:column;gap:10px;max-height:calc(100vh - 140px);overflow:auto}',
+    '.sw-detail{padding:10px 12px;border-radius:8px;background:linear-gradient(180deg,rgba(30,36,60,.35),rgba(22,19,28,.8));border:1px solid rgba(201,161,58,.35)}.sw-detail h3{margin:0 0 6px}.sw-detail .item-card{margin:0 0 8px}.sw-vs{margin:8px 0 4px;color:#C8B88A;font-size:13px}.sw-eq{opacity:.9}',
+    '@media (max-width:1100px){.sw-cols{grid-template-columns:minmax(0,640px) 1fr}.sw-r{grid-column:1/-1;position:static;max-height:none}}',
+    '@media (max-width:760px){.sw-cols{grid-template-columns:1fr}.sw-l{overflow-x:auto}}',
     '@media (max-width:720px){#hub.hs-on .item-card .btn,#hub.hs-on .item-card .mini{min-height:40px}#hub.hs-smith .subtabs .tab kbd{display:none}.hs-slist{grid-template-columns:1fr}}'
   ].join('\n');
   document.head.appendChild(css);
