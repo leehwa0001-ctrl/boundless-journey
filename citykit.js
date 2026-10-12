@@ -485,7 +485,7 @@
 
   // ---------- 光線（照遊戲裡的時間、天氣） ----------
   // 太陽高度 → 天空、太陽的顏色；跟 daytime.js 一樣：早上 6 點日出、傍晚 18 點半日落
-  const WX = { '晴': { cloud: 0.18, sun: 1, fog: 1, snow: 0.18, wet: 0, flakes: 0 }, '陰': { cloud: 0.75, sun: 0.35, fog: 1.4, snow: 0.28, wet: 0, flakes: 0 }, '小雪': { cloud: 0.7, sun: 0.4, fog: 1.6, snow: 0.6, wet: 0, flakes: 2500 }, '大雪': { cloud: 0.9, sun: 0.25, fog: 2.4, snow: 0.9, wet: 0, flakes: 6000 }, '暴風雪': { cloud: 1, sun: 0.15, fog: 4, snow: 1, wet: 0, flakes: 9000, wind: 6 }, '雨': { cloud: 0.85, sun: 0.25, fog: 1.8, snow: 0.1, wet: 1, flakes: 5000, rain: 1 } };
+  const WX = { '晴': { cloud: 0.18, sun: 1, fog: 1, snow: 0.18, wet: 0, flakes: 0 }, '陰': { cloud: 0.75, sun: 0.35, fog: 1.4, snow: 0.28, wet: 0, flakes: 0 }, '小雪': { cloud: 0.7, sun: 0.4, fog: 1.6, snow: 0.6, wet: 0, flakes: 3500 }, '大雪': { cloud: 0.9, sun: 0.25, fog: 2.4, snow: 0.9, wet: 0, flakes: 7500 }, '暴風雪': { cloud: 1, sun: 0.15, fog: 4, snow: 1, wet: 0, flakes: 9000, wind: 6 }, '雨': { cloud: 0.85, sun: 0.25, fog: 1.8, snow: 0.1, wet: 1, flakes: 5000, rain: 1 } };
   CK.WX = WX;
   const sunAt = h => {
     const day = h >= 6 && h <= 18.5, t = day ? (h - 6) / 12.5 : ((h + 24 - 18.5) % 24) / 11.5;

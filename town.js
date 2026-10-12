@@ -624,7 +624,7 @@
     const flakes = R.flakeCount ? R.flakeCount(E) : E.blizzard ? 2200 : E.heavySnow ? 1300 : 700, geo = new TH.BufferGeometry(), arr = new Float32Array(flakes * 3);
     for (let i = 0; i < flakes; i++) { arr[i * 3] = (Math.random() - 0.5) * 60; arr[i * 3 + 1] = Math.random() * 18; arr[i * 3 + 2] = (Math.random() - 0.5) * 60; }
     geo.setAttribute('position', new TH.BufferAttribute(arr, 3));
-    tw.snow = new TH.Points(geo, new TH.PointsMaterial({ color: '#FFFFFF', size: 1, sizeAttenuation: false, transparent: true, opacity: 0.9, depthWrite: false })); tw.snow.frustumCulled = false; tw.snow.userData.wind = E.blizzard ? 6 : 0.3; group.add(tw.snow);
+    tw.snow = new TH.Points(geo, new TH.PointsMaterial({ color: '#FFFFFF', size: 0.5, sizeAttenuation: false, transparent: true, opacity: 0.9, depthWrite: false })); tw.snow.frustumCulled = false; tw.snow.userData.wind = E.blizzard ? 6 : 0.3; group.add(tw.snow);
 
     SB.flush(group); HB.flush(group);
     scene.add(group); tw.group = group;

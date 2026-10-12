@@ -289,7 +289,7 @@
     const N = 9000, pos = new Float32Array(N * 3), rr = CK.rng(9); for (let i = 0; i < N; i++) { pos[i * 3] = rr() * 80 - 40; pos[i * 3 + 1] = rr() * 34; pos[i * 3 + 2] = rr() * 80 - 40; }
     const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(pos, 3)); pg.setDrawRange(0, 0);
     const pm = new TH.ShaderMaterial({
-      uniforms: { t: { value: 0 }, c: { value: new TH.Vector3() }, fall: { value: 1.6 }, wind: { value: new TH.Vector2(0.4, 0.15) }, size: { value: 2.6 }, rain: { value: 0 }, col: { value: new TH.Color(1, 1, 1) } },
+      uniforms: { t: { value: 0 }, c: { value: new TH.Vector3() }, fall: { value: 1.6 }, wind: { value: new TH.Vector2(0.4, 0.15) }, size: { value: 1.2 }, rain: { value: 0 }, col: { value: new TH.Color(1, 1, 1) } },
       vertexShader: 'uniform float t; uniform vec3 c; uniform float fall; uniform vec2 wind; uniform float size; uniform float rain; varying float vA; void main(){ vec3 p = position + vec3(wind.x * t + sin(t * 0.7 + position.y) * 0.6 * (1.0 - rain), -fall * t, wind.y * t); p.xz = mod(p.xz - c.xz + 40.0, 80.0) - 40.0 + c.xz; p.y = mod(p.y, 34.0) + c.y; vec4 mv = modelViewMatrix * vec4(p, 1.0); gl_Position = projectionMatrix * mv; gl_PointSize = size * (220.0 / -mv.z); vA = clamp(1.0 - (-mv.z) / 70.0, 0.0, 1.0); }',
       fragmentShader: 'uniform float rain; uniform vec3 col; varying float vA; void main(){ vec2 d = gl_PointCoord - 0.5; float a = rain > 0.5 ? (1.0 - smoothstep(0.02, 0.06, abs(d.x))) * (1.0 - smoothstep(0.3, 0.5, abs(d.y))) * 0.5 : 1.0 - smoothstep(0.2, 0.5, length(d)); if (a < 0.02) discard; gl_FragColor = vec4(col, a * vA * 0.9); }',
       transparent: true, depthWrite: false, fog: false
@@ -322,7 +322,7 @@
     L.lampK = k.lampK;
     // 雪、雨
     const sn = L.snow, sm = sn.material.uniforms, wx = k.wx, n = Math.round(Math.min(9000, wx.flakes * (R.touch ? 0.5 : 1)));
-    sn.geometry.setDrawRange(0, n); sn.visible = n > 0; sm.rain.value = wx.rain ? 1 : 0; sm.fall.value = wx.rain ? 16 : 1.4 + (wx.wind || 0) * 0.2; sm.wind.value.set(wx.rain ? 1 : 0.5 + (wx.wind || 0) * 2.2, wx.rain ? 0.2 : 0.2 + (wx.wind || 0) * 0.6); sm.size.value = wx.rain ? 4 : 2.4; sm.col.value.set(wx.rain ? '#9AB0C8' : '#FFFFFF');
+    sn.geometry.setDrawRange(0, n); sn.visible = n > 0; sm.rain.value = wx.rain ? 1 : 0; sm.fall.value = wx.rain ? 16 : 1.4 + (wx.wind || 0) * 0.2; sm.wind.value.set(wx.rain ? 1 : 0.5 + (wx.wind || 0) * 2.2, wx.rain ? 0.2 : 0.2 + (wx.wind || 0) * 0.6); sm.size.value = wx.rain ? 4 : 1.15; sm.col.value.set(wx.rain ? '#9AB0C8' : '#FFFFFF');
   };
   CK.applyTime = applyTime;
 
