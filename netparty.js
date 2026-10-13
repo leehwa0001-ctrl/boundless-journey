@@ -70,6 +70,7 @@
       const h = a.s.db.map(([k, s]) => '<b style="color:' + R.DEBUFF_KIND[k].c + '">' + esc(R.DEBUFF_KIND[k].n) + ' ' + s + '</b>').join(' ');
       if (db.dataset.h !== h) { db.dataset.h = h; db.innerHTML = h; db.hidden = !h; }
       row.style.opacity = a.stale ? '0.6' : '';
+      const cv = row.querySelector('canvas'); row.classList.toggle('np-noface', !(cv && cv.dataset.k && !cv.dataset.k.startsWith('0:')));   // 沒切到頭像：職業徽章放進頭像框
     });
   };
   const ph0 = R.partyHud;

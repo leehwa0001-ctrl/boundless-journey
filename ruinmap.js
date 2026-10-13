@@ -50,6 +50,7 @@
     // 遺跡生物：走過的房間裡、或離你 14 公尺內的
     (W.enemies || []).forEach(e => { if (e.dead) return; const ri = R.roomIndexAt ? R.roomIndexAt(e.x, e.z) : -1; if (!(ri >= 0 && F.rooms[ri].visited) && Math.hypot(e.x - P.x, e.z - P.z) > 14) return; const [mx, my] = pt(e.x, e.z); g.fillStyle = e.def.boss ? '#FF3A5A' : e.def.elite ? '#FF9A3A' : '#E0584A'; g.beginPath(); g.arc(mx, my, e.def.boss ? 5 : 3, 0, 7); g.fill(); });
     (W.allies || []).forEach(a => { if (a.downed) return; const [mx, my] = pt(a.x, a.z); g.fillStyle = '#6FE08A'; g.beginPath(); g.arc(mx, my, 3.5, 0, 7); g.fill(); });
+    if (R.coopDraw) R.coopDraw(g, pt, 9, 'bold 12px sans-serif');   // 連線隊友（coopmap.js）
     // 自己
     const [mx, my] = pt(P.x, P.z), a = P.aimA || 0; g.save(); g.translate(mx, my); g.rotate(Math.PI - a); g.beginPath(); g.moveTo(0, -11); g.lineTo(7, 7); g.lineTo(0, 3); g.lineTo(-7, 7); g.closePath(); g.fillStyle = '#FFE08A'; g.fill(); g.lineWidth = 2; g.strokeStyle = '#141018'; g.stroke(); g.restore();
     const bar = view.k * 10; g.fillStyle = 'rgba(20,16,24,.8)'; g.fillRect(10, ch - 26, bar + 60, 18); g.fillStyle = '#F4E9CD'; g.fillRect(16, ch - 18, bar, 3); g.font = '11px sans-serif'; g.textAlign = 'left'; g.fillText('10 公尺', 22 + bar, ch - 16);
