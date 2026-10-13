@@ -46,18 +46,24 @@
     const pair = matsHere(), k = s && s.mat && MAT[s.mat] ? s.mat : rnd() < 0.7 ? pair[0] : pair[1], M = MAT[k];
     pet.mat = k; pet.elem = M.elem || null; pet.dK = M.dK || 1; pet.spK = M.spK || 1; pet.kbK = M.kb || 0;
     pet.upkeep = upOfK(s && s.k) * (M.up || 1); pet.born = CT(); pet.left = 1e9;   // 不限時間（魔力見底才散）
+    pet.hpMax = Math.round((P.hpMax || 100) * (0.25 + 0.35 * ((s && s.k) || 0.6))); pet.hp = pet.hpMax;   // 2026-10-13 第三版：召喚物有血量（技能格上面顯示）
     pet.mp0 = castMp / Math.max(1, (s && s.n) || 1);
     if (pet.g) tint(pet.g, M.col);
     R._petMat = k;   // netsummon.js 送給隊友
   };
   // 召喚技能花了多少魔力（收回時退一半）
-  const wrapCast = f => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const m0 = P.mp; castMp = 0; const L0 = pets().length; const r = f(...a); const used = m0 - P.mp; if (used > 0 && pets().length > L0) { const nw = pets().slice(L0); nw.forEach(p => { p.mp0 = used / nw.length; }); } return r; };
-  if (R.castSlot) R.castSlot = wrapCast(R.castSlot);
-  if (R.useSkill) R.useSkill = wrapCast(R.useSkill);
+  const wrapCast = (f, sl) => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const slot = sl(a); const m0 = P.mp; castMp = 0; const L0 = pets().length; const r = f(...a); const used = m0 - P.mp; if (used > 0 && pets().length > L0) { const nw = pets().slice(L0); nw.forEach(p => { p.mp0 = used / nw.length; }); } pets().slice(L0).forEach(p => { if (p.slot == null) p.slot = slot; }); return r; };
+  if (R.castSlot) R.castSlot = wrapCast(R.castSlot, a => (typeof a[0] === 'number' ? a[0] : 0));
+  if (R.useSkill) R.useSkill = wrapCast(R.useSkill, () => 0);
   // ---------- 意念 ----------
   R.petThink = (pet, P, dt, tg, w) => {
     if (!isS(P)) return null;
     const M = MAT[pet.mat] || {}, mode = modeOf(P), d2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z), obs = 1 + Math.min(0.5, (P._obs || 0) / 200);
+    if (pet.hpMax) {   // 貼著召喚物的敵人會打它；離開戰鬥慢慢回血
+      let hurt = 0; (w.enemies || []).forEach(e => { if (e.dead || e.under || (e.st && (e.st.stun > 0 || e.st.freeze > 0))) return; if (d2(e, pet) < 1 + (e.def ? e.def.size * 0.5 : 0.5)) hurt += (e.dmg || 5) * 0.5; });
+      if (hurt > 0) { pet.hp -= hurt * dt; pet.calm = 0; } else { pet.calm = (pet.calm || 0) + dt; if (pet.calm > 3) pet.hp = Math.min(pet.hpMax, pet.hp + pet.hpMax * 0.04 * dt); }
+      if (pet.hp <= 0) { pet.hp = 0; pet.left = 0; return null; }
+    }
     pet.spK = (M.spK || 1) * (mode === 'wild' ? 1.25 : 1); pet.dK = (M.dK || 1) * (mode === 'wild' ? 1.1 : 1) * obs;
     if (mode === 'guard') {
       let best = null, bd = 5; (w.enemies || []).forEach(e => { if (e.dead || e.under || e.invuln) return; const d = d2(e, P); if (d < bd) { bd = d; best = e; } });
@@ -78,8 +84,34 @@
       try { if (!e.dead) { if (M.root) e.st.root = Math.max(e.st.root || 0, M.root); if (M.brk && R.elemBreak && rnd() < 0.3) R.elemBreak(e); } if (M.heal && R.healP) R.healP(P.hpMax * M.heal, true); } catch (err) { }
       return r;
     }
-    return he0(e, raw, o);
+    const r = he0(e, raw, o);
+    try { if (o && o.primary && isS(P) && live()) coop(P, e); } catch (err) { }
+    return r;
   };
+  // ---------- 協同攻擊（第三版）：你的普攻打中 → 所有召喚物馬上一起撲上去打那一隻；內部冷卻 2.5 秒 ----------
+  const COOP_CD = 2.5; let coopAt = -99;
+  const coopLeft = () => Math.max(0, COOP_CD - (CT() - coopAt));
+  R.summonCoopLeft = coopLeft;
+  const coop = (P, e) => {
+    if (!e || coopLeft() > 0) return;
+    const mode = modeOf(P), d2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+    if (e.dead && !(e.hp > 0)) return;
+    const L = pets().filter(p => mode !== 'guard' ? d2(p, P) < 18 : d2(e, P) < 5 && d2(p, P) < 6);   // 護衛：只打你身邊的
+    if (!L.length) return;
+    coopAt = CT(); const obs = 1 + Math.min(0.5, (P._obs || 0) / 200);
+    L.forEach((p, i) => {
+      if (e.dead) return;
+      const a = Math.atan2(p.x - e.x, p.z - e.z), rr = 0.9 + (e.def ? e.def.size * 0.45 : 0.4);
+      R.fx && R.fx('blink', p.x, 0.6, p.z, { color: (MAT[p.mat] || {}).col });
+      p.x = e.x + Math.sin(a) * rr; p.z = e.z + Math.cos(a) * rr; if (p.g) p.g.position.set(p.x, 0, p.z);
+      const s = p.s || {}, dmg = (p.pw || 10) * (s.k || 0.6) * (p.mul || 1) * (p.dK || ((MAT[p.mat] || {}).dK || 1) * obs);
+      e.petHit = 1; R.petHitter = p; R.hurtEnemy(e, dmg, { primary: false, kb: (s.kb || 0.4) + (p.kbK || 0), elem: p.elem || undefined }); R.petHitter = null; e.petHit = 0;
+      p.cd = Math.max(p.cd || 0, s.rate || 0.8);
+      R.fx && R.fx('spark', e.x, 0.8, e.z, { a });
+    });
+    say(P, '協同 ×' + L.length, 'crit');
+  };
+  R.summonCoop = (e) => { const P = W().P; coopAt = -99; coop(P, e); };
   // ---------- 每一格：吃魔力；見底＝最弱、最早的先散 ----------
   let fadeT = 0;
   const st0 = R.step;
@@ -87,6 +119,7 @@
     const r = st0(dt);
     try {
       const w = W(), P = w && w.P;
+      if (P && isS(P) && P.ws && P.ws.mp) { P.ws._mp = P.ws.mp; P.ws.mp = 0; }   // 第三版：召喚師的普攻不吃魔力
       if (P && isS(P) && w.run && !w.paused && !P.dead) {
         const L = pets();
         if (L.length) {
@@ -135,11 +168,35 @@
   }
   C.gauge = function (P) {
     const o = P._obs || 0, n = pets().length, m = MODES.find(x => x[0] === modeOf(P))[1], pair = matsHere(), up = Math.round(totalUp(P) * 10) / 10;
-    return { name: '意念：' + m, v: o, max: 100, full: o >= 100, text: '執念 ' + Math.floor(o) + '（召喚物傷害 +' + Math.round(Math.min(50, o / 2)) + '%）', sub: '召喚物 ' + n + ' 隻・維持 ' + up + ' 魔力/秒・材質 ' + MAT[pair[0]].n + '／' + MAT[pair[1]].n, x: '換意念（按住＝收回）' };
+    return { name: '意念：' + m, v: o, max: 100, full: o >= 100, text: '執念 ' + Math.floor(o) + '（召喚物傷害 +' + Math.round(Math.min(50, o / 2)) + '%）', sub: (coopLeft() > 0 ? '協同 ' + coopLeft().toFixed(1) + ' 秒' : '協同 好了') + '・召喚物 ' + n + ' 隻・維持 ' + up + ' 魔力/秒・材質 ' + MAT[pair[0]].n + '／' + MAT[pair[1]].n, x: '換意念（按住＝收回）' };
   };
   C.act0 = null;
-  C.help = P => '召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。召喚物不限時間，在場時每隻每秒吃一點魔力；魔力見底，最弱的那隻先散掉。X 點一下換意念：集火（打你最後打的那隻）→ 護衛（守在你身邊）→ 狂奔（各打各的）；按住 X＝收回所有召喚物，退回一半魔力。召喚物打中、打倒都攢執念，執念讓召喚物更痛。'
+  C.help = P => '召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。召喚物不限時間，在場時每隻每秒吃一點魔力；魔力見底，最弱的那隻先散掉。X 點一下換意念：集火（打你最後打的那隻）→ 護衛（守在你身邊）→ 狂奔（各打各的）；按住 X＝收回所有召喚物，退回一半魔力。召喚物打中、打倒都攢執念，執念讓召喚物更痛。普攻不吃魔力；普攻打中時，所有召喚物會馬上一起撲上去打那一隻（協同攻擊，2.5 秒一次；護衛只打你身邊的）。召喚物有血量，顯示在技能格上面，被打倒就散掉。'
     + ({ beastlord: '萬獸師：維持魔力 −25%。', medium: '靈媒師：收回時每隻回你 3% 生命。', tamer: '遺跡馴獸師：集火的時候召喚物傷害 +30%。', shikigami: '式神使：收回退回 80% 魔力。' }[adv(P)] || '');
+  // ---------- 技能格上面的召喚物血條 ----------
+  const bars = {};
+  const slotEl = i => document.getElementById(i === 0 ? 'r-skill' : 'r-skill' + (i + 1));
+  const drawBars = () => {
+    const w = W(), P = w && w.P, on = !!(P && isS(P) && w.run && !w.run.done), by = {};
+    if (on) pets().forEach(p => { if (p.slot != null && p.hpMax) (by[p.slot] = by[p.slot] || []).push(p); });
+    for (let i = 0; i < 5; i++) {
+      const L = by[i] || [], el = slotEl(i); let b = bars[i];
+      if (!L.length || !el || !el.offsetParent) { if (b) b.style.display = 'none'; continue; }
+      if (!b) { b = bars[i] = document.createElement('div'); b.className = 'sm-hp'; document.body.appendChild(b); }
+      const rc = el.getBoundingClientRect(), wd = Math.max(28, rc.width - 6);
+      let h = '';
+      if (L.length <= 3) L.forEach(p => { h += '<i><b style="width:' + Math.round(100 * p.hp / p.hpMax) + '%;background:' + ((MAT[p.mat] || {}).col || '#B8E07A') + '"></b></i>'; });
+      else { const hp = L.reduce((a, p) => a + p.hp, 0), mx = L.reduce((a, p) => a + p.hpMax, 0); h = '<i><b style="width:' + Math.round(100 * hp / mx) + '%"></b></i><em>×' + L.length + '</em>'; }
+      if (b._h !== h) { b.innerHTML = h; b._h = h; }
+      b.style.display = 'block'; b.style.left = (rc.left + (rc.width - wd) / 2) + 'px'; b.style.width = wd + 'px'; b.style.top = (rc.top - 8 - Math.min(3, L.length) * 7) + 'px';
+    }
+  };
+  try {
+    const css = document.createElement('style');
+    css.textContent = '.sm-hp{position:fixed;z-index:40;pointer-events:none;display:none}.sm-hp i{display:block;height:4px;margin-top:3px;background:#0d0f0c;border:1px solid #000;box-shadow:0 0 0 1px #2a2e26;border-radius:2px;overflow:hidden}.sm-hp b{display:block;height:100%;background:#B8E07A;opacity:.85}.sm-hp em{position:absolute;right:-2px;top:-11px;font:10px/1 sans-serif;color:#cfd8c4;font-style:normal;text-shadow:0 0 2px #000}';
+    document.head.appendChild(css);
+    setInterval(drawBars, 100);
+  } catch (e) { }
   // 拿掉上一版的精神條
   try { const el = document.getElementById('sm-spirit'); if (el) el.remove(); } catch (e) { }
 })(window.R);

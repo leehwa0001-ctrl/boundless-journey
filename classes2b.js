@@ -16,7 +16,7 @@
       const pet = { x: P.x + Math.sin(a) * 1.4, z: P.z + Math.cos(a) * 1.4, t: rnd(), cd: 0, left: (s.t || 12) * (P.petLife || 1) }; (R.PETS = R.PETS || []).push(pet);   // classcore2.js：獻祭、集火用
       if (R.nearestFloor) { const q = R.nearestFloor(pet.x, pet.z); pet.x = q[0]; pet.z = q[1]; }
       const g = m.g; if (s.scale) g.scale.setScalar(s.scale); g.position.set(pet.x, 0, pet.z); w.scene.add(g);
-      pet.g = g; pet.id = id; pet.s = s; try { if (R.petInit) R.petInit(pet, P, s, w); } catch (e) { }   // 2026-10-13 summoncraft.js：元素材質、意念、精神
+      pet.g = g; pet.id = id; pet.s = s; pet.pw = pw; pet.mul = mul; try { if (R.petInit) R.petInit(pet, P, s, w); } catch (e) { }   // 2026-10-13 summoncraft.js：元素材質、意念、精神
       R.fx('poof', pet.x, 0.6, pet.z, { color: s.color || '#C8A878', n: 14 });
       w.dyn.push(dt => {
         if (W().run !== run || P.dead) { pet.gone = true; w.scene.remove(g); return false; }
