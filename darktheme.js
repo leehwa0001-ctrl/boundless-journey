@@ -56,6 +56,24 @@
     P + '#kz-book .kz-tabs button[aria-selected=true]{background:#7A3426!important;color:#F2E6D4!important}',
     P + '#kz-book button{background:#2E2A34!important;color:#E2D6BE!important}',
     P + '#kz-book .kz-c img{background:#1E1912!important;border-color:#4A3420!important}',
+    // ── 2026-10-13 全遊戲統一（作者：「頁面更新後有些介面格格不入」）──
+    // 共用的「紙」色票改成深色漆木：地圖說明欄、遺跡資料卡、怪物標籤等所有用 --paper 的地方一起變暗。
+    'html:root{--paper:#211C27;--paper-ink:' + T + ';--paper-dim:' + DIM + ';--paper-line:rgba(201,161,58,.22);--hand-ink:#9EB6E8}',
+    // 一般按鈕（城鎮選單、快速移動、設定、背包…）：米白 → 深色＋細金邊；.pri/.red/.gold/.on 等修飾仍照原樣
+    'html body .btn{background:linear-gradient(180deg,#2E2836,#25202C);color:' + T + ';border-color:#5E5040}',
+    'html body .btn:hover:not(:disabled){background:linear-gradient(180deg,#3A3244,#2E2836);border-color:rgba(201,161,58,.7)}',
+    'html body .btn.pri{background:linear-gradient(180deg,#8A3826,#6A2A1C);border-color:#A8442F;color:#F2E6D4}',
+    'html body .btn:focus-visible{outline:2px solid rgba(201,161,58,.8);outline-offset:1px}',
+    // 地圖頁：左上國名牌、圖例、右側說明紙
+    P + '.cartouche,' + P + '.legend{background:rgba(28,24,34,.94);color:' + T + ';border:1px solid ' + GOLD + ';box-shadow:0 6px 20px rgba(0,0,0,.5)}',
+    P + '.cartouche small{color:' + DIM + '}',
+    P + '.cartouche svg,' + P + '.cartouche .flag{border-color:' + GOLD + '}',
+    P + '.doc{background:linear-gradient(180deg,#26202E,#1C1822);border:1px solid ' + GOLD + ';border-top:3px solid #8A6A3A;border-radius:4px;background-image:none}',
+    P + '.doc h2,' + P + '.doc h3{color:#F0E6D2}',
+    P + '.mon{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.14);color:#D6CCB8}',
+    P + '.flag-big img{border-color:' + GOLD + '}',
+    // 城鎮／遺跡內的彈窗：統一深色牌子＋金邊
+    P + '#r-sheet,' + P + '#hub-sheet{border:1px solid ' + GOLD + ';border-top:3px solid #8A6A3A;box-shadow:0 10px 30px rgba(0,0,0,.6)}',
     P + '#kz-book .kz-ft{border-top-color:rgba(200,170,120,.25)!important}'
   ].join('\n');
   document.head.appendChild(css);
