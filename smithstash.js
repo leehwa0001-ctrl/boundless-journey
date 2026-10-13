@@ -246,3 +246,63 @@
   ].join('\n');
   document.head.appendChild(css);
 })(window.R);
+
+// ---------- 鐵匠鋪：打造完「立刻裝備」、鐵匠鋪裡也能直接穿上（2026-10-13 作者：打造好還要回家才能換上） ----------
+(function (R) {
+  const $ = id => document.getElementById(id), esc = s => R.esc(s), S = () => R.S;
+  let fresh = null;   // 剛打造好的那件 id
+  ['craft', 'craftNamed'].forEach(fn => { const f0 = R[fn]; if (typeof f0 !== 'function') return; R[fn] = (...a) => { const it = f0(...a); if (it && it.id) fresh = it.id; return it; }; });
+  const say = (t, c) => { const el = $('hub-msg'); if (el) { el.textContent = t; el.style.color = c || ''; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); } else if (R.toast) R.toast(t, c); };
+  const why = it => {
+    const s = S(); if (!it) return '找不到這件';
+    if (R.equippedIds().has(it.id)) return '已經穿在身上';
+    if (!R.canUse(it, s.cls)) return (R.CLASSES[s.cls] ? R.CLASSES[s.cls].name : '目前職業') + '不能用' + (it.kind === 'armor' ? '（可能太重）' : '');
+    if (it.reqLv && (s.classes[s.cls] || {}).lv < it.reqLv) return '等級不夠（要 ' + it.reqLv + ' 級）';
+    if (!R.slotOf(it)) return '不能穿';
+    return '';
+  };
+  R.smithEquip = id => {
+    const s = S(), it = R.itemById(id), no = why(it); if (no) { say(no, '#FFB45A'); return false; }
+    const e = s.equip[s.cls] = s.equip[s.cls] || {}; (R.GEAR_KEYS || []).forEach(k => { if (!(k in e)) e[k] = null; });
+    const k = R.slotOf(it), oldId = e[k], old = oldId && R.itemById(oldId);
+    e[k] = it.id; if (fresh === id) fresh = null;
+    let msg = '穿上了：' + R.itemName(it);
+    if (old) { const ok = R.stashTryPlace ? R.stashTryPlace(old) : true; msg += ok ? '（換下的' + R.itemName(old) + '放回倉庫）' : '（倉庫格子滿了，換下的' + R.itemName(old) + '先放在倉庫的「暫放區」，不會不見）'; }
+    R.save && R.save(); R.hub(); say(msg, R.rarityColor ? R.rarityColor(it) : ''); return true;
+  };
+  const deco = body => {
+    const sec = body.querySelector('section') || body;
+    const old = body.querySelector('.ss-fresh'); if (old) old.remove();
+    const it = fresh && R.itemById(fresh);
+    if (it && !R.equippedIds().has(it.id)) {
+      const no = why(it), d = document.createElement('div'); d.className = 'ss-fresh';
+      d.innerHTML = '<span>剛打造好：<b style="color:' + (R.rarityColor ? R.rarityColor(it) : '') + '">' + esc(R.itemName(it)) + '</b></span>'
+        + (no ? '<small>' + esc(no) + '，已放進倉庫</small>' : '<button type="button" class="btn pri" data-ssequip="' + it.id + '">立刻裝備</button>') + '<button type="button" class="mini" data-ssdismiss>收起</button>';
+      sec.prepend(d);
+    }
+    // 鐵匠鋪裡的裝備卡片：沒穿、能用的加一顆「穿上」
+    const eq = R.equippedIds();
+    body.querySelectorAll('.item-card').forEach(cd => {
+      if (cd.querySelector('[data-equip],[data-ssequip]')) return;
+      const b = cd.querySelector('[data-up],[data-salv],[data-refine],[data-reforge],[data-ench],[data-gem],[data-ident],[data-iid],[data-lock]'); if (!b) return;
+      const id = b.dataset.up || b.dataset.salv || b.dataset.refine || b.dataset.reforge || b.dataset.ench || b.dataset.gem || b.dataset.ident || b.dataset.iid || b.dataset.lock, it2 = R.itemById(id);
+      if (!it2 || eq.has(it2.id) || why(it2)) return;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.dataset.ssequip = it2.id; btn.textContent = '穿上（' + ((R.GEAR_NAME && R.GEAR_NAME[R.slotOf(it2)]) || '') + '）';
+      b.parentNode.insertBefore(btn, b);
+    });
+  };
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('[data-ssequip],[data-ssdismiss]'); if (!b || !b.closest('#hub')) return;
+    e.preventDefault(); e.stopPropagation();
+    if (b.dataset.ssequip) R.smithEquip(b.dataset.ssequip); else { fresh = null; const f = b.closest('.ss-fresh'); if (f) f.remove(); }
+  }, true);
+  const hub0 = R.hub;
+  R.hub = (t, f) => {
+    const r = hub0(t, f);
+    try { const tb = document.querySelector('[data-htab][aria-selected="true"]'), body = $('hub-body'); if (tb && tb.dataset.htab === 'smith' && body) deco(body); else if (tb && tb.dataset.htab !== 'smith') fresh = null; } catch (e) { console.warn('[smithstash equip]', e); }
+    return r;
+  };
+  const css = document.createElement('style');
+  css.textContent = '.ss-fresh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:8px 12px;border-radius:8px;background:rgba(201,161,58,.14);border:1px solid rgba(201,161,58,.6)}.ss-fresh small{color:#FFB45A}.ss-fresh .mini{margin-left:auto}';
+  document.head.appendChild(css);
+})(window.R);

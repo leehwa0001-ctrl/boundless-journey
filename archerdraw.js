@@ -13,7 +13,10 @@
   const isA = P => !!(P && P.cls === 'archer' && P.ws && P.ws.kind === 'bow');
   const live = () => { const w = W(); return !!(w && w.run && !w.run.done && w.P && !w.P.dead && !w.paused); };
   const toast = (t, c) => R.toast && R.toast(t, c || '#9AE07A');
-  const S = { p: 0, n: 0, load: null, hold: false, firing: false };
+  const S = { p: 0, n: 0, load: null, hold: false, firing: false, cued: 0 };
+  const slotId = (P, i) => (i === 0 ? P.skill : R.slotSkill ? R.slotSkill(P, i) : null);
+  const reset = () => { S.p = 0; S.n = 0; S.cued = 0; S.load = null; S.hold = false; };
+  R.archerReset = () => { reset(); hud(null); };
   R.archerDraw = S;
 
   // ---------- 武器、轉職的參數 ----------
@@ -23,7 +26,8 @@
   const atkPct = P => Math.max(0, (P.ws.rate || 1) / defRate(P) - 1) * 100;
   const capOf = P => (wtype(P) === 'long' ? 1.2 : 1);
   const timeOf = P => {
-    let t = S.load != null ? 4 : 2;
+    let t = 2;
+    if (S.load != null) { const sk = R.SKILLS[slotId(P, S.load)], cd = (sk && sk.cd) || 0; t = cd <= 10 ? 2.5 : cd <= 20 ? 3 : 4; }   // 技能看「基礎冷卻」：10 秒內 2.5 秒、20 秒內 3 秒、更長 4 秒
     if (wtype(P) !== 'short') t *= 1.2;
     if (P.adv === 'ranger') t *= 0.5; else if (P.adv === 'hama') t *= 2;
     return t;
@@ -76,9 +80,22 @@
 
   // ---------- 普攻、技能：攔下來改成「換箭」和「續力發射」 ----------
   const us0 = R.useSkill, cs0 = R.castSlot, at0 = R.attack;
-  const slotId = (P, i) => (i === 0 ? P.skill : R.slotSkill ? R.slotSkill(P, i) : null);
+  // 蓄滿提示／拒絕提示
+  const cue = (P, n) => {
+    try { R.sfx && R.sfx('archFull'); } catch (e) { }
+    try { R.num && R.num(P.x, 2.5, P.z, n > 1 ? '蓄滿！×' + n : '蓄滿！', 'crit'); } catch (e) { }
+    try { R.fx && R.fx('ring', P.x, 0.15, P.z, { r: 1.6, color: '#FFE08A' }); } catch (e) { }
+    if (el) { el.classList.remove('ah-flash'); void el.offsetWidth; el.classList.add('ah-flash'); }
+  };
+  let denyT = 0;
+  const deny = msg => { const t = performance.now(); if (t - denyT < 600) return; denyT = t; try { R.sfx && R.sfx('archDeny'); } catch (e) { } toast(msg, '#FFB45A'); };
   const loadArrow = i => {
     const P = W().P, id = slotId(P, i);
+    if (wtype(P) !== 'cross') {   // 弩以外：續力中、蓄滿後都不能換箭（弩會自己蓄，隨時能換）
+      const full = P.adv === 'arcane' ? S.n >= 1 : S.p >= capOf(P) - 1e-6;
+      if (full) { deny('已經蓄滿，不能再換箭（放開射出）'); return; }
+      if (S.hold && S.p > 0) { deny('續力中不能換箭，先放開'); return; }
+    }
     if (S.load === i) { S.load = null; toast('卸下箭矢：普攻', '#C8C0B0'); return; }
     if (cdOf(P, i) > 0) { toast(nameOf(id) + ' 還在冷卻（' + cdOf(P, i).toFixed(1) + ' 秒）', '#FFB45A'); return; }
     const sk = R.SKILLS[id]; if (sk && P.mp < sk.mp) { toast('魔力不夠', '#FFB45A'); return; }
@@ -125,7 +142,7 @@
   R.archerMult = multOf;
   const fire = P => {
     const m = multOf(P);
-    if (m.k < 0.01) { S.p = 0; S.n = 0; return; }
+    if (m.k < 0.01) { S.p = 0; S.n = 0; S.cued = 0; return; }
     const spd = P.adv === 'hama' ? 2 : 1;
     if (S.load != null) {
       const i = S.load, id = slotId(P, i);
@@ -136,7 +153,7 @@
       S.load = null;
     } else shootNormal(P, { dmg: m.k * 2 * defRate(P), area: m.k, spd, reps: m.reps });
     R.archerLast = { k: m.k, reps: m.reps, t: performance.now() };
-    S.p = 0; S.n = 0;
+    S.p = 0; S.n = 0; S.cued = 0;
   };
   R.archerFire = () => { const P = W().P; if (isA(P)) fire(P); };
 
@@ -146,8 +163,8 @@
     const r = sp0(dt);
     try {
       const w = W(), P = w && w.P;
-      if (!isA(P) || !w.run) { S.p = 0; S.n = 0; S.load = null; S.hold = false; hud(null); return r; }
-      if (w.paused || P.dead || w.run.done) { hud(P); return r; }
+      if (!isA(P) || !w.run || P.dead || w.run.done) { reset(); hud(null); return r; }
+      if (w.paused || (R.sheetOpen && R.sheetOpen())) { hud(null); return r; }
       const I = R.input || {}, hold = !!(I.fire || (I.keys && I.keys.f)) && !(R.sheetOpen && R.sheetOpen());
       P.charging = false;
       const cross = wtype(P) === 'cross', cap = capOf(P), arc = P.adv === 'arcane';
@@ -158,6 +175,8 @@
         if (S.p >= cap) { if (arc && S.n < 3) { S.n++; S.p = S.n < 3 ? 0 : cap; } else S.p = cap; }
       }
       const full = arc ? S.n >= 1 : S.p >= cap - 1e-6;
+      const lvl = arc ? S.n : (full ? 1 : 0);
+      if (lvl > S.cued) { S.cued = lvl; cue(P, arc ? S.n : 1); }
       if (cross) { if (hold && !S.hold && full) fire(P); }
       else {
         if (!hold && S.hold) fire(P);
@@ -179,11 +198,13 @@
       + '#arch-hud .ah-bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#5E9A48,#BFE89A)}#arch-hud .ah-bar i.full{background:linear-gradient(90deg,#C8A040,#FFE08A)}'
       + '#arch-hud .ah-bar em{position:absolute;top:-2px;bottom:-2px;width:2px;background:#FFE08A}#arch-hud .ah-pips{display:flex;gap:4px;margin-bottom:4px}#arch-hud .ah-pips b{flex:1;height:6px;border-radius:3px;background:#333A30;border:1px solid #5A6650}#arch-hud .ah-pips b.on{background:#B89AFF}'
       + '#arch-hud .ah-l{display:flex;align-items:center;gap:6px;margin-top:4px}#arch-hud .ah-l i{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;background:#2E3A28;border:1px solid #7A9A5A;font-style:normal}#arch-hud small{color:#A8A898}'
+      + '#arch-hud.ah-flash{animation:ahF .5s ease-out}@keyframes ahF{0%{box-shadow:0 0 0 0 rgba(255,224,138,.95);border-color:#FFE08A}100%{box-shadow:0 0 0 14px rgba(255,224,138,0);border-color:#6A7A58}}'
       + '@media (max-width:720px){#arch-hud{top:24%;width:160px;font-size:12px;padding:6px 8px}}';
     document.head.appendChild(s);
   };
   const KEYN = i => (i === 0 ? 'R' : String(i + 2));
   function hud(P) {
+    if (P && !(S.p > 0 || S.n > 0 || S.load != null || S.hold)) P = null;   // 沒在續力、沒搭箭就收起來
     if (!P) { if (el) el.style.display = 'none'; return; }
     if (!el) { css(); el = document.createElement('div'); el.id = 'arch-hud'; document.body.appendChild(el); }
     el.style.display = '';
@@ -200,7 +221,7 @@
   }
 
   // ---------- 說明文字 ----------
-  const A = '按住左鍵續力、放開射出：傷害與範圍照續力（0%＝沒有、100%＝原本）。普攻 2 秒蓄滿、一發＝武器 2 秒的傷害；傷害型技能是「箭矢」：按技能鍵換上（再按一次卸下），射出時才扣冷卻、魔力，傷害 +20%、4 秒蓄滿。每 1% 攻速＝續力快 0.75%。長弓：續力慢 20%、能續到 120%。弩：續力慢 20%，會自己蓄滿，蓄滿後點左鍵射出。';
+  const A = '按住左鍵續力、放開射出：傷害與範圍照續力（0%＝沒有、100%＝原本）。普攻 2 秒蓄滿、一發＝武器 2 秒的傷害；傷害型技能是「箭矢」：要在續力前按技能鍵換上（再按一次卸下），續力中、蓄滿後都不能換（弩例外），射出時才扣冷卻、魔力，傷害 +20%；蓄滿時間看技能基礎冷卻：10 秒內 2.5 秒、20 秒內 3 秒、更長 4 秒。蓄滿時會響一聲、跳「蓄滿！」。每 1% 攻速＝續力快 0.75%。長弓：續力慢 20%、能續到 120%。弩：續力慢 20%，會自己蓄滿，蓄滿後點左鍵射出。';
   try {
     if (R.CLASSES && R.CLASSES.archer) R.CLASSES.archer.desc = '短弓、長弓、弩。所有普攻、傷害型技能都要按住左鍵續力。';
     const ADD = { ranger: '續力：續力時間減半，普攻蓄滿自動射出；每 1% 攻速續力再快 0.25%。', hama: '續力：續力時間加倍，蓄滿時效果再 +150%（短弓 250%、長弓 290%），箭速 ×2。', arcane: '續力：蓄滿只有 0.75 倍（短弓 75%、長弓 90%），但能連續蓄滿 3 次：技能連放、普攻箭數加倍。' };

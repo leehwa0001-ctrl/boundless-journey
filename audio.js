@@ -180,6 +180,8 @@
   const last = {};
   const limit = (k, ms) => { const n = performance.now(); if (last[k] && n - last[k] < ms) return false; last[k] = n; return true; };
   const FX = {
+    archFull: t => { sweep('sine', 1760, 1760, t, 0.09, 0.12, sfxBus); sweep('sine', 2640, 2640, t + 0.07, 0.16, 0.09, sfxBus); },   // 弓箭手蓄滿：叮－叮
+    archDeny: t => { sweep('square', 220, 160, t, 0.1, 0.05, sfxBus); },   // 弓箭手不能換箭
     hit: t => { noiseHit(t, 0.06, 0.22, sfxBus, 'bandpass', 1100, 1.2); sweep('sine', 160, 70, t, 0.08, 0.2, sfxBus); },
     crit: t => { FX.hit(t); sweep('triangle', 1900, 1400, t, 0.12, 0.08, sfxBus); },
     kill: t => { const f = noiseHit(t, 0.28, 0.18, sfxBus, 'lowpass', 2200); f.frequency.exponentialRampToValueAtTime(260, t + 0.28); sweep('sine', 420, 120, t, 0.18, 0.1, sfxBus); },

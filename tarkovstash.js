@@ -50,6 +50,8 @@
     for (const key of keys) { const s = findSpot(key, w, h); if (s) { g.pos[it.id] = { g: key, x: s[0], y: s[1], r: s[2] ? (w === h ? 0 : 1) : 0 }; if (s[2]) { /* findSpot 的 r=1 表示轉過 */ } return true; } }
     return false;
   };
+  // 給鐵匠鋪「立刻裝備」用：換下來的那件放得進格子嗎（放不下會留在暫放區，不會不見）
+  R.stashTryPlace = it => { const p = tg().pos[it.id]; return (p && !p.over) || autoPlace(it); };
   // 整理資料：拿掉已經不在倉庫（穿上、賣掉）的位置、補上新東西的位置；第一次（舊存檔）放不下就把倉庫加長
   const reconcile = () => {
     const g = tg(), items = loose(), ids = new Set(items.map(it => it.id));
