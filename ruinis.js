@@ -11,8 +11,8 @@
   // ---------- 表 ----------
   // lo～hi：第 1 段的基礎；every 層加 add；elite：精英再加；core：佩特拉核心；lord／vlord：領主體、異變的領主體
   const IS_TABLE = {
-    hamilia: { lo: 1, hi: 1, every: 999, add: 0, elite: 0, core: 35 },
-    amile: { lo: 1, hi: 2, every: 3, add: 1, elite: 3, core: 45 },
+    hamilia: { lo: 0, hi: 1, every: 999, add: 0, elite: 0, core: 35 },
+    amile: { lo: 0, hi: 2, every: 3, add: 1, elite: 3, core: 45 },
     mors: { lo: 5, hi: 9, every: 3, add: 3, elite: 3, core: 55 },
     kesent: { lo: 12, hi: 15, every: 5, add: 4, elite: 5, core: 65, lord: [20, 35], vlord: [20, 45] },
     kaso: { lo: 25, hi: 30, every: 5, add: 3, elite: 8, core: 75, lord: [45, 50], vlord: [45, 60] }
@@ -35,7 +35,7 @@
   const baseElite = (e, o) => { const b = R.ENEMIES[e.id] || e.def; return !!(b && b.elite) || tierOf(e) > 0 || e.leader || !!(o && o.hpMul >= 2); };
   const kindOf = (e, o) => e.id === 'petra' ? 'core' : isLord(e.def) ? (e.variant ? 'vlord' : 'lord') : e.def.boss ? 'boss' : baseElite(e, o) ? 'elite' : 'n';
   // 這一層一般生物的 IS 範圍
-  R.ruinISRange = (gradeId, floor) => { const T = IS_TABLE[gradeId]; if (!T) return [1, 1]; const k = Math.floor((Math.max(1, floor) - 1) / T.every) * T.add; return [T.lo + k, T.hi + k]; };
+  R.ruinISRange = (gradeId, floor) => { const T = IS_TABLE[gradeId]; if (!T) return [0, 0]; const k = Math.floor((Math.max(1, floor) - 1) / T.every) * T.add; return [T.lo + k, T.hi + k]; };
   const rollIS = (e, o, run) => {
     const id = gid(run), T = IS_TABLE[id], f = floorNo(run), [lo, hi] = R.ruinISRange(id, f), k = kindOf(e, o);
     if (k === 'core') return T.core;
@@ -43,7 +43,7 @@
     if (k === 'boss') return hi + 5;   // 沒寫到的頭目（非領主、非核心）
     return ri(lo, hi) + (k === 'elite' ? T.elite : 0);
   };
-  const isOf = (e, o) => { if (e.is) return e.is; const run = W().run; if (!active(run)) return 0; e.is = rollIS(e, o, run); return e.is; };
+  const isOf = (e, o) => { if (e.is != null) return e.is; const run = W().run; if (!active(run)) return 0; e.is = rollIS(e, o, run); return e.is; };
   R.monIS = isOf;
 
   // ---------- 詞條：一般的 0 起、每級 IS +0.6%（monsters8.js 呼叫） ----------
@@ -117,7 +117,7 @@
     e.tac = { k: kind, t0: t, dur: kind === 'patrol' ? 2 + rnd() * 2 : kind === 'flee' ? 1 + rnd() * 0.6 : kind === 'retreat' ? 99 : 3.5, r: 2 + rnd() * 2, dir: rnd() < 0.5 ? 1 : -1, ang: a, wait: 0 };
   };
   const decide = (e, P) => {
-    const is = e.is || 1, p = Math.min(TAC_CAP, TAC_PER * is), d = Math.hypot(e.x - P.x, e.z - P.z);
+    const is = e.is || 0, p = Math.min(TAC_CAP, TAC_PER * is), d = Math.hypot(e.x - P.x, e.z - P.z);
     // 遠離：玩家快倒下或大招集滿，15%
     const lu = lowOrUlt(P);
     if (lu && !e.luSeen) { e.luSeen = 1; if (rnd() < 0.15) return startTac(e, P, 'retreat'); }
