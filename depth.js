@@ -21,7 +21,8 @@
   const hash = s => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
   const oldFloors = site => { const g = R.gradeById(site.grade), t = R.TYPES[site.type]; return Math.max(2, ((g && g.floors) || 2) + (t ? t.floors : 0)); };
   R.floorsFor = site => {
-    if (site && site.floorsFixed) return site.floorsFixed;   // 特殊遺跡（special.js）：固定層數
+    if (site && site.floorsFixed) return site.floorsFixed;
+    if (site && site.id === 'kanko') return 2;   // 觀光遺跡：固定 2 層   // 特殊遺跡（special.js）：固定層數
     const g = R.gradeById(site.grade); if (!g || !RANGE[g.id] || site.id === 'kanko' || site.kind === 'hunt' || site.outdoor) return oldFloors(site);
     if (site.type === 'island') return R.ISLAND_FLOORS[g.id] || 1;
     const [a, b] = RANGE[g.id];

@@ -10,7 +10,7 @@
   const W = R.W, rnd = Math.random, pick = a => a[Math.floor(rnd() * a.length)];
   const MORE = { hamilia: 4, amile: 6, mors: 7, kesent: 7, kaso: 8 };
   Object.keys(MORE).forEach(id => { const g = R.gradeById && R.gradeById(id); if (g) g.floors = MORE[id]; });
-  const has0 = run => !!(run && run.grade && run.grade.floor0);
+  const has0 = run => !!(run && run.grade && run.grade.floor0 && !(run.site && run.site.id === 'kanko'));   /* 2026-10-13 作者：觀光遺跡固定 2 層（沒有第 0 層休息區） */
   // 哈米莉亞的平靜樓層：第 1 層到一半
   const calmFloor = (run, f) => run && run.grade.id === 'hamilia' && f >= 1 && f <= Math.max(1, Math.floor((run.floors - 1) / 2));
   R.floorLabel = run => { if (!run) return ''; const f = run.floor; if (has0(run)) return f === 0 ? '第 0 層・休息區' : '第 ' + f + '／' + (run.floors - 1) + ' 層'; return '第 ' + (f + 1) + '／' + run.floors + ' 層'; };
