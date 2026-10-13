@@ -256,6 +256,7 @@
     if (P._spUlt) { P._spUlt = false; say(P, '三重咒！'); }
     if (base(P) === 'orb') { RT.orb.n = RT.orb.k === k ? Math.min(5, RT.orb.n + 1) : 0; RT.orb.k = k; }
     RT.lastK = k;   // 2026-10-13：法術不再改普攻的元素（普攻上元素、技能引爆）
+    R._elCid = (R._elCid || 0) + 1;   // 元素印記：這一次施放的編號（同一次施放不會引爆自己留的印記）
     RT.cast = { slot, k, r, t: 0, dur: r.cast };
     R.sfx && R.sfx('skill');
     if (r.cast <= 0) finishCast(P);

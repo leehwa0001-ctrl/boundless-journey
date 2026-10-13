@@ -63,4 +63,7 @@
   };
   requestAnimationFrame(frame);
   R.elemReact = { show, hide };
+  // 2026-10-14：每次放技能／大招／法術給一個新的施放編號（classcore.js 術士 onHit 用來分辨「同一次施放」）
+  const bump = f => function (...a) { R._elCid = (R._elCid || 0) + 1; return f.apply(this, a); };
+  ['useSkill', 'castSlot', 'castUlt', 'castRaceSkill', 'scrollTear'].forEach(n => { if (typeof R[n] === 'function') R[n] = bump(R[n]); });
 })(window.R);

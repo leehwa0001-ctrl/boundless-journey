@@ -178,22 +178,31 @@
       + ({ elementalist: '元素師：反應的威力 ×1.5。', hexer: '咒術師：反應順便詛咒周圍 4 公尺。', shikigami: '式神使：反應回 6 點魔力。', waixiu: '外修者：反應回 6 點魔力。' }[adv(P)] || ''),
     floor: P => { P._el = P._el || 'fire'; },
     onHit(e, d, o, P, killed) {
-      if (!e || o.reflect || o.thorns || o.dot || o.tick || o.burn) return;
-      const m = e._el || (e._el = {});
-      // 2026-10-13：普攻＝把目前的元素留在敵人身上 5 秒；技能打到身上有「別種」元素的敵人才引爆（印記用掉）；2026-10-14 技能沒引爆時也會留下自己的元素
-      if (o.primary && !AUX.includes(P._el)) { if (e.dead) return; const pe = EL[P._el] ? P._el : 'fire'; ELS.forEach(x => { if (x !== pe) delete m[x]; }); m[pe] = CT + 5; return; }
+      if (!e || o.reflect || o.thorns || o.dot || o.tick || o.burn || o.env) return;
+      // 2026-10-14 修正「沒有元素也觸發反應」：只有普攻和玩家自己的技能／法術／大招算元素攻擊；燒傷、陷阱、岩漿、連鎖、寵物、隊友都不算。
+      // 每個印記記下是哪一次施放留下的（e._elSrc）：同一次施放（多段、範圍、地形、變調、三相、隕星、擴散）不會拿自己留的印記引爆。
+      const D = R.elemDbg || (R.elemDbg = { react: 0, aux: 0, mark: 0, skip: 0, self: 0 });
+      if (e.petHit || R.petHitter) { D.skip++; return; }
+      const m = e._el || (e._el = {}), S = e._elSrc || (e._elSrc = {});
+      if (o.primary && !AUX.includes(P._el)) { if (e.dead) return; const pe = EL[P._el] ? P._el : 'fire'; ELS.forEach(x => { if (x !== pe) { delete m[x]; delete S[x]; } }); m[pe] = CT + 5; S[pe] = 'p'; D.mark++; return; }
+      const skill = o.primary || o.spell || o.vSk || (o.elem && EL[o.elem]) || (R.vampInSkill && R.vampInSkill());
+      if (!skill) { D.skip++; return; }
+      const tok = o.primary ? 'atk' : 'c' + (R._elCid || 0), ok = x => (m[x] || 0) > CT && S[x] !== tok;
       const el = o.primary ? P._el : o.elem && EL[o.elem] ? o.elem : P._el || 'fire';
-      if (AUX.includes(el)) {   // 風、金：碰到任何元素印記就觸發（不用掉印記；同一隻 1 秒一次）
-        const mk = ELS.find(x => (m[x] || 0) > CT); if (!mk || e.dead || (e._auxT || 0) > CT) return; e._auxT = CT + 1;
+      if (AUX.includes(el)) {   // 風、金：碰到之前留下的元素印記就觸發（不用掉印記；同一隻 1 秒一次）
+        const mk = ELS.find(ok); if (!mk || e.dead || (e._auxT || 0) > CT) { if (!mk && ELS.some(x => (m[x] || 0) > CT)) D.self++; return; } e._auxT = CT + 1; D.aux++;
         const k2 = (adv(P) === 'elementalist' ? 1.5 : 1) * pw(P);
-        if (el === 'wind') { R.num && R.num(e.x, 2.6, e.z, '擴散', 'crit'); R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 4, color: EL.wind[1] }); (W().enemies || []).forEach(x => { if (x !== e && !x.dead && dist(x, e) < 4) { const mm = x._el || (x._el = {}); ELS.forEach(y => delete mm[y]); mm[mk] = CT + 5; } }); }
+        if (el === 'wind') { R.num && R.num(e.x, 2.6, e.z, '擴散', 'crit'); R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 4, color: EL.wind[1] }); (W().enemies || []).forEach(x => { if (x !== e && !x.dead && dist(x, e) < 4) { const mm = x._el || (x._el = {}), ss = x._elSrc || (x._elSrc = {}); ELS.forEach(y => { delete mm[y]; delete ss[y]; }); mm[mk] = CT + 5; ss[mk] = tok; } }); }
         else { R.num && R.num(e.x, 2.6, e.z, '破甲', 'crit'); R.fx && R.fx('ring', e.x, 0.6, e.z, { r: 1.2, color: EL.metal[1] }); if (!e._brk) { e._brk = e.def; e.def = Object.assign({}, e.def, { armor: Math.max(0, (e.def.armor || 0) - 0.3) }); } e._brkT = CT + 4; }
         if (!e.dead) R.coreHit(e, k2 * 0.6, {});
         return;
       }
-      const other = ELS.find(x => x !== el && (m[x] || 0) > CT);
-      if (!other) { if (!e.dead && ELS.includes(el)) { ELS.forEach(x => { if (x !== el) delete m[x]; }); m[el] = CT + 5; } return; }   // 2026-10-14：技能打到沒有印記（或同元素）的敵人＝留下自己的元素 5 秒
-      delete m[other]; delete m[el];
+      const other = ELS.find(x => x !== el && ok(x));
+      if (!other) {   // 沒有之前留下的別種印記：留下自己的元素 5 秒（同一次施放自己留的別種印記就不動它）
+        if (ELS.some(x => x !== el && (m[x] || 0) > CT)) { D.self++; return; }
+        if (!e.dead && ELS.includes(el)) { ELS.forEach(x => { if (x !== el) { delete m[x]; delete S[x]; } }); m[el] = CT + 5; S[el] = tok; D.mark++; } return;
+      }
+      delete m[other]; delete m[el]; delete S[other]; delete S[el]; D.react++;
       const key = [el, other].sort().join('+'), name = REACT[key], tri = (R.legOf ? R.legOf(P) : null) === 'lg_tri', k = (adv(P) === 'elementalist' ? 1.5 : 1) * (tri ? 1.5 : 1) * pw(P);
       if (tri) P._el = ELS[(Math.max(0, ELS.indexOf(P._el || 'fire')) + 1) % ELS.length];   // 三相之杖：反應之後自動換元素
       R.num && R.num(e.x, 2.6, e.z, name, 'crit');
