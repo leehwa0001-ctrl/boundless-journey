@@ -192,19 +192,18 @@
   let el = null, last = '';
   const css = () => {
     const s = document.createElement('style');
-    s.textContent = '#arch-hud{position:fixed;left:14px;top:38%;width:210px;z-index:30;pointer-events:none;font:13px/1.35 system-ui,sans-serif;color:#E8E2D0;background:rgba(18,22,20,.78);border:1px solid #6A7A58;border-radius:8px;padding:8px 10px;box-shadow:0 2px 10px rgba(0,0,0,.4)}'
+    s.textContent = '#arch-hud{position:fixed;left:12px;bottom:190px;width:210px;z-index:30;pointer-events:none;font:13px/1.35 system-ui,sans-serif;color:#E8E2D0;background:rgba(18,22,20,.78);border:1px solid #6A7A58;border-radius:8px;padding:8px 10px;box-shadow:0 2px 10px rgba(0,0,0,.4)}'
       + '#arch-hud .ah-t{display:flex;justify-content:space-between;font-weight:700}#arch-hud .ah-t span{color:#BFE89A}'
       + '#arch-hud .ah-bar{position:relative;height:12px;margin:6px 0 4px;background:#2A2F28;border-radius:6px;overflow:hidden;border:1px solid #4A5442}'
       + '#arch-hud .ah-bar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,#5E9A48,#BFE89A)}#arch-hud .ah-bar i.full{background:linear-gradient(90deg,#C8A040,#FFE08A)}'
       + '#arch-hud .ah-bar em{position:absolute;top:-2px;bottom:-2px;width:2px;background:#FFE08A}#arch-hud .ah-pips{display:flex;gap:4px;margin-bottom:4px}#arch-hud .ah-pips b{flex:1;height:6px;border-radius:3px;background:#333A30;border:1px solid #5A6650}#arch-hud .ah-pips b.on{background:#B89AFF}'
       + '#arch-hud .ah-l{display:flex;align-items:center;gap:6px;margin-top:4px}#arch-hud .ah-l i{width:22px;height:22px;border-radius:5px;display:grid;place-items:center;background:#2E3A28;border:1px solid #7A9A5A;font-style:normal}#arch-hud small{color:#A8A898}'
       + '#arch-hud.ah-flash{animation:ahF .5s ease-out}@keyframes ahF{0%{box-shadow:0 0 0 0 rgba(255,224,138,.95);border-color:#FFE08A}100%{box-shadow:0 0 0 14px rgba(255,224,138,0);border-color:#6A7A58}}'
-      + '@media (max-width:720px){#arch-hud{top:24%;width:160px;font-size:12px;padding:6px 8px}}';
+      + '#arch-hud.ah-sm{width:170px;font-size:11px;padding:5px 8px}#arch-hud.ah-sm .ah-l small{display:none}#arch-hud.ah-sm .ah-bar{height:9px;margin:4px 0 3px}';
     document.head.appendChild(s);
   };
   const KEYN = i => (i === 0 ? 'R' : String(i + 2));
   function hud(P) {
-    if (P && !(S.p > 0 || S.n > 0 || S.load != null || S.hold)) P = null;   // 沒在續力、沒搭箭就收起來
     if (!P) { if (el) el.style.display = 'none'; return; }
     if (!el) { css(); el = document.createElement('div'); el.id = 'arch-hud'; document.body.appendChild(el); }
     el.style.display = '';
@@ -218,6 +217,21 @@
       + (arc ? '<div class="ah-pips">' + [0, 1, 2].map(k => '<b class="' + (S.n > k ? 'on' : '') + '"></b>').join('') + '</div>' : '')
       + '<div class="ah-l"><i>' + (id ? '✦' : '➶') + '</i><div>' + (id ? R.esc(nameOf(id)) + ' <small>（' + KEYN(S.load) + '）</small>' : '普攻') + '<br><small>' + (t === 'cross' ? '蓄滿後點左鍵射出' : '按住左鍵續力、放開射出') + '</small></div></div>';
     if (h !== last) { el.innerHTML = h; last = h; }
+    place();
+  }
+  // 貼在左下角角色資訊（#r-bl）上方；隊伍面板疊在上面時再往上
+  function place() {
+    const sm = !!R.touch || window.innerWidth <= 720 || window.innerHeight <= 480;
+    el.classList.toggle('ah-sm', sm);
+    let top = null, left = 12;
+    const bl = document.getElementById('r-bl');
+    if (bl && bl.offsetParent !== null) { const b = bl.getBoundingClientRect(); if (b.height) { top = b.top; left = Math.max(4, b.left); } }
+    const pt = document.getElementById('r-party');
+    if (pt && !pt.hidden && pt.offsetParent !== null && pt.classList.contains('hf-dock')) { const b = pt.getBoundingClientRect(); if (b.height && (top == null || b.top < top)) top = b.top; }
+    const bot = top == null ? 190 : Math.max(8, window.innerHeight - top + 6);
+    const bs = bot + 'px', ls = left + 'px';
+    if (el.style.bottom !== bs) el.style.bottom = bs;
+    if (el.style.left !== ls) el.style.left = ls;
   }
 
   // ---------- 說明文字 ----------
