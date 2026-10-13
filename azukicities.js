@@ -514,7 +514,7 @@
   const ticketSheet = (fromId) => {
     const s = S(), gold = s ? s.gold : 0;
     R.sheet('<p class="kicker">' + (fromId ? esc((byId(fromId) || {}).name || (fromId === 'hosu' ? '奉主' : '')) + '・轉乘' : '東鶴站・售票口') + '</p><h2>昭旭城際交通</h2>'
-      + '<p>「要去哪一座城？單程含座位。北州、納瓦要換渡輪，日子比較久。」</p><p class="note">費拉 ' + gold + '・段位 ' + esc(R.rankName ? R.rankName() : '') + '</p>'
+      + '<p>「要去哪一座城？單程含座位。北州、納瓦要換渡輪，日子比較久。」</p>' + (!fromId ? boardHtml() : '') + '<p class="note">費拉 ' + gold + '・段位 ' + esc(R.rankName ? R.rankName() : '') + '</p>'
       + '<div class="az-grid">'
       + (!fromId ? '<button type="button" class="btn pri" id="az-hosu">奉主（3D 城・60 費拉）</button>' : '')
       + CITIES.map(c => {
@@ -536,6 +536,18 @@
     });
   };
   let ticketOrig = null;
+  // 東鶴站的發車資訊（2026-10-13 作者：東鶴站不一定要顯示往奉主——每班車隨機一個目的地）
+  // 每 30 分鐘（遊戲時間）一班；目的地由「第幾天＋第幾班」決定（同一班車看幾次都一樣），從電車到得了的城（奉主＋不用換渡輪的城）抽，每班跟上一班不同。
+  const DEST_POOL = () => ['奉主'].concat(CITIES.filter(c => !c.island).map(c => c.name));
+  const hsh = n => { let x = Math.imul(n | 0, 2654435761) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; return x >>> 0; };
+  const slotDest = (day, j) => { const pool = DEST_POOL(), L = pool.length; let idx = hsh(day * 977 + 31) % L; for (let k = 1; k <= j; k++) idx = (idx + 1 + hsh(day * 48 + k) % (L - 1)) % L; return pool[idx]; };
+  R.trainBoard = (n = 3) => {
+    const s = S() || {}, day = s.day || 0, hr = R.hourNow ? R.hourNow() : 8, cur = Math.floor(hr * 2) + 1, out = [];
+    for (let k = 0; k < n; k++) { const i = cur + k, d = day + Math.floor(i / 48), j = i % 48; out.push({ day: d, j, time: String(Math.floor(j / 2)).padStart(2, '0') + ':' + (j % 2 ? '30' : '00'), dest: slotDest(d, j) }); }
+    return out;
+  };
+  R.nextTrainDest = () => R.trainBoard(1)[0].dest;
+  const boardHtml = () => { try { const b = R.trainBoard(3); return '<p class="note az-board">下一班：<b>' + b[0].time + ' 往' + esc(b[0].dest) + '</b>・之後 ' + b.slice(1).map(x => x.time + ' 往' + esc(x.dest)).join('、') + '</p>'; } catch (e) { return ''; } };
   R.azukiTicket = ticketSheet;
 
   // 包售票口（hosu 之後再包一次）
@@ -544,7 +556,7 @@
     ih0(force, dt);
     const ins = W.inside; if (!ins || ins.kind !== 'trainst' || ins.azukiHooked) return; ins.azukiHooked = 1;
     const it = ins.inter && ins.inter.find(v => /售票口/.test(v.label)); if (!it) return;
-    ticketOrig = it.act;
+    ticketOrig = it._orig || it.act;   // 2026-10-13：以前接到 hosu.js 包過的「往奉主」視窗
     it.label = '售票口：昭旭城際（奉主・十一城・遠方遺跡）';
     it.act = () => ticketSheet(null);
   };

@@ -109,11 +109,25 @@
     s.gold += q.pay * n; s.quests = quests().filter(x => x !== q);
     return n;
   };
+  // 每張委託單寫出遺跡（2026-10-13 作者：委託板上面不會寫遺跡）：運送補給寫那一座；討伐、採集寫哪一級以上都算＋建議去的遺跡
+  const siteTag = s => { const g = R.gradeById(s.grade), t = R.TYPES && R.TYPES[s.type]; return '「' + s.name + '」（' + (g ? g.name : '') + (t ? '・' + t.name : '') + '）'; };
+  const where = q => {
+    try {
+      const all = R.SITES || [], g = R.gradeById(q.grade), gn = g ? g.name : '';
+      if (q.kind === 'floor') { const st = all.find(v => v.id === q.siteId); return st ? siteTag(st) : '「' + (q.site || '') + '」'; }
+      const lv = lvOf(q.grade), ok = all.filter(v => v.kind === 'ruin' && v.id !== 'kanko' && R.gradeById(v.grade) && (R.gradeById(v.grade).lv || 0) >= lv && (q.kind === 'kill' || v.status === 'open'));
+      let pk = ok;
+      if (q.kind === 'kill') { const has = f => ok.filter(v => { try { return f(v).includes(q.mon); } catch (e) { return false; } }); pk = R.siteMain ? has(R.siteMain) : []; if (!pk.length && R.sitePool) pk = has(R.sitePool); }
+      pk.sort((a, b) => (b.status === 'open') - (a.status === 'open') || lvOf(a.grade) - lvOf(b.grade)); const ok2 = pk;
+      return gn + '以上的遺跡都算' + (ok2.length ? '・建議 ' + ok2.slice(0, 2).map(siteTag).join('、') : '');
+    } catch (e) { return q.site || ''; }
+  };
+  const whereHtml = q => '<small class="qb-site">⛩ 遺跡：' + esc(where(q)) + '</small>';
   const box = () => {
     const s = S(), qs = quests(), off = offers(), full = qs.length >= MAXQ, ready = qs.filter(q => times(q) > 0);
-    const line = q => '<div class="ft-row qb-row"><b>' + esc(q.letter) + ' 級・' + esc(text(q)) + '</b><small>' + (q.kind === 'floor' ? '走到第 ' + q.prog + '／' + q.need + ' 層（存檔點傳送不算）' : q.prog + '／' + q.need + (q.kind === 'kill' && times(q) > 1 ? '（' + times(q) + ' 倍，算 ' + times(q) + ' 件）' : '')) + '・報酬 ' + q.pay + ' 費拉' + (q.kind === 'kill' ? '／件' : '') + '</small>'
+    const line = q => '<div class="ft-row qb-row"><b>' + esc(q.letter) + ' 級・' + esc(text(q)) + '</b>' + whereHtml(q) + '<small>' + (q.kind === 'floor' ? '走到第 ' + q.prog + '／' + q.need + ' 層（存檔點傳送不算）' : q.prog + '／' + q.need + (q.kind === 'kill' && times(q) > 1 ? '（' + times(q) + ' 倍，算 ' + times(q) + ' 件）' : '')) + '・報酬 ' + q.pay + ' 費拉' + (q.kind === 'kill' ? '／件' : '') + '</small>'
       + '<div class="row">' + (times(q) ? '<button type="button" class="btn gold" data-qbin="' + q.qid + '">繳交（' + times(q) + ' 件・' + q.pay * times(q) + ' 費拉）</button>' : '') + '<button type="button" class="mini" data-qbdrop="' + q.qid + '">放棄</button></div></div>';
-    const offer = q => '<div class="ft-row qb-row"><b>' + esc(q.letter) + ' 級・' + esc(text(q)) + '</b><small>報酬 ' + q.pay + ' 費拉' + (q.kind === 'kill' ? '／件（做到兩倍算兩件，最多三件）' : '') + '</small><div class="row"><button type="button" class="btn" data-qbtake="' + q.oid + '"' + (full ? ' disabled' : '') + '>接下</button></div></div>';
+    const offer = q => '<div class="ft-row qb-row"><b>' + esc(q.letter) + ' 級・' + esc(text(q)) + '</b>' + whereHtml(q) + '<small>報酬 ' + q.pay + ' 費拉' + (q.kind === 'kill' ? '／件（做到兩倍算兩件，最多三件）' : '') + '</small><div class="row"><button type="button" class="btn" data-qbtake="' + q.oid + '"' + (full ? ' disabled' : '') + '>接下</button></div></div>';
     return '<h3>委託板</h3><p class="note">小委託可以同時接 ' + MAXQ + ' 張，一趟遺跡一起做，回這裡一起繳交；每一件都登錄到勇者證、算進升階的件數。討伐做到兩倍算兩件（最多三件）。運送補給要自己走過去（存檔點傳送不算），目標大約 4～5 層以上。委託板每天換一批。</p>'
       + (qs.length ? '<p><b>手上的（' + qs.length + '／' + MAXQ + '）</b>' + (ready.length > 1 ? ' <button type="button" class="btn gold" id="qb-all">全部繳交（' + ready.reduce((a, q) => a + times(q), 0) + ' 件）</button>' : '') + '</p><div class="ft-list">' + qs.map(line).join('') + '</div>' : '')
       + '<p><b>今天的委託</b></p>' + (off.length ? '<div class="ft-list">' + off.map(offer).join('') + '</div>' : '<p class="note">今天沒有你的段位能接的委託。</p>');
@@ -132,6 +146,6 @@
     } catch (err) { console.warn('[questboard]', err); }
   };
   const css = document.createElement('style');
-  css.textContent = '.qb-row .row{margin-top:4px;gap:6px}#r-qb{display:flex;flex-direction:column;gap:2px;font-size:12px}#r-qb span b{color:#E8C04A}';
+  css.textContent = '.qb-row .qb-site{display:block;color:#E8C870!important;font-weight:600;margin:2px 0}.qb-row .row{margin-top:4px;gap:6px}#r-qb{display:flex;flex-direction:column;gap:2px;font-size:12px}#r-qb span b{color:#E8C04A}';
   document.head.appendChild(css);
 })(window.R);

@@ -680,6 +680,7 @@
     const ins = W.inside; if (!ins || ins.kind !== 'trainst' || ins.hosuHooked) return; ins.hosuHooked = 1;
     const it = ins.inter.find(v => /售票口/.test(v.label)); if (!it) return;
     const orig = it.act;
+    it._orig = orig;   // azukicities.js 的「到遠方的遺跡」要接回原本的遺跡地圖，不要接到這個「往奉主」的視窗
     it.label = '售票口：搭魔導電車（奉主、遠方的遺跡）';
     it.act = () => {
       R.sheet('<p class="kicker">東鶴站・售票口</p><h2>要搭到哪裡？</h2><p>「往奉主的魔導電車，單程 ' + FARE + ' 費拉，四個鐘頭。往南到奉主。要買幾張？」</p><p class="note">費拉 ' + S().gold + '</p>',

@@ -227,7 +227,7 @@
       const face = new TH.Mesh(new TH.CircleGeometry(0.75, 20), R.seeThrough(new TH.MeshLambertMaterial({ color: '#F4ECD8', emissive: '#FFE8B0', emissiveIntensity: 0.5 }))); face.position.set(cx + 6.8, 5.4, z1 - 1.1 + 0.06); group.add(face);
       [[0.5, 0.06, 0.6], [0.35, 0.08, -0.9]].forEach(([len, wd, a]) => { const h = new TH.Mesh(new TH.BoxGeometry(wd, len, 0.03), new TH.MeshBasicMaterial({ color: '#1A1414' })); h.geometry.translate(0, len / 2, 0); h.position.set(cx + 6.8, 5.4, z1 - 1.04); h.rotation.z = a; group.add(h); });
       inter(cx, z1 + 2.6, 2.6, '東鶴站・售票口（搭魔導電車到昭旭全國的遺跡）', () => (E.martial ? talk('東鶴站', ['售票口的窗簾拉下來了：「退位大典，全線停駛。」']) : R.openMapPaused ? R.openMapPaused('nation') : R.openMap('nation')));
-      inter(cx - 6.5, z1 + 1.2, 1.8, '看東鶴站的時刻表', () => talk('東鶴站的時刻表', [R.today ? R.dateLabel() : '', '上行・往皇嶺：每天四班（其中兩班是特急）。', '下行・往吉山、奉主：每天三班。', E.martial ? '本日退位大典：全線停駛。' : E.blizzard ? '暴風雪：全線誤點。' : '本日正常行駛。']));
+      inter(cx - 6.5, z1 + 1.2, 1.8, '看東鶴站的時刻表', () => talk('東鶴站的時刻表', [R.today ? R.dateLabel() : '', '上行・往皇嶺：每天四班（其中兩班是特急）。', '下行・往吉山、奉主：每天三班。', R.nextTrainDest && R.nextTrainDest() ? '下一班：往' + R.nextTrainDest() + '。' : '', E.martial ? '本日退位大典：全線停駛。' : E.blizzard ? '暴風雪：全線誤點。' : '本日正常行駛。']));
       const staff = npc(cx + 3.2, z1 + 1.4, { top: '#2E3A48', hair: '#2A2420', cloak: '#2E3A48', hs: 'crop', acc: 'glasses' }, '站務員', 0);
       inter(cx + 3.2, z1 + 2.4, 1.8, '和站務員說話', () => talk('站務員', [pick(['「魔導電車是德克斯凡的技術。剛通車那年，整個東鶴的人都跑來看。」', '「平交道的柵欄放下來的時候，千萬別鑽過去。」', '「往皇嶺的特急，這幾天因為大典，票都賣光了。」'])]), { follow: staff });
       // 月台：島式月台、雨棚、站名牌、長椅
@@ -332,7 +332,13 @@
       }
       [-1, 1].forEach(sd => { const ex = sd * (len / 2 + 0.01); cb.add(G3.box, win, ex, 2.55, 0, 0.04, 0.9, 2.0); cb.add(G3.box, dest, ex, 3.2, 0, 0.04, 0.3, 1.2); [-0.75, 0.75].forEach(o => cb.add(G3.box, light, ex, 1.25, o, 0.05, 0.22, 0.3)); });
       cb.flush(g); g.visible = false; group.add(g);
-      tw.train = { g, len, x: 0, z: 0, dir: -1, v: 0, mode: E.martial ? 'off' : 'wait', t: 3 + Math.random() * 6, served: false, cruise: E.blizzard ? 8 : 13 };
+      // 行先標（2026-10-13：以前只寫死「往奉主」，每班車隨機一個電車到得了的城；車頭車尾、側面、時刻表、月台都看這個）
+      const dcv = document.createElement('canvas'); dcv.width = 192; dcv.height = 48; const dtex = new TH.CanvasTexture(dcv);
+      const dmat = new TH.MeshBasicMaterial({ map: dtex });
+      [-1, 1].forEach(sd => { const m = new TH.Mesh(new TH.PlaneGeometry(1.2, 0.3), dmat); m.position.set(sd * (len / 2 + 0.03), 3.2, 0); m.rotation.y = sd * Math.PI / 2; g.add(m);
+        const m2 = new TH.Mesh(new TH.PlaneGeometry(1.6, 0.4), dmat); m2.position.set(0, 3.0, sd * 1.27); m2.rotation.y = sd > 0 ? 0 : Math.PI; g.add(m2); });
+      const drawDest = d => { const c = dcv.getContext('2d'); c.fillStyle = '#14181E'; c.fillRect(0, 0, 192, 48); c.fillStyle = '#FFB838'; c.font = 'bold 30px "Noto Serif TC", serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('往' + d, 96, 26); dtex.needsUpdate = true; };
+      tw.train = { g, len, drawDest, x: 0, z: 0, dir: -1, v: 0, mode: E.martial ? 'off' : 'wait', t: 3 + Math.random() * 6, served: false, cruise: E.blizzard ? 8 : 13 };
       tw.trainStop = WX((PLAT[0] + PLAT[2]) / 2); tw.railZ = WZ(RAIL.y); }
 
     // 城牆裡的空地補上小東西（civic.js）
@@ -341,17 +347,21 @@
   };
 
   // ---------- 每一格：電車、平交道 ----------
+  // 這條線電車到得了的城：奉主＋城際交通裡不用換渡輪的城（R.AZUKI_CITIES），每班隨機一個，跟上一班不同
+  const destPool = () => ['奉主'].concat((R.AZUKI_CITIES || []).filter(c => !c.island).map(c => c.name));
+  const pickDest = T0 => { if (R.trainBoard) { T0.dest = R.trainBoard(1)[0].dest; if (T0.drawDest) T0.drawDest(T0.dest); return; } const pool = destPool().filter(n => n !== T0.dest); T0.dest = pool[Math.floor(Math.random() * pool.length)] || '奉主'; if (T0.drawDest) T0.drawDest(T0.dest); };
+  if (!R.nextTrainDest) R.nextTrainDest = () => { const T0 = R.W.town && R.W.town.train; if (!T0) return ''; if (!T0.dest) pickDest(T0); return T0.dest; };
   let bellT = 0, warnT = 0;
   R.suburbStep = (dt, tw, P) => {
     const T0 = tw.train; if (!T0) return;
-    if (T0.mode === 'wait') { T0.t -= dt; if (T0.t <= 0) { T0.dir = -T0.dir; T0.x = T0.dir > 0 ? -HALF - T0.len : HALF + T0.len; T0.z = WZ(T0.dir > 0 ? RAIL.t[1] : RAIL.t[0]); T0.v = T0.cruise; T0.served = false; T0.mode = 'run'; T0.g.visible = true; } }
+    if (T0.mode === 'wait') { if (!T0.dest) pickDest(T0); T0.t -= dt; if (T0.t <= 0) { T0.dir = -T0.dir; T0.x = T0.dir > 0 ? -HALF - T0.len : HALF + T0.len; T0.z = WZ(T0.dir > 0 ? RAIL.t[1] : RAIL.t[0]); T0.v = T0.cruise; T0.served = false; T0.mode = 'run'; T0.g.visible = true; } }
     else if (T0.mode === 'stop') { T0.t -= dt; if (T0.t <= 0) T0.mode = 'run'; }
     else if (T0.mode === 'run') {
       const dist = (tw.trainStop - T0.x) * T0.dir;
       if (!T0.served && dist > 0) { T0.v = Math.min(T0.cruise, Math.sqrt(2 * 2.6 * dist) + 0.4); if (dist < 0.08) { T0.x = tw.trainStop; T0.v = 0; T0.mode = 'stop'; T0.t = 6; T0.served = true; } }
       else { T0.served = true; T0.v = Math.min(T0.cruise, T0.v + 2.4 * dt); }
       T0.x += T0.v * T0.dir * dt;
-      if (Math.abs(T0.x) > HALF + T0.len + 2) { T0.mode = 'wait'; T0.t = 14 + Math.random() * 14; T0.g.visible = false; }
+      if (Math.abs(T0.x) > HALF + T0.len + 2) { T0.mode = 'wait'; T0.t = 14 + Math.random() * 14; T0.g.visible = false; pickDest(T0); }
     }
     if (T0.g.visible) { T0.g.position.set(T0.x, 0, T0.z); }
     // 平交道：電車快到了（或正在經過）就放下柵欄、紅燈一閃一閃、噹噹響
