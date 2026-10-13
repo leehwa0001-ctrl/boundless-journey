@@ -178,8 +178,10 @@
   if (L) L.sort((a, b) => a.need - b.need);   // 照等級排：靜水 10、霜返 15、三圈一結 20、流斷 25、瀧落 30、納勢 35、霜斷 45
   R.TAKI_SEI = LESSONS;
   // 圖示
-  const map = R.SKILL_ART_MAP;
-  if (map) { map.sheets['taki-sei'] = { file: 'taki-sei-v1.png', cols: 4, rows: 1, count: 4 }; NEW.forEach((id, i) => { map.icons[id] = { sheet: 'taki-sei', tile: i, name: LESSONS[i].name, family: id }; }); }
+  // 2026-10-13：skill-art-map.js 比這個檔案晚載入、會把 R.SKILL_ART_MAP 整個換掉——等全部載完再登記，不然刀勢四招沒有圖示
+  const regArt = () => { const map = R.SKILL_ART_MAP;
+  if (map) { map.sheets['taki-sei'] = { file: 'taki-sei-v1.png', cols: 4, rows: 1, count: 4 }; NEW.forEach((id, i) => { map.icons[id] = { sheet: 'taki-sei', tile: i, name: LESSONS[i].name, family: id }; }); } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', regArt); else regArt();
   // ---------- 畫面左邊的刀勢 ----------
   let el = null, last = '';
   const hud = P => {

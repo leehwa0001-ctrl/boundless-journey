@@ -1,0 +1,84 @@
+// 2026-10-13 Esc 選單重新分類（作者：把玩家的 esc 鍵後的介面重新整理分類）
+// 遺跡的暫停選單（hud.js）、城裡的選單（town.js）、可以走的城市選單（citykit2.js）都一樣排成：
+//   遊戲（繼續、地圖、快速移動、委託、手冊、新手教學……）／角色（法術書、外觀、種族……）／
+//   設定：畫面（畫質、鏡頭、幀數……）・聲音（音樂、音效）・按鍵與操作（按鍵設定）／社群・回報（回報穿模、公告……）／離開（回程、回到標題）
+// 按鈕都是原本那幾顆搬過來的（onclick 不變），沒有拿掉任何功能；認不出來的放「其他」。
+// 很多檔案晚一點才把按鈕塞進選單（setTimeout），所以用 MutationObserver 看著 #r-sheet，有新按鈕就再排一次。
+(function (R) {
+  const $ = id => document.getElementById(id);
+  const MENU = /^(ps-x|tm-x|ck-x)$/;
+  const SECS = [
+    ['game', '遊戲'], ['char', '角色'], ['set', '設定'], ['social', '社群・回報'], ['other', '其他'], ['leave', '離開']
+  ];
+  const SUB = [['screen', '畫面'], ['sound', '聲音'], ['keys', '按鍵與操作']];
+  const RULES = [
+    ['leave', /回到標題|直接回程|放棄|離開|存檔/, /^(ps-quit|tm-title|ck-title)$/],
+    ['keys', /按鍵|操作|搖桿|手把/],
+    ['sound', /音效|音樂|音量|聲音/],
+    ['screen', /畫質|鏡頭|幀數|像素版|畫面|視角|亮度|字體|介面大小/],
+    ['social', /回報|穿模|公告|更新|隊伍|連線|好友|房間|聊天|分享|排行/],
+    ['char', /技能|天賦|被動|捏角|披風|轉職|稱號|裝備|種族|人物|法術書|符卷書|兜帽|召喚|職業|角色/],
+    ['game', /繼續|隔間牆|卡住|地圖|快速移動|委託|手冊|指南|圖鑑|教學|瓦版|日誌|任務|觀光/]
+  ];
+  const kindOf = b => { const t = (b.textContent || '').trim(), id = b.id || ''; for (const [k, re, ire] of RULES) { if ((ire && ire.test(id)) || re.test(t)) return k; } return 'other'; };
+  const css = document.createElement('style');
+  css.textContent = '.em-wrap{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:8px;margin:8px 0}'
+    + '.em-sec{background:#17141E;border:1px solid #352E42;border-radius:8px;padding:8px 10px}.em-sec>h4{margin:0 0 6px;font-size:13px;letter-spacing:.1em;color:#C9B27A}'
+    + '.em-set{grid-column:1/-1}.em-subs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.em-sub>h5{margin:0 0 4px;font-size:12px;color:#A89CB8;font-weight:600}'
+    + '.em-btns{display:flex;flex-wrap:wrap;gap:6px}.em-btns .btn{padding:6px 10px;font-size:14px;min-height:34px}.em-sub .vol-row{margin:0 0 6px}'
+    + '.em-leave{grid-column:1/-1;display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#1C1418;border-color:#4A2E36}.em-leave>h4{margin:0 8px 0 0}'
+    + '.em-game .btn.pri{min-width:120px}'
+    + '@media (max-width:640px){.em-wrap{grid-template-columns:1fr}.em-btns .btn{flex:1 1 calc(50% - 6px);min-height:40px}}';
+  document.head.appendChild(css);
+  const build = sh => {
+    const w = document.createElement('div'); w.className = 'em-wrap';
+    SECS.forEach(([id, name]) => {
+      const s = document.createElement('section'); s.className = 'em-sec em-' + id; s.innerHTML = '<h4>' + name + '</h4>';
+      if (id === 'set') { const subs = document.createElement('div'); subs.className = 'em-subs'; SUB.forEach(([k, n]) => { const d = document.createElement('div'); d.className = 'em-sub em-s-' + k; d.innerHTML = '<h5>' + n + '</h5><div class="em-btns"></div>'; subs.appendChild(d); }); s.appendChild(subs); }
+      else { const d = document.createElement('div'); d.className = 'em-btns'; s.appendChild(d); }
+      w.appendChild(s);
+    });
+    return w;
+  };
+  const slot = (w, k) => (SUB.some(s => s[0] === k) ? w.querySelector('.em-s-' + k + ' .em-btns') : w.querySelector('.em-' + k + ' .em-btns'));
+  let busy = false;
+  const organize = () => {
+    const sh = $('r-sheet'); if (!sh) return;
+    const cont = [...sh.querySelectorAll('button')].find(b => MENU.test(b.id)); if (!cont) return;
+    busy = true;
+    try {
+      let w = sh.querySelector('.em-wrap');
+      if (!w) {
+        w = build(sh);
+        const anchor = sh.querySelector('.mt-wrap') || cont.closest('.row') || cont;
+        anchor.before(w);
+      }
+      // 按鍵設定：鍵盤玩家一定看得到（城市選單原本沒有）
+      if (!R.touch && R.keySheet && !sh.querySelector('#kb-open')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'kb-open'; b.textContent = '按鍵設定';
+        const again = cont.id === 'ps-x' ? () => R.pauseSheet() : cont.id === 'tm-x' ? () => R.townMenu() : null;
+        b.onclick = () => R.keySheet(again); slot(w, 'keys').appendChild(b);
+      }
+      const vol = sh.querySelector('.vol-row'); if (vol && !vol.closest('.em-wrap')) { const s = w.querySelector('.em-s-sound'); s.insertBefore(vol, s.querySelector('.em-btns')); }
+      [...sh.querySelectorAll('button')].forEach(b => {
+        if (b.closest('.em-wrap') || b.closest('.cs-box') || b.closest('.vol-row') || b.closest('details')) return;
+        if (b.closest('.keys,.keyrow')) return;
+        let k = kindOf(b); if (b === cont) k = 'game';
+        const d = slot(w, k); if (b === cont) d.prepend(b); else d.appendChild(b);
+      });
+      // 空的區塊藏起來；原本的分組（menutidy.js）、空的 row 拿掉
+      w.querySelectorAll('.em-sub').forEach(s => { s.hidden = !s.querySelector('.em-btns').children.length && !s.querySelector('.vol-row'); });
+      w.querySelectorAll('.em-sec').forEach(s => { s.hidden = s.classList.contains('em-set') ? ![...s.querySelectorAll('.em-sub')].some(x => !x.hidden) : !s.querySelector('.em-btns').children.length; });
+      sh.querySelectorAll('.mt-wrap,.mt-sys').forEach(x => { if (!x.querySelector('button,input')) x.remove(); });
+      sh.querySelectorAll('.row').forEach(r => { if (!r.closest('.em-wrap') && !r.children.length) r.remove(); });
+    } catch (e) { console.warn('[escmenu]', e); }
+    busy = false;
+  };
+  let t = null;
+  const start = () => {
+    const sh = $('r-sheet'); if (!sh) return setTimeout(start, 300);
+    new MutationObserver(() => { if (busy) return; clearTimeout(t); t = setTimeout(organize, 20); }).observe(sh, { childList: true, subtree: true });
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  R.escMenuOrganize = organize;
+})(window.R);
