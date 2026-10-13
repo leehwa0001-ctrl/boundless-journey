@@ -88,12 +88,12 @@
     const wrap = blk.els.map(e => e.classList && e.classList.contains('quests') ? e : e.querySelector && e.querySelector('.quests')).find(Boolean); if (!wrap) return;
     const cards = [...wrap.querySelectorAll('.quest')];
     const ruins = [];
-    cards.forEach((c, i) => { const b = c.querySelector('[data-go]'), s = b && siteOf(b.dataset.go); c.dataset.i = i; if (s && s.kind === 'ruin') { c.dataset.g = s.grade; c.dataset.n = s.name; c.dataset.f = floorsOf(s) || 0; slipInfo(s, c); ruins.push(c); } else { c.dataset.g = 'other'; c.dataset.n = c.textContent; } });
+    cards.forEach((c, i) => { const b = c.querySelector('[data-go]'), s = b && siteOf(b.dataset.go); c.dataset.i = i; if (!c.hasAttribute('tabindex')) c.tabIndex = 0; if (s && s.kind === 'ruin') { c.dataset.g = s.grade; c.dataset.n = s.name; c.dataset.f = floorsOf(s) || 0; slipInfo(s, c); ruins.push(c); } else { c.dataset.g = 'other'; c.dataset.n = c.textContent; } });
     // 未開放的遺跡（看得到原因）
     const shown = new Set(cards.map(c => { const b = c.querySelector('[data-go]'); return b && b.dataset.go; }));
     const locked = (R.SITES || []).filter(s => s.kind === 'ruin' && !shown.has(s.id) && s.status !== 'open');
     locked.forEach(s => {
-      const g = R.gradeById(s.grade), c = document.createElement('div'); c.className = 'quest gh-lock'; c.style.setProperty('--c', (R.GRADE_COLOR || {})[s.grade] || '#777');
+      const g = R.gradeById(s.grade), c = document.createElement('div'); c.className = 'quest gh-lock'; c.tabIndex = 0; c.style.setProperty('--c', (R.GRADE_COLOR || {})[s.grade] || '#777');
       c.dataset.g = s.grade; c.dataset.n = s.name; c.dataset.f = floorsOf(s) || 0; c.dataset.i = 900;
       c.innerHTML = '<b>' + esc(s.name) + '</b><small>' + esc(g ? g.name : '') + (R.TYPES && R.TYPES[s.type] ? '・' + esc(R.TYPES[s.type].name) : '') + '</small><em class="gh-why">🔒 ' + esc(lockWhy(s)) + '</em><button type="button" class="btn" disabled>未開放</button>';
       wrap.insertBefore(c, wrap.querySelector('[data-map]'));
@@ -251,7 +251,10 @@
     '.gh-ck{display:flex;gap:4px;align-items:center;color:#EEE3C8;font-size:14px;cursor:pointer}.gh-cnt{margin-left:auto;color:#F0CF6A;font-weight:700}',
     '#hub.gh-on .quests{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px 12px}',
     '#hub.gh-on .quest{position:relative;padding:16px 14px 12px;border:0;border-radius:2px;background:linear-gradient(180deg,rgba(0,0,0,.04),transparent 30%),var(--gh-washi);color:var(--gh-sumi);box-shadow:0 3px 6px rgba(0,0,0,.45);border-top:7px solid var(--c);transform:rotate(-.4deg);transition:transform .12s}',
-    '#hub.gh-on .quest:nth-child(even){transform:rotate(.5deg)}#hub.gh-on .quest:hover{transform:rotate(0) translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.5)}',
+    '#hub.gh-on .quest:nth-child(even){transform:rotate(.5deg)}',
+    // 任務單 hover／鍵盤焦點：白框畫在委託單外圈，難度色頂邊不變；已接（gh-held）白框稍粗
+    '#hub.gh-on .quest:hover,#hub.gh-on .quest:focus-visible{transform:rotate(0) translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.5);outline:2px solid #fff;outline-offset:3px}',
+    '#hub.gh-on .ft-row:hover,#hub.gh-on .ft-row:focus-visible,#hub.gh-on .qb-row:hover,#hub.gh-on .er-row:hover{outline:2px solid #fff;outline-offset:2px}',
     '#hub.gh-on .quest::before{content:"";position:absolute;top:-11px;left:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#F08070,#8E2416);box-shadow:0 2px 2px rgba(0,0,0,.5)}',
     '#hub.gh-on .quest b{color:var(--gh-sumi);font-size:16px}#hub.gh-on .quest small{color:#5A4E40}#hub.gh-on .quest .note{color:#5A4E40}',
     '#hub.gh-on .quest .btn{min-height:38px;margin-top:6px}',
@@ -259,7 +262,7 @@
     '.gh-why{display:block;font-style:normal;font-size:12px;color:var(--gh-shu);font-weight:700;margin:4px 0}',
     '#hub.gh-on .quest.gh-lock{filter:grayscale(.7);opacity:.7}#hub.gh-on .quest.gh-blocked{background:linear-gradient(135deg,transparent 0 47%,rgba(194,65,45,.1) 47% 53%,transparent 53%),var(--gh-washi)}',
     '.gh-hanko{position:absolute;right:10px;top:12px;width:46px;height:46px;display:grid;place-items:center;border:3px solid var(--gh-shu);border-radius:50%;color:var(--gh-shu);font-style:normal;font-weight:900;font-size:15px;letter-spacing:.1em;transform:rotate(-14deg);opacity:.85;box-shadow:inset 0 0 0 2px rgba(194,65,45,.3);pointer-events:auto}',
-    '#hub.gh-on .quest.gh-held{box-shadow:0 0 0 2px var(--gh-shu),0 3px 6px rgba(0,0,0,.45)}',
+    '#hub.gh-on .quest.gh-held{outline:3px solid #fff;outline-offset:3px;box-shadow:0 3px 6px rgba(0,0,0,.45)}',
     // 確認視窗
     '.gh-cf{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:rgba(8,6,10,.6)}',
     '.gh-cf-card{max-width:min(420px,92vw);padding:18px 20px;border-radius:4px;background:var(--gh-washi,#F2E8D2);color:#1E1A17;border-top:8px solid #C2412D;box-shadow:0 10px 30px rgba(0,0,0,.6);font-family:"Noto Serif TC",serif}',

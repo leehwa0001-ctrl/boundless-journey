@@ -10,13 +10,16 @@
     P + '#hub.gh-on,' + P + '#hub.hs-on,' + P + '#hub.hk-on{--gh-washi:#221D29;--gh-sumi:' + T + ';--gh-shu:#A8442F}',
     // 委託單／白藤堂的卡片：深色牌子
     H('.quest') + ',' + H('.recipe') + '{background:linear-gradient(180deg,#26202E,#1C1822)!important;color:' + T + '!important;border:1px solid ' + GOLD + '!important;border-top:3px solid var(--c,#8A6A3A)!important;border-radius:4px!important;transform:none!important;box-shadow:0 2px 6px rgba(0,0,0,.4)!important}',
-    H('.quest:hover') + '{transform:none!important;border-color:rgba(201,161,58,.75)!important}',
+    // 任務單 hover／焦點：外圈白框（outline 畫在邊框外），不要改 border-color，免得跟遺跡難度色搞混
+    H('.quest:hover') + ',' + H('.quest:focus-visible') + '{transform:none!important;outline:2px solid #fff!important;outline-offset:3px!important;border-color:' + GOLD + '!important;border-top-color:var(--c,#8A6A3A)!important}',
+    H('.quest.gh-held') + '{outline:3px solid #fff!important;outline-offset:3px!important;box-shadow:0 2px 6px rgba(0,0,0,.4)!important}',
+    H('.quest.gh-held:hover') + ',' + H('.quest.gh-held:focus-visible') + '{outline:3px solid #fff!important;outline-offset:3px!important;border-color:' + GOLD + '!important;border-top-color:var(--c,#8A6A3A)!important}',
+    H('.ft-row:hover') + ',' + H('.ft-row:focus-visible') + ',' + H('.qb-row:hover') + ',' + H('.er-row:hover') + '{outline:2px solid #fff!important;outline-offset:2px!important}',
     H('.quest::before') + '{display:none!important}',
     H('.quest b') + ',' + H('.recipe b') + '{color:#F0E6D2!important}',
     H('.quest small') + ',' + H('.quest .note') + ',' + H('.recipe small') + '{color:' + DIM + '!important}',
     H('.recipe') + '{border-top-color:#6E5A8E!important}',
     H('.quest.gh-blocked') + '{background:linear-gradient(180deg,#2A1E22,#1E181C)!important}',
-    H('.quest.gh-held') + '{box-shadow:0 0 0 1px #A8442F,0 2px 6px rgba(0,0,0,.4)!important}',
     H('.gh-meta span') + '{background:rgba(255,255,255,.05)!important;border-color:rgba(255,255,255,.14)!important;color:#D6CCB8!important}',
     H('.gh-why') + ',' + H('.hs-why') + '{color:#E0806A!important}',
     H('.gh-hanko') + '{width:38px!important;height:38px!important;font-size:12px!important;border-width:2px!important;opacity:.5!important;color:#C8604A!important;border-color:#C8604A!important;box-shadow:none!important}',
