@@ -1,6 +1,6 @@
 // 2026-10-14 作者：「Tab 出來的地圖為什麼不能放大？」——遺跡的大地圖（hud.js）、城市地圖（citykit2.js、hosu.js）原本就只畫一張固定大小的圖，沒有縮放功能。
 // （遺跡的 Tab 地圖其實是 ruinmap.js，本來就能拖曳、滾輪縮放，只是沒有按鈕、看不出來；那邊補了 ＋／−、雙擊回自己、記住縮放。）
-// 這裡幫城市的大地圖加上：滾輪縮放（以游標為中心）、拖曳平移、雙擊回到原大小、右上角 ＋／−／⌖（回到自己身上）；手機兩指縮放、一指拖曳。
+// 這裡幫城市的大地圖加上：滾輪縮放（以游標為中心）、拖曳平移、雙擊回到原大小、右上角 ＋／−／◎（回到自己身上）；手機兩指縮放、一指拖曳。
 // 做法：把畫好的 canvas 包進一個會裁切的框，用 CSS transform 放大、平移（遺跡圖是像素格子，放大用 pixelated 保持清楚）。
 // 縮放程度記在這一趟（W.run）或這座城（W.town）上，重新打開 Tab 會照上次的樣子。東鶴近郊的地圖（gtamap.js）本來就能縮放，不動。
 // 放在 hud.js、citykit2.js、hosu.js 後面。
@@ -14,7 +14,7 @@
     if (cv.dataset.mz) return; const key = MAPS[cv.id]; if (!key) return; cv.dataset.mz = 1;
     const wrap = document.createElement('div'); wrap.className = 'mz-wrap'; cv.parentNode.insertBefore(wrap, cv); wrap.appendChild(cv);
     const ui = document.createElement('div'); ui.className = 'mz-ui';
-    ui.innerHTML = '<button type="button" data-z="in" title="放大">＋</button><button type="button" data-z="out" title="縮小">−</button><button type="button" data-z="me" title="回到自己身上">⌖</button><button type="button" data-z="reset" title="整張地圖">⤢</button>';
+    ui.innerHTML = '<button type="button" data-z="in" title="放大">＋</button><button type="button" data-z="out" title="縮小">−</button><button type="button" data-z="me" title="回到自己身上">◎</button><button type="button" data-z="reset" title="整張地圖">⤢</button>';
     wrap.appendChild(ui);
     const v = viewOf(key), size = () => [wrap.clientWidth || 1, wrap.clientHeight || 1];
     const clamp = () => { const [w, h] = size(); v.z = Math.max(ZMIN, Math.min(ZMAX, v.z)); v.tx = Math.min(0, Math.max(w - w * v.z, v.tx)); v.ty = Math.min(0, Math.max(h - h * v.z, v.ty)); };

@@ -79,6 +79,20 @@
     const C = R.CITY, toS = v => (ck() ? v : v / C.S + 500);
     R.setWaypoint(toS(p[0]), toS(p[1]), '跑腿：' + st.txt);
   };
+  // 2026-10-14 作者：「委託按下去要有指示（指引地圖）」——點「手上的委託」裡的一行：設好這一站的目的地、打開地圖給你看；
+  //   要搭電車的站、或人不在東鶴的時候，先指到售票口；跑完了指回公會。畫面上的方向箭頭在 questguide.js。
+  const interAt = re => { const t = W().town; return t && (t.inter || []).find(i => typeof i.label === 'string' && !i.follow && re.test(i.label)); };
+  const wpAt = (it, name) => { const C = R.CITY, toS = v => (ck() ? v : v / C.S + 500); R.setWaypoint(toS(it.x), toS(it.z), name); return true; };
+  const guide = q => {
+    const e = byId(q.eid), st = e && e.steps[q.step], t = W().town; if (!e) return false;
+    if (!t || W().run) { R.toast && R.toast('回到城裡才能指路。', '#E8C04A'); return false; }
+    const say = m => { R.toast && R.toast(m, '#7FE0FF'); };
+    if (!inDonghe()) { const it = interAt(/售票口/); if (it) { wpAt(it, '跑腿：先回東鶴（售票口）'); say('先到售票口搭車回東鶴。'); return true; } say('先回東鶴。'); return false; }
+    if (q.done || !st) { const it = interAt(/^走進公會東鶴分館/); if (it) { wpAt(it, '跑腿：回公會繳交'); say('跑完了，回公會分館繳交。'); return true; } return false; }
+    if (st.city) { const it = interAt(/售票口/); if (it) { wpAt(it, '跑腿：搭電車去' + st.txt); say('到東鶴站的售票口搭電車去' + st.txt + '。'); return true; } return false; }
+    if (!target(st)) return false; wp(q); say('目的地：' + st.txt + '（地圖、雷達上有路線，畫面上有箭頭）'); return true;
+  };
+  R.errandGuide = eid => { const q = mine().find(x => x.eid === eid); return q ? guide(q) : false; };
   const advance = (q, e) => {
     const st = e.steps[q.step]; q.step++;
     if (e.herb && q.step >= e.steps.length) { const s = S(); s.mats = s.mats || {}; s.mats.herb = (s.mats.herb || 0) + e.herb; }
@@ -138,7 +152,8 @@
     } catch (err) { console.warn('[errands]', err); }
   };
   const css = document.createElement('style');
-  css.textContent = '.er-row .row{margin-top:4px;gap:6px}.er-steps{display:flex;flex-wrap:wrap;gap:2px 6px;font-size:12px;margin-top:3px;opacity:.9}.er-steps i{opacity:.5;font-style:normal}.er-st.ok{color:#8FD08A}.er-st.now{color:#E8C04A;font-weight:bold}';
+  css.textContent = '.er-row .row{margin-top:4px;gap:6px}.er-steps{display:flex;flex-wrap:wrap;gap:2px 6px;font-size:12px;margin-top:3px;opacity:.9}.er-steps i{opacity:.5;font-style:normal}.er-st.ok{color:#8FD08A}.er-st.now{color:#E8C04A;font-weight:bold}'
+    + '.ql-go{cursor:pointer;padding:6px 8px;margin:4px 0;border:1px solid #3E3550;border-radius:6px;background:#1E1A26;display:flex;flex-wrap:wrap;gap:4px;align-items:center}.ql-go:hover,.ql-go:focus{border-color:#C9A13A;background:#262030;outline:none}.ql-go:active{background:#2E2638}.ql-arrow{margin-left:auto;color:#E8C04A;font-size:12px;white-space:nowrap}';
   document.head.appendChild(css);
   // 城裡的「手上的委託」也列出跑腿（2026-10-13 修正：以前只看私人委託，接了跑腿／遺跡委託還是寫「沒有私人委託」）
   const ql0 = R.questLog;
@@ -149,7 +164,8 @@
       if (qs.length && sh) {
         const d = document.createElement('div'); d.className = 'ql-errands';
         d.innerHTML = '<h3>初心跑腿（' + qs.length + '／' + MAX + '）</h3>' + qs.map(q => { const e = byId(q.eid); if (!e) return ''; const st = e.steps[q.step];
-          return '<p><b>F 級・' + esc(e.name) + '</b>：' + (q.done || !st ? '都跑完了，回公會分館繳交（' + total(e) + ' 費拉）' : '第 ' + (q.step + 1) + '／' + e.steps.length + ' 站・下一站：' + esc(st.txt)) + '</p>'; }).join('');
+          return '<p class="ql-go" role="button" tabindex="0" data-erguide="' + esc(q.eid) + '" title="點一下：在地圖上指路"><b>F 級・' + esc(e.name) + '</b>：' + (q.done || !st ? '都跑完了，回公會分館繳交（' + total(e) + ' 費拉）' : '第 ' + (q.step + 1) + '／' + e.steps.length + ' 站・下一站：' + esc(st.txt)) + '<span class="ql-arrow">指路 ➜</span></p>'; }).join('');
+        d.querySelectorAll('[data-erguide]').forEach(p => { const go = () => { if (R.errandGuide(p.dataset.erguide)) { R.sfx && R.sfx('click'); R.closeSheet && R.closeSheet(); setTimeout(() => { if (!(R.sheetOpen && R.sheetOpen()) && R.bigMap) R.bigMap(); }, 80); } }; p.onclick = go; p.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); go(); } }; });
         const after = sh.querySelector('h2'); const ref = sh.querySelector('.ql-priv') || sh.querySelector('.row:last-child');
         if (ref && ref.parentNode) ref.parentNode.insertBefore(d, ref); else if (after) after.after(d); else sh.appendChild(d);
       }
