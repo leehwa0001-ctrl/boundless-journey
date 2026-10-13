@@ -7,13 +7,11 @@
 // - 普攻：卷軸、符紙、牛皮紙是真的紙，每打 6 下扣 1 費拉（紙錢）；毛筆是在空中寫字，不扣錢。
 // - 新武器「牛皮紙」（一次兩張、比卷軸重）。遺跡裡左上角顯示卷軸還有幾張。
 // 2026-10-13 作者：符卷師重做（諾克薩派）——
-// - 符卷書：用跟術士同一套咒文編排（活力-聚合-定點-控制）編咒（城裡選單、暫停選單、書桌的「符卷書」），在書桌上把咒「寫」到牛皮紙上：
-//   一張紙寫一張咒卷（S.scrollBag：咒文 → 張數）。寫的時間照咒文長度（每文 +8%）。
-// - 戰鬥中：綁了咒的技能格＝撕開一張那句咒的卷軸：零前搖、不耗魔力（紙錢在寫的時候已經付了），冷卻照咒；
-//   0.6 秒內連撕＝齊發：每多一張傷害 +15%（最多 +45%；諾克薩的傳人 +30%、最多 +90%）。
-//   沒綁咒的格照舊放原本的技能（先用一般卷軸 S.scrolls、冷卻 −20%；沒有也照放）。戰鬥中所有扣錢的都拿掉了（現寫、普攻紙錢）。
-// - 魔力濃的遺跡（克森特級以上）：撕卷時 4% 失敗（卷軸燒掉）、每 8 秒 3% 機率背包裡的一張咒卷自己發動。
-// - 轉職：封印師可以寫「斷序符」（咒文 Mmˊ×3，撕開打斷附近敵人 1.2 秒）；抄寫師可以寫 Gmˊ 雙用卷（一張紙撕兩次、寫的時間 ×2）；
+// - 符卷書：跟術士一樣的「法術書」（元素＋形狀＋效果三選），在書桌把法術寫到牛皮紙上：一張紙一張卷軸（S.scrollBag：法術 → 張數）。
+// - 戰鬥中：綁了法術的技能格＝撕開一張那個法術的卷軸：零前搖、不耗魔力（紙錢在寫的時候已經付了）；0.6 秒內連撕＝齊發（每張 +15%，最多 +45%）。
+//   沒綁法術的格照舊放原本的技能（先用一般卷軸 S.scrolls、冷卻 −20%）。戰鬥中不扣錢。
+// - 克森特級以上的遺跡：撕卷 4% 失敗、每 8 秒 3% 一張卷軸自己發動。
+// - 轉職：封印師＝封印符（效果「封印」）；抄寫師＝雙用卷；諾克薩的傳人＝齊發加成加倍，連撕第 3 張起 25% 不消耗。
 //   諾克薩的傳人：齊發加成加倍，連撕第 3 張起 25% 不消耗。
 // - 舊存檔：一般卷軸 S.scrolls 照留（展卷、原本的技能還是用它），什麼都不會掉。
 // 放在 classes2.js、gearmore.js、skillbook.js、skillpoints.js、hub.js 後面。
@@ -61,12 +59,12 @@
       let r = null; try { r = K.evalSpell(K.parse(x.code, x.n), { P: W().P || { lv: lvOf(), adv } }); } catch (e) { }
       const dx = r && K.hasSt(r.sp, 'Dx'), bad = !r || r.errs.length || (dx && adv !== 'sealer');
       const t = secPer() * (1 + 0.08 * glyphN(x.code)) * (dbl ? 2 : 1);
-      return '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:3px 0"><b style="min-width:6em">' + esc(x.n) + '</b><small style="opacity:.75">' + esc(x.code) + '・' + (B[x.code] || 0) + ' 張・' + t.toFixed(1) + ' 秒' + (dx ? (adv === 'sealer' ? '・斷序符' : '・斷序符只有封印師能寫') : '') + (r && r.errs.length ? '・咒文有誤' : '') + '</small>'
+      return '<div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:3px 0"><b style="min-width:6em">' + esc(x.n) + '</b><small style="opacity:.75">' + esc(x.code) + '・' + (B[x.code] || 0) + ' 張・' + t.toFixed(1) + ' 秒' + (dx ? (adv === 'sealer' ? '・封印符' : '・封印符只有封印師能寫') : '') + (r && r.errs.length ? '・寫不了' : '') + '</small>'
         + [1, 5].map(n => '<button type="button" class="btn" data-sk="' + i + '" data-n="' + n + '"' + (bad || paper < 1 || job2 || job ? ' disabled' : '') + '>寫 ' + n + '</button>').join('') + '</div>';
     };
-    d.innerHTML = '<b>咒卷（符卷書裡的咒）</b><small>一張牛皮紙寫一張；寫好的咒卷綁在技能格上，戰鬥中撕開＝零前搖、不耗魔力。</small>'
+    d.innerHTML = '<b>法術卷軸（符卷書裡的法術）</b><small>一張牛皮紙寫一張；寫好的卷軸綁在技能格上，戰鬥中撕開＝零前搖、不耗魔力。</small>'
       + b.spells.map(row).join('')
-      + '<div class="row">' + (adv === 'scribe' ? '<label style="font-size:12px"><input type="checkbox" id="sw-dbl"' + (dbl ? ' checked' : '') + '> Gmˊ 雙用卷（撕兩次、寫的時間 ×2）</label>' : '') + '<button type="button" class="btn" id="sw-book">符卷書（編咒、綁技能格）</button>' + (job2 ? '<button type="button" class="btn" id="sw-stop2">停筆</button>' : '') + '</div>'
+      + '<div class="row">' + (adv === 'scribe' ? '<label style="font-size:12px"><input type="checkbox" id="sw-dbl"' + (dbl ? ' checked' : '') + '> 雙用卷（一張紙撕兩次、寫的時間 ×2）</label>' : '') + '<button type="button" class="btn" id="sw-book">符卷書（配法術、綁技能格）</button>' + (job2 ? '<button type="button" class="btn" id="sw-stop2">停筆</button>' : '') + '</div>'
       + '<div class="meter" style="margin:6px 0"><i id="sw-bar2" style="width:0%"></i></div><small id="sw-st2"></small>';
     rc.appendChild(d);
     const cb = $('sw-dbl'); if (cb) cb.onchange = () => { dbl = cb.checked; desk(); };
@@ -85,7 +83,7 @@
         t = 0; const B = bagS();
         if ((s.mats.parchment || 0) < 1) left = 0; else { s.mats.parchment--; B[x.code] = (B[x.code] || 0) + uses; left--; R.sfx && R.sfx('pick'); }
         if (st) st.textContent = '「' + x.n + '」寫好了 ' + (n - left) + '／' + n + ' 張';
-        if (left <= 0) { stop2(); R.save(); R.toast('咒卷寫好了：「' + x.n + '」' + (B[x.code] || 0) + ' 張。', '#C8A85A'); desk(); }
+        if (left <= 0) { stop2(); R.save(); R.toast('卷軸寫好了：「' + x.n + '」' + (B[x.code] || 0) + ' 張。', '#C8A85A'); desk(); }
       }
     }, 100) };
     desk();
@@ -148,7 +146,7 @@
     if (K.hasSt(sp, 'Dx')) {   // 斷序符
       const big = P.adv === 'sealer';
       (W().enemies || []).forEach(e => { if (!e.dead && Math.hypot(e.x - P.x, e.z - P.z) < (big ? 7 : 5) + e.def.size * 0.5) { e.st.stun = Math.max(e.st.stun || 0, e.def.boss ? 0.4 : big ? 1.2 : 0.6); if (e.cd != null) e.cd = Math.max(e.cd, big ? 1.5 : 0.8); } });
-      R.fx && R.fx('ring', P.x, 0.1, P.z, { r: big ? 7 : 5, color: '#F2E6A0' }); R.num && R.num(P.x, 2.6, P.z, '斷序符', 'crit');
+      R.fx && R.fx('ring', P.x, 0.1, P.z, { r: big ? 7 : 5, color: '#F2E6A0' }); R.num && R.num(P.x, 2.6, P.z, '封印符', 'crit');
     } else K.release(P, r, slot == null ? 0 : slot);
     if (TR.n >= 2 && why !== 'self') R.num && R.num(P.x, 3, P.z, '齊發 ×' + TR.n, 'crit');
     return r;
@@ -164,7 +162,7 @@
     const keep = P.adv === 'noxa' && CT() - TR.t < 0.6 && TR.n >= 2 && Math.random() < 0.25;
     if (!keep) { B[x.code] = n - 1; if (B[x.code] <= 0) delete B[x.code]; }
     if (manaRich() && Math.random() < 0.04) { R.num && R.num(P.x, 2.6, P.z, '卷軸燒掉了', 'hurt'); R.fx && R.fx('poof', P.x, 1.2, P.z, { color: '#C8A85A', n: 10 }); K.cdSet(P, slot, 0.5); return; }
-    const r = tearOne(P, sp, 'tear', slot); if (!r) { R.toast('這句咒有誤，撕不開'); return; }
+    const r = tearOne(P, sp, 'tear', slot); if (!r) { R.toast('這張卷軸寫壞了，撕不開'); return; }
     K.cdSet(P, slot, r.cd * (P.skillCdMult || 1)); R.sfx && R.sfx('skill');
   };
   // 魔力濃的遺跡：咒卷自己發動
@@ -175,7 +173,7 @@
     try {
       const w = W(), P = w && w.P, s = S();
       if (P && P.cls === 'scroll' && w.run && !w.paused && !P.dead && manaRich() && R.spellKit) {
-        selfT -= dt; if (selfT <= 0) { selfT = 8; const B = bag(), L = Object.keys(B).filter(c => B[c] > 0); if (L.length && Math.random() < 0.03) { const c = L[Math.floor(Math.random() * L.length)]; B[c]--; if (B[c] <= 0) delete B[c]; R.toast('魔力太濃：一張咒卷自己發動了', '#E8C878'); tearOne(P, R.spellKit.parse(c), 'self', 0); } }
+        selfT -= dt; if (selfT <= 0) { selfT = 8; const B = bag(), L = Object.keys(B).filter(c => B[c] > 0); if (L.length && Math.random() < 0.03) { const c = L[Math.floor(Math.random() * L.length)]; B[c]--; if (B[c] <= 0) delete B[c]; R.toast('魔力太濃：一張卷軸自己發動了', '#E8C878'); tearOne(P, R.spellKit.parse(c), 'self', 0); } }
       }
     } catch (e) { }
     return r;
@@ -187,15 +185,15 @@
     const w = W(), s = S(), on = !!(w.run && !w.run.done && s && s.cls === 'scroll'); let el = $('r-scrolls');
     if (!on) { if (el) el.hidden = true; return; }
     if (!el) { const tl = $('r-tl'); if (!tl) return; el = document.createElement('div'); el.id = 'r-scrolls'; el.className = 'glass r-misc'; tl.appendChild(el); }
-    el.hidden = false; const n = s.scrolls || 0, B = bag(), m = Object.values(B).reduce((a, b) => a + b, 0), txt = '卷軸 <b>' + n + '</b>・咒卷 <b>' + m + '</b>';
+    el.hidden = false; const n = s.scrolls || 0, B = bag(), m = Object.values(B).reduce((a, b) => a + b, 0), txt = '卷軸 <b>' + n + '</b>・法術卷軸 <b>' + m + '</b>';
     if (el.dataset.t !== txt) { el.innerHTML = txt; el.dataset.t = txt; }
   };
   // 職業核心說明
   const patchCore = () => { const CS = R.CORE && R.CORE.scroll; if (!CS || CS._swDone) return; CS._swDone = 1;
     const h0 = CS.help, g0 = CS.gauge.bind(CS);
-    CS.help = P => '諾克薩派：在白藤堂的書桌把符卷書裡的咒寫成咒卷，技能格綁上咒＝撕開那張咒卷（零前搖、不耗魔力）；0.6 秒內連撕＝齊發（每張 +' + (P.adv === 'noxa' ? 30 : 15) + '%）。克森特級以上的遺跡魔力太濃，咒卷偶爾會失敗或自己發動。 ' + (typeof h0 === 'function' ? h0(P) : '')
-      + ({ sealer: '封印師：可以寫斷序符（Mmˊ×3），打斷附近的敵人 1.2 秒。', scribe: '抄寫師：可以寫 Gmˊ 雙用卷。', noxa: '諾克薩的傳人：齊發加成加倍，連撕第 3 張起 25% 不消耗。' }[P.adv] || '');
-    CS.gauge = function (P) { const g = g0(P), B = bagS(), m = Object.values(B).reduce((a, b) => a + b, 0); g.text = '卷軸 ' + ((S() && S().scrolls) || 0) + '・咒卷 ' + m + ' 張'; return g; };
+    CS.help = P => '符卷師：在白藤堂的書桌把符卷書裡配好的法術寫成卷軸，技能格綁上法術＝撕開那張卷軸（零前搖、不耗魔力）；0.6 秒內連撕＝齊發（每張 +' + (P.adv === 'noxa' ? 30 : 15) + '%）。克森特級以上的遺跡魔力太濃，卷軸偶爾會失敗或自己發動。 ' + (typeof h0 === 'function' ? h0(P) : '')
+      + ({ sealer: '封印師：可以寫封印符（效果選「封印」），撕開定住身邊的敵人 1.2 秒。', scribe: '抄寫師：可以寫雙用卷（一張紙撕兩次）。', noxa: '諾克薩的傳人：齊發加成加倍，連撕第 3 張起 25% 不消耗。' }[P.adv] || '');
+    CS.gauge = function (P) { const g = g0(P), B = bagS(), m = Object.values(B).reduce((a, b) => a + b, 0); g.text = '卷軸 ' + ((S() && S().scrolls) || 0) + '・法術卷軸 ' + m + ' 張'; return g; };
   };
   patchCore(); window.addEventListener('load', patchCore); const st8 = R.step; R.step = dt => { patchCore(); return st8(dt); };
 })(window.R);
