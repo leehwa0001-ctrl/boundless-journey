@@ -213,7 +213,7 @@
       // 癒／防核心：打中遺跡生物，或自己站在這次普攻的法陣範圍內，才有效
       const okHit = n > 0 || Math.hypot(P2.x - x, P2.z - z) <= r;
       if (e2.coreShield && okHit) shieldAdd(P2, P2.mpMax * e2.coreShield, P2.mpMax * e2.coreShield * 5);
-      if (e2.naHeal && nth && okHit && R.healP) R.healP(P2.mpMax * e2.naHeal, true);
+      if (e2.naHeal && nth && okHit && R.healP) R.healP(P2.mpMax * e2.naHeal * (R.runeInCombat() ? 1 : 0.5), true);   // 非戰鬥減半
       if (e2.coreCd) { const v = 1 / (2 + e2.atkSpd); P2.skillCd = Math.max(0, (P2.skillCd || 0) - v); if (P2.skCd) P2.skCd = P2.skCd.map(c => Math.max(0, (c || 0) - v)); }
       return false;
     });
@@ -233,7 +233,10 @@
     T[k] = (s, P, w, pw) => {
       if (!isRM(P) || !s || s._rm) return f(s, P, w, pw);
       const e = E(); s = Object.assign({}, s, { _rm: 1 });
-      const ar = 1 + e.skArea + e.loopArea; if (ar !== 1) { if (s.r) s.r *= ar; if (s.hitR) s.hitR *= ar; }
+      // 2026-10-13：所有傷害型技能範圍半徑 ×1.5；法陣・爆蓄力完立刻爆（不再多等 0.6 秒）
+      const dmgSk = (s.k || 0) > 0 && s.zone !== 'sanct' && s.type !== 'buff';
+      const ar = (1 + e.skArea + e.loopArea) * (dmgSk ? 1.5 : 1); if (ar !== 1) { if (s.r) s.r *= ar; if (s.hitR) s.hitR *= ar; }
+      if (s._id === 'ry_burst') s.delay = 1;
       if (e.skDur) { if (s.t) s.t *= 1 + e.skDur; if (s.life) s.life *= 1 + e.skDur; }
       if (e.skHeal) { if (s.pct) s.pct *= 1 + e.skHeal; if (s.allies) s.allies *= 1 + e.skHeal; if (s.zone === 'sanct') s.healK = (s.healK || 1) * (1 + e.skHeal); }
       return f(s, P, w, (pw || 0) * (1 + e.skDmg));
@@ -245,6 +248,22 @@
   const ah0 = R.allyHit;
   if (ah0) R.allyHit = (en, dmg, by) => { const P = W() && W().P, a = isRM(P) && auraOf('D'); if (a && by && by.x != null && Math.hypot(by.x - P.x, by.z - P.z) <= a.r && !by.rival) dmg *= 1 + E().loopDmg / 2; return ah0(en, dmg, by); };
 
+  // ---------- 戰鬥中判定（2026-10-13）：癒陣／癒核心在非戰鬥時治療量減半 ----------
+  // 戰鬥中＝在遺跡裡，且 5 秒內打到或被打到，或 14 公尺內有活著的遺跡生物
+  let lastFight = -1e9;
+  const nowS = () => performance.now() / 1000;
+  const he1 = R.hurtEnemy; R.hurtEnemy = (en, raw, o) => { lastFight = nowS(); return he1(en, raw, o); };
+  const hp1 = R.hurtPlayer; if (hp1) R.hurtPlayer = (...a) => { lastFight = nowS(); return hp1(...a); };
+  R.runeInCombat = () => {
+    const w = W(), P = w && w.P; if (!w || !w.run || !P) return false;
+    if (nowS() - lastFight < 5) return true;
+    return (w.enemies || []).some(en => !en.dead && Math.hypot(en.x - P.x, en.z - P.z) < 14);
+  };
+  const az1 = R.addZone;
+  if (az1) R.addZone = z => { const r = az1(z); if (z && z.kind === 'sanct' && healCast) z._ryHeal = z.healK || 1; return r; };
+  let healCast = false;
+  const hT = T && T.zone; if (hT) T.zone = (s, ...a) => { const f = s && s._id === 'ry_heal'; healCast = healCast || f; try { return hT(s, ...a); } finally { if (f) healCast = false; } };
+
   // ---------- 閉環的光環（每幀） ----------
   let auraT = { B: 0, H: 0 }, auraMesh = null, auraSig = '';
   const allies = P => (W().allies || []).filter(a => !a.downed && !a.rival);
@@ -252,6 +271,7 @@
   R.step = dt => {
     const r = st0(dt);
     try {
+      { const w0 = W(); if (w0 && w0.zones) { const k = R.runeInCombat() ? 1 : 0.5; w0.zones.forEach(z => { if (z._ryHeal) z.healK = z._ryHeal * k; }); } }
       const w = W(), P = w && w.P;
       if (!isRM(P) || w.paused) { if (auraMesh && (!isRM(P))) { auraMesh.rm(); auraMesh = null; auraSig = ''; } return r; }
       const e = E();

@@ -405,7 +405,10 @@
     // 內修者站著不動：怒氣在 classcore、魔力在這裡；以前誤把「能量回復」做成每秒回 2% 生命（面板每秒回復是 0 卻還在回血、一移動就停）
     if (P.adv === 'inner' && P.still > 0.6 && !P.dead) { P.mp = Math.min(P.mpMax, P.mp + 3 * dt); }
     const pinched = R.collide(P, 0.42);
-    if (pinched && W.dyn.length && P.iframe <= 0) { R.hurtPlayer(P.hpMax * 0.12, null); P.iframe = 0.5; }   // 被擠壓的牆夾住：很痛，快逃
+    // 2026-10-13 修：以前只要「推三次還沒推乾淨」（牆角、兩個碰撞箱交界、物件外框）而且 W.dyn 裡剛好有任何特效在跑，就扣 12% 生命。
+    // 現在只有真的被會動的擠壓牆／落石（tag squeeze／rubble）夾住才扣
+    const crushed = pinched && [...R.boxesNear(P.x, P.z)].some(c => (c.tag === 'squeeze' || c.tag === 'rubble') && Math.max(c.x0 - P.x, 0, P.x - c.x1) ** 2 + Math.max(c.z0 - P.z, 0, P.z - c.z1) ** 2 < 0.25);
+    if (crushed && P.iframe <= 0) { R.hurtPlayer(P.hpMax * 0.12, null); P.iframe = 0.5; }   // 被擠壓的牆夾住：很痛，快逃
     P.yaw = sprint && P.moveA != null ? P.moveA : P.aimA;
     P.h.g.position.set(P.x, P.y || 0, P.z); P.h.g.rotation.y = P.yaw;
     P.h.g.visible = !(P.invis > 0 && Math.floor(run.t * 10) % 2 === 0);

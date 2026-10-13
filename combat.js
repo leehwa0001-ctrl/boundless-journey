@@ -220,7 +220,7 @@
             s.hit.add(e);
             if (s.kind === 'fire' || s.splash) { R.explode(s); break; }
             const extra = s.kind === 'hama' && (e.id === 'chochin' || e.id === 'onibi') ? 99 : 1;
-            if (s.ally) R.allyHit(e, s.dmg * extra, s.by); else R.hurtEnemy(e, s.dmg * extra, { primary: s.primary, elem: s.elem, crit: s.crit, root: s.root, stun: s.stun, vSk: s.vSk });   // vSk：技能、大招射出去的（vampproc.js 吸血必定觸發）
+            if (s.ally) R.allyHit(e, s.dmg * extra, s.by); else R.hurtEnemy(e, s.dmg * extra, { primary: s.primary, elem: s.elem, crit: s.crit, root: s.root, stun: s.stun, vSk: s.vSk, xPen: s.xPen });   // vSk：技能、大招射出去的（vampproc.js 吸血必定觸發）
             if (s.pierce-- <= 0) { R.killShot(s); break; }
           }
         }
@@ -247,7 +247,7 @@
   R.aoe = (x, z, r, dmg, o) => {
     o = o || {}; let n = 0;
     // 反擊／荊棘旗標要帶下去，不然 R.coreAoe／範圍反傷會被剝掉、又觸發吸血
-    W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < r + e.def.size * 0.5) { R.hurtEnemy(e, dmg, { primary: o.primary, stun: o.stun, root: o.root, curse: o.curse, kb: o.kb, crit: o.crit, reflect: o.reflect, thorns: o.thorns, noVamp: o.noVamp, fromBehind: o.fromBehind, vSk: o.vSk }); if (o.burn) e.st.burn = 3; n++; } });
+    W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < r + e.def.size * 0.5) { R.hurtEnemy(e, dmg, { primary: o.primary, stun: o.stun, root: o.root, curse: o.curse, kb: o.kb, crit: o.crit, reflect: o.reflect, thorns: o.thorns, noVamp: o.noVamp, fromBehind: o.fromBehind, vSk: o.vSk, xPen: o.xPen }); if (o.burn) e.st.burn = 3; n++; } });
     if (o.props !== false) W().F.props.forEach(p => { if (p.alive && Math.hypot(p.x - x, p.z - z) < r + 0.4) R.hitProp(p, dmg, !o.noAware); });
     return n;
   };

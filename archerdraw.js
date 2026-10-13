@@ -1,7 +1,7 @@
 // 弓箭手重做：所有普攻、傷害型技能都要續力（2026-10-13 作者）
 // - 按住左鍵續力、放開發射；傷害型技能＝一種「箭矢」：按技能鍵換上（再按一次卸下），發射前都可以換。
 // - 傷害與範圍照續力 %：0% 沒有效果，100%＝原本的 100%。沒有攻速加成時普攻 2 秒、技能 4 秒蓄滿。
-// - 普攻每一發＝武器（不含攻速）2 秒的傷害：每秒傷害 20 的武器 → 一發 40。技能傷害 ×1.2。
+// - 普攻每一發＝武器（不含攻速）2 秒的傷害：每秒傷害 20 的武器 → 一發 40。技能傷害 ×2.4（2026-10-13 翻倍）；蓄滿 100% 的箭 +20% 護甲穿透。
 // - 短弓照舊；長弓續力時間 ×1.2、能續到 120%；弩續力時間 ×1.2、會自己蓄滿，蓄滿後點一下左鍵直接射出。
 // - 每 1% 攻速＝續力速度 +0.75%（遊俠再 +0.25%）。
 // - 遊俠：續力時間減半，普攻蓄滿自動射出再重新續力。破魔弓手：續力時間 ×2，蓄滿＝再 +150%（短弓 250%、長弓 290%），箭速 ×2。
@@ -65,14 +65,16 @@
     if (CTX && o && o.owner === 'p') {
       o = Object.assign({}, o); o.dmg = (o.dmg || 0) * CTX.dmg; o.life = (o.life || 1.5) * CTX.area; if (o.radius) o.radius *= CTX.area;
       if (CTX.spd !== 1 && o.speed) { o.speed *= CTX.spd; o.life /= CTX.spd; }
-      o._arch = 1;
+      o._arch = 1; if (CTX.pen) o.xPen = CTX.pen;
     }
     return fi0(o);
   };
   const he0 = R.hurtEnemy;
-  R.hurtEnemy = (e, raw, o) => he0(e, CTX && !(o && (o.reflect || o.thorns)) ? raw * CTX.dmg : raw, o);
+  // 2026-10-13：蓄滿的箭額外 +20% 護甲穿透（上限 95%）。投射物／爆炸用 o.xPen 帶過來（combat.js 傳下去）
+  const withPen = (add, f) => { const P = W() && W().P; if (!P || !(add > 0)) return f(); const p0 = P.pen; P.pen = Math.min(0.95, (p0 || 0) + add); try { return f(); } finally { P.pen = p0; } };
+  R.hurtEnemy = (e, raw, o) => withPen((o && o.xPen) || (CTX && CTX.pen) || 0, () => he0(e, CTX && !(o && (o.reflect || o.thorns)) ? raw * CTX.dmg : raw, o));
   const ao0 = R.aoe;
-  R.aoe = (x, z, r, dmg, o) => ao0(x, z, CTX ? r * CTX.area : r, dmg, o);
+  R.aoe = (x, z, r, dmg, o) => ao0(x, z, CTX ? r * CTX.area : r, dmg, CTX && CTX.pen ? Object.assign({}, o, { xPen: CTX.pen }) : o);
   const az0 = R.addZone;
   if (az0) R.addZone = z => { if (CTX && z && z.dmg != null) { z.dmg *= CTX.dmg; if (z.r) z.r *= CTX.area; } return az0(z); };
   const me0 = R.melee;
@@ -144,14 +146,15 @@
     const m = multOf(P);
     if (m.k < 0.01) { S.p = 0; S.n = 0; S.cued = 0; return; }
     const spd = P.adv === 'hama' ? 2 : 1;
+    const cap = capOf(P), pen = (P.adv === 'arcane' ? S.n >= 1 : S.p >= cap - 1e-6) ? 0.2 : 0;   // 蓄滿 100%：+20% 護甲穿透
     if (S.load != null) {
       const i = S.load, id = slotId(P, i);
       if (!id || !isDmg(id)) { S.load = null; return; }
       if (cdOf(P, i) > 0) { toast(nameOf(id) + ' 還在冷卻', '#FFB45A'); return; }
-      const ok = shootSkill(P, i, { dmg: m.k * 1.2, area: m.k, spd, reps: m.reps });
+      const ok = shootSkill(P, i, { dmg: m.k * 2.4, area: m.k, spd, reps: m.reps, pen }   /* 2026-10-13：技能傷害翻倍（1.2→2.4） */);
       if (!ok) { toast(nameOf(id) + ' 放不出來', '#FFB45A'); return; }
       S.load = null;
-    } else shootNormal(P, { dmg: m.k * 2 * defRate(P), area: m.k, spd, reps: m.reps });
+    } else shootNormal(P, { dmg: m.k * 2 * defRate(P), area: m.k, spd, reps: m.reps, pen });
     R.archerLast = { k: m.k, reps: m.reps, t: performance.now() };
     S.p = 0; S.n = 0; S.cued = 0;
   };
