@@ -9,7 +9,7 @@
   const U = R.ULTS; if (!U) return;
   const W = () => R.W, S = () => R.S, rnd = Math.random, esc = s => R.esc(s), CT = () => performance.now() / 1000;
   const later = (f, ms) => { const run = W().run; setTimeout(() => { const w = W(); if (w.run === run && w.P && !w.P.dead && run && !run.done) f(w.P); }, ms); };
-  const alive = e => e && !e.dead && !e.under && !e.dormant && !e.fake;
+  const alive = e => e && !e.dead && !e.under && (!e.dormant || e.tdummy) && !e.fake;
   const near = (x, z, r) => (W().enemies || []).filter(e => alive(e) && Math.hypot(e.x - x, e.z - z) < r + ((e.def && e.def.size) || 1) * 0.5);
   const fl = (x, z) => (R.nearestFloor ? R.nearestFloor(x, z) : [x, z]);
   const aim = (P, max) => { let x = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA || 0) * 6, z = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA || 0) * 6; const d = Math.hypot(x - P.x, z - P.z); if (d > max) { x = P.x + (x - P.x) / d * max; z = P.z + (z - P.z) / d * max; } return fl(x, z); };

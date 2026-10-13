@@ -13,7 +13,7 @@
   });
   R.knockUp = knockUp;
   const later = (f, ms) => { const run = W().run; setTimeout(() => { if (W().run === run && run && !run.done) f(); }, ms); };
-  const near = (x, z, r) => (W().enemies || []).filter(e => !e.dead && !e.dormant && Math.hypot(e.x - x, e.z - z) < r);
+  const near = (x, z, r) => (W().enemies || []).filter(e => !e.dead && (!e.dormant || e.tdummy) && Math.hypot(e.x - x, e.z - z) < r);
   // 大招的傷害基準（2026-10-04 作者：大招傷害大約是普攻的 20～30 倍，調低一半到 10～15 倍）：
   // 原本＝武器一下的傷害×傷害倍率，打到的時候 R.hurtEnemy 又乘一次傷害倍率——等級越高大招越誇張（30 級就是兩倍）。
   // 現在＝一下普攻（武器一下的傷害×彈數×段數，不乘傷害倍率）×ULT_K[職業]：照實測調，每個職業的大招打在中間的敵人身上大約是普攻的 10～15 倍。
