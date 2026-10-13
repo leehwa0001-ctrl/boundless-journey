@@ -26,7 +26,8 @@
   }, true);
   addEventListener('mousedown', e => { if (e.button === 0 && e.target && e.target.id === 'gl') hit('fire'); }, true);
   addEventListener('pointerdown', e => { const t = e.target; if (!t || !t.closest) return; if (t.closest('#joy-l')) hit('move'); if (t.closest('#joy-r')) hit('fire'); if (t.closest('[id^="r-skill"]')) hit('skill'); if (t.closest('#core-g')) hit('cls'); if (t.closest('#r-pot')) hit('pot'); if (t.closest('#r-map,#b-map')) hit('map'); if (t.closest('.tk-it')) hit('drag'); if (t.closest('[data-tkrot],[data-tkrotin]')) hit('rot'); }, true);
-  const poll = () => { const I = R.input || {}; if (I.moveStick) hit('move'); if (I.fire) hit('fire'); if (I.run) hit('run'); };
+  let reN = 0; const poll = () => { const I = R.input || {}; const rn = (R.elemDbg && R.elemDbg.react) || 0; if (rn > reN) hit('react'); reN = rn;   // 2026-10-14 術士「引爆」：真的引爆（classcore.js 的 R.elemDbg.react）才跳下一步
+    if (I.moveStick) hit('move'); if (I.fire) hit('fire'); if (I.run) hit('run'); };
   const since = k => { const v = ev[k] || 0; return () => (ev[k] || 0) > v; };
   // ---------- 段落 ----------
   // 每一步：t 標題、d 說明（函式，電腦／手機分開）、el 要框起來的東西、go 開始時記錄、ok 做到了沒（沒有＝按「下一步」）
@@ -87,7 +88,7 @@
     mage: { n: '術士：元素反應', ctx: inRun, steps: [   // 2026-10-13 術士：元素反應（elemreact.js）
       evStep('換元素', () => T('<kbd>X</kbd> 換普攻元素。', '點職業條換普攻元素。'), '#core-g', 'cls'),
       evStep('上元素', () => T('<kbd>左鍵</kbd> 打中，敵人頭上出現元素。', '普攻打中，敵人頭上出現元素。'), () => touch() ? '#joy-r' : null, 'fire'),
-      evStep('引爆', () => T('再用不同元素的技能打，就會引爆。', '再用不同元素的技能打，就會引爆。'), '#r-skill', 'skill'),
+      evStep('引爆', () => T('再用不同元素的技能打，就會引爆。', '再用不同元素的技能打，就會引爆。'), '#r-skill', 'react'),
       step('反應表', () => T('按住 <kbd>X</kbd> 看反應表。', '長按職業條看反應表。'), '#core-g')
     ] },
     summoner: { n: '召喚師：意念與收回', ctx: inRun, steps: [   // 2026-10-13 召喚師
