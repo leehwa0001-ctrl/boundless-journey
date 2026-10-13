@@ -299,14 +299,19 @@
   // ---------- 職業核心：X 換元素 ----------
   const C = R.CORE.mage;
   const pickK = P => { const b = book(); if (RT.lastK >= 0 && b.spells[RT.lastK]) return RT.lastK; const k = boundK(P, 0); return k >= 0 ? k : -1; };
-  C.act = function (P) {   // X 點一下：普攻的元素 火→冰→雷（按住 X 看元素反應表，elemreact.js）
-    P._el = ELK.indexOf(P._el || 'fire') < 0 ? 'fire' : ELK[(ELK.indexOf(P._el || 'fire') + 1) % ELK.length]; say(P, '普攻：' + ELS[P._el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[P._el].c });
+  C.act = function (P) {   // X 點一下：普攻的元素 火→冰→雷→木→風→金（2026-10-14 六種都輪；按住 X 看元素反應表，elemreact.js）
+    const now = performance.now();
+    if ((R._xSuppress || 0) > now) return;                                  // 手機長按職業條放開：不算點一下
+    if (P._xAt != null && (R._xUp || 0) === P._xUpAt) return;              // 同一次按住（按鍵連發）只換一次
+    if (now - (P._xAt || -1e9) < 200) return;                               // 0.2 秒內不再換（防連點）
+    P._xAt = now; P._xUpAt = R._xUp || 0; P._elBeforeX = P._el || 'fire';
+    const i = ELALL.indexOf(P._el || 'fire'); P._el = ELALL[(i + 1) % ELALL.length]; say(P, '普攻：' + ELS[P._el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[P._el].c });
   };
-  C.help = P => '普攻上元素、技能引爆：X 點一下換普攻的元素（火→冰→雷→木；按住 X 的表上也能直接點風、金），普攻打中就在敵人頭上留這個元素 5 秒。法術（在「法術書」裡配：元素＋形狀＋效果）打到身上有「別種」元素的敵人就引爆：火＋冰＝蒸發（單體 160%）、冰＋雷＝碎冰（暈 1.5 秒＋小範圍）、雷＋火＝過載（大範圍爆炸）。按住 X 看反應表。'
+  C.help = P => '普攻上元素、技能引爆：X 點一下換普攻的元素（火→冰→雷→木→風→金），普攻打中就在敵人頭上留這個元素 5 秒；技能沒引爆時也會留下自己的元素。法術（在「法術書」裡配：元素＋形狀＋效果）打到身上有「別種」元素的敵人就引爆：火＋冰＝蒸發（單體 160%）、冰＋雷＝碎冰（暈 1.5 秒＋小範圍）、雷＋火＝過載（大範圍爆炸）。按住 X 看反應表。'
     + ({ elementalist: '元素師：在法術書選一個拿手元素，那個元素的法術傷害 +30%、魔力 −20%。', hexer: '咒術師：多一種效果「詛咒」。', waixiu: '外修者：多一種形狀「罩」（魔力護盾）。' }[advOf(P)] || '');
   C.gauge = function (P) {
     const k = pickK(P), b = book(), x = k >= 0 ? b.spells[k] : null, sp = x ? parse(x.code, x.n) : null, el = P._el || 'fire';
-    return { name: '普攻元素：' + ELS[el].n, col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : (sp ? '技能：' + x.n + '・' : '') + '按住 X 看反應', x: '換成' + ELS[ELK.indexOf(el) < 0 ? 'fire' : ELK[(ELK.indexOf(el) + 1) % ELK.length]].n };
+    return { name: '普攻元素：' + ELS[el].n, col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : (sp ? '技能：' + x.n + '・' : '') + '按住 X 看反應', x: '換成' + ELS[ELALL[(ELALL.indexOf(el) + 1) % ELALL.length]].n };
   };
   // 2026-10-13 修正：原本這裡用 Object.assign 把術士大招整個換成「三重咒」，蓋掉了七曜隕星本體和轉職路線大招（元素隕星、咒星、氣罩流星）→ 隕星都不會落下。
   //   改成包在外面：隕星照落（含路線效果），落完之外再給三重咒（下一句法術 ×3、不耗魔、技能冷卻歸零）

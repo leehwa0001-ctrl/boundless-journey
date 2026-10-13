@@ -180,7 +180,7 @@
     onHit(e, d, o, P, killed) {
       if (!e || o.reflect || o.thorns || o.dot || o.tick || o.burn) return;
       const m = e._el || (e._el = {});
-      // 2026-10-13：普攻＝把目前的元素留在敵人身上 5 秒；技能打到身上有「別種」元素的敵人才引爆（印記用掉）
+      // 2026-10-13：普攻＝把目前的元素留在敵人身上 5 秒；技能打到身上有「別種」元素的敵人才引爆（印記用掉）；2026-10-14 技能沒引爆時也會留下自己的元素
       if (o.primary && !AUX.includes(P._el)) { if (e.dead) return; const pe = EL[P._el] ? P._el : 'fire'; ELS.forEach(x => { if (x !== pe) delete m[x]; }); m[pe] = CT + 5; return; }
       const el = o.primary ? P._el : o.elem && EL[o.elem] ? o.elem : P._el || 'fire';
       if (AUX.includes(el)) {   // 風、金：碰到任何元素印記就觸發（不用掉印記；同一隻 1 秒一次）
@@ -192,6 +192,7 @@
         return;
       }
       const other = ELS.find(x => x !== el && (m[x] || 0) > CT);
+      if (!other) { if (!e.dead && ELS.includes(el)) { ELS.forEach(x => { if (x !== el) delete m[x]; }); m[el] = CT + 5; } return; }   // 2026-10-14：技能打到沒有印記（或同元素）的敵人＝留下自己的元素 5 秒
       delete m[other]; delete m[el];
       const key = [el, other].sort().join('+'), name = REACT[key], tri = (R.legOf ? R.legOf(P) : null) === 'lg_tri', k = (adv(P) === 'elementalist' ? 1.5 : 1) * (tri ? 1.5 : 1) * pw(P);
       if (tri) P._el = ELS[(Math.max(0, ELS.indexOf(P._el || 'fire')) + 1) % ELS.length];   // 三相之杖：反應之後自動換元素

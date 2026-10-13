@@ -15,9 +15,9 @@
   document.head.appendChild(css);
   const c = k => '<em style="color:' + EL[k][1] + '">' + EL[k][0] + '</em>';
   const R2 = (a, b, n, t) => '<div class="r"><b>' + c(a) + '＋' + c(b) + ' ' + n + '</b><span>' + t + '</span></div>';
-  const html = P => '<h4>元素反應</h4><div class="s">點一下選普攻的元素（放開 X 照樣保留）：</div><div class="pk">'
+  const html = P => '<h4>元素反應</h4><div class="s">點一下選普攻的元素（放開 X 照樣保留；按住 X 不會換元素）：</div><div class="pk">'
     + PICK.map(k => '<button type="button" data-el="' + k + '" style="--c:' + EL[k][1] + '" class="' + ((P._el || 'fire') === k ? 'on' : '') + '">' + EL[k][0] + '</button>').join('') + '</div>'
-    + '<div class="s">普攻在敵人身上留下元素 5 秒；技能打到別種元素就引爆。</div>'
+    + '<div class="s">普攻、技能打中都會在敵人身上留下元素 5 秒；技能打到別種元素就引爆。</div>'
     + R2('fire', 'frost', '蒸發', '這一隻多吃 160%')
     + R2('frost', 'shock', '碎冰', '暈 1.5 秒，周圍 2.5 公尺 100%')
     + R2('shock', 'fire', '過載', '周圍 3.5 公尺爆炸 180%，彈開')
@@ -27,19 +27,20 @@
     + '<div class="s" style="margin:6px 0 2px">風、金不留印記，打到有元素的敵人就觸發（同一隻 1 秒一次）：</div>'
     + '<div class="r"><b>' + c('wind') + ' 擴散</b><span>把牠身上的元素傳給 4 公尺內的敵人，多吃 60%</span></div>'
     + '<div class="r"><b>' + c('metal') + ' 破甲</b><span>護甲 −30%（4 秒），多吃 60%</span></div>'
-    + '<div class="s" style="margin:6px 0 0">點一下 X：火→冰→雷→木。</div>';
+    + '<div class="s" style="margin:6px 0 0">點一下 X：火→冰→雷→木→風→金。</div>';
   const pick = k => { const P = W().P; if (!isM(P) || !EL[k]) return; P._el = k; prev = k; R.num && R.num(P.x, 2.8, P.z, '普攻：' + EL[k][0], 'heal'); const el = $('er-panel'); if (el && !el.hidden) el.innerHTML = html(P); };
   let holdT = null, prev = null, tapOn = false, sticky = false;
-  const show = () => { const P = W().P; if (!isM(P)) return; if (prev && P._el !== prev) P._el = prev;   // 按住不算換元素
+  const show = () => { const P = W().P; if (!isM(P)) return; if (P._xUpAt === (R._xUp || 0) && P._elBeforeX) P._el = P._elBeforeX; else if (prev && P._el !== prev) P._el = prev;   // 按住不算換元素（這一次按下去換掉的換回來）
     let el = $('er-panel'); if (!el) { el = document.createElement('div'); el.id = 'er-panel'; document.body.appendChild(el); ['pointerdown', 'mousedown', 'touchstart'].forEach(t => el.addEventListener(t, ev => { ev.stopPropagation(); const bt = ev.target.closest && ev.target.closest('[data-el]'); if (bt && t === 'pointerdown') { ev.preventDefault(); pick(bt.dataset.el); if (sticky) hide(); } }, true)); } el.innerHTML = html(P); el.hidden = false; };
   const hide = () => { clearTimeout(holdT); holdT = null; sticky = false; const el = $('er-panel'); if (el) el.hidden = true; };
   const start = () => { const P = W().P; if (!isM(P) || !live()) return; prev = P._el || 'fire'; clearTimeout(holdT); holdT = setTimeout(() => { holdT = null; show(); }, 350); };
   const typing = e => { const t = e.target; return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable); };
   window.addEventListener('keydown', e => { if (typing(e) || e.repeat) return; if ((e.key || '').toLowerCase() === 'x') start(); }, true);
-  window.addEventListener('keyup', e => { if ((e.key || '').toLowerCase() === 'x') hide(); }, true);
+  window.addEventListener('keyup', e => { if ((e.key || '').toLowerCase() === 'x') { R._xUp = (R._xUp || 0) + 1; hide(); } }, true);
+  window.addEventListener('pointerup', () => { R._xUp = (R._xUp || 0) + 1; }, true);
   window.addEventListener('blur', hide);
   document.addEventListener('pointerdown', e => { if (!(e.target && e.target.closest && e.target.closest('#core-g'))) return; const P = W().P; if (!isM(P) || !live()) return; tapOn = true; start(); }, true);
-  const up = () => { if (!tapOn) return; tapOn = false; const el = $('er-panel'); if (el && !el.hidden) { clearTimeout(holdT); holdT = null; sticky = true; } else hide(); };
+  const up = () => { if (!tapOn) return; tapOn = false; const el = $('er-panel'); if (el && !el.hidden) { clearTimeout(holdT); holdT = null; sticky = true; R._xSuppress = performance.now() + 400; } else hide(); };
   document.addEventListener('pointerdown', e => { if (sticky && !(e.target.closest && e.target.closest('#er-panel'))) hide(); }, true);
   document.addEventListener('pointerup', up, true); document.addEventListener('pointercancel', up, true);
   // 敵人頭上的元素小方塊
