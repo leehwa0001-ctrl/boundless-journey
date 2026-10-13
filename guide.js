@@ -38,7 +38,7 @@
       + '<h3>新手的第一步</h3><ol class="gd-steps">' + STEPS.map(st => '<li class="' + (done(st[0]) ? 'ok' : '') + '">' + (done(st[0]) ? '✓ ' : '') + esc(st[1]) + (st[2] && !done(st[0]) ? ' <button type="button" class="mini" data-gd="' + esc(st[2]) + '">前往</button>' : '') + '</li>').join('') + '</ol>'
       + (t.reward ? '<p class="note">新手指引已經完成了。</p>' : '<p class="note">全部做完，公會送 300 費拉。</p>')
       + '<h3>每個地方能做什麼</h3><div class="gd-places">' + PLACES.map(p => '<div class="gd-place"><b>' + esc(p[0]) + '</b><small>' + esc(p[2]) + '</small><button type="button" class="mini" data-gd="' + esc(p[1]) + '">前往</button></div>').join('') + '</div>'
-      + '<p class="note">按鍵：空白鍵 互動・Shift 跑步・T 快速移動・Tab 或 M 地圖・Esc 選單・I 背包（遺跡裡）。觀光章、奉主、柏青哥、麻將……都是可以慢慢玩的。</p>',
+      + '<p class="note">按鍵：空白鍵 互動・Shift 跑步・T 快速移動・Tab 或 M 地圖・Esc 選單・I 背包（遺跡裡）・' + (R.keyName ? R.keyName('quests') : 'L') + ' 手上的委託。觀光章、奉主、柏青哥、麻將……都是可以慢慢玩的。</p>',
       '<div class="row"><button type="button" class="btn pri" id="gd-x">知道了</button>' + (t.hide ? '<button type="button" class="btn" id="gd-show">在左上角顯示下一步</button>' : '') + '</div>');
     $('gd-x').onclick = R.closeSheet; if ($('gd-show')) $('gd-show').onclick = () => { t.hide = 0; R.save(); R.closeSheet(); upd(true); };
     document.querySelectorAll('[data-gd]').forEach(b => { b.onclick = () => { R.closeSheet(); setTimeout(() => goTo(b.dataset.gd), 60); }; });

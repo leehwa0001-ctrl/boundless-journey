@@ -68,7 +68,7 @@
     const train = !!(run.site && run.site.kind === 'train'), safe = !run.done && (train || !!(run.grade && run.grade.floor0 && run.floor === 0));
     const where = train ? '' : '・' + (R.floorLabel ? R.floorLabel(run) : '第 ' + (run.floor + 1) + ' 層');
     R.sheet('<h2>暫停</h2><p>' + esc(run.site.name) + where + '</p>'
-      + '<p class="note">' + (R.touch ? '左搖桿移動・右搖桿瞄準並攻擊・按鈕：技能、翻滾、互動、回復藥、背包・右上角的箭頭轉動視角、「遠近」拉近拉遠' : 'WASD 移動・滑鼠瞄準、左鍵或 F 攻擊・R 或右鍵、3、4 技能・點 Shift 翻滾、按住 Shift 跑步・空白鍵互動・Q／E 轉視角・滾輪拉近拉遠・1 回復藥・2 魔力藥・X 換彈・I 背包・Tab 地圖') + '</p>'
+      + '<p class="note">' + (R.touch ? '左搖桿移動・右搖桿瞄準並攻擊・按鈕：技能、翻滾、互動、回復藥、背包・右上角的箭頭轉動視角、「遠近」拉近拉遠' : 'WASD 移動・滑鼠瞄準、左鍵或 F 攻擊・R 或右鍵、3、4 技能・點 Shift 翻滾、按住 Shift 跑步・空白鍵互動・Q／E 轉視角・滾輪拉近拉遠・1 回復藥・2 魔力藥・X 換彈・I 背包・Tab 地圖・' + (R.keyName ? R.keyName('quests') : 'L') + ' 手上的委託') + '</p>'
       + '<p class="note">佩特拉的注意：打破東西、爆炸、喚群燈大叫、被群瞳盯著都會讓它上升；什麼都不做會慢慢降，換一層剩四成。滿了會觸發遺跡的反應。牆上張開的眼睛越多，代表它越注意你。</p>'
       + stats,
       '<div class="row"><button type="button" class="btn pri" id="ps-x">繼續</button><button type="button" class="btn" id="ps-mute">' + (R.isMuted() ? '打開音效' : '關掉音效') + '</button>' + (R.S && R.S.hood ? '<button type="button" class="btn" id="ps-hood">' + (R.S.hoodOn ? '拿下兜帽' : '戴上兜帽') + '</button>' : '') + (safe ? '<button type="button" class="btn" id="ps-quit" title="跟從入口走出去一樣：背包、素材都帶回去">直接回程</button>' : '<button type="button" class="btn" id="ps-quit">放棄這一趟（當作倒下）</button>') + '</div>');

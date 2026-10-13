@@ -11,7 +11,7 @@
     ['dodge', '翻滾（點一下）／跑步（按住）', 'shift', 'ShiftLeft'], ['use', '互動', ' ', 'Space'],
     ['skill1', '技能一（右鍵也可以）', 'r', 'KeyR'], ['skill2', '技能二', '3', 'Digit3'], ['skill3', '技能三', '4', 'Digit4'], ['skill4', '技能四', '5', 'Digit5'], ['skill5', '技能五', '6', 'Digit6'],
     ['auto', '自動打最近的敵人（按住）', 'f', 'KeyF'], ['reload', '職業鍵（槍手：換彈；騎士：按住防禦）', 'x', 'KeyX'],
-    ['hp', '回復藥', '1', 'Digit1'], ['mp', '魔力藥', '2', 'Digit2'], ['bag', '背包', 'i', 'KeyI'], ['map', '地圖', 'tab', 'Tab'], ['bigmap', '城裡的大地圖', 'm', 'KeyM'],
+    ['hp', '回復藥', '1', 'Digit1'], ['mp', '魔力藥', '2', 'Digit2'], ['bag', '背包', 'i', 'KeyI'], ['quests', '手上的委託（打開／關上）', 'l', 'KeyL'], ['map', '地圖', 'tab', 'Tab'], ['bigmap', '城裡的大地圖', 'm', 'KeyM'],
     ['rotl', '視角往左轉', 'q', 'KeyQ'], ['rotr', '視角往右轉', 'e', 'KeyE'], ['order', '指揮隊友', 'c', 'KeyC'], ['hood', '兜帽', 'h', 'KeyH'], ['bomb', '丟炸彈', 'g', 'KeyG'], ['race', '種族技能（城裡是快速移動）', 't', 'KeyT'], ['pause', '暫停', 'escape', 'Escape']
   ];
   const LOGIC = {}, DEF = {}; ACTS.forEach(([id, , k, c]) => { LOGIC[id] = k; DEF[id] = c; });
@@ -48,6 +48,13 @@
     if (LOGIC_KEYS.has(k) && !/^Arrow/.test(e.code)) { e.stopImmediatePropagation(); if (k === 'tab') e.preventDefault(); }
   };
   window.addEventListener('keydown', onKey, true);
+  // 2026-10-14：L（可改）打開／關上「手上的委託」。遊戲中由上面的轉換送出 key 'l'；視窗開著時轉換不跑，直接看實體鍵
+  const qlOpen = () => { const h = document.querySelector('#sheet h2, .sheet h2, #r-sheet h2'); return !!(R.sheetOpen && R.sheetOpen() && h && h.textContent === '手上的委託'); };
+  window.addEventListener('keydown', e => {
+    if (e.repeat || typing(e) || capture || e.ctrlKey || e.altKey || e.metaKey) return;
+    if (e._kb && e.key === 'l') { if (R.questLog && !qlOpen()) { e.stopImmediatePropagation(); R.questLog(); } return; }
+    if (e.isTrusted && !e._kb && e.code === bind.quests && qlOpen()) { e.preventDefault(); e.stopImmediatePropagation(); R.closeSheet && R.closeSheet(); }
+  }, true);
   window.addEventListener('keyup', e => { if (e._kb || !e.isTrusted || typing(e)) return; const a = byCode[e.code]; if (a && $('run') && !$('run').hidden) { e.stopImmediatePropagation(); send('keyup', a, e); return; } const k = (e.key || '').toLowerCase(); if (LOGIC_KEYS.has(k) && !/^Arrow/.test(e.code) && inGame()) e.stopImmediatePropagation(); }, true);
   // 滑鼠中鍵、側鍵
   const mouseCode = e => (e.button === 1 || e.button === 3 || e.button === 4 ? 'Mouse' + e.button : null);
