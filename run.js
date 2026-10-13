@@ -316,7 +316,7 @@
   R.results = (ok, full, lost) => {
     const run = W.run, S = R.S, cls = S.cls, st = S.classes[cls];
     const items = run.bag.map(it => '<li style="color:' + R.rarityColor(it) + '">' + R.esc(R.itemName(it)) + '</li>').join('') || '<li class="note">（沒有撿到裝備）</li>';
-    const mats = Object.keys(run.mats).map(k => R.MATS[k].name + ' ×' + run.mats[k]).join('、') || '沒有';
+    const mats = Object.keys(run.mats).map(k => (R.matIconTag ? R.matIconTag(k, 'chip') : '') + R.MATS[k].name + ' ×' + run.mats[k]).join('、') || '沒有';
     R.sheet(ok
       ? '<p class="kicker">' + (run.how === 'exit' ? '遺跡入口' : '回歸水晶') + '</p><h2>' + (full ? '走完了這座遺跡' : '回到地面') + '</h2><p>' + R.esc(run.site.name) + '・走到第 ' + (run.floor + 1) + ' 層・擊倒 ' + run.kills + ' 隻</p>'
         + '<h3>帶回來的東西</h3><ul class="loot">' + items + '</ul><p>素材：' + mats + '<br>公會的委託報酬：' + run.reward + ' 費拉' + (run.share ? '（隊友分走 ' + run.share + '）' : '') + '</p>'

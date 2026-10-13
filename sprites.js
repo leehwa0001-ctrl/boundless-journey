@@ -730,21 +730,48 @@
     outline(c, '#1E2A24');
     return (pineCs[n] = c);
   };
-  // 同一種大小的松樹共用一份形狀、材質、影子（幾百棵樹不會有幾百張貼圖）
-  const pineKit = {};
-  R.pineSprite = s => {
-    const n = s == null ? 5 : s < 0.95 ? 4 : s < 1.2 ? 5 : 6;
-    if (!pineKit[n]) {
-      const c = pineCanvas(n), sp = billboard(c, 1, 1, c.width, c.height, 1);
-      sp.m.geometry.userData.shared = true; sp.mat.userData.shared = true; sp.t.userData.shared = true;
-      const sg = new (T().CircleGeometry)(0.45 + n * 0.1, 12), sm = new (T().MeshBasicMaterial)({ color: '#000000', transparent: true, opacity: 0.32, depthWrite: false }); sg.userData.shared = true; sm.userData.shared = true;
-      pineKit[n] = { geo: sp.m.geometry, mat: sp.mat, sg, sm };
+  // ---------- 2026-10-14 作者：樹只留 3D 的（點陣看板的樹一直消失、跳出來）----------
+  // 松樹（積雪）、落葉樹各一份合併好的形狀（頂點顏色），所有樹共用；大量的樹用 InstancedMesh（一種一次畫完）。
+  const tree3 = {};
+  const mergeParts = parts => {   // parts：[geo, color, [x,y,z], [rx,ry,rz]]
+    const TH = T(), pos = [], nor = [], col = [], m = new TH.Matrix4(), e = new TH.Euler(), q = new TH.Quaternion(), cc = new TH.Color();
+    parts.forEach(([g0, c, p, r]) => {
+      let g = g0.index ? g0.toNonIndexed() : g0; e.set(r ? r[0] : 0, r ? r[1] : 0, r ? r[2] : 0); q.setFromEuler(e); m.compose(new TH.Vector3(p[0], p[1], p[2]), q, new TH.Vector3(1, 1, 1)); g.applyMatrix4(m); g.computeVertexNormals();
+      const P = g.attributes.position.array, N = g.attributes.normal.array; cc.set(c);
+      for (let i = 0; i < P.length; i++) { pos.push(P[i]); nor.push(N[i]); } for (let i = 0; i < P.length / 3; i++) col.push(cc.r, cc.g, cc.b);
+      g.dispose(); if (g !== g0) g0.dispose();
+    });
+    const out = new TH.BufferGeometry(); out.setAttribute('position', new TH.Float32BufferAttribute(pos, 3)); out.setAttribute('normal', new TH.Float32BufferAttribute(nor, 3)); out.setAttribute('color', new TH.Float32BufferAttribute(col, 3)); out.computeBoundingSphere();
+    out.userData.shared = true; return out;
+  };
+  const treeKit = kind => {
+    if (tree3[kind]) return tree3[kind];
+    const TH = T(), cone = (r, h) => new TH.ConeGeometry(r, h, 7), cyl = (a, b, h) => new TH.CylinderGeometry(a, b, h, 6);
+    let parts;
+    if (kind === 'pine') {
+      const G = '#132A1C', G2 = '#183222', SN = '#9AA6AE', BK = '#3A2A1E';
+      parts = [[cyl(0.11, 0.16, 0.9), BK, [0, 0.45, 0]],
+        [cone(1.05, 1.3), G, [0, 1.25, 0]], [cone(0.7, 0.42), SN, [0, 1.72, 0]],
+        [cone(0.82, 1.15), G2, [0, 1.95, 0], [0, 0.45, 0]], [cone(0.52, 0.38), SN, [0, 2.38, 0], [0, 0.45, 0]],
+        [cone(0.58, 1.0), G, [0, 2.6, 0], [0, 0.9, 0]], [cone(0.3, 0.42), SN, [0, 3.0, 0], [0, 0.9, 0]]];
+    } else {
+      const BK = '#2E241C', SN = '#9AA6AE'; parts = [[cyl(0.1, 0.17, 2.0), BK, [0, 1.0, 0]]];
+      for (let i = 0; i < 5; i++) { const a = i / 5 * 6.28 + 0.4, L = 1.1 + (i % 2) * 0.3, tilt = 0.7; const cx = Math.sin(a) * Math.sin(tilt) * L / 2, cz = Math.cos(a) * Math.sin(tilt) * L / 2, cy = 1.7 + (i % 3) * 0.25 + Math.cos(tilt) * L / 2;
+        parts.push([cyl(0.035, 0.06, L), BK, [cx, cy, cz], [tilt * Math.cos(a), 0, -tilt * Math.sin(a)]]);
+        parts.push([cyl(0.03, 0.03, L * 0.5), SN, [cx * 1.15, cy + 0.06, cz * 1.15], [tilt * Math.cos(a), 0, -tilt * Math.sin(a)]]); }
+      parts.push([cyl(0.05, 0.08, 0.9), BK, [0, 2.3, 0]]);
     }
-    const K = pineKit[n], g = new (T().Group)(), m = new (T().Mesh)(K.geo, K.mat); m.renderOrder = 1; g.add(m);
-    const sh = new (T().Mesh)(K.sg, K.sm); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.03; g.add(sh);
-    // 每次畫之前轉向鏡頭（松樹不會動，也不用每一幀另外處理）
-    m.onBeforeRender = function () { const cam = R.W.cam ? R.W.cam.yaw : 0; if (this.rotation.y !== cam) { this.rotation.y = cam; this.updateMatrix(); this.matrixWorld.multiplyMatrices(this.parent.matrixWorld, this.matrix); } };
-    g.userData.bb = m; return g;
+    const geo = mergeParts(parts), mat = new TH.MeshLambertMaterial({ vertexColors: true }); mat.userData.shared = true;
+    const sg = new TH.CircleGeometry(kind === 'pine' ? 0.95 : 0.7, 12), sm = new TH.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.3, depthWrite: false }); sg.userData.shared = true; sm.userData.shared = true;
+    return (tree3[kind] = { geo, mat, sg, sm });
+  };
+  const pineScale = s => (s == null ? 1 : s) * 1.05;
+  // 單棵松樹（town.js、hunt.js 用）：回傳 Group；userData.tree3d 讓 tidy2.js 認得
+  R.pineSprite = s => {
+    const K = treeKit('pine'), g = new (T().Group)(), m = new (T().Mesh)(K.geo, K.mat), k = pineScale(s);
+    m.scale.set(k, k, k); m.rotation.y = Math.random() * 6.28; g.add(m);
+    const sh = new (T().Mesh)(K.sg, K.sm); sh.rotation.x = -Math.PI / 2; sh.position.y = 0.03; sh.scale.setScalar(k); g.add(sh);
+    g.userData.bb = m; g.userData.tree3d = true; return g;
   };
   // 冬天的行道樹（落葉的樹，枝上積雪）
   const bareCs = {};
@@ -758,22 +785,29 @@
     P(cx - 4, h - 2, 9, 2, '#F2F6F8');
     outline(c); return (bareCs[n] = c);
   };
-  // list：[{ x, z, s, bare }]；回傳 { update(yaw) }
+  // list：[{ x, z, s, bare, hide }]；回傳 { update(yaw, force), out }（API 跟以前的看板版一樣）
+  // hide 的樹不再一下子消失：每次 update 慢慢縮下去／長回來（狩獵場擋鏡頭的樹）
   R.treeField = (list, group) => {
-    const TH = T(), groups = {}, dummy = new TH.Object3D(), out = [];
-    list.forEach(t => { const n = t.bare ? 'b' + (t.s < 0.9 ? 1 : t.s < 1.15 ? 2 : 3) : 'p' + (t.s == null ? 5 : t.s < 0.95 ? 4 : t.s < 1.2 ? 5 : 6); (groups[n] = groups[n] || []).push(t); });
-    Object.keys(groups).forEach(n => {
-      const L = groups[n], c = n[0] === 'b' ? bareCanvas(+n.slice(1)) : pineCanvas(+n.slice(1)), sp = billboard(c, 1, 1, c.width, c.height, 1);
-      const im = new TH.InstancedMesh(sp.m.geometry, sp.mat, L.length); im.renderOrder = 1; im.frustumCulled = false;
-      const sg = new TH.CircleGeometry(0.3 + c.width * 0.012, 10), sh = new TH.InstancedMesh(sg, new TH.MeshBasicMaterial({ color: '#000000', transparent: true, opacity: 0.3, depthWrite: false }), L.length);
-      L.forEach((t, i) => { dummy.position.set(t.x, 0.03, t.z); dummy.rotation.set(-Math.PI / 2, 0, 0); dummy.updateMatrix(); sh.setMatrixAt(i, dummy.matrix); });
+    const TH = T(), dummy = new TH.Object3D(), out = [], by = { pine: [], bare: [] };
+    list.forEach(t => { by[t.bare ? 'bare' : 'pine'].push(t); t._k = t.hide ? 0 : 1; t._r = Math.random() * 6.28; });
+    Object.keys(by).forEach(kind => {
+      const L = by[kind]; if (!L.length) return; const K = treeKit(kind);
+      const im = new TH.InstancedMesh(K.geo, K.mat, L.length), sh = new TH.InstancedMesh(K.sg, K.sm, L.length);
+      L.forEach((t, i) => { const k = (t.bare ? 1 : pineScale(t.s)) * (t.bare ? (t.s || 1) : 1); dummy.position.set(t.x, 0.03, t.z); dummy.rotation.set(-Math.PI / 2, 0, 0); dummy.scale.setScalar(k); dummy.updateMatrix(); sh.setMatrixAt(i, dummy.matrix); });
+      im.computeBoundingSphere && (im.frustumCulled = false); sh.frustumCulled = false;
       group.add(im); group.add(sh); out.push({ im, L, sh });
     });
-    let last = null;
-    // force：清單裡的 hide 改了，鏡頭沒轉也重排一次（hide 的樹移到地底下）
-    const update = (yaw, force) => { if (yaw === last && !force) return; last = yaw; out.forEach(({ im, L }) => { L.forEach((t, i) => { dummy.position.set(t.x, t.hide ? -50 : 0, t.z); dummy.rotation.set(0, yaw, 0); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix); }); im.instanceMatrix.needsUpdate = true; }); };
-    update(R.W.cam ? R.W.cam.yaw : 0);
-    return { update, out };   // out：tidy2.js 收牆邊的樹用（t.hide、影子 sh）
+    let anim = true;
+    const update = (yaw, force) => {
+      if (!anim && !force) return; anim = false;
+      out.forEach(({ im, L }) => { let ch = false; L.forEach((t, i) => {
+        const tg = t.hide ? 0 : 1, k0 = t._k; t._k = Math.abs(tg - t._k) < 0.09 ? tg : t._k + (tg > t._k ? 0.08 : -0.08); if (t._k !== tg) anim = true;
+        if (k0 === t._k && !force && i >= 0 && im.userData.init) return; ch = true;
+        const k = (t.bare ? (t.s || 1) : pineScale(t.s)), y = t._k <= 0 ? -50 : 0; dummy.position.set(t.x, y, t.z); dummy.rotation.set(0, t._r, 0); dummy.scale.set(k, k * Math.max(0.05, t._k), k); dummy.updateMatrix(); im.setMatrixAt(i, dummy.matrix);
+      }); if (ch) im.instanceMatrix.needsUpdate = true; im.userData.init = 1; });
+    };
+    update(0, true);
+    return { update, out };
   };
   // 換場景：把只屬於舊場景的形狀、材質、貼圖丟掉（共用的、keep 裡的不丟）
   R.disposeScene = (sc, keep) => {

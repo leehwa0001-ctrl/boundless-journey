@@ -381,7 +381,7 @@
         const im = g.getImageData(0, 0, w, h), d = im.data, A = (x, y) => x >= 0 && y >= 0 && x < w && y < h && d[(y * w + x) * 4 + 3] > 0, out = [];
         for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (!A(x, y) && (A(x - 1, y) || A(x + 1, y) || A(x, y - 1) || A(x, y + 1))) out.push([x, y]);
         out.forEach(([x, y]) => F(x, y, 1, 1, '#1A241E'));
-        const [px, pz] = P(3.0, 5.2); propSprite(c, px, pz, group); block(px - 0.3, px + 0.3, pz - 0.3, pz + 0.3, 'tree');
+        const [px, pz] = P(3.0, 5.2); { const tr = R.pineSprite(2.1); tr.position.set(px, 0, pz); group.add(tr); }   // 2026-10-14：樹只留 3D block(px - 0.3, px + 0.3, pz - 0.3, pz + 0.3, 'tree');
         inter(px - 1.0, pz + 0.6, 1.5, '看看院角的老松', () => talk('院角的老松', ['比屋頂還高的老松，枝上壓著雪。', '一陣風過去，雪從松枝上滑下來，「沙」的一聲落在院子裡。'])); }
       { const [x, z] = P(-4.1, 3.9); inter(x, z, 1.6, '西廂', () => talk('西廂', ['紙門關著，裡面很安靜。'])); }
       { const [x, z] = P(4.1, 2.6); inter(x, z, 1.6, '東廂', () => talk('東廂', ['紙門關著。門邊擺著一雙擦得很乾淨的木屐。'])); }

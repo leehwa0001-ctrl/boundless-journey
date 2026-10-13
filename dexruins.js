@@ -52,7 +52,7 @@
   const bandEnd = (s, b) => { const n = floorsOf(s), a = Math.floor(n * b / 3) + 1; return Math.max(a, Math.floor(n * (b + 1) / 3)); };
   // 這座遺跡裡，這一種會變成哪幾級（照 variants.js 的 R.variantAt，一層一層算），每一級寫在哪一段出現
   const tiersAt = (id, s) => {
-    const out = {}, g = G(s.grade), V = R.VARIANTS ? R.VARIANTS[id] : null; if (!g || !V || !R.variantAt) return out;
+    const out = {}, g = G(s.grade), V = R.VARIANTS ? R.VARIANTS[id] : null; if (!g || !V || !R.variantAt || g.id === 'hamilia') return out;
     const n = floorsOf(s), gd = Math.max(0, (g.lv || 1) - originLv(id));
     for (let f = 0; f < n; f++) { const v = R.variantAt(n > 1 ? f / (n - 1) : 1, gd); let t = v.tier; while (t > 0 && !V[t]) t--; if (t >= 1 && v.chance > 0) (out[t] = out[t] || new Set()).add(bandOf(s, f)); }
     return out;

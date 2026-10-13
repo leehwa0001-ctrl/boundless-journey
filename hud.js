@@ -271,7 +271,7 @@
       + (it.identified && R.canUse(it, R.S.cls) && it.kind === 'weapon' ? '<button type="button" class="mini" data-eq="' + i + '">現在換上</button>' : !it.identified && it.kind === 'weapon' && R.canUse(it, R.S.cls) ? '<button type="button" class="mini" data-eq="' + i + '">換上（未鑑定，只有基礎數值）</button>' : '')
       + '<button type="button" class="mini" data-drop="' + i + '">丟掉</button></li>').join('');
     R.sheet('<h2>背包　' + run.bag.length + '／' + R.BAG_MAX + '</h2><ul class="bag">' + (list || '<li class="note">還沒撿到裝備。</li>') + '</ul>'
-      + '<p class="note">素材：' + (Object.keys(run.mats).map(k => R.MATS[k].name + ' ×' + run.mats[k]).join('、') || '沒有') + '</p>'
+      + '<p class="note">素材：' + (Object.keys(run.mats).map(k => (R.matIconTag ? R.matIconTag(k, 'chip') : '') + R.MATS[k].name + ' ×' + run.mats[k]).join('、') || '沒有') + '</p>'
       + '<p class="hand">寶箱開出的東西、魔力水晶、魔力核心、礦石，都能帶出遺跡。倒下的話，這些全部留在遺跡裡。</p>',
       '<div class="row"><button type="button" class="btn pri" id="bag-x">關上（I）</button></div>');
     $('bag-x').onclick = R.closeSheet;

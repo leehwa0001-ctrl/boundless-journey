@@ -151,6 +151,15 @@
     const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(src, 0, 0, 16 * scale, 16 * scale);
     return (cache[key] = c.toDataURL());
   };
+  // 費拉（錢）的圖示：金幣
+  let goldURL = null;
+  R.goldIconURL = () => {
+    if (goldURL) return goldURL;
+    const c = document.createElement('canvas'); c.width = c.height = 32; const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.scale(2, 2);
+    circ(x, 8, 8.5, 6.5, '#7A5414'); circ(x, 8, 8, 6, '#E8B83A'); circ(x, 8, 8, 4.2, '#C8922A'); rc(x, 7, 5, 2, 6, '#FFE08A'); rc(x, 6, 6, 4, 1, '#FFE08A'); rc(x, 6, 9, 4, 1, '#FFE08A'); circ(x, 5.5, 5.5, 1, '#FFF6D0');
+    return (goldURL = c.toDataURL());
+  };
+  R.goldIcon = () => '<img class="gicon" src="' + R.goldIconURL() + '" alt="">';
   // cls: chip（手邊素材膠囊）、sm（收購列）、card（配方旁）
   R.matIconTag = (k, cls) => {
     const M = R.MATS && R.MATS[k]; if (!M) return '';
@@ -160,8 +169,27 @@
   // HTML 小片：圖示＋名字＋數量（倉庫側欄、手邊素材共用）
   R.matChip = (k, n) => {
     const M = R.MATS && R.MATS[k]; if (!M) return '';
-    return '<span class="mat" style="--c:' + M.color + '">' + R.matIconTag(k, 'chip') + R.esc(M.name) + (n != null ? ' ' + n : '') + '</span>';
+    // 2026-10-14：「有／要」的寫法（配方）→ 夠的亮、不夠的變暗
+    const m = typeof n === 'string' && /^(\d+)／(\d+)$/.exec(n), st = m ? (+m[1] >= +m[2] ? ' ok' : ' lack') : '';
+    return '<span class="mat' + st + '" style="--c:' + M.color + '"' + (st === ' lack' ? ' title="不夠"' : '') + '>' + R.matIconTag(k, 'chip') + R.esc(M.name) + (n != null ? ' ' + n : '') + '</span>';
   };
+  // 錢出現的地方都帶金幣圖示：畫面上「費拉」兩個字前面自動補一個（新加進來的節點才檢查，很便宜）
+  const SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, INPUT: 1, OPTION: 1, CANVAS: 1, TITLE: 1 };
+  const deco = t => {
+    const v = t.nodeValue, i = v.indexOf('費拉'); if (i < 0) return;
+    const p = t.parentNode; if (!p || SKIP[p.nodeName] || (p.closest && p.closest('[data-nogicon]'))) return;
+    if (i === 0 && t.previousSibling && t.previousSibling.classList && t.previousSibling.classList.contains('gicon')) { const j = v.indexOf('費拉', 2); if (j < 0) return; const r = t.splitText(j); return deco(r); }
+    const r = i ? t.splitText(i) : t, img = document.createElement('img'); img.className = 'gicon'; img.alt = ''; img.src = R.goldIconURL(); p.insertBefore(img, r);
+    if (r.nodeValue.length > 2) { const r2 = r.splitText(2); deco(r2); }
+  };
+  const scan = n => {
+    if (n.nodeType === 3) return deco(n);
+    if (n.nodeType !== 1 || SKIP[n.nodeName] || n.textContent.indexOf('費拉') < 0) return;
+    const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT), list = []; let t; while ((t = w.nextNode())) if (t.nodeValue.indexOf('費拉') >= 0) list.push(t);
+    list.forEach(deco);
+  };
+  const goObs = () => { scan(document.body); new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') deco(m.target); else m.addedNodes.forEach(scan); } }).observe(document.body, { childList: true, subtree: true, characterData: true }); };
+  if (document.body) goObs(); else document.addEventListener('DOMContentLoaded', goObs);
   const css = document.createElement('style');
   css.textContent = [
     '.micon{flex:none;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:5px;border:1px solid color-mix(in srgb,var(--c,#888) 55%,#2A2430);background:radial-gradient(circle at 40% 35%,color-mix(in srgb,var(--c,#888) 35%,transparent),rgba(0,0,0,.4));vertical-align:-5px;margin-right:4px}',
@@ -173,7 +201,9 @@
     '.sellmat .micon{flex:none}',
     '.sellmat .sm-name{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px}',
     '.recipe .mats-need{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12px;opacity:.9}',
-    '.recipe .mats-need .mat{padding:2px 8px 2px 4px}'
+    '.recipe .mats-need .mat{padding:2px 8px 2px 4px}',
+    '.mat.lack{opacity:.38;filter:grayscale(.85);border-style:dashed}.mat.ok{box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 70%,transparent),0 0 8px color-mix(in srgb,var(--c) 45%,transparent);color:#F4E9CD}',
+    '.gicon{display:inline-block;width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:2px}'
   ].join('\n');
   document.head.appendChild(css);
 })(window.R);

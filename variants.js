@@ -61,6 +61,7 @@
   //   （原本：第一層就有一成、而且照分級差直接是「淵」。）現在：
   //   淺層（前三分之一）：沒有變種。中層：兩成到六成，「荒」（遺跡比牠高兩級以上是「獰」）。
   //   深層：七成到全部，「獰」；最深的一成五、或遺跡比牠高兩級以上是「淵」。圖鑑的遺跡頁（dexruins.js）也照這個。
+  // 2026-10-14 作者：哈米莉亞級的遺跡不會出現變種（spawnEnemy、圖鑑都跳過）。
   R.variantAt = (dep, gd) => {
     if (dep < 1 / 3) return { chance: 0, tier: 0 };
     if (dep < 2 / 3) return { chance: 0.2 + 1.2 * (dep - 1 / 3), tier: gd >= 2 ? 2 : 1 };
@@ -70,7 +71,7 @@
   const se = R.spawnEnemy;
   R.spawnEnemy = (id, x, z, room, o) => {
     const run = W.run, h = home[id];
-    if (run && VAR[id] && h && !(o && (o.human || o.role || o.netMirror))) { const dep = Math.max(0, Math.min(1, (run.floor || 0) / Math.max(1, ((run.floors || 1) - 1) * (run.depthK && run.depthK < 1 ? run.depthK : 1)))),   /* depth.js 生怪時把 run.floor 換算成舊的層數，總層數也要一起換算 */ v = R.variantAt(dep, Math.max(0, (run.grade.lv || 1) - h)); let diff = v.tier; while (diff > 0 && !VAR[id][diff]) diff--; if (diff >= 1 && rnd() < v.chance) { const e = se(VAR[id][diff], x, z, room, o); if (e) { e.vbase = id; const k = TIER[diff].sc; if (k !== 1 && e.m && e.m.g) e.m.g.scale.multiplyScalar(k); } return e; } }
+    if (run && VAR[id] && h && !(run.grade && run.grade.id === 'hamilia') && !(o && (o.human || o.role || o.netMirror))) { const dep = Math.max(0, Math.min(1, (run.floor || 0) / Math.max(1, ((run.floors || 1) - 1) * (run.depthK && run.depthK < 1 ? run.depthK : 1)))),   /* depth.js 生怪時把 run.floor 換算成舊的層數，總層數也要一起換算 */ v = R.variantAt(dep, Math.max(0, (run.grade.lv || 1) - h)); let diff = v.tier; while (diff > 0 && !VAR[id][diff]) diff--; if (diff >= 1 && rnd() < v.chance) { const e = se(VAR[id][diff], x, z, room, o); if (e) { e.vbase = id; const k = TIER[diff].sc; if (k !== 1 && e.m && e.m.g) e.m.g.scale.multiplyScalar(k); } return e; } }
     return se(id, x, z, room, o);
   };
   // 打倒的次數也算在原本那一種上（圖鑑、之後的寵物）
