@@ -602,7 +602,7 @@
   // ---------- 畫面：共用樣式（深色） ----------
   const css = document.createElement('style'); css.id = 'sp-css';
   css.textContent = ''
-    + '#sp-book{position:fixed;inset:0;z-index:9990;background:rgba(6,4,10,.72);display:flex;align-items:center;justify-content:center}#sp-book[hidden]{display:none}'
+    + 'body:has(#sp-book:not([hidden])) #tu2-card,body:has(#sp-book:not([hidden])) #tu2-ring,body:has(#sp-book:not([hidden])) #tu2-arrow{display:none!important}#sp-book{position:fixed;inset:0;z-index:9990;background:rgba(6,4,10,.72);display:flex;align-items:center;justify-content:center}#sp-book[hidden]{display:none}'
     + '#sp-book .spb{width:min(1040px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;background:linear-gradient(180deg,#1E1A26,#16131C);color:#E8E0D0;border:1px solid rgba(184,138,255,.45);border-top:3px solid #7A5AB8;border-radius:8px;box-shadow:0 10px 32px rgba(0,0,0,.6);padding:10px 12px;font-size:13px}'
     + '#sp-book h3{margin:0;font-size:16px;color:#E0CCFF}#sp-book .sp-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}#sp-book small{color:#A89CB8}'
     + '#sp-book .sp-cols{display:grid;grid-template-columns:240px 1fr;gap:10px}@media (max-width:760px){#sp-book .sp-cols{grid-template-columns:1fr}}'

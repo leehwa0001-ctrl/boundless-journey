@@ -96,6 +96,11 @@
       step('臨場改寫', () => T('按住 <kbd>X</kbd>：<kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd> 選段、<kbd>1</kbd>～<kbd>5</kbd> 換文。施法中按一下 <kbd>X</kbd>＝斷序（退 70%）。', '長按職業條打開環狀選單臨場改寫；施法中點一下＝斷序（退 70%）。'), '#core-g'),
       step('固化與反應', () => '超過 500 古克的元素咒會固化成牆、熔岩、冰刺或荊棘（擋敵人，不擋隊友）。Ya 火、Bo 冰、Lo 雷照樣會起反應。', null)
     ] },
+    summoner: { n: '召喚師：意念與精神', ctx: inRun, steps: [   // 2026-10-13 召喚師重做
+      evStep('意念', () => T('按 <kbd>X</kbd> 換意念：集火 → 護衛 → 狂奔；快速點兩下＝用執念獻祭。', '點職業條換意念；點兩下＝獻祭。'), '#core-g', 'cls'),
+      step('精神', () => '畫面下方的紫色細條是精神：召喚物在場會消耗，25 以下召喚物失控，歸零＝剝離 6 秒。收掉召喚物就會慢慢回來。', () => document.getElementById('sm-spirit')),
+      step('材質', () => '召喚物的身體看遺跡的環境用元素捏成，職業條下面會寫這一層是哪兩種材質。', null)
+    ] },
     bard: { n: '吟遊詩人：樂譜', ctx: inRun, steps: [
       evStep('和弦', () => T('按一下 <kbd>X</kbd> 換和弦（大調／小調）。', '點一下職業條換和弦。'), '#core-g', 'cls'),
       step('寫樂譜', () => T('按住 <kbd>X</kbd> 0.45 秒開始錄：10 秒內的普攻、技能會寫成音符。', '長按職業條開始錄：10 秒內的普攻、技能會寫成音符。'), '#core-g'),
@@ -116,7 +121,7 @@
     ] }
   };
   const ok = id => CH[id].ctx() && !(R.sheetOpen && R.sheetOpen());
-  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'mage', 'arraymage', 'bard', 'monk', 'blade'];
+  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'mage', 'summoner', 'arraymage', 'bard', 'monk', 'blade'];
   // ---------- 畫面 ----------
   const css = document.createElement('style'); css.id = 'tu2-css';
   css.textContent = '#tu2-ring{position:fixed;z-index:9998;pointer-events:none;border:2px solid #C9A13A;border-radius:10px;box-shadow:0 0 0 3px rgba(201,161,58,.25),0 0 18px rgba(201,161,58,.45);transition:all .2s;animation:tu2p 1.4s infinite}'

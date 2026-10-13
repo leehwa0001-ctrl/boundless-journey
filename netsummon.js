@@ -46,8 +46,9 @@
     if (!crun()) return pet0(s, P, w, pw);
     const mb = R.makeBeast, got = [];
     R.makeBeast = (id, ...a) => { const m = mb(id, ...a); if (m && m.g) got.push([id, m]); return m; };
+    R._petMat = null;
     try { return pet0(s, P, w, pw); }
-    finally { R.makeBeast = mb; got.forEach(([id, m]) => track(m.g, { b: id, s: r2(m.g.scale.x || 1) })); }
+    finally { R.makeBeast = mb; const mt = R._petMat; got.forEach(([id, m]) => track(m.g, Object.assign({ b: id, s: r2(m.g.scale.x || 1) }, mt ? { e: mt } : {}))); }   // 2026-10-13：e＝召喚師的材質（summoncraft.js）
   };
   const tur0 = T.turret;
   if (tur0) T.turret = (s, P, w, pw) => {
@@ -68,7 +69,7 @@
   const clearGhosts = () => [...ghosts.keys()].forEach(k => dropGhost(k));
   const makeGhost = (shape, x, z) => {
     let g = null, m = null, b = null;
-    if (shape && typeof shape.b === 'string' && R.ENEMIES[shape.b] && R.makeBeast) { b = shape.b; m = R.makeBeast(b); g = m && m.g; if (g && num(shape.s, 0.2, 4)) g.scale.setScalar(shape.s); }
+    if (shape && typeof shape.b === 'string' && R.ENEMIES[shape.b] && R.makeBeast) { b = shape.b; m = R.makeBeast(b); g = m && m.g; if (g && num(shape.s, 0.2, 4)) g.scale.setScalar(shape.s); if (g && typeof shape.e === 'string' && R.SUMMON_MAT && Object.prototype.hasOwnProperty.call(R.SUMMON_MAT, shape.e) && R.summonTint) R.summonTint(g, R.SUMMON_MAT[shape.e].col); }
     else if (shape && Array.isArray(shape.t)) g = buildTurret(shape.t.slice(0, 12));
     if (!g) return null;
     g.position.set(x, 0, z); W().scene.add(g);

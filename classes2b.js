@@ -16,6 +16,7 @@
       const pet = { x: P.x + Math.sin(a) * 1.4, z: P.z + Math.cos(a) * 1.4, t: rnd(), cd: 0, left: (s.t || 12) * (P.petLife || 1) }; (R.PETS = R.PETS || []).push(pet);   // classcore2.js：獻祭、集火用
       if (R.nearestFloor) { const q = R.nearestFloor(pet.x, pet.z); pet.x = q[0]; pet.z = q[1]; }
       const g = m.g; if (s.scale) g.scale.setScalar(s.scale); g.position.set(pet.x, 0, pet.z); w.scene.add(g);
+      pet.g = g; pet.id = id; pet.s = s; try { if (R.petInit) R.petInit(pet, P, s, w); } catch (e) { }   // 2026-10-13 summoncraft.js：元素材質、意念、精神
       R.fx('poof', pet.x, 0.6, pet.z, { color: s.color || '#C8A878', n: 14 });
       w.dyn.push(dt => {
         if (W().run !== run || P.dead) { pet.gone = true; w.scene.remove(g); return false; }
@@ -23,10 +24,12 @@
         if (pet.left <= 0) { pet.gone = true; R.fx('poof', pet.x, 0.6, pet.z, { color: s.color || '#C8A878', n: 12 }); w.scene.remove(g); return false; }
         let tg = null, bd = 1e9; w.enemies.forEach(e => { if (e.dead || e.under || e.invuln) return; const d = dist(e, pet); if (d < bd && dist(e, P) < 15) { bd = d; tg = e; } });
         if (R.petFocus && !R.petFocus.dead && !R.petFocus.under && dist(R.petFocus, P) < 18) tg = R.petFocus;   // classcore2.js：集火你最後打的那一隻
-        const goal = tg || { x: P.x - Math.sin(P.aimA || 0) * 1.6, z: P.z - Math.cos(P.aimA || 0) * 1.6 }, dx = goal.x - pet.x, dz = goal.z - pet.z, d = Math.hypot(dx, dz), reach = tg ? 0.9 + tg.def.size * 0.45 : 1.2;
+        let hk = null; try { hk = R.petThink ? R.petThink(pet, P, dt, tg, w) : null; } catch (e) { }
+        if (hk && 'tg' in hk) tg = hk.tg;
+        const goal = tg || (hk && hk.goal) || { x: P.x - Math.sin(P.aimA || 0) * 1.6, z: P.z - Math.cos(P.aimA || 0) * 1.6 }, dx = goal.x - pet.x, dz = goal.z - pet.z, d = Math.hypot(dx, dz), reach = tg ? 0.9 + tg.def.size * 0.45 : 1.2;
         let moving = false;
-        if (d > reach) { const sp = Math.min((s.speed || 6.5) * dt, d - reach); pet.x += dx / d * sp; pet.z += dz / d * sp; if (R.collide) R.collide(pet, 0.35); moving = true; }
-        else if (tg && pet.cd <= 0) { pet.cd = s.rate || 0.8; tg.petHit = 1; R.hurtEnemy(tg, pw * (s.k || 0.6) * mul, { primary: false, kb: s.kb || 0.4 }); tg.petHit = 0; R.fx('spark', tg.x, 0.8, tg.z, { a: Math.atan2(dx, dz) }); }
+        if (d > reach) { const sp = Math.min((s.speed || 6.5) * (pet.spK || 1) * dt, d - reach); pet.x += dx / d * sp; pet.z += dz / d * sp; if (R.collide) R.collide(pet, 0.35); moving = true; }
+        else if (tg && pet.cd <= 0 && !(hk && hk.skip)) { pet.cd = s.rate || 0.8; tg.petHit = 1; R.petHitter = pet; R.hurtEnemy(tg, pw * (s.k || 0.6) * mul * (pet.dK || 1), { primary: false, kb: (s.kb || 0.4) + (pet.kbK || 0), elem: pet.elem || undefined }); R.petHitter = null; tg.petHit = 0; R.fx('spark', tg.x, 0.8, tg.z, { a: Math.atan2(dx, dz) }); }
         g.position.set(pet.x, 0, pet.z); if (R.animBeast) R.animBeast(m, id, pet.t, moving);
         return true;
       });
