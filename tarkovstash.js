@@ -189,10 +189,20 @@
       const bar = sec.querySelector('.st-cats');
       const wh = where();
       if (!wh.full) {
-        h3.hidden = true; items.hidden = true; if (bar) bar.hidden = true;
-        sec.querySelectorAll('.sx-empty').forEach(x => { x.hidden = true; });
-        const n = document.createElement('p'); n.className = 'hand tk-away'; n.textContent = '倉庫搬到家裡了：回公團住宅 1 號棟 302 室，打開收納櫃才能整理倉庫、換上倉庫裡的裝備。這裡只能脫下身上的東西。';
-        h3.before(n); return r;
+        if (bar) bar.hidden = true;
+        sec.querySelectorAll('.sx-empty,.sx-bar').forEach(x => { x.hidden = true; });
+        const n = document.createElement('p'); n.className = 'hand tk-away'; n.textContent = '倉庫搬到家裡了：回公團住宅 1 號棟 302 室，打開收納櫃才能整理倉庫、換上倉庫裡的裝備。這裡可以先看倉庫裡的武器，也能脫下身上的東西。';
+        h3.before(n);
+        // 不在家也能直接看倉庫裡的武器（唯讀：拿掉換上／賣掉等按鈕）
+        const byId = new Map((S().stash || []).map(it => [String(it.id), it])); let nw = 0;
+        items.querySelectorAll('.item-card').forEach(cd => {
+          const b = cd.querySelector('[data-lock],[data-equip],[data-sell]'), it = b && byId.get(String(b.dataset.lock || b.dataset.equip || b.dataset.sell));
+          if (!it || it.kind !== 'weapon') { cd.hidden = true; return; }
+          nw++; cd.classList.add('tk-ro'); cd.querySelectorAll('button').forEach(x => x.remove());
+        });
+        h3.textContent = '倉庫裡的武器（' + nw + ' 把・回家才能換上）'; h3.hidden = false; items.hidden = !nw;
+        if (!nw) { const e = document.createElement('p'); e.className = 'note'; e.textContent = '倉庫裡沒有武器。'; h3.after(e); }
+        return r;
       }
       h3.hidden = true; items.hidden = true;
       const cards = new Map(); items.querySelectorAll('.item-card').forEach(cd => { const b = cd.querySelector('[data-lock],[data-equip],[data-sell]'); if (b) cards.set(b.dataset.lock || b.dataset.equip || b.dataset.sell, cd); });

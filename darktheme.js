@@ -39,6 +39,8 @@
     H('.btn:disabled') + ',' + H('.mini:disabled') + '{opacity:.45}',
     // 分頁暖簾：朱色調暗
     P + '.gh-tab.on,' + P + '#hub.hs-smith .subtabs .tab.on{background:linear-gradient(180deg,#8A3826,#6A2A1C)!important;color:#F2E6D4!important}',
+    // 分頁暖簾下緣中間的切口（-webkit-mask 挖空）在深色底上看起來像一個黑色小方塊：拿掉
+    P + '.gh-tab,' + P + '#hub .subtabs .tab{-webkit-mask:none!important;mask:none!important}',
     P + '#hub.hk-on .gh-tab.on{background:linear-gradient(180deg,#5E4482,#43305E)!important}',
     P + '.gh-card{background:linear-gradient(180deg,rgba(30,36,60,.35),rgba(22,19,28,.75))!important}',
     // 確認視窗
