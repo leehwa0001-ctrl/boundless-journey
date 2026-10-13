@@ -160,6 +160,8 @@
   };
   R.archerFire = () => { const P = W().P; if (isA(P)) fire(P); };
 
+  // 2026-10-14 作者：主世界（城裡）不顯示續力條——城裡不跑 R.step，回城後續力條會留在畫面上；這裡另外每 0.25 秒檢查一次，不在戰鬥區（遺跡、狩獵場、訓練場）就收掉、清掉續力
+  setInterval(() => { try { const w = W(), P = w && w.P; if (!el || el.style.display === 'none') return; if (!isA(P) || !w.run || w.run.done || w.town || P.dead) { reset(); hud(null); } } catch (e) { } }, 250);
   // ---------- 每一幀：續力 ----------
   const sp0 = R.step;
   R.step = dt => {
