@@ -255,7 +255,7 @@
     P.mp -= r.mp; cdSet(P, slot, r.cd * (P.skillCdMult || 1));
     if (P._spUlt) { P._spUlt = false; say(P, '三重咒！'); }
     if (base(P) === 'orb') { RT.orb.n = RT.orb.k === k ? Math.min(5, RT.orb.n + 1) : 0; RT.orb.k = k; }
-    P._el = sp.el; RT.lastK = k;
+    RT.lastK = k;   // 2026-10-13：法術不再改普攻的元素（普攻上元素、技能引爆）
     RT.cast = { slot, k, r, t: 0, dur: r.cast };
     R.sfx && R.sfx('skill');
     if (r.cast <= 0) finishCast(P);
@@ -299,17 +299,14 @@
   // ---------- 職業核心：X 換元素 ----------
   const C = R.CORE.mage;
   const pickK = P => { const b = book(); if (RT.lastK >= 0 && b.spells[RT.lastK]) return RT.lastK; const k = boundK(P, 0); return k >= 0 ? k : -1; };
-  C.act = function (P) {
-    const k = pickK(P), b = book();
-    if (k < 0) { P._el = ELK[(ELK.indexOf(P._el || 'fire') + 1) % 3]; say(P, ELS[P._el].n, 'heal'); return; }
-    const sp = parse(b.spells[k].code, b.spells[k].n); sp.el = ELK[(ELK.indexOf(sp.el) + 1) % 3]; b.spells[k].code = toCode(sp); if (!b.spells[k].own) b.spells[k].n = autoName(sp); P._el = sp.el; resetCache();
-    say(P, b.spells[k].n + '→' + ELS[sp.el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[sp.el].c }); R.save && R.save();
+  C.act = function (P) {   // X 點一下：普攻的元素 火→冰→雷（按住 X 看元素反應表，elemreact.js）
+    P._el = ELK[(ELK.indexOf(P._el || 'fire') + 1) % 3]; say(P, '普攻：' + ELS[P._el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[P._el].c });
   };
-  C.help = P => '自己配法術：每一句＝元素（火／冰／雷）＋形狀（彈／扇／柱／球／牆）＋效果（爆炸／穿透／追蹤／反彈），在「法術書」裡配好、綁到技能格。X：把剛剛放的那一句換成下一個元素（普攻也跟著換）。同一隻敵人身上碰到兩種元素就引爆：火＋冰＝蒸發、冰＋雷＝碎冰、雷＋火＝過載。「牆」和「球＋爆炸」會留下 8 秒的地形（擋敵人，不擋隊友）。'
+  C.help = P => '普攻上元素、技能引爆：X 點一下換普攻的元素（火→冰→雷），普攻打中就在敵人頭上留這個元素 5 秒。法術（在「法術書」裡配：元素＋形狀＋效果）打到身上有「別種」元素的敵人就引爆：火＋冰＝蒸發（單體 160%）、冰＋雷＝碎冰（暈 1.5 秒＋小範圍）、雷＋火＝過載（大範圍爆炸）。按住 X 看反應表。'
     + ({ elementalist: '元素師：在法術書選一個拿手元素，那個元素的法術傷害 +30%、魔力 −20%。', hexer: '咒術師：多一種效果「詛咒」。', waixiu: '外修者：多一種形狀「罩」（魔力護盾）。' }[advOf(P)] || '');
   C.gauge = function (P) {
-    const k = pickK(P), b = book(), x = k >= 0 ? b.spells[k] : null, sp = x ? parse(x.code, x.n) : null, el = sp ? sp.el : P._el || 'fire';
-    return { name: '元素：' + ELS[el].n + (x ? '（' + x.n + '）' : ''), col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : '火＋冰 蒸發・冰＋雷 碎冰・雷＋火 過載', x: '換成' + ELS[ELK[(ELK.indexOf(el) + 1) % 3]].n };
+    const k = pickK(P), b = book(), x = k >= 0 ? b.spells[k] : null, sp = x ? parse(x.code, x.n) : null, el = P._el || 'fire';
+    return { name: '普攻元素：' + ELS[el].n, col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : (sp ? '技能：' + x.n + '・' : '') + '按住 X 看反應', x: '換成' + ELS[ELK[(ELK.indexOf(el) + 1) % 3]].n };
   };
   if (R.ULTS && R.ULTS.mage) Object.assign(R.ULTS.mage, { name: '三重咒', sub: '術士的大招：下一句法術傷害 ×3、不耗魔力，技能冷卻全部歸零', go: P => { P._spUlt = true; [0, 1, 2, 3, 4].forEach(i => cdSet(P, i, 0)); say(P, '三重咒'); toast('下一句法術：傷害 ×3、不耗魔力！', '#FFE08A'); } });
   // ---------- 法術書 ----------

@@ -178,9 +178,12 @@
       + ({ elementalist: '元素師：反應的威力 ×1.5。', hexer: '咒術師：反應順便詛咒周圍 4 公尺。', shikigami: '式神使：反應回 6 點魔力。', waixiu: '外修者：反應回 6 點魔力。' }[adv(P)] || ''),
     floor: P => { P._el = P._el || 'fire'; },
     onHit(e, d, o, P, killed) {
-      const el = o.elem && EL[o.elem] ? o.elem : P._el || 'fire'; if (!e || o.reflect) return;
-      const m = e._el || (e._el = {}), other = ELS.find(x => x !== el && (m[x] || 0) > CT);
-      if (!other) { m[el] = CT + 4; return; }
+      if (!e || o.reflect || o.thorns || o.dot || o.tick || o.burn) return;
+      const m = e._el || (e._el = {});
+      // 2026-10-13：普攻＝把目前的元素留在敵人身上 5 秒；技能打到身上有「別種」元素的敵人才引爆（印記用掉）
+      if (o.primary) { if (e.dead) return; const pe = EL[P._el] ? P._el : 'fire'; ELS.forEach(x => { if (x !== pe) delete m[x]; }); m[pe] = CT + 5; return; }
+      const el = o.elem && EL[o.elem] ? o.elem : P._el || 'fire', other = ELS.find(x => x !== el && (m[x] || 0) > CT);
+      if (!other) return;
       delete m[other]; delete m[el];
       const key = [el, other].sort().join('+'), name = REACT[key], tri = (R.legOf ? R.legOf(P) : null) === 'lg_tri', k = (adv(P) === 'elementalist' ? 1.5 : 1) * (tri ? 1.5 : 1) * pw(P);
       if (tri) P._el = ELS[(ELS.indexOf(P._el || 'fire') + 1) % 3];   // 三相之杖：反應之後自動換元素
