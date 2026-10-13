@@ -308,6 +308,15 @@
   const addIai = (P, n) => { const was = full(P); P._iai = Math.min(100, (P._iai || 0) + n * gainK(P)); if (!was && full(P)) { say(P, bdState(P) === 'drawn' ? '刀意渾圓' : '居合', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.6, color: '#DDEEFF' }); } };
   const noVampO = o => (R.markNoVamp ? R.markNoVamp(o || {}) : Object.assign(o || {}, { reflect: true, noVamp: true }));
   const startZan = P => { P._zanT = CT + 5 * zanK(P); say(P, '殘心', 'heal'); if (legOf(P) === 'lg_seam') P._seamT = CT + 3; };
+  // 2026-10-13：刀意渾圓、居合、殘心、貫勢顯示在下面的狀態圖示（statusicons.js 的 R.STATUS_EXTRA）
+  (R.STATUS_EXTRA = R.STATUS_EXTRA || []).push((P, run, add) => {
+    if (!P || P.cls !== 'blade') return;
+    if (enso(P)) add('bd:enso', '刀意渾圓', 'spark', '#DDEEFF', ['攻速 +' + 25 * ensoK(P) + '%、範圍 +' + 10 * ensoK(P) + '%、傷害 +' + 10 * ensoK(P) + '%、移動 +25%', '這時被打會反切：免疫這一下、原地橫斬，刀意歸零'], null, null, false, '刀意滿、拔刀中');
+    if (iaiReady(P)) add('bd:iai', '居合', 'swords', '#FFFFFF', ['下一次普攻或技能是居合', '普攻：必定橫斬、範圍 +40%、傷害 ×2、穿透 +40%；技能：傷害 +40%'], null, null, false, '刀意滿、收刀中');
+    if ((P._iaiSkT || 0) > CT) add('bd:iaisk', '居合（技能）', 'swords', '#FFFFFF', ['技能傷害 +40%'], P._iaiSkT - CT, 1.2);
+    if (zanOn(P)) add('bd:zan', '殘心', 'barrier', '#BFE8FF', ['收刀／拔刀時間 ×' + Math.pow(0.5, zanK(P)), '刀意獲得 +' + 40 * zanK(P) + '%、受到的傷害 −' + 20 * zanK(P) + '%'], P._zanT - CT, 5 * zanK(P));
+  });
+  R.STATUS_EXTRA.push((P, run, add) => { if (P && P.tkKan > 0) add('tk:kan', '貫勢', 'spark', '#BFE8FF', ['傷害 +30%、受到的傷害 −20%'], P.tkKan, 5); });
   const nowMs = () => performance.now();
   const blockMsg = (P, t) => { if (nowMs() - (P._bdMsgT || 0) > 900) { P._bdMsgT = nowMs(); toast(t, '#DDEEFF'); } };
   const bdLater = (P, f, ms) => { const run = W().run, sc = W().scene; setTimeout(() => { const w = W(); if (w.run === run && w.scene === sc && w.P === P && !P.dead && !run.done) f(); }, ms); };
@@ -318,7 +327,7 @@
     const { w } = bw(P), k = rangeK(P) * (enso(P) && !o.counter ? 1 + 0.1 * ensoK(P) : 1) * (o.iai ? 1 + 0.4 * o.iaiK : 1);
     let dmg = P.ws.dmg * w.dmg * (kind === 'cleave' ? 1.4 : 1) * (o.iai ? 1 + 1 * o.iaiK : 1) * (enso(P) && !o.counter ? 1 + 0.1 * ensoK(P) : 1);
     const pen = (kind === 'thrust' ? 0.4 : 0) + (o.iai ? 0.4 * o.iaiK : 0);
-    const range = P.ws.range * (kind === 'thrust' ? 1.2 : 1) * (kind === 'slash' ? k : k), arc = kind === 'slash' ? Math.min(Math.PI * 2, (2 * Math.PI / 3) * k) : 0, width = kind === 'slash' ? 0 : 0.2 * k;
+    const range = P.ws.range * (kind === 'thrust' ? 1.2 : 1) * (kind === 'slash' ? k : k), arc = kind === 'slash' ? Math.min(Math.PI * 2, (2 * Math.PI / 3) * k) : 0, width = kind === 'slash' ? 0 : (kind === 'cleave' ? 0.4 : 0.2) * k;   // 半寬：直劈 0.8 公尺（2026-10-13）、突刺 0.4
     const hits = o.counter ? 1 : (w.hits || 1), id = (P._bdId = (P._bdId || 0) + 1);
     R.swingAnim && R.swingAnim(P.h, 0.04, 0.3);
     for (let i = 0; i < hits; i++) {
@@ -330,6 +339,8 @@
       if (i === 0) go(); else bdLater(P, go, 120 * i);
     }
     if (o.iai || kind === 'thrust') R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range });
+    // 直劈：由上往下的一刀——落點冒出光柱、地面裂開一道震波（跟突刺的細長直線分開）
+    if (kind === 'cleave' && !o.iai && R.fx) { const d = range * 0.75, x = P.x + Math.sin(a) * d, z = P.z + Math.cos(a) * d; R.fx('pillar', x, 0, z, { r: 0.45, color: '#DDEEFF' }); R.fx('groundwave', x, 0.06, z, { a, r: 1.2, color: '#BFD8FF' }); R.fx('dust', x, 0.15, z, {}); }
     R.sfx && R.sfx('swing');
   };
   const pickForm = (P, k) => {
@@ -378,7 +389,7 @@
       + ({ kensei: '劍豪：居合加成 ×1.5、殘心效果 ×2 且 10 秒、收刀時間 ×0.5。', shadow: '影刃：反切砍 2 刀、無敵 1 秒、反切後也進殘心；普攻衝刺快 10 倍、距離 ×2。', yoto: '妖刀使：刀意渾圓效果 ×2、渾圓時吸血系數 +75；每次普攻扣 1% 目前生命、放技能扣 10%（不會扣到死）。' }[adv(P)] || '')
       + ({ dualblades: '雙刀：一次砍兩下，收刀時間 ×1.5，不能反切。' }[P.item && P.item.base] || ''),
     max: () => 100,
-    floor(P) { P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; },
+    floor(P) { if (P._bdWant && P._bdSpSet === P.speed) P.speed /= P._bdWant; P._bdWant = 1; P._bdSpBase = P.speed; P._bdSpSet = P.speed; P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; },
     step(dt, P) {
       const roll = P.h && P.h.roll > 0; if (roll && !P._rolling) P._bdRolled = true; P._rolling = roll;
       const rd = P._bdRead;
@@ -386,8 +397,10 @@
       if (bdState(P) === 'sheathed') addIai(P, 100 / BD.FULL_T * dt / 1);
       // 移動：讀條 −50%、刀意滿 +25%（記住自己乘上去的倍率；別人重算過 P.speed 就重來）
       const want = (P._bdRead ? 0.5 : 1) * (full(P) ? 1.25 : 1);
-      if (P._bdSpSet !== P.speed) { P._bdSpBase = P.speed; }
-      P.speed = P._bdSpBase * want; P._bdSpSet = P.speed;
+      // 2026-10-13 修：以前別人改過 P.speed（技能增益、刀勢的 ×1.03 等都是「乘上去／除回來」）就把「已經乘過 want 的速度」當新的底，再乘一次 want → 一直疊。
+      // 改成先除掉自己上次乘的倍率，再乘這次的。
+      if (P._bdSpSet !== P.speed) P._bdSpBase = P.speed / (P._bdWant || 1);
+      P.speed = P._bdSpBase * want; P._bdSpSet = P.speed; P._bdWant = want;
       // 妖刀使：渾圓時吸血系數 +75
       const vx = adv(P) === 'yoto' && enso(P) ? 75 : 0; if ((P._bdVx || 0) !== vx) { P.vampX = (P.vampX || 0) - (P._bdVx || 0) + vx; P._bdVx = vx; }
     },

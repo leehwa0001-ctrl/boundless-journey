@@ -118,6 +118,7 @@
     const F = R.calcPlayer(R.S.cls);
     ['skill', 'pv', 'hpMax', 'mpMax', 'def', 'speed', 'dmgMult', 'critMult', 'skillCdMult', 'dodgeCdMax', 'regen', 'calm', 'mpRegen', 'patk', 'matk', 'pen', 'recovAmp'].forEach(k => { if (F[k] !== undefined) P[k] = F[k]; });
     if (F.ws) P.ws = F.ws;
+    P._bdWant = 1; P._bdSpBase = P.speed; P._bdSpSet = P.speed;   // 刀客的移動倍率：P.speed 剛重算過，從 1 開始（classcore.js）
     P.skillCd = 0; if (P.skCd) P.skCd = P.skCd.map(() => 0); if (P.cdHold) P.cdHold = {};
     P.hp = Math.min(P.hpMax, Math.max(P.hp, 1)); P.mp = P.mpMax;
     if (R.hudFloor) try { R.hudFloor(); } catch (e) { }
@@ -153,9 +154,13 @@
     (F.chests || []).forEach(c => { if (c.mesh && c.mesh.parent) c.mesh.parent.remove(c.mesh); if (c.col) c.col.on = false; }); F.chests = [];
     (F.props || []).forEach(p => { p.alive = false; if (p.col) p.col.on = false; if (p.mesh && p.mesh.parent) p.mesh.parent.remove(p.mesh); }); F.props = [];
     w.enemies.forEach(e => { e.dead = true; if (e.m && e.m.g && e.m.g.parent) e.m.g.parent.remove(e.m.g); }); w.enemies = [];
-    // 白天、亮一點
-    const sc = w.scene; if (sc) { sc.children.forEach(c => { if (c.isHemisphereLight) c.intensity = 0.85; }); if (sc.fog) { sc.fog.color.set('#C8D4DC'); sc.fog.density = 0.01; } if (sc.background && sc.background.isColor) sc.background.set('#C8D4DC'); }
-    if (w.moon) w.moon.intensity = 0.75;
+    // 2026-10-13 作者：訓練場太亮、技能看不清楚 → 改成傍晚的暗色場地（地板、牆壓暗一點，特效才跳得出來）
+    const sc = w.scene; if (sc) { sc.children.forEach(c => { if (c.isHemisphereLight) c.intensity = 0.32; if (c.isAmbientLight) c.intensity *= 0.5; }); if (sc.fog) { sc.fog.color.set('#1C2026'); sc.fog.density = 0.012; } if (sc.background && sc.background.isColor) sc.background.set('#1C2026'); }
+    if (w.moon) w.moon.intensity = 0.4;
+    const dimL = () => { if (!isTrain(W().run) || !sc) return; sc.traverse(o => { if (o.isLight && !o.isHemisphereLight && o !== w.moon && !o.userData.trDim) { o.intensity *= 0.6; o.userData.trDim = 1; } }); };   // 其他燈（火把、晶石）也壓一點
+    // 地板、牆多半是不吃燈光的材質（MeshBasic）：只壓暗這層樓自己的模型（F.group），換成複製的材質，不動到共用的
+    const dimM = () => { const g = F.group; if (!isTrain(W().run) || !g || !g.traverse) return; const cl = new Map(), dm = m => { if (!m || !m.color || m.transparent || m.blending !== 1) return m; if (!cl.has(m)) { const c = m.clone(); c.color.multiplyScalar(0.34); cl.set(m, c); } return cl.get(m); }; g.traverse(o => { if (!o.isMesh || !o.material || o.userData.trDim) return; o.material = Array.isArray(o.material) ? o.material.map(dm) : dm(o.material); o.userData.trDim = 1; }); };
+    dimL(); dimM(); setTimeout(() => { dimL(); dimM(); }, 600);
     // 站到最大的那片空地
     const P = w.P, big = F.rooms.slice().sort((a, b) => (b.hx * b.hz || 0) - (a.hx * a.hz || 0))[0];
     if (P && big) { [P.x, P.z] = R.nearestFloor ? R.nearestFloor(big.x, big.z + 2.5) : [big.x, big.z + 2.5]; P.yaw = Math.PI; P.h.g.position.set(P.x, 0, P.z); R.placeCam && R.placeCam(null); }

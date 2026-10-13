@@ -405,11 +405,13 @@
       const id = b.dataset.sk, cur = R.loadoutOf(cls).slice(), from = cur.indexOf(id);
       if (pickSlot > 0 && st.lv < R.SKILL_UNLOCK[pickSlot]) return;
       if (from >= 0) cur[from] = cur[pickSlot]; cur[pickSlot] = id;
-      S.loadout = S.loadout || {}; S.loadout[cls] = cur; R.save(); book(host, close);
+      S.loadout = S.loadout || {}; S.loadout[cls] = cur; R.save(); syncR(cls); book(host, close);
     }; });
-    host.querySelector('[data-reset]').onclick = () => { S.loadout = S.loadout || {}; S.loadout[cls] = [null, null, null]; R.save(); book(host, close); };
+    host.querySelector('[data-reset]').onclick = () => { S.loadout = S.loadout || {}; S.loadout[cls] = [null, null, null]; R.save(); syncR(cls); book(host, close); };
     host.querySelector('[data-close]').onclick = close;
   };
+  // 2026-10-13 修：R／右鍵那格讀的是 P.skill，以前只在按「好了」時（trainRefresh）才更新；用 Esc、✕ 或點外面關掉就換不到。改成選下去就同步。
+  const syncR = cls => { const P = W().P; if (!P || P.cls !== cls || !W().run) return; try { const id = R.loadoutOf(cls)[0]; if (id && id !== P.skill) { P.skill = id; P.skillCd = 0; if (R.hudFloor) R.hudFloor(); } } catch (e) { } };
   R.skillBook = where => {
     if (W().run && !W().run.train && !(R.inTraining && R.inTraining())) { R.toast('遺跡裡不能換技能。'); return; }   // 訓練場可以換（2026-10-08）
     if (W().run) { R.sheet('<div id="sb-host"></div>'); book($('sb-host'), () => { R.closeSheet(); if (R.trainRefresh) R.trainRefresh(); }); return; }
