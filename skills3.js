@@ -91,7 +91,7 @@
     ['ed_sup', '壓制圈', 'arraymage', 11, 12, 14, 'mark', { range: 10, r: 3.6, t: 8, slow: 3, stun: 0.6, k: 0.4 }, '準心處放一個抑制圈：敵人停頓、變慢 8 秒。', 'eidanora'],
     ['ed_vortex', '漩渦陣', 'arraymage', 18, 14, 18, 'pull', { range: 11, r: 5, t: 4, k: 0.6 }, '抑制圈轉成漩渦，把敵人往中間拉 4 秒。', 'eidanora'],
     ['ed_perma', '常駐陣', 'arraymage', 21, 16, 20, 'zone', { zone: 'trap', range: 9, r: 1.6, life: 40, k: 3.2, count: 5 }, '畫五個不會散的感應陣，40 秒內都有效。', 'eidanora'],
-    ['ed_master', '艾達諾拉的閉環', 'arraymage', 24, 24, 32, 'combo', { parts: [['pull', { range: 11, r: 5, t: 2, k: 0.4 }], ['at', { range: 11, r: 5, k: 3.6, delay: 200, fx: 'ring', color: '#7AC8E8' }, 2100]] }, '先把敵人吸到圈中，兩秒後整個閉環爆開。', 'eidanora'],
+    ['ed_master', '艾達諾拉的閉環', 'arraymage', 24, 24, 32, 'combo', { parts: [['pull', { range: 11, r: 5, t: 2, k: 0.4 }], ['at', { range: 11, r: 5, k: 3.6, delay: 200, fx: 'ring', color: '#7AC8E8' }, 2100]] }, '先把敵人吸到圈中，兩秒後整個法陣爆開。', 'eidanora'],
     // 刻印師
     ['rs_glyph', '光紋', 'enchanter', 11, 14, 12, 'buff', { t: 10, dmg: 1.15, crit: 0.08, color: '#FFE8A0' }, '在武器刻一道會發光的紋：10 秒內傷害 +15%、暴擊率 +8%。', 'runesmith'],
     ['rs_armor', '刻印甲', 'enchanter', 18, 18, 14, 'heal', { shield: 0.4, color: '#C8B898' }, '把整套護甲刻滿咒文：得到吸收 40% 生命的護盾。', 'runesmith'],

@@ -84,7 +84,7 @@
     ['md_haunt', '附身', 'summoner', 8, 14, 20, 'storm', { t: 8, gap: 0.5, r: 8, hitR: 1.3, k: 0.8, fx: 'spark', color: '#B8A8E8' }, '放出怨靈纏著周圍的敵人 8 秒，一直咬。', 'medium'],
     ['md_drain', '吸魂', 'summoner', 14, 10, 14, 'drain', { range: 10, r: 2.8, k: 1.4, heal: 0.5 }, '把準心附近敵人的魂吸過來：傷害的一半變成你的生命。', 'medium'],
     // 術陣師
-    ['ry_burst', '法陣・爆', 'arraymage', 1, 6, 10, 'at', { range: 10, r: 2.6, k: 2, delay: 600, fx: 'ring', color: '#7AC8E8' }, '在準心處畫一個閉環的法陣，0.6 秒後爆開。'],
+    ['ry_burst', '法陣・爆', 'arraymage', 1, 6, 10, 'at', { range: 10, r: 2.6, k: 2, delay: 600, fx: 'ring', color: '#7AC8E8' }, '在準心處畫一個法陣，蓄力完立刻爆開。'],
     ['ry_bind', '法陣・縛', 'arraymage', 2, 9, 10, 'zone', { zone: 'trap', range: 8, r: 1.4, life: 20, k: 2.2 }, '在準心處畫一個陷阱陣：踩到的敵人被定住、受傷。'],
     ['ry_heal', '法陣・癒', 'arraymage', 3, 14, 16, 'zone', { zone: 'sanct', self: 1, r: 4, life: 7, k: 0.25 }, '腳下畫一個癒陣 7 秒：站在裡面回復生命，敵人會被灼傷。'],
     ['ry_fire', '法陣・焰', 'arraymage', 4, 10, 14, 'zone', { zone: 'lava', range: 9, r: 2.4, life: 6, k: 0.5 }, '準心處畫一個焰陣，6 秒內一直燒踩在上面的敵人。'],
@@ -94,7 +94,7 @@
     ['ry_lamp', '結界燈', 'arraymage', 10, 16, 18, 'turret', { t: 10, rate: 0.7, reach: 9, k: 0.8, look: 'lamp', color: '#7AC8E8' }, '立一座結界燈 10 秒，朝敵人放出陣光。'],
     ['ry_storm', '雷陣', 'arraymage', 12, 14, 20, 'storm', { t: 6, gap: 0.5, r: 8, hitR: 1.5, k: 1, stun: 0.3, color: '#BFE8FF' }, '6 秒內雷陣一直劈附近的敵人。'],
     ['ry_great', '大法陣', 'arraymage', 15, 16, 28, 'at', { range: 11, r: 5, k: 3.2, delay: 900, fx: 'ring', color: '#7AC8E8' }, '準心處畫一個巨大的法陣，0.9 秒後整片爆開。'],
-    ['ga_grand', '大法陣・極', 'arraymage', 8, 14, 26, 'at', { range: 12, r: 6, k: 3.6, delay: 1000, fx: 'ring', color: '#9AE8FF' }, '準心處畫一個巨大的閉環，一秒後爆開。', 'grandarray'],
+    ['ga_grand', '大法陣・極', 'arraymage', 8, 14, 26, 'at', { range: 12, r: 6, k: 3.6, delay: 1000, fx: 'ring', color: '#9AE8FF' }, '準心處畫一個巨大的法陣，一秒後爆開。', 'grandarray'],
     ['ga_twin', '雙環', 'arraymage', 14, 10, 18, 'at', { range: 10, r: 3, k: 1.8, waves: 2, gap: 400, delay: 500, fx: 'ring', color: '#9AE8FF' }, '同一個位置畫兩層環，連爆兩次。', 'grandarray'],
     ['wd_ward', '守護陣', 'arraymage', 8, 16, 18, 'turret', { t: 10, rate: 1, reach: 8, k: 0.5, look: 'lamp', self: 1, color: '#FFE8A0' }, '腳下立一座守護陣的燈 10 秒，朝敵人放光；再加一層護盾。', 'warder'],
     ['wd_barrier', '結界', 'arraymage', 14, 16, 14, 'buff', { t: 5, kekkai: 1, def: 0.3, color: '#FFE8A0' }, '張開結界 5 秒：擋下投射物、受到的傷害 −30%。', 'warder'],
@@ -175,7 +175,7 @@
   if (R.ULTS) Object.assign(R.ULTS, {
     bard: { name: '狂想曲', sub: '吟遊詩人的大招：回復你和附近隊友「你最大魔力 35%」的生命與魔力，你和隊友得到一倍的樂譜技能加成（10 秒，可以跟技能演奏的加成疊），連續震擊周圍敵人', go: P => { if (R.bardUlt) R.bardUlt(P); else cast('heal', { pct: 0.35, allies: 0.35 }, P); cast('nova', { r: 5, k: 0.8, stun: 1, waves: 5, gap: 300, color: '#FFB8E0' }, P); } },   // 2026-10-11 作者：拿掉增傷（傷害 ×1.3）和護盾，改成回生命與魔力＋樂譜加成（bardchord.js 的 R.bardUlt）；之後再調：回復 50%→35%、加成兩倍→一倍、震擊傷害 1.6→0.8（減半）
     summoner: { name: '百鬼夜行', sub: '召喚師的大招：一口氣捏出六隻召喚物和一尊巨像', go: P => { cast('pet', { beast: 'okuriinu', n: 6, t: 15, k: 0.7 }, P); cast('pet', { beast: 'nurikabe', n: 1, t: 15, k: 2, speed: 3.5, rate: 1.1, kb: 3 }, P); } },
-    arraymage: { name: '天地大陣', sub: '術陣師的大招：以你為中心畫一個巨大的閉環，連爆三次', go: P => { cast('at', { range: 0.1, r: 7, k: 3, waves: 3, gap: 500, delay: 600, fx: 'ring', color: '#7AC8E8' }, P); cast('heal', { shield: 0.3 }, P); } },
+    arraymage: { name: '天地大陣', sub: '術陣師的大招：以你為中心畫一個巨大的法陣，連爆三次', go: P => { cast('at', { range: 0.1, r: 7, k: 3, waves: 3, gap: 500, delay: 600, fx: 'ring', color: '#7AC8E8' }, P); cast('heal', { shield: 0.3 }, P); } },
     enchanter: { name: '萬象附魔', sub: '附魔師的大招：焰、霜、雷一起灌進武器，周圍一圈魔力爆發', go: P => { cast('buff', { t: 12, burn: 1, frost: 1, shock: 1, dmg: 1.4, crit: 0.2, color: '#FFFFFF' }, P); cast('nova', { r: 5, k: 3, kb: 4, color: '#FF8A4A' }, P); } },
     scroll: { name: '萬卷齊發', sub: '符卷師的大招：把身上的卷軸全部撕開，四面八方連發', go: P => { cast('shots', { n: 24, spread: 6.28, k: 1.1, kind: 'orb', sp: 18, burst: 3, gap: 200 }, P); cast('storm', { t: 4, gap: 0.25, r: 9, hitR: 1.5, k: 1.2, color: '#F2D88A' }, P); } }
   });

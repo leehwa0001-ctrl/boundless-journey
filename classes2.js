@@ -10,7 +10,7 @@
   Object.assign(R.CLASSES, {
     bard: { name: '吟遊詩人', hp: 98, mp: 85, speed: 6.1, skill: 'bd_anthem', color: '#C86AA8', desc: '魯特琴、長笛。吟遊派：把咒文編成曲子彈出來，鼓舞自己和隊友、用音波攻擊。', look: { top: '#8A3A6A', hair: '#E8C878', cloak: '#4A2A5A' } },
     summoner: { name: '召喚師', hp: 92, mp: 100, speed: 5.9, skill: 'sn_dog', color: '#6A8A5A', desc: '契約書、召喚鈴。召喚派：用執念把魔力捏成具象的召喚物，召喚物會主動攻擊附近的敵人。', look: { top: '#3E5A3A', hair: '#2A2420', cloak: '#5A4A2E' } },
-    arraymage: { name: '術陣師', hp: 90, mp: 105, speed: 5.9, skill: 'ry_burst', color: '#4A8AA8', desc: '陣筆、陣盤。術陣派：在地上畫閉環的法陣——陷阱、結界、持續燒人的場域。', look: { top: '#2E4A6A', hair: '#C8D0D8', cloak: '#1E3A4A' } },
+    arraymage: { name: '術陣師', hp: 90, mp: 105, speed: 5.9, skill: 'ry_burst', color: '#4A8AA8', desc: '陣筆、陣盤。術陣派：在六邊形上畫陣紋（核心、線段、Loop），普攻是地上的法陣，技能蓄力後放出。', look: { top: '#2E4A6A', hair: '#C8D0D8', cloak: '#1E3A4A' } },
     enchanter: { name: '附魔師', hp: 118, mp: 60, speed: 6.2, skill: 'en_flame', color: '#B85A3A', desc: '附魔劍、附魔短刀。附魔派：把咒文刻進武器裡，揮出焰、霜、雷；打得穿魔力罩（無視一部分護甲）。', look: { top: '#6A3A2E', hair: '#1A1418', cloak: '#3A2A2A' } },
     scroll: { name: '符卷師', hp: 90, mp: 95, speed: 6.2, skill: 'sc_volley', color: '#C8A85A', desc: '卷軸、符紙。卷軸派：預先寫好咒文的卷軸，注入一點魔力就發動，零前搖、可以一次放好幾張。', look: { top: '#8A7A4A', hair: '#3A2A1E', cloak: '#6A5A3A' } }
   });
@@ -45,7 +45,7 @@
       // 式神使（2026-10-04 從術士搬過來：紙式神也是用執念捏出來的召喚物）
       { id: 'shikigami', name: '式神使', path: '式神', skill: 'ss_shiki', desc: '式神很少，但很強（最多 2 隻，傷害 ×2.5、血量 ×3）。技能「式神・白狐」：折一隻很強的白狐式神。被動：你受到的傷害有 30% 由在場的式神分擔。' }],
     arraymage: [
-      { id: 'grandarray', name: '大陣師', path: '強化', skill: 'ga_grand', desc: '技能「大法陣」：準心處畫一個巨大的閉環，一秒後爆開。被動：法陣的範圍 +25%（技能傷害 +15%）。' },
+      { id: 'grandarray', name: '大陣師', path: '強化', skill: 'ga_grand', desc: '技能「大法陣」：準心處畫一個巨大的法陣，一秒後爆開。被動：法陣的範圍 +25%（技能傷害 +15%）。' },
       { id: 'warder', name: '結界師', path: '變化', skill: 'wd_ward', desc: '技能「守護陣」：腳下立一座結界燈 10 秒，一直回復你。被動：受到的傷害 −12%、防禦 +3。' },
       { id: 'eidanora', name: '艾達諾拉的傳人', path: '昭旭・遺跡', skill: 'ed_loop', desc: '術陣派的開創者「艾達諾拉」的抑制圈：法陣不散。技能「抑制圈」：準心處放一個長時間的法陣，持續傷害、讓敵人變慢。被動：技能的魔力消耗少 10% （技能冷卻 −10%）。' }],
     enchanter: [

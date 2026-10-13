@@ -8,8 +8,7 @@
 // - 召喚師「執念」（霍克派）：召喚物會集火你最後打的那一隻；召喚物打中、打倒攢執念。X（執念 50）獻祭：所有召喚物炸開（2.2 倍範圍）。
 //   打倒過 10 隻以上的遺跡生物（圖鑑）會變成新的召喚形態，召喚的時候一半機率捏成牠們的樣子。
 //   萬獸師執念漲 1.5 倍；靈媒師獻祭每隻回 4% 生命；遺跡馴獸師集火的時候召喚物傷害 +30%；式神使獻祭只要 30。
-// - 術陣師「閉環」（艾達諾拉派）：放在地上的法陣（落點、場域的技能）和 X 放的陣眼都是一個點，8 秒內有三個點彼此 11 公尺以內
-//   就連成閉環：三角形裡面 3.5 倍傷害＋定身 2 秒。大陣師閉環範圍 +30%、傷害 ×1.3；結界師閉環給自己 15% 護盾；艾達諾拉的點留 16 秒。
+// - 術陣師：原本的「閉環」已刪掉（2026-10-14），改由 runedraw.js 的陣紋。
 // - 附魔師「刻印切換」（恩特安派）：X 換武器上的刻印（焰、霜、雷），普攻打中攢刻印的力量；換掉的時候舊的刻印釋放：
 //   焰＝前方火焰爆、霜＝身邊冰封定身、雷＝連鎖閃電打五隻（攢越滿越痛）。刻印師釋放 ×1.5、攢得快；魔劍士釋放多打出一道劍氣；恩特安的傳人釋放讓敵人破防（5 秒你的傷害 +20%）。
 // - 符卷師「卷軸組」（諾克薩派）：6 秒內放三種不同的技能＝連鎖，第三招再放一次（不扣魔力、不進冷卻）。
@@ -117,37 +116,9 @@
   const lf0 = R.loadFloor;
   R.loadFloor = (...a) => { R.PETS = []; R.petFocus = null; return lf0(...a); };
 
-  // ======================= 術陣師：閉環 =======================
-  const ptLife = P => (adv(P) === 'eidanora' ? 16 : 8);
-  CORE.arraymage = {
-    name: '閉環', col: '#7AC8E8',
-    help: P => '閉環（艾達諾拉派）：放在地上的法陣（落點、場域的技能）和 X 放的陣眼都是一個點，' + ptLife(P) + ' 秒內有三個點彼此 11 公尺以內就連成閉環：三角形裡面 3.5 倍傷害＋定身 2 秒。X 陣眼：在準心處放一個點（冷卻 3 秒）。'
-      + ({ grandarray: '大陣師：閉環範圍 +30%、傷害 ×1.3。', warder: '結界師：閉環給你 15% 生命的護盾。', eidanora: '艾達諾拉的傳人：點留 16 秒。' }[adv(P)] || ''),
-    point(P, x, z) {
-      const L = (P._pts || []).filter(p => CT() - p.t < ptLife(P)); L.push({ x, z, t: CT() }); P._pts = L;
-      R.fx && R.fx('ring', x, 0.1, z, { r: 1, color: '#7AC8E8' });
-      if ((R.legOf ? R.legOf(P) : null) === 'lg_compass') for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) { const a = L[i], b = L[j]; if (Math.hypot(a.x - b.x, a.z - b.z) <= 8) { this.close(P, [a, b, { x: (a.x + b.x) / 2 + (b.z - a.z) * 0.4, z: (a.z + b.z) / 2 - (b.x - a.x) * 0.4, t: CT() }]); P._pts = L.filter(p => p !== a && p !== b); return; } }
-      for (let i = 0; i < L.length; i++) for (let j = i + 1; j < L.length; j++) for (let k = j + 1; k < L.length; k++) {
-        const a = L[i], b = L[j], c = L[k]; if (Math.hypot(a.x - b.x, a.z - b.z) > 11 || Math.hypot(a.x - c.x, a.z - c.z) > 11 || Math.hypot(b.x - c.x, b.z - c.z) > 11) continue;
-        this.close(P, [a, b, c]); P._pts = L.filter(p => p !== a && p !== b && p !== c); return;
-      }
-    },
-    close(P, T) {
-      const cx = (T[0].x + T[1].x + T[2].x) / 3, cz = (T[0].z + T[1].z + T[2].z) / 3, big = adv(P) === 'grandarray';
-      const r = (Math.max(...T.map(p => Math.hypot(p.x - cx, p.z - cz))) + 1.5) * (big ? 1.3 : 1);
-      T.forEach((p, i) => { const q = T[(i + 1) % 3]; R.fx && R.fx('aim', p.x, 0.3, p.z, { a: Math.atan2(q.x - p.x, q.z - p.z), len: Math.hypot(q.x - p.x, q.z - p.z), t: 0.6 }); });
-      R.fx && R.fx('ring', cx, 0.1, cz, { r, color: '#7AC8E8' }); R.fx && R.fx('pillar', cx, 0, cz, { color: '#BFE8FF' }); R.shake && R.shake(0.3);
-      (W().enemies || []).forEach(e => { if (!e.dead && Math.hypot(e.x - cx, e.z - cz) < r) e.st.root = Math.max(e.st.root || 0, 2); });
-      R.coreAoe(cx, cz, r, pw(P) * 3.5 * (big ? 1.3 : 1), {});
-      if (adv(P) === 'warder') { P.shield = Math.max(P.shield || 0, P.hpMax * 0.15); P.buff.shieldT = Math.max(P.buff.shieldT || 0, 6); }
-      R.num && R.num(cx, 2.6, cz, '閉環', 'crit');
-      if ((R.legOf ? R.legOf(P) : null) === 'lg_chaindisc') setTimeout(() => { P._pts = (P._pts || []).concat([{ x: cx, z: cz, t: CT() }]); }, 0);   // 連鎖陣盤：中心留一個點
-    },
-    aimPt(P, range) { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA) * 6, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA) * 6, d = Math.hypot(ax - P.x, az - P.z), k = d > range ? range / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; },
-    onCast(P, i, id) { const L = R.SKILL_LIB && R.SKILL_LIB[id]; if (!(L && ['at', 'zone', 'storm', 'mark'].includes(L.type)) && i !== 0) return; const [x, z] = this.aimPt(P, (L && L.p && L.p.range) || 10); this.point(P, x, z); },
-    act(P) { if ((P._eyeCd || 0) > CT()) return; P._eyeCd = CT() + 3; const [x, z] = this.aimPt(P, 12); this.point(P, x, z); say(P, '陣眼', 'heal'); },
-    gauge(P) { const L = (P._pts || []).filter(p => CT() - p.t < ptLife(P)), cd = Math.max(0, (P._eyeCd || 0) - CT()); return { name: '閉環 ' + L.length + '／3', v: L.length, max: 3, text: L.length ? '最早的還剩 ' + Math.max(0, ptLife(P) - (CT() - L[0].t)).toFixed(1) + ' 秒' : '放法陣或陣眼', x: cd > 0 ? '冷卻 ' + cd.toFixed(1) : '陣眼' }; }
-  };
+  // ======================= 術陣師 =======================
+  // 2026-10-14 作者：刪掉原本的「閉環」（法陣留點、三點連成三角形重創定身、X 放陣眼）。術陣師的職業特效改由 runedraw.js 的陣紋負責。
+  CORE.arraymage = { name: '陣紋', col: '#7AC8E8', help: () => '', act() { }, gauge() { return { name: '陣紋', v: 0, max: 1, text: '', x: '陣紋' }; } };
 
   // ======================= 附魔師：刻印切換 =======================
   const RUNE = { flame: ['焰', '#FF7A3A'], frost: ['霜', '#9AD8FF'], storm: ['雷', '#FFE070'], wind: ['風', '#BFF0D0'], metal: ['金', '#D8D8E0'] }, RU = ['flame', 'frost', 'storm', 'wind', 'metal'];   // 2026-10-08 作者：多風、金

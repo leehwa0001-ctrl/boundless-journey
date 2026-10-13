@@ -2,7 +2,7 @@
 // 一、陣紋（X 職業鍵打開繪製畫面）：正六邊形，六個頂點＋正中央共 7 個節點。
 //   D 傷害（頂端，紅）、A 範圍（右上，紫）、S 速度（右下，黃）、B 格擋（底端，藍）、H 治療（左下，綠）、C 冷卻（左上，白）、M 魔力（中央，黑）。
 //   點一下節點＝核心 Core（普攻加成）；按住左鍵拖過不同節點＝線段 Line（技能加成，效果看起點）；
-//   拖回起點＝閉環 Loop（以自己為中心的光環，效果看起點；起點兩邊夾角要 ≥ 60°）。每個節點只能屬於一個圖形。右鍵刪掉圖形。
+//   拖回起點＝Loop（以自己為中心的光環，效果看起點；起點兩邊夾角要 ≥ 60°）。每個節點只能屬於一個圖形。右鍵刪掉圖形。
 //   能用的節點：2 個，每 5 級 +1（最多 7）。存在 R.S.runeDraw。主畫面左邊顯示目前的陣紋與加成。
 //   數值照作者的草案（PC＝圖形裡的節點數）。隊友效果只作用在身邊的 NPC 隊友（連線玩家另外的機制不動）。
 // 二、施法：按技能 → 預覽範圍（50% 透明）→ 左鍵確認（再按同一個技能鍵取消）→ 1 秒蓄力（法陣越來越亮）→ 放出。
@@ -27,29 +27,65 @@
   const used = L => L.reduce((t, x) => t + x.n.length, 0);
   // ---------- 加成 ----------
   const pct = v => Math.round(v * 1000) / 10 + '%';
+  // 2026-10-14 作者：術陣師的被動（passives.js 的 ry1～ry10）在這裡生效
+  const pv = id => { const P = W() && W().P; return !!(P && P.cls === 'arraymage' && R.passivesOf && R.passivesOf('arraymage').includes(id)); };
+  R.ryPv = pv;
   const eff = () => {
     const P = W() && W().P, L = shapes(), E = { naDmg: 0, skDmg: 0, loopDmg: 0, naArea: 0, skArea: 0, loopArea: 0, atkSpd: 0, naWind: 0, skWind: 0, skDur: 0, loopWind: 0,
       coreShield: 0, lineShield: 0, loopShield: 0, naHeal: 0, skHeal: 0, loopHeal: 0, coreCd: 0, lineHaste: 0, loopHaste: 0, naMp: 0, nCore: 0, skMp: 0, loopMp: 0, auras: [], lines: [] };
     let budget = cap(P);
+    const coreM = pv('ry7') ? 2 : 1, lineM = pv('ry8') ? 1.5 : 1, loopM = pv('ry9') ? 1.3 : 1;
+    const r1 = v => Math.round(v * 100) / 100;
+    // 一個節點 k 在圖形 t 裡發揮效果；m＝倍率（被動、連接節點 30%）
+    const one = (k, t, pc, m, add) => {
+      if (t === 'core') {
+        if (k === 'D') { E.naDmg += 0.25 * m; add('普攻傷害 +' + pct(0.25 * m)); }
+        if (k === 'A') { E.naArea += 0.4 * m; add('普攻範圍 +' + pct(0.4 * m)); }
+        if (k === 'S') { E.atkSpd += 0.2 * m; E.naWind += 0.5 * m; add('攻速 +' + pct(0.2 * m) + '、普攻前搖 −' + pct(Math.min(0.9, 0.5 * m))); }
+        if (k === 'B') { E.coreShield += 0.01 * m; add('普攻護盾 ' + pct(0.01 * m) + ' 魔上限（5 層）'); }
+        if (k === 'H') { E.naHeal += 0.01 * m; add('每 2 下普攻回復 ' + pct(0.01 * m) + ' 魔上限'); }
+        if (k === 'C') { E.coreCd += m; add('普攻減技能冷卻' + (m > 1 ? '（×' + m + '）' : '')); }
+        if (k === 'M') { E.naMp += 0.75 * m; add('普攻耗魔 −' + pct(Math.min(1, 0.75 * m))); }
+      } else if (t === 'line') {
+        if (k === 'D') { E.skDmg += pc * 0.1 * m; add('技能傷害 +' + pct(pc * 0.1 * m)); }
+        if (k === 'A') { E.skArea += pc * 0.1 * m; add('技能範圍 +' + pct(pc * 0.1 * m)); }
+        if (k === 'S') { E.skWind += pc * 0.1 * m; E.skDur += pc * 0.05 * m; add('技能前搖 −' + pct(pc * 0.1 * m) + '、持續 +' + pct(pc * 0.05 * m)); }
+        if (k === 'B') { E.lineShield += pc * 0.03 * m; add('技能護盾 ' + pct(pc * 0.03 * m) + ' 魔上限（2 層）'); }
+        if (k === 'H') { E.skHeal += pc * 0.1 * m; add('技能治療 +' + pct(pc * 0.1 * m)); }
+        if (k === 'C') { E.lineHaste += (10 + pc * 10) * m; add('技能急速 +' + r1((10 + pc * 10) * m)); }
+        if (k === 'M') { E.skMp += pc * 0.1 * m; add('技能耗魔 −' + pct(Math.min(0.9, pc * 0.1 * m))); }
+      } else {
+        if (k === 'D') { E.loopDmg += 0.15 * pc / 2 * m; add('傷害 +' + pct(0.15 * pc / 2 * m) + '（隊友減半）'); }
+        if (k === 'A') { E.loopArea += 0.2 * pc / 2 * m; add('攻擊範圍 +' + pct(0.2 * pc / 2 * m) + '（隊友減半）'); }
+        if (k === 'S') { E.atkSpd += 0.2 * pc / 2 * m; E.loopWind += pc * 0.1 * m; add('攻速 +' + pct(0.2 * pc / 2 * m) + '、所有前搖 −' + pct(pc * 0.1 * m)); }
+        if (k === 'B') { E.loopShield += (2 + pc) / 1000 * m; add('每秒護盾 ' + pct((2 + pc) / 1000 * m) + ' 魔上限（10 層）'); }
+        if (k === 'H') { E.loopHeal += pc * 0.01 * m; add('每 5 秒治療 ' + pct(pc * 0.01 * m) + ' 魔上限'); }
+        if (k === 'C') { E.loopHaste += 10 * pc * m; add('技能急速 +' + r1(10 * pc * m) + '（範圍內）'); }
+        if (k === 'M') { E.loopMp += (1 + pc / 2) * m; add('每秒回魔 +' + r1((1 + pc / 2) * m)); }
+        if (!E.auras.some(a => a.k === k)) E.auras.push({ k, pc }); else { const a = E.auras.find(a => a.k === k); a.pc = Math.max(a.pc, pc); }
+      }
+    };
     L.forEach(sh => {
       if ((budget -= sh.n.length) < 0) return;   // 等級不夠的部分不生效
       const k = NODES[sh.n[0]].k, pc = sh.n.length, t = sh.t;
       if (t === 'core') E.nCore++;
-      const add = s => E.lines.push([NODES[sh.n[0]].c, ({ core: '核心', line: '線段', loop: '閉環' })[t] + '・' + NODES[sh.n[0]].n + (t === 'core' ? '' : ' ' + pc), s]);
-      if (k === 'D') { if (t === 'core') { E.naDmg += 0.25; add('普攻傷害 +25%'); } else if (t === 'line') { E.skDmg += pc * 0.1; add('技能傷害 +' + pc * 10 + '%'); } else { E.loopDmg += 0.15 * pc / 2; add('傷害 +' + pct(0.15 * pc / 2) + '（隊友減半）'); } }
-      if (k === 'A') { if (t === 'core') { E.naArea += 0.4; add('普攻範圍 +40%'); } else if (t === 'line') { E.skArea += pc * 0.1; add('技能範圍 +' + pc * 10 + '%'); } else { E.loopArea += 0.2 * pc / 2; add('攻擊範圍 +' + pct(0.2 * pc / 2) + '（隊友減半）'); } }
-      if (k === 'S') { if (t === 'core') { E.atkSpd += 0.2; E.naWind += 0.5; add('攻速 +20%、普攻前搖 −50%'); } else if (t === 'line') { E.skWind += pc * 0.1; E.skDur += pc * 0.05; add('技能前搖 −' + pc * 10 + '%、持續 +' + pc * 5 + '%'); } else { E.atkSpd += 0.2 * pc / 2; E.loopWind += pc * 0.1; add('攻速 +' + pct(0.2 * pc / 2) + '、所有前搖 −' + pc * 10 + '%'); } }
-      if (k === 'B') { if (t === 'core') { E.coreShield = 0.01; add('普攻護盾 1% 魔上限（5 層）'); } else if (t === 'line') { E.lineShield = pc * 0.03; add('技能護盾 ' + pc * 3 + '% 魔上限（2 層）'); } else { E.loopShield = (2 + pc) / 1000; add('每秒護盾 ' + pct((2 + pc) / 1000) + ' 魔上限（10 層）'); } }
-      if (k === 'H') { if (t === 'core') { E.naHeal = 0.01; add('每 2 下普攻回復 1% 魔上限'); } else if (t === 'line') { E.skHeal += pc * 0.1; add('技能治療 +' + pc * 10 + '%'); } else { E.loopHeal = pc * 0.01; add('每 5 秒治療 ' + pc + '% 魔上限'); } }
-      if (k === 'C') { if (t === 'core') { E.coreCd = 1; add('普攻減技能冷卻'); } else if (t === 'line') { E.lineHaste += 10 + pc * 10; add('技能急速 +' + (10 + pc * 10)); } else { E.loopHaste += 10 * pc; add('技能急速 +' + 10 * pc + '（範圍內）'); } }
-      if (k === 'M') { if (t === 'core') { E.naMp = 0.75; add('普攻耗魔 −75%'); } else if (t === 'line') { E.skMp = Math.min(0.9, pc * 0.1); add('技能耗魔 −' + pc * 10 + '%'); } else { E.loopMp = 1 + pc / 2; add('每秒回魔 +' + (1 + pc / 2)); } }
-      if (t === 'loop') E.auras.push({ k, pc });
+      const lab = ({ core: '核心', line: '線段', loop: 'Loop' })[t] + '・' + NODES[sh.n[0]].n + (t === 'core' ? '' : ' ' + pc);
+      const m = t === 'core' ? coreM : t === 'line' ? lineM : loopM;
+      one(k, t, pc, m, s => E.lines.push([NODES[sh.n[0]].c, lab, s]));
+      // 複合結構／永續陣：起點以外的節點也發揮自己的效果（30%）
+      if ((t === 'line' && pv('ry8')) || (t === 'loop' && pv('ry9'))) sh.n.slice(1).forEach(i => one(NODES[i].k, t, pc, m * 0.3, s => E.lines.push([NODES[i].c, lab + '→' + NODES[i].n + '（30%）', s])));
     });
+    E.naWind = Math.min(0.9, E.naWind); E.naMp = Math.min(1, E.naMp);
     const ar = 1 + E.skArea + E.loopArea; E.auras.forEach(a => { a.r = a.pc * ar; });
-    // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋閉環的攻擊範圍）
+    // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋Loop 的攻擊範圍）
     E.rangeUp = Math.max(0, ((P && P.rangeMult) || 1) - 1 + E.loopArea); E.windMul = 1 + 0.5 * E.rangeUp;
-    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul;
+    E.pvArea = pv('ry2') ? 0.3 : 0;   // 抑制圈：技能範圍 +30%（另外乘）
+    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul * (pv('ry1') ? 0.75 : 1) * (pv('ry3') ? 2 : 1);
     E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind))) * E.windMul;
+    E.reach = pv('ry4') ? 1.5 : 1;   // 定點
+    E.multi = pv('ry3');   // 閉環（被動）
+    E.slowIn = pv('ry6');   // 陣地
+    E.echo = pv('ry10');   // 艾達諾拉
     return E;
   };
   let EC = null, ecT = -1; const E = () => { const t = R.coreTime(); if (!EC || t !== ecT) { EC = eff(); ecT = t; } return EC; };
@@ -80,8 +116,8 @@
   const libOf = id => R.SKILL_LIB && R.SKILL_LIB[id];
   const isSelf = L => { if (!L) return true; const p = L.p || {}; if (p.self) return true; if (SELF_T[L.type]) return true; if (L.type === 'combo') return !(p.parts || []).some(x => !SELF_T[x[0]] && !(x[1] && x[1].self)); return false; };
   const aimPt = (P, max) => { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA) * 6, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA) * 6, d = Math.hypot(ax - P.x, az - P.z), k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
-  const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea); };
-  const skRange = () => { const P = W() && W().P; return (P && P.ws && P.ws.range) || 12; };   // 所有技能：圓心在普攻射程內都能放
+  const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea) * (1 + E().pvArea); };
+  const skRange = () => { const P = W() && W().P; return ((P && P.ws && P.ws.range) || 12) * E().reach; };   // 所有技能：圓心在普攻射程內都能放
   const BODY_T = { guard: 1, parry: 1, orbit: 1, storm: 1 };   // 這幾型本來就是貼身的，只能在腳下
   const bodyOnly = L => { if (!L) return true; if (BODY_T[L.type]) return true; if (L.type === 'combo') return (L.p && L.p.parts || []).some(x => BODY_T[x[0]]); return false; };
   const rankOf = id => (R.skillRank ? R.skillRank(id) || 0 : 0);
@@ -91,11 +127,11 @@
   const setCd = (P, i, v) => { if (i === 0) P.skillCd = v; else { P.skCd = P.skCd || []; P.skCd[i] = v; } };
 
   // ---------- 施法流程 ----------
-  let pend = null, chg = null;   // pend：等左鍵確認；chg：蓄力中
+  let pend = null, chgs = [], live = [];   // live：還在蓄力的法陣（技能＋普攻），給陣地用   // pend：等左鍵確認；chg：蓄力中
   const us0 = R.useSkill, cs0 = R.castSlot;
   const idOf = (P, i) => (i === 0 ? P.skill : R.slotSkill ? R.slotSkill(P, i) : null);
   const clearPend = () => { if (pend) { pend.m.rm(); pend = null; } };
-  const release = (i, x, z, self, off) => {
+  const release = (i, x, z, self, off, echo) => {
     const P = W().P; if (!P) return;
     const ax = P.aimX, az = P.aimZ, aa = P.aimA;
     if (!self) { P.aimX = x; P.aimZ = z; P.aimA = Math.atan2(x - P.x, z - P.z); }
@@ -105,14 +141,21 @@
     if (remote) { P.x = x; P.z = z; }
     else if (!self && x != null && off && Math.hypot(x - P.x, z - P.z) > off.d + 0.05) { P.x = x - off.dx; P.z = z - off.dz; P.aimA = Math.atan2(off.dx, off.dz); }
     const c0 = cdOf(P, i), mp0 = P.mp, id = idOf(P, i);
+    if (echo) setCd(P, i, 0);
     try { inCast = true; if (i === 0) us0(); else cs0(i); } finally { inCast = false; if (remote) { P.x = px; P.z = pz; } if (!self) { P.aimX = ax; P.aimZ = az; P.aimA = aa; } }
+    if (echo) { setCd(P, i, c0); P.mp = mp0; return; }   // 艾達諾拉的再發動：不再耗魔、不動冷卻
     const c1 = cdOf(P, i);
     if (c1 > c0 + 0.01) {
       const e = E(), sk = R.SKILLS[id], h = Math.max(0, P.haste || 0), add = e.lineHaste + e.loopHaste;
       if (add > 0) setCd(P, i, c1 * (100 + h) / (100 + h + add));
       if (e.skMp > 0 && sk && P.mp < mp0) P.mp = Math.min(P.mpMax, P.mp + (mp0 - P.mp) * e.skMp);
       if (e.lineShield > 0) shieldAdd(P, P.mpMax * e.lineShield, P.mpMax * e.lineShield * 2);
+      if (e.echo) {   // 艾達諾拉：耗魔 +80%，0.1 秒後再發動一次
+        if (P.mp < mp0) P.mp = Math.max(0, P.mp - (mp0 - P.mp) * 0.8);
+      }
+      return true;
     }
+    return false;
   };
   let inCast = false;
   const startCharge = (i, id, x, z, self) => {
@@ -122,16 +165,18 @@
     const r = skR(L), m = pend && pend.i === i ? pend.m : ground(x, z, r, col, 0.5, true);
     if (pend && pend.i === i) m.move(x, z);
     pend = null;
-    const dur = E().charge; let t = 0;
-    chg = { i, m };
+    const dur = E().charge; let t = 0, fired = 0;
+    const me = { i, m, x, z, r }; chgs.push(me); live.push(me);
+    const done = () => { chgs = chgs.filter(c => c !== me); live = live.filter(c => c !== me); };
     R.num && R.num(P.x, 2.6, P.z, '蓄陣…', 'heal');
     tick(dt => {
-      if (dt < 0) { m.rm(); chg = null; return false; }
+      if (dt < 0) { if (!fired) m.rm(); done(); return false; }
       if (W().paused) return true;
-      const P2 = W().P; if (!P2 || P2.dead) { m.rm(); chg = null; return false; }
+      const P2 = W().P; if (!P2 || P2.dead) { if (!fired) m.rm(); done(); return false; }
       t += dt; const k = Math.min(1, t / dur);
       m.set(0.5, 0);   // 預備中：原本技能特效的 50% 透明
-      if (t >= dur) { m.rm(); chg = null; release(i, x, z, self, off); return false; }
+      if (fired) { if (t >= dur + 0.1) { release(i, x, z, self, off, true); return false; } return true; }   // 艾達諾拉：0.1 秒後再發動
+      if (t >= dur) { m.rm(); done(); fired = 1; return !!(release(i, x, z, self, off) && E().echo); }
       return true;
     });
   };
@@ -139,7 +184,7 @@
     const sk = R.SKILLS[id]; if (!sk) return false;
     if (cdOf(P, i) > 0) return false;
     if (P.dead || P.knockT > 0 || P.jump || P.stance > 0) return false;
-    if (P.mp < sk.mp) { R.toast && R.toast('魔力不夠'); return false; }
+    if (P.mp < sk.mp * (E().echo ? 1.8 : 1)) { R.toast && R.toast('魔力不夠'); return false; }
     return true;
   };
   const press = i => {
@@ -147,7 +192,8 @@
     const id = idOf(P, i);
     if (!id) return i === 0 ? us0() : cs0(i);   // 沒裝技能：讓原本的提示出來
     if (!libOf(id)) return i === 0 ? us0() : cs0(i);   // 不是技能書的技能：照舊
-    if (chg) return;   // 蓄力中不能換
+    if (chgs.some(c => c.i === i)) return;   // 同一個技能蓄力中
+    if (chgs.length && !E().multi) return;   // 蓄力中不能放別的（被動「閉環」可以）
     if (pend && pend.i === i) { clearPend(); R.toast && R.toast('取消施法', '#C8C0B0'); return; }
     if (!ready(P, i, id)) return;
     clearPend();
@@ -191,7 +237,7 @@
   R.attack = (...a) => {
     const P = W() && W().P; if (!isRM(P) || !P.ws || P.ws.kind !== 'magic') return at0(...a);
     // 2026-10-13：普攻和技能可以同時放、同時蓄力（不再互相擋）。普攻耗魔＝1.5＋每個核心 0.25（魔力核心再 −75%）
-    const e0 = E(), cost = (1.5 + 0.25 * e0.nCore) * (1 - e0.naMp);
+    const e0 = E(), cost = (1.5 + 0.25 * e0.nCore) * (1 - e0.naMp) * (e0.echo ? 1.8 : 1);
     if ((P.atkCd || 0) <= 0 && P.mp < cost) { R.toast && R.toast('魔力不夠'); P.atkCd = 0.4; return; }
     const cd0 = P.atkCd || 0, mp0 = P.mp; naCap = { dmg: 0, n: 0 };
     let cap0; try { at0(...a); } finally { cap0 = naCap; naCap = null; }
@@ -200,25 +246,30 @@
     if ((P.atkCd || 0) > cd0 + 0.001 && e.atkSpd > 0) P.atkCd /= 1 + e.atkSpd;
     if (P.mp < mp0) P.mp = Math.max(0, mp0 - cost);
     const nth = (naN = (naN + 1) % 2) === 0;   // 第 2、4、6…下
-    const [x, z] = aimPt(P, (P.ws.range || 12)), r = 2 * (1 + e.naArea + e.loopArea), dmg = cap0.dmg * (1 + e.naDmg), dl = e.naDelay;
-    const m = naRune(x, z, r); let t = 0;
-    tick(dt => {
-      if (dt < 0) { m.rm(); return false; }
-      if (W().paused) return true;
-      t += dt; m.set(0.45 + 0.55 * Math.min(1, t / dl), Math.min(1, t / dl));
-      if (t < dl) return true;
-      m.rm(); R.fx && R.fx('ring', x, 0.1, z, { r, color: '#9AE8FF' });
+    const [x, z] = aimPt(P, (P.ws.range || 12) * e.reach), r = 2 * (1 + e.naArea + e.loopArea), dmg = cap0.dmg * (1 + e.naDmg), dl = e.naDelay;
+    const m = naRune(x, z, r); let t = 0, fired = 0;
+    const me = { x, z, r }; live.push(me);
+    const boom = () => {
+      R.fx && R.fx('ring', x, 0.1, z, { r, color: '#9AE8FF' });
       const n = R.aoe(x, z, r, dmg, { primary: true });
-      const P2 = W().P; if (!P2) return false; const e2 = E();
+      const P2 = W().P; if (!P2) return; const e2 = E();
       // 癒／防核心：打中遺跡生物，或自己站在這次普攻的法陣範圍內，才有效
       const okHit = n > 0 || Math.hypot(P2.x - x, P2.z - z) <= r;
       if (e2.coreShield && okHit) shieldAdd(P2, P2.mpMax * e2.coreShield, P2.mpMax * e2.coreShield * 5);
       if (e2.naHeal && nth && okHit && R.healP) R.healP(P2.mpMax * e2.naHeal * (R.runeInCombat() ? 1 : 0.5), true);   // 非戰鬥減半
-      if (e2.coreCd) { const v = 1 / (2 + e2.atkSpd); P2.skillCd = Math.max(0, (P2.skillCd || 0) - v); if (P2.skCd) P2.skCd = P2.skCd.map(c => Math.max(0, (c || 0) - v)); }
-      return false;
+      if (e2.coreCd) { const v = e2.coreCd / (2 + e2.atkSpd); P2.skillCd = Math.max(0, (P2.skillCd || 0) - v); if (P2.skCd) P2.skCd = P2.skCd.map(c => Math.max(0, (c || 0) - v)); }
+    };
+    tick(dt => {
+      if (dt < 0) { if (!fired) m.rm(); live = live.filter(c => c !== me); return false; }
+      if (W().paused) return true;
+      t += dt; m.set(0.45 + 0.55 * Math.min(1, t / dl), Math.min(1, t / dl));
+      if (t < dl) return true;
+      if (fired) { if (t >= dl + 0.1) { boom(); return false; } return true; }   // 艾達諾拉：0.1 秒後再發動
+      m.rm(); live = live.filter(c => c !== me); boom(); fired = 1;
+      return !!E().echo;
     });
   };
-  // 普攻的地面法陣：畫目前的陣紋（跟閉環腳下的一樣）
+  // 普攻的地面法陣：畫目前的陣紋（跟 Loop 腳下的一樣）
   const naRune = (x, z, r) => {
     const rm = runeMesh(r); if (!rm) return { set() { }, rm() { } };
     rm.g.position.set(x, 0.07, z);
@@ -235,14 +286,14 @@
       const e = E(); s = Object.assign({}, s, { _rm: 1 });
       // 2026-10-13：所有傷害型技能範圍半徑 ×1.5；法陣・爆蓄力完立刻爆（不再多等 0.6 秒）
       const dmgSk = (s.k || 0) > 0 && s.zone !== 'sanct' && s.type !== 'buff';
-      const ar = (1 + e.skArea + e.loopArea) * (dmgSk ? 1.5 : 1); if (ar !== 1) { if (s.r) s.r *= ar; if (s.hitR) s.hitR *= ar; }
+      const ar = (1 + e.skArea + e.loopArea) * (1 + e.pvArea) * (dmgSk ? 1.5 : 1); if (ar !== 1) { if (s.r) s.r *= ar; if (s.hitR) s.hitR *= ar; }
       if (s._id === 'ry_burst') s.delay = 1;
       if (e.skDur) { if (s.t) s.t *= 1 + e.skDur; if (s.life) s.life *= 1 + e.skDur; }
       if (e.skHeal) { if (s.pct) s.pct *= 1 + e.skHeal; if (s.allies) s.allies *= 1 + e.skHeal; if (s.zone === 'sanct') s.healK = (s.healK || 1) * (1 + e.skHeal); }
       return f(s, P, w, (pw || 0) * (1 + e.skDmg));
     };
   });
-  // 閉環的傷害光環：你打的全部傷害（反傷除外）
+  // Loop 的傷害光環：你打的全部傷害（反傷除外）
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (en, raw, o) => { const P = W() && W().P; if (isRM(P) && !(o && (o.reflect || o.thorns))) { const l = E().loopDmg; if (l) raw *= 1 + l; } return he0(en, raw, o); };
   const ah0 = R.allyHit;
@@ -264,7 +315,7 @@
   let healCast = false;
   const hT = T && T.zone; if (hT) T.zone = (s, ...a) => { const f = s && s._id === 'ry_heal'; healCast = healCast || f; try { return hT(s, ...a); } finally { if (f) healCast = false; } };
 
-  // ---------- 閉環的光環（每幀） ----------
+  // ---------- Loop 的光環（每幀） ----------
   let auraT = { B: 0, H: 0 }, auraMesh = null, auraSig = '';
   const allies = P => (W().allies || []).filter(a => !a.downed && !a.rival);
   const st0 = R.step;
@@ -351,10 +402,10 @@
     if (!ov) return; const P = W().P, e = eff(), L = shapes();
     const q = (R.loadoutOf ? R.loadoutOf('arraymage') : []).filter(id => id && libOf(id));
     const s = S(); s.rmQuick = s.rmQuick || {};
-    ov.querySelector('#rd-side').innerHTML = '<h3>陣紋</h3><div class="sm">節點 ' + used(L) + '／' + cap(P) + '（每 5 級 +1，最多 7）。點節點＝核心（普攻）；按住左鍵拖過節點＝線段（技能）；拖回起點＝閉環（光環，起點夾角 ≥ 60°）。右鍵刪掉圖形。效果看起點的顏色。</div>'
+    ov.querySelector('#rd-side').innerHTML = '<h3>陣紋</h3><div class="sm">節點 ' + used(L) + '／' + cap(P) + '（每 5 級 +1，最多 7）。點節點＝核心（普攻）；按住左鍵拖過節點＝線段（技能）；拖回起點＝Loop（光環，起點夾角 ≥ 60°）。右鍵刪掉圖形。效果看起點的顏色。</div>'
       + (e.lines.length ? e.lines.map(l => '<div class="l"><i style="background:' + l[0] + '"></i><span><b>' + l[1] + '</b>：' + l[2] + '</span></div>').join('') : '<div class="sm">還沒畫任何陣紋。</div>')
       + (e.auras.length ? '<div class="sm">光環半徑：' + e.auras.map(a => a.k + ' ' + (Math.round(a.r * 10) / 10) + 'm').join('、') + '</div>' : '')
-      + '<h3 style="margin-top:6px">施法方式</h3><div class="sm">技能熟練度 ★1 起可選。快速施法：按下就蓄力（攻擊在滑鼠處、增益在腳下）；手動：先預覽（技能原本範圍的 50% 透明）、左鍵確認。所有技能（攻擊、增益、回復）的中心都能放在普攻射程內，放下就定住；蓄力時也能普攻。普攻耗魔 1.5＋每個核心 0.25。蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒' + (e.rangeUp > 0 ? '（攻擊範圍 +' + Math.round(e.rangeUp * 100) + '%，前搖 +' + Math.round(e.rangeUp * 50) + '%）' : '') + '。</div><div class="sm">陣紋只會畫在普攻法陣和閉環腳下的光環上：核心是小空心圈，線段和閉環畫成線。每 +1% 攻擊範圍，普攻和技能的蓄陣前搖 +0.5%。</div>'
+      + '<h3 style="margin-top:6px">施法方式</h3><div class="sm">技能熟練度 ★1 起可選。快速施法：按下就蓄力（攻擊在滑鼠處、增益在腳下）；手動：先預覽（技能原本範圍的 50% 透明）、左鍵確認。所有技能（攻擊、增益、回復）的中心都能放在普攻射程內，放下就定住；蓄力時也能普攻。普攻耗魔 1.5＋每個核心 0.25。蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒' + (e.rangeUp > 0 ? '（攻擊範圍 +' + Math.round(e.rangeUp * 100) + '%，前搖 +' + Math.round(e.rangeUp * 50) + '%）' : '') + '。</div><div class="sm">陣紋只會畫在普攻法陣和 Loop 腳下的光環上：核心是小空心圈，線段和 Loop 畫成線。每 +1% 攻擊範圍，普攻和技能的蓄陣前搖 +0.5%。</div>'
       + q.map(id => { const ok = rankOf(id) >= 1, on = ok && s.rmQuick[id]; return '<div class="q"><span>' + R.esc((R.SKILLS[id] || {}).name || id) + '</span><span><button data-q="' + id + '" data-v="0" class="' + (on ? '' : 'on') + '"' + (ok ? '' : ' disabled') + '>手動施法</button> <button data-q="' + id + '" data-v="1" class="' + (on ? 'on' : '') + '"' + (ok ? '' : ' disabled title="熟練度 ★1 才能選"') + '>快速施法</button></span></div>'; }).join('')
       + '<div id="rd-btn"><button data-a="clear">全部清掉</button><button data-a="close">完成（X）</button></div>';
   };
@@ -396,15 +447,18 @@
     refresh();
   };
   window.addEventListener('keydown', e => { if (!ov) return; const k = e.key.toLowerCase(); e.stopPropagation(); if (k === 'escape' || k === 'x') { e.preventDefault(); close(); } }, true);
-  R.runeDrawOpen = () => !!ov; R.runeDraw = { open, close, eff, angOK, cap };
+  R.runeDrawOpen = () => !!ov; R.runeDraw = { open, close, eff, angOK, cap, dbg: () => ({ chgs: chgs.map(c => ({ i: c.i, x: c.x, z: c.z, r: c.r })), live: live.length, pend: pend && { i: pend.i } }) };
 
   // ---------- 職業鍵、量表 ----------
   const C = R.CORE.arraymage;
   if (C) {
-    C.act = P => { if (chg) return; open(); };
-    const help0 = C.help;
-    C.help = P => '陣紋：X 打開繪製畫面，在六邊形上畫核心（普攻）、線段（技能）、閉環（光環）。施法：按技能先預覽（原本技能範圍、半透明）、左鍵確認、蓄力 1 秒放出（★1 起可改快速施法）；所有技能的中心都能放在普攻射程內，放下就定住（走開也不會跟著跑），增益和回復放在哪裡就作用在那個圈裡的隊友；蓄力時也能普攻。普攻是畫著你陣紋的地面法陣，0.5 秒後爆開，耗魔 1.5＋每個核心 0.25。治療核心每 2 下普攻回 1% 魔上限；治療、格擋核心要打中敵人或自己在普攻法陣裡才有效。每 +1% 攻擊範圍，普攻和技能前搖 +0.5%。法陣類技能仍會留下閉環的點。' + (help0 ? '｜' + help0(P).replace(/X 陣眼：[^。]*。/, '') : '');
-    C.gauge = P => { const e = E(), L = shapes(), sk = pend ? (R.SKILLS[pend.id] || {}).name : null; return { name: '陣紋 ' + used(L) + '／' + cap(P), v: used(L), max: cap(P), text: chg ? '蓄陣中…' : sk ? sk + '：左鍵施放、再按一次取消' : (e.lines.length ? e.lines.length + ' 個圖形生效' : '還沒畫陣紋'), x: '陣紋' }; };
+    C.act = P => { if (chgs.length) return; open(); };
+    // 2026-10-14 作者：拿掉原本的「閉環」三角形機制（法陣留點、三點連成三角形重創定身、X 放陣眼）與它的說明
+    delete C.onCast; delete C.point; delete C.close; delete C.aimPt; C.name = '陣紋';
+    C.help = P => { const e = E(); return '陣紋：按 X 打開繪製畫面，在六邊形的 7 個節點上畫圖形，效果看起點節點的顏色。點一下節點＝核心 Core（加強普攻）；按住拖過幾個節點＝線段 Line（加強技能，經過的節點越多越強）；拖回起點＝Loop（腳下的光環，起點兩邊的夾角要 ≥ 60°）。能用的節點一開始 2 個，每 5 級多 1 個（最多 7 個），右鍵刪掉圖形。'
+      + '普攻：在滑鼠處放一個畫著你陣紋的法陣，' + (Math.round(e.naDelay * 100) / 100) + ' 秒後爆開，耗魔 1.5＋每個核心 0.25。'
+      + '技能：按技能鍵先看範圍、左鍵確認（再按一次取消；熟練度 ★1 起可以改成按下就放的快速施法），蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒後放出。法陣的中心能放在普攻射程內，放下就不會跟著你移動；增益和回復會作用在那個圈裡的隊友。蓄力時也能普攻。攻擊範圍每 +1%，普攻和技能的蓄力 +0.5%。'; };
+    C.gauge = P => { const e = E(), L = shapes(), sk = pend ? (R.SKILLS[pend.id] || {}).name : null; return { name: '陣紋 ' + used(L) + '／' + cap(P), v: used(L), max: cap(P), text: chgs.length ? '蓄陣中…' + (chgs.length > 1 ? '×' + chgs.length : '') : sk ? sk + '：左鍵施放、再按一次取消' : (e.lines.length ? e.lines.length + ' 個圖形生效' : '還沒畫陣紋'), x: '陣紋' }; };
   }
   // ---------- 主畫面左邊：陣紋與加成 ----------
   let hud = null, hudSig = '', hudT = 0;
@@ -423,8 +477,16 @@
     } catch (err) { console.warn('[runedraw hud]', err); }
     return r;
   };
+  // ---------- 被動「陣地」：還在蓄力的法陣裡，敵人移動 −40% ----------
+  const st2 = R.step;
+  R.step = dt => {
+    const w = W(), P = w && w.P;
+    if (!isRM(P) || !live.length || !E().slowIn) return st2(dt);
+    const L = (w.enemies || []).filter(en => !en.dead && en.speed > 0 && live.some(c => Math.hypot(en.x - c.x, en.z - c.z) <= c.r)), sv = L.map(en => { const s0 = en.speed; en.speed = s0 * 0.6; en._ryJd = 1; return s0; });
+    try { return st2(dt); } finally { L.forEach((en, i) => { if (Math.abs(en.speed - sv[i] * 0.6) < 1e-9) en.speed = sv[i]; }); }
+  };
   const lf0 = R.loadFloor;
-  if (lf0) R.loadFloor = (...a) => { pend = null; chg = null; if (auraMesh) { auraMesh.rm(); auraMesh = null; auraSig = ''; } return lf0(...a); };
+  if (lf0) R.loadFloor = (...a) => { pend = null; chgs = []; live = []; if (auraMesh) { auraMesh.rm(); auraMesh = null; auraSig = ''; } return lf0(...a); };
 
   // ---------- 法陣・癒 ----------
   const hl = R.SKILL_LIB && R.SKILL_LIB.ry_heal;
