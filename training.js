@@ -154,13 +154,12 @@
     (F.chests || []).forEach(c => { if (c.mesh && c.mesh.parent) c.mesh.parent.remove(c.mesh); if (c.col) c.col.on = false; }); F.chests = [];
     (F.props || []).forEach(p => { p.alive = false; if (p.col) p.col.on = false; if (p.mesh && p.mesh.parent) p.mesh.parent.remove(p.mesh); }); F.props = [];
     w.enemies.forEach(e => { e.dead = true; if (e.m && e.m.g && e.m.g.parent) e.m.g.parent.remove(e.m.g); }); w.enemies = [];
-    // 2026-10-13 作者：訓練場太亮、技能看不清楚 → 改成傍晚的暗色場地（地板、牆壓暗一點，特效才跳得出來）
-    const sc = w.scene; if (sc) { sc.children.forEach(c => { if (c.isHemisphereLight) c.intensity = 0.32; if (c.isAmbientLight) c.intensity *= 0.5; }); if (sc.fog) { sc.fog.color.set('#1C2026'); sc.fog.density = 0.012; } if (sc.background && sc.background.isColor) sc.background.set('#1C2026'); }
-    if (w.moon) w.moon.intensity = 0.4;
-    const dimL = () => { if (!isTrain(W().run) || !sc) return; sc.traverse(o => { if (o.isLight && !o.isHemisphereLight && o !== w.moon && !o.userData.trDim) { o.intensity *= 0.6; o.userData.trDim = 1; } }); };   // 其他燈（火把、晶石）也壓一點
-    // 地板、牆多半是不吃燈光的材質（MeshBasic）：只壓暗這層樓自己的模型（F.group），換成複製的材質，不動到共用的
-    const dimM = () => { const g = F.group; if (!isTrain(W().run) || !g || !g.traverse) return; const cl = new Map(), dm = m => { if (!m || !m.color || m.transparent || m.blending !== 1) return m; if (!cl.has(m)) { const c = m.clone(); c.color.multiplyScalar(0.34); cl.set(m, c); } return cl.get(m); }; g.traverse(o => { if (!o.isMesh || !o.material || o.userData.trDim) return; o.material = Array.isArray(o.material) ? o.material.map(dm) : dm(o.material); o.userData.trDim = 1; }); };
-    dimL(); dimM(); setTimeout(() => { dimL(); dimM(); }, 600);
+    // 2026-10-13 作者：訓練場燈光再調亮回來，地板改成深灰色（牆、物件照原色，特效靠深灰地板跳出來）
+    const sc = w.scene; if (sc) { sc.children.forEach(c => { if (c.isHemisphereLight) c.intensity = 0.8; }); if (sc.fog) { sc.fog.color.set('#2A2E34'); sc.fog.density = 0.008; } if (sc.background && sc.background.isColor) sc.background.set('#2A2E34'); }
+    if (w.moon) w.moon.intensity = 0.75;
+    // 地板：每個房間鋪一層深灰色的地面（顯示出來約 #3C3F45；渲染器輸出會把顏色提亮，所以填得比較深）（貼在原本地板磚上面，只加在這層樓自己的模型裡，換層就跟著清掉）
+    if (F.group && F.group.add && typeof THREE !== 'undefined') { const mat = new THREE.MeshBasicMaterial({ color: '#0D0E11', fog: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+      (F.rooms || []).forEach(r => { if (!(r.hx > 0 && r.hz > 0)) return; const m = new THREE.Mesh(new THREE.PlaneGeometry(r.hx * 2, r.hz * 2), mat); m.rotation.x = -Math.PI / 2; m.position.set(r.x, 0.21, r.z); m.renderOrder = -1; m.userData.trFloor = 1; F.group.add(m); }); }
     // 站到最大的那片空地
     const P = w.P, big = F.rooms.slice().sort((a, b) => (b.hx * b.hz || 0) - (a.hx * a.hz || 0))[0];
     if (P && big) { [P.x, P.z] = R.nearestFloor ? R.nearestFloor(big.x, big.z + 2.5) : [big.x, big.z + 2.5]; P.yaw = Math.PI; P.h.g.position.set(P.x, 0, P.z); R.placeCam && R.placeCam(null); }
