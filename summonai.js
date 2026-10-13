@@ -107,13 +107,13 @@
   const setSk = (id, o, desc) => { const l = LIB[id]; if (!l) return; Object.assign(l, o); if (SK[id]) { if (o.mp != null) SK[id].mp = o.mp; SK[id].desc = desc; } l.desc = desc; };
   const up = k => (R.summonUpkeep ? R.summonUpkeep(k, {}) : 0.6);
   if (LIB.sn_dog) setSk('sn_dog', { mp: LIB.sn_dog.mp * 2, p: Object.assign({}, LIB.sn_dog.p, { rate: 0.4 }) }, '用執念捏一隻土狗跟著你咬敵人（不限時間）：攻擊速度 2 倍（0.4 秒咬一口）、血量 2 倍；召喚魔力 ' + LIB.sn_dog.mp * 2 + '、在場時每秒吃 ' + Math.round(up(0.7) * 2 * 10) / 10 + ' 魔力（都是一般的 2 倍）。');
-  if (LIB.sn_crow) setSk('sn_crow', { mp: Math.round(LIB.sn_crow.mp / 2), type: 'pet', p: { beast: 'ashcrow', n: 4, k: 0.45, ghost: 1, rate: 0.9, reach: 8, speed: 8, scale: 0.7, color: '#6A5A8A' } }, '放出 4 隻魔力烏鴉留在場上，朝 8 公尺內的敵人吐出會穿透的魔力羽（每隻 0.9 秒一發，一路穿過去）。敵人打不到牠們（沒有血條）。召喚魔力 ' + Math.round(LIB.sn_crow.mp / 2) + '（減半），在場時每隻每秒吃 ' + up(0.45) + ' 魔力。');
-  if (LIB.sn_swarm) setSk('sn_swarm', { mp: Math.round(LIB.sn_swarm.mp / 2), type: 'pet', p: { beast: 'bellcricket', n: 5, k: 0.35, ghost: 1, rate: 0.7, reach: 6, speed: 7, scale: 0.6, color: '#8AC88A' } }, '捏出 5 隻小蟲留在場上，朝 6 公尺內的敵人噴出會穿透的蟲刺（每隻 0.7 秒一發，一路穿過去）。敵人打不到牠們（沒有血條）。召喚魔力 ' + Math.round(LIB.sn_swarm.mp / 2) + '（減半），在場時每隻每秒吃 ' + up(0.35) + ' 魔力。');
+  if (LIB.sn_crow) setSk('sn_crow', { mp: Math.round(LIB.sn_crow.mp / 2), type: 'pet', p: { beast: 'ashcrow', n: 4, k: 0.45, ghost: 1, rate: 0.9, reach: 8, speed: 8, scale: 0.7, color: '#6A5A8A' } }, '放出 4 隻魔力烏鴉留在場上，朝 8 公尺內的敵人吐出會穿透的魔力羽（每隻 0.9 秒一發，一路穿過去）。敵人打不到牠們（沒有血條）；死靈法師：鴉群打出去的傷害 10% 回成你的生命。召喚魔力 ' + Math.round(LIB.sn_crow.mp / 2) + '（減半），在場時每隻每秒吃 ' + up(0.45) + ' 魔力。');
+  if (LIB.sn_swarm) setSk('sn_swarm', { mp: Math.round(LIB.sn_swarm.mp / 2), type: 'pet', p: { beast: 'bellcricket', n: 5, k: 0.35, ghost: 1, rate: 0.7, reach: 6, speed: 7, scale: 0.6, color: '#8AC88A' } }, '捏出 5 隻小蟲留在場上，朝 6 公尺內的敵人噴出會穿透的蟲刺（每隻 0.7 秒一發，一路穿過去）。敵人打不到牠們（沒有血條）；死靈法師：蟲群打出去的傷害 10% 回成你的生命。召喚魔力 ' + Math.round(LIB.sn_swarm.mp / 2) + '（減半），在場時每隻每秒吃 ' + up(0.35) + ' 魔力。');
   // ---------- 大招：護盾＋召喚物強化（不再叫出新的召喚物） ----------
   const U = R.ULTS && R.ULTS.summoner;
   if (U) {
     const g0 = U.go;
-    U.name = '百鬼夜行'; U.sub = '召喚師的大招：獲得 40% 生命的護盾；' + ULT_T + ' 秒內所有召喚物傷害、移動速度、攻擊速度 ×2'; U.bonus = ''; U.dur = ULT_T;
+    U.name = '百鬼夜行'; U.sub = '召喚師的大招：獲得 40% 生命的護盾（沒有減傷）；' + ULT_T + ' 秒內所有召喚物傷害、移動速度、攻擊速度 ×2'; U.bonus = ''; U.dur = ULT_T;
     U.go = P => {
       const T = R.SKILL_TYPES || {}, p0 = T.pet, o0 = P.orbit, n0 = P.orbitN;
       T.pet = () => { };   // 原本的大招（含轉職路線）叫出新召喚物的部分全部拿掉；其他效果（死靈法師的怨靈纏身）照舊

@@ -32,7 +32,7 @@
     knight: ['每秒回 3% 生命，結束時多一層 40% 生命的護盾', P => { buff(P, 'knight', { t: 4, regen: 0.03, color: '#FFC85A' }); later(P => shield(P, 0.4, 8), 4000); }],
     monk: ['回 25% 生命；6 秒內受到的傷害 −30%、移動 +15%', P => { R.healP(P.hpMax * 0.25); buff(P, 'monk', { t: 6, def: 0.3, speed: 1.15, color: '#FFB45A' }); }],
     bard: ['16 秒內移動 +15%', P => { buff(P, 'bard', { t: 16, speed: 1.15, color: '#FFB8E0' }); }],   // 2026-10-11 作者：拿掉減傷；回魔力改由大招本身（最大魔力 50%）
-    summoner: ['多一層 30% 生命的護盾；8 秒內受到的傷害 −20%', P => { shield(P, 0.3, 8); buff(P, 'summoner', { t: 8, def: 0.2, color: '#A8C88A' }); }],
+    // 召喚師：2026-10-14 作者拿掉（大招本身就是 40% 護盾＋召喚物 ×2，見 summonai.js；不再有 −20% 減傷）
     arraymage: ['陣裡的敵人被定住 2.5 秒；獲得可吸收相當於最大生命 50% 傷害的護盾', P => { near(P.x, P.z, 7).forEach(e => { if (e.st) e.st.root = Math.max(e.st.root || 0, 2.5); }); later(P => shield(P, 0.5, 8), 50); }],
     enchanter: ['附魔持續時間延長 6 秒（共 18 秒）', P => { Object.keys(P.sb || {}).forEach(k => { if (/^ult:buff/.test(k) && P.sb[k].left > 0) P.sb[k].left += 6; }); }],
     scroll: ['魔力回滿、技能冷卻減半', P => { P.mp = P.mpMax; cds(P, 0.5); }]

@@ -1,6 +1,6 @@
 // 召喚師的身份（2026-10-13 作者：「身體脆弱、召喚物強大（轉職補強身體）。技能：每次進遺跡帶五隻召喚獸」）
 // - 召喚師本身：生命 ×0.75、防禦 ×0.6；召喚物：傷害 ×1.4、血量 ×1.3。
-// - 轉職補身體：萬獸師＝在場每隻召喚獸受到的傷害 −2%（最多 −20%）；死靈法師＝亡者打出去的傷害 10% 回成你的生命；式神使＝照舊 30% 由式神分擔。
+// - 轉職補身體：萬獸師＝在場每隻召喚獸受到的傷害 −2%（最多 −20%）；死靈法師＝亡者、鴉群、蟲群打出去的傷害 10% 回成你的生命；式神使＝照舊 30% 由式神分擔。
 // - 召喚獸攜帶：遺跡入口的休息區（第 0 層）會問你這一趟要帶哪幾招進去（最多五格，照等級開的格子數）；
 //   進了遺跡就鎖住（技能書本來就是遺跡裡不能換）。休息區左下角有「換攜帶的召喚獸」可以再改。
 // 放在 summonsub.js 後面。
@@ -23,7 +23,7 @@
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, raw, o) => {
     const pet = R.petHitter, h = e && e.hp, r = he0(e, raw, o);
-    try { const P = W().P; if (pet && pet.raised && isS(P) && adv(P) === 'medium' && e && R.healP) { const d = Math.max(0, (h || 0) - Math.max(0, e.hp || 0)); if (d > 0) R.healP(d * 0.1, true); } } catch (err) { }
+    try { const P = W().P; if (((pet && pet.raised) || (o && o.vSk === 'summon')) && isS(P) && adv(P) === 'medium' && e && R.healP)   /* 2026-10-14：鴉群、蟲群吐出的攻擊（vSk summon）也算 */ { const d = Math.max(0, (h || 0) - Math.max(0, e.hp || 0)); if (d > 0) R.healP(d * 0.1, true); } } catch (err) { }
     return r;
   };
   // ---------- 召喚獸攜帶 ----------
