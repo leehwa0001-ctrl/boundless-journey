@@ -123,11 +123,10 @@
     desk: { at: '登記處', line: '登記處的館員抬頭看了你一眼：「下一位。」', keep: ['勇者證', '同行的勇者', '武器登記'] },
     sell: { at: '收購窗口', line: '收購窗口的館員把秤擦乾淨：「今天收什麼？」', keep: ['撿到的勇者證', '素材收購', '手邊的素材'] }
   };
+  // 2026-10-14 作者：遺跡委託要常駐——不再只留走到的那一塊、也不用按「看公會的全部」；全部區塊都在，只是先打開走到的那個分頁（guildhall.js 照標題選分頁）
   const focusGuild = html => {
     const f = FOCUS[focus]; if (!f) return html;
-    const parts = html.replace(/<\/section>\s*$/, '').split('<h3>');
-    const body = parts.slice(1).filter(p => f.keep.some(k => p.startsWith(k + '</h3>'))).map(p => '<h3>' + p).join('');
-    return '<section class="panel-doc"><h2>公會東鶴分館・' + esc(f.at) + '</h2><p class="note">' + esc(f.line) + '</p>' + body + '<div class="row"><button type="button" class="btn" data-gall="1">看公會的全部</button></div></section>';
+    return html.replace(/<h2>公會東鶴分館<\/h2><p class="note">[^<]*<\/p>/, '<h2>公會東鶴分館・' + esc(f.at) + '</h2><p class="note">' + esc(f.line) + '</p>');
   };
   // 老岩的鐵匠鋪：鑑定、製作、強化、分解
   const smith = () => {
