@@ -308,7 +308,10 @@
     const k = pickK(P), b = book(), x = k >= 0 ? b.spells[k] : null, sp = x ? parse(x.code, x.n) : null, el = P._el || 'fire';
     return { name: '普攻元素：' + ELS[el].n, col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : (sp ? '技能：' + x.n + '・' : '') + '按住 X 看反應', x: '換成' + ELS[ELK.indexOf(el) < 0 ? 'fire' : ELK[(ELK.indexOf(el) + 1) % ELK.length]].n };
   };
-  if (R.ULTS && R.ULTS.mage) Object.assign(R.ULTS.mage, { name: '三重咒', sub: '術士的大招：下一句法術傷害 ×3、不耗魔力，技能冷卻全部歸零', go: P => { P._spUlt = true; [0, 1, 2, 3, 4].forEach(i => cdSet(P, i, 0)); say(P, '三重咒'); toast('下一句法術：傷害 ×3、不耗魔力！', '#FFE08A'); } });
+  // 2026-10-13 修正：原本這裡用 Object.assign 把術士大招整個換成「三重咒」，蓋掉了七曜隕星本體和轉職路線大招（元素隕星、咒星、氣罩流星）→ 隕星都不會落下。
+  //   改成包在外面：隕星照落（含路線效果），落完之外再給三重咒（下一句法術 ×3、不耗魔、技能冷卻歸零）
+  if (R.ULTS && R.ULTS.mage) { const U = R.ULTS.mage, g0 = U.go; U.name = '七曜隕星'; U.sub = '術士的大招：七顆隕星砸下來，接著下一句法術傷害 ×3、不耗魔力，技能冷卻全部歸零';
+    U.go = P => { try { if (g0) g0(P); } catch (e) { console.warn('[mage ult]', e); } P._spUlt = true; [0, 1, 2, 3, 4].forEach(i => cdSet(P, i, 0)); say(P, '三重咒'); toast('下一句法術：傷害 ×3、不耗魔力！', '#FFE08A'); }; }
   // ---------- 法術書 ----------
   const css = document.createElement('style');
   css.textContent = 'body:has(#sp-book:not([hidden])) #tu2-card,body:has(#sp-book:not([hidden])) #tu2-ring,body:has(#sp-book:not([hidden])) #tu2-arrow{display:none!important}'
