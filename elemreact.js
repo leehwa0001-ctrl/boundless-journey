@@ -15,19 +15,19 @@
   document.head.appendChild(css);
   const c = k => '<em style="color:' + EL[k][1] + '">' + EL[k][0] + '</em>';
   const R2 = (a, b, n, t) => '<div class="r"><b>' + c(a) + '＋' + c(b) + ' ' + n + '</b><span>' + t + '</span></div>';
-  const html = P => '<h4>元素反應</h4><div class="s">點一下選普攻的元素（放開 X 照樣保留；按住 X 不會換元素）：</div><div class="pk">'
+  const html = P => '<h4>元素反應</h4><div class="s">選普攻元素：</div><div class="pk">'
     + PICK.map(k => '<button type="button" data-el="' + k + '" style="--c:' + EL[k][1] + '" class="' + ((P._el || 'fire') === k ? 'on' : '') + '">' + EL[k][0] + '</button>').join('') + '</div>'
-    + '<div class="s">普攻、技能打中都會在敵人身上留下元素 5 秒；技能打到別種元素就引爆。</div>'
-    + R2('fire', 'frost', '蒸發', '這一隻多吃 160%')
-    + R2('frost', 'shock', '碎冰', '暈 1.5 秒，周圍 2.5 公尺 100%')
-    + R2('shock', 'fire', '過載', '周圍 3.5 公尺爆炸 180%，彈開')
-    + R2('shock', 'wood', '激化', '定住 1.2 秒，多吃 140%')
-    + R2('fire', 'wood', '燃燒', '燒 5 秒，共 180%')
-    + R2('frost', 'wood', '凍藤', '慢 60%（4 秒），多吃 100%')
-    + '<div class="s" style="margin:6px 0 2px">風、金不留印記，打到有元素的敵人就觸發（同一隻 1 秒一次）：</div>'
-    + '<div class="r"><b>' + c('wind') + ' 擴散</b><span>把牠身上的元素傳給 4 公尺內的敵人，多吃 60%</span></div>'
-    + '<div class="r"><b>' + c('metal') + ' 破甲</b><span>護甲 −30%（4 秒），多吃 60%</span></div>'
-    + '<div class="s" style="margin:6px 0 0">點一下 X：火→冰→雷→木→風→金。</div>';
+    + '<div class="s">技能打到別種元素就引爆：</div>'
+    + R2('fire', 'frost', '蒸發', '+160%')
+    + R2('frost', 'shock', '碎冰', '暈＋周圍傷害')
+    + R2('shock', 'fire', '過載', '爆炸彈開')
+    + R2('shock', 'wood', '激化', '定住＋140%')
+    + R2('fire', 'wood', '燃燒', '持續燃燒')
+    + R2('frost', 'wood', '凍藤', '減速＋100%')
+    + '<div class="s" style="margin:6px 0 2px">風、金打到有元素的敵人：</div>'
+    + '<div class="r"><b>' + c('wind') + ' 擴散</b><span>元素傳給附近敵人</span></div>'
+    + '<div class="r"><b>' + c('metal') + ' 破甲</b><span>護甲 −30%</span></div>'
+    ;
   const pick = k => { const P = W().P; if (!isM(P) || !EL[k]) return; P._el = k; prev = k; R.num && R.num(P.x, 2.8, P.z, '普攻：' + EL[k][0], 'heal'); const el = $('er-panel'); if (el && !el.hidden) el.innerHTML = html(P); };
   let holdT = null, prev = null, tapOn = false, sticky = false;
   const show = () => { const P = W().P; if (!isM(P)) return; if (P._xUpAt === (R._xUp || 0) && P._elBeforeX) P._el = P._elBeforeX; else if (prev && P._el !== prev) P._el = prev;   // 按住不算換元素（這一次按下去換掉的換回來）

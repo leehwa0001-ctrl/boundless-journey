@@ -457,7 +457,7 @@
     C.act = P => { if (chgs.length) return; open(); };
     // 2026-10-14 作者：拿掉原本的「閉環」三角形機制（法陣留點、三點連成三角形重創定身、X 放陣眼）與它的說明
     delete C.onCast; delete C.point; delete C.close; delete C.aimPt; C.name = '陣紋';
-    C.help = P => { const e = E(); return '陣紋：按 X 打開繪製畫面，在六邊形的 7 個節點上畫圖形，效果看起點節點的顏色。點一下節點＝核心 Core（加強普攻）；按住拖過幾個節點＝線段 Line（加強技能，經過的節點越多越強）；拖回起點＝Loop（腳下的光環，起點兩邊的夾角要 ≥ 60°）。能用的節點一開始 2 個，每 5 級多 1 個（最多 7 個），右鍵刪掉圖形。'
+    C.help = P => { const e = E(); return '陣紋：X 打開。點節點＝核心（普攻），拖線＝線段（技能），拖回起點＝Loop（光環）。'
       + '普攻：在滑鼠處放一個畫著你陣紋的法陣，' + (Math.round(e.naDelay * 100) / 100) + ' 秒後爆開，耗魔 1.5＋每個核心 0.25。'
       + '技能：按技能鍵先看範圍、左鍵確認（再按一次取消；熟練度 ★1 起可以改成按下就放的快速施法），蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒後放出。法陣的中心能放在普攻射程內，放下就不會跟著你移動；增益和回復會作用在那個圈裡的隊友。蓄力時也能普攻。攻擊範圍每 +1%，普攻和技能的蓄力 +0.5%。'; };
     C.gauge = P => { const e = E(), L = shapes(), sk = pend ? (R.SKILLS[pend.id] || {}).name : null; return { name: '陣紋 ' + used(L) + '／' + cap(P), v: used(L), max: cap(P), text: chgs.length ? '蓄陣中…' + (chgs.length > 1 ? '×' + chgs.length : '') : sk ? sk + '：左鍵施放、再按一次取消' : (e.lines.length ? e.lines.length + ' 個圖形生效' : '還沒畫陣紋'), x: '陣紋' }; };

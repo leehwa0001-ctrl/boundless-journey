@@ -308,7 +308,7 @@
     P._xAt = now; P._xUpAt = R._xUp || 0; P._elBeforeX = P._el || 'fire';
     const i = ELALL.indexOf(P._el || 'fire'); P._el = ELALL[(i + 1) % ELALL.length]; say(P, '普攻：' + ELS[P._el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[P._el].c });
   };
-  C.help = P => '普攻上元素、技能引爆：X 點一下換普攻的元素（火→冰→雷→木→風→金），普攻打中就在敵人頭上留這個元素 5 秒；技能沒引爆時也會留下自己的元素。法術（在「法術書」裡配：元素＋形狀＋效果）打到身上有「別種」元素的敵人就引爆：火＋冰＝蒸發（單體 160%）、冰＋雷＝碎冰（暈 1.5 秒＋小範圍）、雷＋火＝過載（大範圍爆炸）。按住 X 看反應表。'
+  C.help = P => 'X 換普攻元素；技能打到別種元素就引爆。按住 X 看反應表。'
     + ({ elementalist: '元素師：在法術書選一個拿手元素，那個元素的法術傷害 +30%、魔力 −20%。', hexer: '咒術師：多一種效果「詛咒」。', waixiu: '外修者：多一種形狀「罩」（魔力護盾）。' }[advOf(P)] || '');
   C.gauge = function (P) {
     const k = pickK(P), b = book(), x = k >= 0 ? b.spells[k] : null, sp = x ? parse(x.code, x.n) : null, el = P._el || 'fire';
