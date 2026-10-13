@@ -19,6 +19,7 @@
   const MAT = {
     Ya: { n: '火', col: '#FF6A3A', elem: 'fire' }, Bo: { n: '冰', col: '#9AD8FF', elem: 'frost' }, Lo: { n: '雷', col: '#FFE070', elem: 'shock' },
     Ta: { n: '土', col: '#A88A5A', up: 0.8, kb: 0.6 }, Ga: { n: '金', col: '#D8D8E0', dK: 1.15, brk: 1 }, La: { n: '水', col: '#4AA8E8', heal: 0.005 },
+    Nc: { n: '屍', col: '#4A2A5E' },   // 死靈法師叫起來的亡者（summonsub.js）
     Za: { n: '木', col: '#5AA84A', root: 0.3 }, No: { n: '風', col: '#BFF0D0', spK: 1.4 }
   };
   R.SUMMON_MAT = MAT;
@@ -33,7 +34,7 @@
   const pets = () => (R.PETS || []).filter(p => !p.gone && p.left > 0);
   // ---------- 維持魔力 ----------
   const upOfK = k => Math.round((0.6 + Math.max(0, (k || 0.6) - 0.5) * 1.27) * 10) / 10;   // k 0.5→0.6、0.7→0.85、1.6→2.0
-  const upMul = P => (adv(P) === 'beastlord' ? 0.75 : 1) / Math.max(0.5, P.petLife || 1);   // 原本「召喚時間 +」的加成 → 少吃魔力
+  const upMul = P => (adv(P) === 'beastlord' ? 0.5 : 1) / Math.max(0.5, P.petLife || 1);   // 原本「召喚時間 +」的加成 → 少吃魔力
   R.summonUpkeep = (k, P) => Math.round(upOfK(k) * upMul(P || W().P || {}) * 10) / 10;
   const totalUp = P => pets().reduce((a, p) => a + (p.upkeep || 0), 0) * upMul(P);
   // 技能說明多一行「維持：每隻 X 魔力/秒」
@@ -62,9 +63,9 @@
     if (pet.hpMax) {   // 貼著召喚物的敵人會打它；離開戰鬥慢慢回血
       let hurt = 0; (w.enemies || []).forEach(e => { if (e.dead || e.under || (e.st && (e.st.stun > 0 || e.st.freeze > 0))) return; if (d2(e, pet) < 1 + (e.def ? e.def.size * 0.5 : 0.5)) hurt += (e.dmg || 5) * 0.5; });
       if (hurt > 0) { pet.hp -= hurt * dt; pet.calm = 0; } else { pet.calm = (pet.calm || 0) + dt; if (pet.calm > 3) pet.hp = Math.min(pet.hpMax, pet.hp + pet.hpMax * 0.04 * dt); }
-      if (pet.hp <= 0) { pet.hp = 0; pet.left = 0; return null; }
+      if (pet.hp <= 0) { pet.hp = 0; pet.left = 0; try { R.onPetDeath && R.onPetDeath(pet, P); } catch (e) { } return null; }
     }
-    pet.spK = (M.spK || 1) * (mode === 'wild' ? 1.25 : 1); pet.dK = (M.dK || 1) * (mode === 'wild' ? 1.1 : 1) * obs;
+    pet.spK = (M.spK || 1) * (mode === 'wild' ? 1.25 : 1); pet.dK = (M.dK || 1) * (mode === 'wild' ? 1.1 : 1) * obs * (pet.pK || 1);
     if (mode === 'guard') {
       let best = null, bd = 5; (w.enemies || []).forEach(e => { if (e.dead || e.under || e.invuln) return; const d = d2(e, P); if (d < bd) { bd = d; best = e; } });
       return { tg: best, goal: { x: P.x + Math.sin(pet.t) * 1.4, z: P.z + Math.cos(pet.t) * 1.4 } };
@@ -104,7 +105,7 @@
       const a = Math.atan2(p.x - e.x, p.z - e.z), rr = 0.9 + (e.def ? e.def.size * 0.45 : 0.4);
       R.fx && R.fx('blink', p.x, 0.6, p.z, { color: (MAT[p.mat] || {}).col });
       p.x = e.x + Math.sin(a) * rr; p.z = e.z + Math.cos(a) * rr; if (p.g) p.g.position.set(p.x, 0, p.z);
-      const s = p.s || {}, dmg = (p.pw || 10) * (s.k || 0.6) * (p.mul || 1) * (p.dK || ((MAT[p.mat] || {}).dK || 1) * obs);
+      const s = p.s || {}, dmg = (p.pw || 10) * (s.k || 0.6) * (p.mul || 1) * (p.dK || ((MAT[p.mat] || {}).dK || 1) * obs * (p.pK || 1));
       e.petHit = 1; R.petHitter = p; R.hurtEnemy(e, dmg, { primary: false, kb: (s.kb || 0.4) + (p.kbK || 0), elem: p.elem || undefined }); R.petHitter = null; e.petHit = 0;
       p.cd = Math.max(p.cd || 0, s.rate || 0.8);
       R.fx && R.fx('spark', e.x, 0.8, e.z, { a });
@@ -135,7 +136,7 @@
   const recall = P => {
     const L = pets(); if (!L.length) { toast('沒有召喚物可以收回'); return false; }
     const k = adv(P) === 'shikigami' ? 0.8 : 0.5; let mp = 0;
-    L.forEach(p => { mp += (p.mp0 || 0) * k; p.left = 0; if (adv(P) === 'medium' && R.healP) R.healP(P.hpMax * 0.03, true); });
+    L.forEach(p => { mp += (p.mp0 || 0) * k; p.left = 0; });
     P.mp = Math.min(P.mpMax, P.mp + mp);
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.6, color: '#B8E07A' }); say(P, '收回 ×' + L.length + (mp >= 1 ? '（+' + Math.round(mp) + ' 魔力）' : ''));
     return true;
@@ -172,7 +173,7 @@
   };
   C.act0 = null;
   C.help = P => '召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。召喚物不限時間，在場時每隻每秒吃一點魔力；魔力見底，最弱的那隻先散掉。X 點一下換意念：集火（打你最後打的那隻）→ 護衛（守在你身邊）→ 狂奔（各打各的）；按住 X＝收回所有召喚物，退回一半魔力。召喚物打中、打倒都攢執念，執念讓召喚物更痛。普攻不吃魔力；普攻打中時，所有召喚物會馬上一起撲上去打那一隻（協同攻擊，2.5 秒一次；護衛只打你身邊的）。召喚物有血量，顯示在技能格上面，被打倒就散掉。'
-    + ({ beastlord: '萬獸師：維持魔力 −25%。', medium: '靈媒師：收回時每隻回你 3% 生命。', tamer: '遺跡馴獸師：集火的時候召喚物傷害 +30%。', shikigami: '式神使：收回退回 80% 魔力。' }[adv(P)] || '');
+    + ({ beastlord: '萬獸師：召喚物可以一直疊（最多 12 隻），每隻少吃一半魔力；倒下時退回 80% 魔力。', medium: '死靈法師：打倒的敵人可以叫起來當亡者（最多 4 隻）；「獻祭」炸掉亡者，每隻回 5% 生命、5% 魔力。', shikigami: '式神使：式神最多 2 隻但很強；你受到的傷害有 30% 由式神分擔；收回退回 80% 魔力。' }[adv(P)] || '');
   // ---------- 技能格上面的召喚物血條 ----------
   const bars = {};
   const slotEl = i => document.getElementById(i === 0 ? 'r-skill' : 'r-skill' + (i + 1));

@@ -73,10 +73,6 @@
     ['md_soulfire', '魂火', 'summoner', 21, 9, 14, 'shots', { n: 5, spread: 0.8, k: 1.1, homing: 6, kind: 'spirit', sp: 15, life: 2 }, '五團魂火追著敵人燒過去。', 'medium'],
     ['md_requiem', '鎮魂', 'summoner', 24, 18, 24, 'drain', { range: 11, r: 4, k: 2.4, heal: 0.6 }, '把附近的魂一口氣收回來：重傷敵人，傷害的 60% 變成你的生命。', 'medium'],
     // 遺跡馴獸師
-    ['tm_sentry', '泥偶哨兵', 'summoner', 11, 14, 16, 'turret', { t: 10, rate: 0.8, reach: 9, k: 0.6, look: 'tree', color: '#8AC88A' }, '在準心處捏一尊遺跡生物模樣的泥偶，10 秒內對靠近的敵人吐泥彈。', 'tamer'],
-    ['tm_mimic', '擬態', 'summoner', 18, 18, 22, 'pet', { beast: 'floor', n: 3, t: 12, k: 0.7, color: '#8AC88A' }, '捏出三隻這一層遺跡生物的樣子，12 秒。', 'tamer'],
-    ['tm_herd', '趕獸', 'summoner', 21, 12, 14, 'pull', { range: 11, r: 5, t: 2, k: 0.6 }, '吹一聲長長的口哨，把一群遺跡生物趕到準心處。', 'tamer'],
-    ['tm_king', '群主', 'summoner', 24, 24, 30, 'pet', { beast: 'floor', n: 4, t: 15, k: 1, color: '#8AC88A' }, '馴服整群：捏出四隻這一層的遺跡生物，15 秒。', 'tamer'],
     // 式神使（召喚師）
     ['ss_paper', '紙吹雪', 'summoner', 18, 14, 18, 'storm', { t: 5, gap: 0.3, r: 8, hitR: 1.3, k: 0.7, fx: 'spark', color: '#F2E8D0' }, '一把紙式神撒出去，5 秒內到處割。', 'shikigami'],
     ['ss_fox', '狐式神', 'summoner', 21, 16, 20, 'pet', { beast: 'okuriinu', n: 2, t: 14, k: 0.9, color: '#F2E8D0' }, '折兩隻狐狸式神，14 秒。', 'shikigami'],

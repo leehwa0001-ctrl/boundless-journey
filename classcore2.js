@@ -113,19 +113,7 @@
     },
     gauge(P) { const o = P._obs || 0, n = (R.PETS || []).filter(p => !p.gone && p.left > 0).length, need = adv(P) === 'shikigami' ? 30 : 50; return { v: o, max: 100, full: o >= 100, sub: '召喚物 ' + n + ' 隻・集火你打的那隻', x: o >= need && n ? '獻祭' : '' }; }
   };
-  // 新的召喚形態：圖鑑打倒 10 隻以上的（不會飛、不是領主、有圖的）
-  if (R.SKILL_TYPES && R.SKILL_TYPES.pet) {
-    const pet0 = R.SKILL_TYPES.pet;
-    R.SKILL_TYPES.pet = (s, P, w, pw0) => {
-      try {
-        if (P && P.cls === 'summoner' && s && s.beast !== 'floor' && rnd() < 0.5) {
-          const dk = (R.S && R.S.dexKills) || {}, ok = Object.keys(dk).filter(id => dk[id] >= 10 && R.ENEMIES[id] && !R.ENEMIES[id].boss && !R.ENEMIES[id].fly && !R.ENEMIES[id].human && R.BEAST_ART && R.BEAST_ART[id]);
-          if (ok.length) s = Object.assign({}, s, { beast: ok[Math.floor(rnd() * ok.length)] });
-        }
-      } catch (e) { }
-      return pet0(s, P, w, pw0);
-    };
-  }
+  // 2026-10-13 作者：拿掉「圖鑑打倒 10 隻以上的變成召喚形態」（像穢土轉生）；召喚物照原本／材質的樣子
   const lf0 = R.loadFloor;
   R.loadFloor = (...a) => { R.PETS = []; R.petFocus = null; return lf0(...a); };
 

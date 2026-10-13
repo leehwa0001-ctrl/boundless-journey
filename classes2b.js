@@ -83,8 +83,6 @@
     ['bl_roar', '獸吼', 'summoner', 14, 14, 12, 'buff', { t: 8, dmg: 1.25, color: '#C8A878' }, '帶頭吼一聲：8 秒內你和召喚物的傷害 +25%。', 'beastlord'],
     ['md_haunt', '附身', 'summoner', 8, 14, 20, 'storm', { t: 8, gap: 0.5, r: 8, hitR: 1.3, k: 0.8, fx: 'spark', color: '#B8A8E8' }, '放出怨靈纏著周圍的敵人 8 秒，一直咬。', 'medium'],
     ['md_drain', '吸魂', 'summoner', 14, 10, 14, 'drain', { range: 10, r: 2.8, k: 1.4, heal: 0.5 }, '把準心附近敵人的魂吸過來：傷害的一半變成你的生命。', 'medium'],
-    ['tm_tame', '馴服', 'summoner', 8, 16, 22, 'pet', { beast: 'floor', n: 2, t: 15, k: 0.8, color: '#8AC88A' }, '用執念捏出這一層遺跡生物的樣子，兩隻替你打 15 秒。', 'tamer'],
-    ['tm_whistle', '口哨', 'summoner', 14, 12, 10, 'pull', { range: 10, r: 4, t: 2.5, k: 0.4 }, '吹一聲口哨：準心附近的敵人被拉到一起。', 'tamer'],
     // 術陣師
     ['ry_burst', '法陣・爆', 'arraymage', 1, 6, 10, 'at', { range: 10, r: 2.6, k: 2, delay: 600, fx: 'ring', color: '#7AC8E8' }, '在準心處畫一個閉環的法陣，0.6 秒後爆開。'],
     ['ry_bind', '法陣・縛', 'arraymage', 2, 9, 10, 'zone', { zone: 'trap', range: 8, r: 1.4, life: 20, k: 2.2 }, '在準心處畫一個陷阱陣：踩到的敵人被定住、受傷。'],
@@ -150,9 +148,7 @@
       if (a === 'aria') { P.healMul = (P.healMul || 1) * 1.3; }
       if (a === 'drummer') { P.skillCdMult *= 0.88; if (P.ws) P.ws.crit += 0.06; }
       if (a === 'serane') { P.calm += 0.2; P.mpMax = Math.round(P.mpMax * 1.2); }
-      if (a === 'beastlord') { P.petMul = 1.4; P.petLife = 1.3; }
-      if (a === 'medium') P.petHeal = 0.06;
-      if (a === 'tamer') { P.calm += 0.15; P.petMul = 1.2; }
+      if (a === 'beastlord') { P.petMul = 1.1; }   // 2026-10-13：人海戰術——單隻弱一點、便宜很多（summonsub.js）
       if (a === 'grandarray') P.dmgMult *= 1.15;
       if (a === 'warder') P.def += 3;
       if (a === 'eidanora') P.skillCdMult *= 0.9;
