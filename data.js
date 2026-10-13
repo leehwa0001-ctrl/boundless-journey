@@ -17,7 +17,7 @@ window.R = window.R || {};
     gunner: { name: '槍手', hp: 92, mp: 40, speed: 6.2, skill: 'roll', color: '#4A6A8A', desc: '手槍、步槍、霰彈槍。彈匣打空要換彈。', look: { top: '#3E4E62', hair: '#2A2420', cloak: '#6E5A44' } },
     archer: { name: '弓箭手', hp: 94, mp: 50, speed: 6.4, skill: 'volley', color: '#4E7A48', desc: '短弓、長弓、弩。長弓可以按住蓄力。', look: { top: '#4A6A3E', hair: '#8A5A2E', cloak: '#3E5A36' } },
     warrior: { name: '戰士', hp: 132, mp: 30, speed: 5.7, skill: 'whirl', color: '#8A4A3A', desc: '大劍、戰斧、長劍。一刀掃一片。', look: { top: '#7A3E30', hair: '#3A2A1E', cloak: '#4A3A30' } },
-    mage: { name: '術士', hp: 76, mp: 110, speed: 5.9, skill: 'fireball', color: '#5A4A8A', desc: '法杖、法球。施法消耗魔力。', look: { top: '#4A3E7A', hair: '#D8D2C4', cloak: '#2E2A4A' } },
+    mage: { name: '術士', hp: 76, mp: 140, speed: 5.9, skill: 'fireball', color: '#5A4A8A', desc: '法杖、法球、短杖。自己編咒文（咒式書）施法，消耗魔力。', look: { top: '#4A3E7A', hair: '#D8D2C4', cloak: '#2E2A4A' } },
     priest: { name: '牧師', hp: 96, mp: 95, speed: 5.9, skill: 'heal', color: '#C9B77A', desc: '聖杖、戰錘。會治療自己。', look: { top: '#E6DEC6', hair: '#6A4A2E', cloak: '#B89A4A' } },
     blade: { name: '刀客', hp: 112, mp: 45, speed: 6.7, skill: 'flash', color: '#3A3A44', desc: '刀、雙刀。快、準，穿過敵人。', look: { top: '#2E2E38', hair: '#101014', cloak: '#6A2A2A' } },
     knight: { name: '騎士', hp: 152, mp: 35, speed: 5.4, skill: 'charge', color: '#6A7A8A', desc: '長劍、長槍、戰錘，帶盾。正面受到的傷害減少。', look: { top: '#8A96A3', hair: '#C99B55', cloak: '#2F4A6E' }, shield: 1 },
@@ -42,8 +42,8 @@ window.R = window.R || {};
       // 內修者搬到武術家（2026-10-04）；之前就轉成內修者的戰士照舊（legacy：轉職畫面不再出現）
       { id: 'inner', name: '內修者', path: '昭旭・遺跡', skill: 'qijin', legacy: 1, desc: '透過吐納吸收遺跡裡的殘存魔力質。技能「氣勁」：蓄氣一掌震退周圍敵人，打中的行壁直接碎裂。被動：站著不動時回復生命與魔力；攻擊不會讓佩特拉的注意上升。' }],
     mage: [
-      { id: 'elementalist', name: '元素師', path: '強化', skill: 'meteor', desc: '技能「隕石」：在準心處落下隕石，大範圍傷害並燃燒。被動：命中時 20% 機率燃燒或減速。' },
-      { id: 'hexer', name: '咒術師', path: '變化', skill: 'hex', desc: '技能「咒縛」：詛咒一片範圍的敵人：受到的傷害 +30%、移動變慢。被動：被詛咒的敵人死掉時，詛咒會傳給旁邊的敵人。' },
+      { id: 'elementalist', name: '元素師', path: '強化', skill: 'meteor', desc: '技能「隕石」：在準心處落下隕石，大範圍傷害並燃燒。咒式書：選一種主元素，當主注釋時消耗 −30%、活力項多 1 文。被動：命中時 20% 機率燃燒或減速。' },
+      { id: 'hexer', name: '密影', path: '變化', skill: 'hex', desc: '（舊名咒術師）咒文帶暗元素 Ao 會讓敵人虛弱（受到的傷害 +20%）。技能「咒縛」：詛咒一片範圍的敵人：受到的傷害 +30%、移動變慢。被動：被詛咒的敵人死掉時，詛咒會傳給旁邊的敵人。' },
       // 式神使搬到召喚師（2026-10-04 作者：式神使可以歸類在召喚媒介裡）：已經是式神使的術士照舊，新轉職不再列出（legacy）
       { id: 'shikigami', legacy: 1, name: '式神使', path: '昭旭・遺跡', skill: 'shiki', desc: '技能「式神」：放出三隻紙式神環繞你並自動攻擊 10 秒。被動：常駐一隻式神。' },
       // 外修派「東方派」（《法術統整》第五章：華爾納蘭特帝國的「氣道」）——施法的派系：體外一層魔力罩當矛也當盾，不用咒語、施法快；魔力外放，很容易被感知

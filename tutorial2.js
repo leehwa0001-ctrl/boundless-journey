@@ -90,6 +90,12 @@
       step('施法', () => T('按技能會先顯示 50% 透明的範圍，<kbd>左鍵</kbd> 確認後蓄力放出。技能中心只要在普攻範圍內，哪裡都能放（增益、回復也是）。', '點技能先顯示範圍，再點一下確認。技能中心只要在普攻範圍內，哪裡都能放。'), '#r-skill'),
       step('節點數', () => '能用的節點一開始 2 個，每 5 級多 1 個，最多 7 個。', null)
     ] },
+    mage: { n: '術士：咒文編排', ctx: inRun, steps: [   // 2026-10-13 術士重做
+      step('咒式書', () => T('暫停選單或城裡選單的「咒式書」（或按 <kbd>B</kbd>）：照「活力-聚合-定點-控制」編咒，綁到技能格。', '暫停選單或城裡選單點「咒式書」：照「活力-聚合-定點-控制」編咒，綁到技能格。'), null),
+      evStep('施法', () => T('按技能鍵放咒：施法時間＝咒文數 × 0.08 秒，消耗＝古克 ÷10 ÷4。', '點技能鈕放咒：施法時間＝咒文數 × 0.08 秒。'), '#r-skill', 'skill'),
+      step('臨場改寫', () => T('按住 <kbd>X</kbd>：<kbd>Q</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd> 選段、<kbd>1</kbd>～<kbd>5</kbd> 換文。施法中按一下 <kbd>X</kbd>＝斷序（退 70%）。', '長按職業條打開環狀選單臨場改寫；施法中點一下＝斷序（退 70%）。'), '#core-g'),
+      step('固化與反應', () => '超過 500 古克的元素咒會固化成牆、熔岩、冰刺或荊棘（擋敵人，不擋隊友）。Ya 火、Bo 冰、Lo 雷照樣會起反應。', null)
+    ] },
     bard: { n: '吟遊詩人：樂譜', ctx: inRun, steps: [
       evStep('和弦', () => T('按一下 <kbd>X</kbd> 換和弦（大調／小調）。', '點一下職業條換和弦。'), '#core-g', 'cls'),
       step('寫樂譜', () => T('按住 <kbd>X</kbd> 0.45 秒開始錄：10 秒內的普攻、技能會寫成音符。', '長按職業條開始錄：10 秒內的普攻、技能會寫成音符。'), '#core-g'),
@@ -110,7 +116,7 @@
     ] }
   };
   const ok = id => CH[id].ctx() && !(R.sheetOpen && R.sheetOpen());
-  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'arraymage', 'bard', 'monk', 'blade'];
+  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'mage', 'arraymage', 'bard', 'monk', 'blade'];
   // ---------- 畫面 ----------
   const css = document.createElement('style'); css.id = 'tu2-css';
   css.textContent = '#tu2-ring{position:fixed;z-index:9998;pointer-events:none;border:2px solid #C9A13A;border-radius:10px;box-shadow:0 0 0 3px rgba(201,161,58,.25),0 0 18px rgba(201,161,58,.45);transition:all .2s;animation:tu2p 1.4s infinite}'
