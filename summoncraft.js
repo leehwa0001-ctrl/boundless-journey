@@ -1,23 +1,24 @@
-// 召喚師重做（2026-10-13 作者：照《法術統整》霍克派——召喚物的身體是用元素「材質」捏出來的，材質看遺跡的環境；X 換意念；精神條）
-// - 材質：每一隻召喚物捏出來時，照這一層的環境（run.env 優先，其次 run.biome）挑主材質（70%）或副材質（30%）。
-//   火＝燃燒、冰＝變慢、雷＝連鎖、土＝生命 +30%、擊退、金＝傷害 +15%、破甲、水＝每一下回你 0.5% 生命、木＝定身 0.3 秒、風＝移動 +40%。
-//   召喚物身上染一層材質的顏色；多人連線時隊友的影子也照材質染色（netsummon.js 多送一個材質）。
-// - 意念（X 點一下換）：集火（照舊：打你最後打的那一隻）→ 護衛（只打你身邊 5 公尺內的敵人，會回到你身邊）→ 狂奔（各打各的最近的，移動 +25%、傷害 +10%）。
-//   X 快速點兩下＝獻祭（執念照舊：50，式神使 30）。手機：點兩下職業條。
-// - 精神（0～100）：每有一隻召喚物在場，每秒 −1.2；沒有召喚物時每秒 +6；每捏一隻 −4。
-//   精神 25 以下＝召喚物失控：不照意念、亂跑，每一下 25% 打空；精神歸零＝「剝離」6 秒：召喚技能魔力 +50%、你受到的傷害 +15%、精神不回。
-// - 轉職：萬獸師＝精神消耗 −30%；靈媒師＝獻祭每一隻回 10 精神、剝離只有 3 秒；遺跡馴獸師＝精神 10 以上都不會失控；式神使＝精神回復 +50%。
+// 召喚師（2026-10-13 作者：霍克派——召喚物的身體是用元素「材質」捏出來的，材質看遺跡的環境；X 換意念）
+// 2026-10-13 第二版（作者回饋）：
+// - 拿掉「精神」條（遊戲本來就有理智條，不另外加新的資源）。理智照舊：召喚物打倒的人不算你親手殺的（san.js）。
+// - 召喚物不再有時間限制：在場的每一隻每秒吃一點魔力（小隻約 0.6、大隻約 2 魔力/秒）。魔力見底時，最弱、最早的那隻先散掉（一次一隻）。
+// - 按住 X（0.5 秒）＝收回：所有召喚物安靜地回來，不爆炸，退回一半的召喚魔力。手機：長按職業條。
+// - 獻祭不再放在 X 上，變成可以自己選要不要帶的技能「獻祭」；執念改成讓召喚物變強（每 2 點執念 +1% 傷害，最多 +50%）。
+// - 材質：火＝燃燒、冰＝變慢、雷＝連鎖、土＝擊退、少吃 20% 魔力、金＝傷害 +15%、破甲、水＝每一下回你 0.5% 生命、木＝定身 0.3 秒、風＝移動 +40%。
+// - 意念（X 點一下換）：集火 → 護衛 → 狂奔。
+// - 轉職：萬獸師＝維持魔力 −25%；靈媒師＝收回時每隻回 3% 生命；遺跡馴獸師＝集火時傷害 +30%（照舊）；式神使＝收回退回 80% 魔力。
 // 放在 classes2b.js、classcore2.js、netsummon.js 後面。
 (function (R) {
   const W = () => R.W, CT = () => (R.coreTime ? R.coreTime() : performance.now() / 1000), rnd = Math.random;
   const C = R.CORE && R.CORE.summoner; if (!C) return;
   const adv = P => (P && P.adv) || '';
   const isS = P => !!(P && P.cls === 'summoner');
+  const live = () => { const w = W(); return !!(w && w.run && !w.run.done && w.P && !w.P.dead && !w.paused); };
   const toast = (t, c) => R.toast && R.toast(t, c);
   const say = (P, t, k) => R.num && R.num(P.x, 2.6, P.z, t, k || 'heal');
   const MAT = {
     Ya: { n: '火', col: '#FF6A3A', elem: 'fire' }, Bo: { n: '冰', col: '#9AD8FF', elem: 'frost' }, Lo: { n: '雷', col: '#FFE070', elem: 'shock' },
-    Ta: { n: '土', col: '#A88A5A', life: 1.3, kb: 0.6 }, Ga: { n: '金', col: '#D8D8E0', dK: 1.15, brk: 1 }, La: { n: '水', col: '#4AA8E8', heal: 0.005 },
+    Ta: { n: '土', col: '#A88A5A', up: 0.8, kb: 0.6 }, Ga: { n: '金', col: '#D8D8E0', dK: 1.15, brk: 1 }, La: { n: '水', col: '#4AA8E8', heal: 0.005 },
     Za: { n: '木', col: '#5AA84A', root: 0.3 }, No: { n: '風', col: '#BFF0D0', spK: 1.4 }
   };
   R.SUMMON_MAT = MAT;
@@ -29,35 +30,35 @@
   const modeOf = P => (P && MODES.some(m => m[0] === P._petMode) ? P._petMode : 'focus');
   const tint = (g, col) => { try { const TH = window.THREE, c = new TH.Color(col); g.traverse(o => { if (o.isMesh && o.material && o.material.color) { o.material = o.material.clone(); o.material.color.lerp(c, 0.45); } }); } catch (e) { } };
   R.summonTint = tint;
-  // ---------- 精神 ----------
-  const sp = P => (P._spirit == null ? (P._spirit = 100) : P._spirit);
-  const peeled = P => (P._peelT || 0) > CT();
   const pets = () => (R.PETS || []).filter(p => !p.gone && p.left > 0);
-  const lose = (P, n) => {
-    const before = sp(P); P._spirit = Math.max(0, before - n * (adv(P) === 'beastlord' ? 0.7 : 1));
-    if (before > 0 && P._spirit <= 0 && !peeled(P)) { P._peelT = CT() + (adv(P) === 'medium' ? 3 : 6); say(P, '剝離', 'hurt'); toast('精神歸零：剝離（召喚耗魔 +50%、受到的傷害 +15%）', '#C8A8E8'); }
-  };
-  const wild = P => { const v = sp(P); return v < (adv(P) === 'tamer' ? 10 : 25); };
+  // ---------- 維持魔力 ----------
+  const upOfK = k => Math.round((0.6 + Math.max(0, (k || 0.6) - 0.5) * 1.27) * 10) / 10;   // k 0.5→0.6、0.7→0.85、1.6→2.0
+  const upMul = P => (adv(P) === 'beastlord' ? 0.75 : 1) / Math.max(0.5, P.petLife || 1);   // 原本「召喚時間 +」的加成 → 少吃魔力
+  R.summonUpkeep = (k, P) => Math.round(upOfK(k) * upMul(P || W().P || {}) * 10) / 10;
+  const totalUp = P => pets().reduce((a, p) => a + (p.upkeep || 0), 0) * upMul(P);
+  // 技能說明多一行「維持：每隻 X 魔力/秒」
+  const descFix = () => { const L = R.SKILL_LIB || {}; Object.keys(L).forEach(id => { const l = L[id], sk = R.SKILLS && R.SKILLS[id]; if (!l || l.cls !== 'summoner' || l.type !== 'pet' || !sk || sk._upd) return; sk._upd = 1; sk.desc = String(sk.desc || '').replace(/\d+ 秒內|\s*\d+ 秒/g, '') + '（不限時間；在場時每隻每秒吃 ' + upOfK(l.p && l.p.k) + ' 魔力）'; }); };
+  descFix();
   // ---------- 召喚物出生 ----------
+  let castMp = 0;
   R.petInit = (pet, P, s, w) => {
     if (!isS(P)) return;
     const pair = matsHere(), k = s && s.mat && MAT[s.mat] ? s.mat : rnd() < 0.7 ? pair[0] : pair[1], M = MAT[k];
     pet.mat = k; pet.elem = M.elem || null; pet.dK = M.dK || 1; pet.spK = M.spK || 1; pet.kbK = M.kb || 0;
-    if (M.life) pet.left *= M.life;
+    pet.upkeep = upOfK(s && s.k) * (M.up || 1); pet.born = CT(); pet.left = 1e9;   // 不限時間（魔力見底才散）
+    pet.mp0 = castMp / Math.max(1, (s && s.n) || 1);
     if (pet.g) tint(pet.g, M.col);
     R._petMat = k;   // netsummon.js 送給隊友
-    lose(P, 4);
   };
-  // ---------- 意念、失控 ----------
+  // 召喚技能花了多少魔力（收回時退一半）
+  const wrapCast = f => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const m0 = P.mp; castMp = 0; const L0 = pets().length; const r = f(...a); const used = m0 - P.mp; if (used > 0 && pets().length > L0) { const nw = pets().slice(L0); nw.forEach(p => { p.mp0 = used / nw.length; }); } return r; };
+  if (R.castSlot) R.castSlot = wrapCast(R.castSlot);
+  if (R.useSkill) R.useSkill = wrapCast(R.useSkill);
+  // ---------- 意念 ----------
   R.petThink = (pet, P, dt, tg, w) => {
     if (!isS(P)) return null;
-    const M = MAT[pet.mat] || {}, mode = modeOf(P), d2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-    pet.spK = (M.spK || 1) * (mode === 'wild' ? 1.25 : 1); pet.dK = (M.dK || 1) * (mode === 'wild' ? 1.1 : 1);
-    if (wild(P)) {   // 失控：亂跑、打空
-      pet.wT = (pet.wT || 0) - dt; if (pet.wT <= 0 || !pet.wGoal) { pet.wT = 1 + rnd() * 1.5; const a = rnd() * 6.28; pet.wGoal = { x: pet.x + Math.sin(a) * 3, z: pet.z + Math.cos(a) * 3 }; }
-      const near = (w.enemies || []).filter(e => !e.dead && !e.under && d2(e, pet) < 2.5)[0] || null;
-      return { tg: near, goal: pet.wGoal, skip: rnd() < 0.25 * dt * 10 };
-    }
+    const M = MAT[pet.mat] || {}, mode = modeOf(P), d2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z), obs = 1 + Math.min(0.5, (P._obs || 0) / 200);
+    pet.spK = (M.spK || 1) * (mode === 'wild' ? 1.25 : 1); pet.dK = (M.dK || 1) * (mode === 'wild' ? 1.1 : 1) * obs;
     if (mode === 'guard') {
       let best = null, bd = 5; (w.enemies || []).forEach(e => { if (e.dead || e.under || e.invuln) return; const d = d2(e, P); if (d < bd) { bd = d; best = e; } });
       return { tg: best, goal: { x: P.x + Math.sin(pet.t) * 1.4, z: P.z + Math.cos(pet.t) * 1.4 } };
@@ -73,81 +74,72 @@
   R.hurtEnemy = (e, raw, o) => {
     const pet = R.petHitter, P = W().P;
     if (pet && e && !e.dead && isS(P)) {
-      const M = MAT[pet.mat] || {};
-      const r = he0(e, raw, o);
-      try {
-        if (!e.dead) { if (M.root) e.st.root = Math.max(e.st.root || 0, M.root); if (M.brk && R.elemBreak && rnd() < 0.3) R.elemBreak(e); }
-        if (M.heal && R.healP) R.healP(P.hpMax * M.heal, true);
-      } catch (err) { }
+      const M = MAT[pet.mat] || {}, r = he0(e, raw, o);
+      try { if (!e.dead) { if (M.root) e.st.root = Math.max(e.st.root || 0, M.root); if (M.brk && R.elemBreak && rnd() < 0.3) R.elemBreak(e); } if (M.heal && R.healP) R.healP(P.hpMax * M.heal, true); } catch (err) { }
       return r;
     }
     return he0(e, raw, o);
   };
-  // 剝離：受到的傷害 +15%
-  const hp0 = R.hurtPlayer;
-  if (hp0) R.hurtPlayer = (raw, src, o) => { const P = W().P; if (isS(P) && peeled(P)) raw *= 1.15; return hp0(raw, src, o); };
-  // 剝離：召喚類技能魔力 +50%（先扣，事後補扣差額）
-  const SUMT = ['pet', 'turret', 'orbit'];
-  const wrapMp = f => (...a) => {
-    const P = W() && W().P; if (!isS(P) || !peeled(P)) return f(...a);
-    const m0 = P.mp, r = f(...a), used = m0 - P.mp;
-    if (used > 0) P.mp = Math.max(0, P.mp - used * 0.5);
-    return r;
-  };
-  if (R.castSlot) { const cs = R.castSlot; R.castSlot = i => { const P = W() && W().P, id = P && R.slotSkill ? R.slotSkill(P, i | 0) : null, L = id && R.SKILL_LIB && R.SKILL_LIB[id]; return L && SUMT.includes(L.type) ? wrapMp(cs)(i) : cs(i); }; }
-  // ---------- 每一格：精神 ----------
+  // ---------- 每一格：吃魔力；見底＝最弱、最早的先散 ----------
+  let fadeT = 0;
   const st0 = R.step;
   R.step = dt => {
     const r = st0(dt);
     try {
       const w = W(), P = w && w.P;
       if (P && isS(P) && w.run && !w.paused && !P.dead) {
-        const n = pets().length;
-        if (n) lose(P, 1.2 * n * dt);
-        else if (!peeled(P)) P._spirit = Math.min(100, sp(P) + 6 * dt * (adv(P) === 'shikigami' ? 1.5 : 1));
+        const L = pets();
+        if (L.length) {
+          const cost = totalUp(P) * dt; fadeT -= dt;
+          if (P.mp >= cost) P.mp -= cost;
+          else { P.mp = 0; if (fadeT <= 0) { fadeT = 0.8; const p = L.slice().sort((a, b) => (a.upkeep - b.upkeep) || (a.born - b.born))[0]; p.left = 0; toast('魔力不夠，一隻召喚物散掉了', '#B8E07A'); } }
+        }
       }
     } catch (e) { }
     return r;
   };
-  const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { const r = sr0(...a); try { const P = W().P; if (P) { P._spirit = 100; P._peelT = 0; } } catch (e) { } return r; };
-  // ---------- 職業核心：X 換意念、點兩下獻祭 ----------
-  const act0 = C.act.bind(C);
-  C.act = function (P) {
-    const t = CT();
-    if (t - (P._modeT || -9) < 0.35) {   // 點兩下：把剛剛換的意念換回來，然後獻祭
-      P._petMode = P._modePrev || 'focus'; P._modeT = -9;
-      const before = pets().length; act0(P);
-      if (adv(P) === 'medium' && before && !pets().length) P._spirit = Math.min(100, sp(P) + 10 * before);
-      return;
-    }
-    P._modePrev = modeOf(P); const i = MODES.findIndex(m => m[0] === modeOf(P)); P._petMode = MODES[(i + 1) % MODES.length][0]; P._modeT = t;
-    say(P, '意念：' + MODES.find(m => m[0] === P._petMode)[1]);
+  // ---------- 收回 ----------
+  const recall = P => {
+    const L = pets(); if (!L.length) { toast('沒有召喚物可以收回'); return false; }
+    const k = adv(P) === 'shikigami' ? 0.8 : 0.5; let mp = 0;
+    L.forEach(p => { mp += (p.mp0 || 0) * k; p.left = 0; if (adv(P) === 'medium' && R.healP) R.healP(P.hpMax * 0.03, true); });
+    P.mp = Math.min(P.mpMax, P.mp + mp);
+    R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.6, color: '#B8E07A' }); say(P, '收回 ×' + L.length + (mp >= 1 ? '（+' + Math.round(mp) + ' 魔力）' : ''));
+    return true;
   };
-  const g0 = C.gauge.bind(C);
+  R.summonRecall = () => { const P = W().P; return isS(P) ? recall(P) : false; };
+  // X：點一下＝換意念；按住 0.5 秒＝收回（剛剛換的意念換回來）
+  C.act = function (P) { P._modePrev = modeOf(P); const i = MODES.findIndex(m => m[0] === modeOf(P)); P._petMode = MODES[(i + 1) % MODES.length][0]; say(P, '意念：' + MODES.find(m => m[0] === P._petMode)[1]); };
+  let holdT = null;
+  const holdStart = () => { const P = W().P; if (!isS(P) || !live()) return; clearTimeout(holdT); holdT = setTimeout(() => { holdT = null; const Q = W().P; if (!isS(Q) || !live()) return; Q._petMode = Q._modePrev || modeOf(Q); recall(Q); }, 500); };
+  const holdEnd = () => { clearTimeout(holdT); holdT = null; };
+  const typing = e => { const t = e.target; return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable); };
+  window.addEventListener('keydown', e => { if (typing(e) || e.repeat) return; if ((e.key || '').toLowerCase() === 'x') holdStart(); }, true);
+  window.addEventListener('keyup', e => { if ((e.key || '').toLowerCase() === 'x') holdEnd(); }, true);
+  // 手機／滑鼠：點職業條＝換意念、長按＝收回
+  let tapOn = false;
+  document.addEventListener('pointerdown', e => { const P = W().P; if (!isS(P) || !live() || !(e.target && e.target.closest && e.target.closest('#core-g'))) return; e.preventDefault(); tapOn = true; P._modePrev = modeOf(P); holdStart(); }, true);
+  document.addEventListener('pointerup', () => { if (!tapOn) return; tapOn = false; if (holdT) { holdEnd(); const P = W().P; if (isS(P) && live()) C.act(P); } }, true);
+  document.addEventListener('pointercancel', () => { tapOn = false; holdEnd(); }, true);
+  // ---------- 獻祭：自己選要不要帶的技能 ----------
+  const L = R.SKILL_LIB, T = R.SKILL_TYPES;
+  if (L && T && L.sn_sacrifice) {
+    T.sm_sac = (s, P, w, pw) => {
+      const ps = pets();
+      if (!ps.length) { R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3.4, color: '#C8A878' }); (w.enemies || []).forEach(e => { if (!e.dead && Math.hypot(e.x - P.x, e.z - P.z) < 3.4 + e.def.size * 0.5) R.hurtEnemy(e, pw * 2, { kb: 1.5 }); }); return; }
+      ps.forEach(p => { R.fx && R.fx('boom', p.x, 0.4, p.z, { r: 2.5, color: '#B8E07A' }); (w.enemies || []).forEach(e => { if (!e.dead && Math.hypot(e.x - p.x, e.z - p.z) < 2.5 + e.def.size * 0.5) R.hurtEnemy(e, pw * 2.2, { kb: 1.5 }); }); p.left = 0; });
+      R.shake && R.shake(0.25); say(P, '獻祭 ×' + ps.length, 'crit');
+    };
+    L.sn_sacrifice.type = 'sm_sac';
+    if (R.SKILLS && R.SKILLS.sn_sacrifice) R.SKILLS.sn_sacrifice.desc = '（想用再帶）讓在場的召喚物在原地炸開；沒有召喚物時改成在身邊炸一圈。不用也完全沒關係——想收回召喚物請按住 X。';
+  }
   C.gauge = function (P) {
-    const g = g0(P), v = Math.round(sp(P)), m = MODES.find(x => x[0] === modeOf(P))[1], pair = matsHere();
-    g.name = '執念・意念：' + m;
-    g.sub = '精神 ' + v + (peeled(P) ? '（剝離 ' + Math.ceil(P._peelT - CT()) + ' 秒）' : wild(P) ? '（失控）' : '') + '・材質 ' + MAT[pair[0]].n + '／' + MAT[pair[1]].n + '・召喚物 ' + pets().length;
-    g.x = '換意念（點兩下＝獻祭）';
-    return g;
+    const o = P._obs || 0, n = pets().length, m = MODES.find(x => x[0] === modeOf(P))[1], pair = matsHere(), up = Math.round(totalUp(P) * 10) / 10;
+    return { name: '意念：' + m, v: o, max: 100, full: o >= 100, text: '執念 ' + Math.floor(o) + '（召喚物傷害 +' + Math.round(Math.min(50, o / 2)) + '%）', sub: '召喚物 ' + n + ' 隻・維持 ' + up + ' 魔力/秒・材質 ' + MAT[pair[0]].n + '／' + MAT[pair[1]].n, x: '換意念（按住＝收回）' };
   };
-  const h0 = C.help;
-  C.help = P => '霍克派：召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。X 換意念：集火→護衛→狂奔；X 點兩下＝獻祭（執念 ' + (adv(P) === 'shikigami' ? 30 : 50) + '）。精神：召喚物在場會慢慢消耗，25 以下召喚物失控，歸零＝剝離。 ' + (typeof h0 === 'function' ? h0(P) : '')
-    + ({ beastlord: '萬獸師：精神消耗 −30%。', medium: '靈媒師：獻祭每隻回 10 精神、剝離只有 3 秒。', tamer: '遺跡馴獸師：精神 10 以上都不會失控。', shikigami: '式神使：精神回復 +50%。' }[adv(P)] || '');
-  // 精神條（遺跡裡、召喚師）
-  const css = document.createElement('style');
-  css.textContent = '#sm-spirit{position:fixed;left:50%;bottom:118px;transform:translateX(-50%);width:160px;height:6px;background:#1A1622;border:1px solid #3E3550;border-radius:4px;z-index:40;pointer-events:none}#sm-spirit i{display:block;height:100%;background:#A88AE8;border-radius:3px}#sm-spirit.wild i{background:#C86A5A}#sm-spirit.peel{border-color:#C86A5A}';
-  document.head.appendChild(css);
-  let hudT = 0;
-  const st1 = R.step;
-  R.step = dt => {
-    const r = st1(dt); hudT -= dt; if (hudT > 0) return r; hudT = 0.2;
-    try {
-      const w = W(), P = w && w.P, on = !!(P && isS(P) && w.run && !w.run.done); let el = document.getElementById('sm-spirit');
-      if (!on) { if (el) el.hidden = true; return r; }
-      if (!el) { el = document.createElement('div'); el.id = 'sm-spirit'; el.title = '精神'; el.innerHTML = '<i></i>'; document.body.appendChild(el); }
-      el.hidden = false; el.firstChild.style.width = sp(P) + '%'; el.className = peeled(P) ? 'peel wild' : wild(P) ? 'wild' : '';
-    } catch (e) { }
-    return r;
-  };
+  C.act0 = null;
+  C.help = P => '召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。召喚物不限時間，在場時每隻每秒吃一點魔力；魔力見底，最弱的那隻先散掉。X 點一下換意念：集火（打你最後打的那隻）→ 護衛（守在你身邊）→ 狂奔（各打各的）；按住 X＝收回所有召喚物，退回一半魔力。召喚物打中、打倒都攢執念，執念讓召喚物更痛。'
+    + ({ beastlord: '萬獸師：維持魔力 −25%。', medium: '靈媒師：收回時每隻回你 3% 生命。', tamer: '遺跡馴獸師：集火的時候召喚物傷害 +30%。', shikigami: '式神使：收回退回 80% 魔力。' }[adv(P)] || '');
+  // 拿掉上一版的精神條
+  try { const el = document.getElementById('sm-spirit'); if (el) el.remove(); } catch (e) { }
 })(window.R);
