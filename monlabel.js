@@ -52,7 +52,7 @@
       if (v.z > 1 || v.x < -1.1 || v.x > 1.1 || v.y < -1.1 || v.y > 1.2 || (R.fogHides && R.fogHides(e.x, e.z))) { t.el.style.display = 'none'; live.add(e); continue; }   // 濃霧裡的不顯示（fogarc.js）
       t.el.style.display = '';
       t.el.style.transform = 'translate(' + Math.round((v.x + 1) / 2 * w) + 'px,' + Math.round((1 - v.y) / 2 * h) + 'px) translate(-50%,-100%)';
-      if (t.isEl && (e.is || 0) !== t.isV) { t.isV = e.is || 0; t.isEl.textContent = t.isV ? '[IS：' + t.isV + ']' : ''; }   // 遺跡整改（ruinis.js）
+      if (t.isEl && (e.is == null ? -2 : e.is) !== t.isV) { t.isV = e.is == null ? -2 : e.is; t.isEl.textContent = e.is != null ? '[IS：' + e.is + ']' : ''; }   // IS 0 也要顯示（以前 0 被當成沒有）   // 遺跡整改（ruinis.js）
       const pc = Math.max(0, Math.min(1, e.hp / e.hpMax)); if (pc !== t.last) { t.last = pc; t.bar.style.width = (pc * 100).toFixed(1) + '%'; }
       live.add(e);
     }

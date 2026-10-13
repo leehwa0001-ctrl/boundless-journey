@@ -325,12 +325,13 @@
     return ke0(e, by);
   };
   // 成群出現（鐵齒鼠）：生一隻，旁邊再生幾隻；睡著、醒著跟第一隻一樣
+  // 2026-10-14 修正：旁邊那幾隻原本用最裡面的 se0 生，跳過後面所有包裝（IS、難度、深度、連線同步）→ 沒有 IS、比較弱。改走最外層的 R.spawnEnemy（packed 擋住不會再生一群）
   const se0 = R.spawnEnemy;
   R.spawnEnemy = (id, x, z, room, o) => {
     const e = se0(id, x, z, room, o), d = R.ENEMIES[id];
     if (d && d.pack && !(o && o.packed)) {
-      const extra = []; for (let i = 1; i < d.pack; i++) { const [px, pz] = R.nearestFloor(x + (rnd() - 0.5) * 2.4, z + (rnd() - 0.5) * 2.4); extra.push(se0(id, px, pz, room, Object.assign({}, o, { packed: true }))); }
-      Promise.resolve().then(() => extra.forEach(k => { k.dormant = e.dormant; k.aggro = e.aggro; }));
+      const extra = []; for (let i = 1; i < d.pack; i++) { const [px, pz] = R.nearestFloor(x + (rnd() - 0.5) * 2.4, z + (rnd() - 0.5) * 2.4); extra.push(R.spawnEnemy(id, px, pz, room, Object.assign({}, o, { packed: true }))); }
+      Promise.resolve().then(() => extra.forEach(k => { if (!k) return; k.dormant = e.dormant; k.aggro = e.aggro; }));
     }
     return e;
   };
