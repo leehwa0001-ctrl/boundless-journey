@@ -359,7 +359,7 @@ window.R = window.R || {};
     { id: 'tougrei', map: 'nation', x: 36.9, z: -24.2, kind: 'ruin', grade: 'mors', type: 'maze', name: '天宮・東嶺迷宮遺跡', src: '遊戲', desc: '天宮東邊山嶺裡的迷宮型遺跡。尾隨犬在這裡成群狩獵，常有獨立的陷阱區。', status: 'lock', ly: -22 },
     { id: 'kazan', map: 'nation', x: 37.62, z: -20.38, kind: 'ruin', grade: 'kesent', type: 'tower', env: 'volcano', name: '納瓦・火山遺跡', src: '遊戲', desc: '整座納瓦火山的內部都被遺跡吃掉了。入口不斷閉合，只能用傳送水晶投送。', status: 'lock' },
     { id: 'ukishima', map: 'nation', x: 38.72, z: -22.62, kind: 'ruin', grade: 'kesent', type: 'island', env: 'deep', name: '外海・浮島遺跡', src: '遊戲', desc: '只會出現在海上的浮島型遺跡，島上還長著好幾座偽裝成高塔型的遺跡。', status: 'lock' },
-    { id: 'kaso', map: 'nation', x: 39.45, z: -25.85, kind: 'forbidden', grade: 'kaso', name: '封鎖海域', src: '遊戲', desc: '公會明文禁止任何個人單獨進入卡索級遺跡。航海圖上這一塊，是用紅筆整片塗掉的。', status: 'forbidden' },
+    { id: 'kaso', map: 'nation', x: 39.45, z: -25.85, kind: 'forbidden', grade: 'kaso', type: 'island', name: '封鎖海域', src: '遊戲', desc: '公會明文禁止任何個人單獨進入卡索級遺跡。航海圖上這一塊，是用紅筆整片塗掉的。', status: 'forbidden' },
     // 東鶴近郊（x、y：0～100 的示意座標）
     { id: 'dh-town', map: 'donghe', x: 57, y: 62, kind: 'city', name: '東鶴', src: '設定', desc: '公會東鶴分館、鐵匠鋪、白藤堂、倉庫。遺跡回來的第一站。', hub: 1 },
     { id: 'dh-sokkutsu', map: 'donghe', x: 80, y: 7, kind: 'ruin', grade: 'hamilia', type: 'maze', name: '霜溪石窟', src: '遊戲', desc: '霜溪上游的哈米莉亞級遺跡。一般民眾經登記也能進去採藥草。第一次下遺跡就從這裡開始。', status: 'open' },

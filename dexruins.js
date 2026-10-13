@@ -103,7 +103,7 @@
   const lvTh = (id, ch) => { const v = R.LORD_VARIANTS[id], ok = R.lordVariantSeen && R.lordVariantSeen(id), k = R.lordVariantKills ? R.lordVariantKills(id) : 0; return th(id, { n: k, cls: 'lv-mut' + (ok ? '' : ' dim'), style: '--lvc:' + v[1], title: E()[id].name + '【' + (ok ? v[0] : '？？？') + '】' + (ch ? '・' + ch : ''), tag: '異變' }); };
 
   // ---------- 左頁 ----------
-  const siteBtn = x => { const rg = regionOf(x), lock = x.status === 'lock' || x.status === 'forbidden'; return '<button type="button" class="dr-site' + (x.id === siteId ? ' on' : '') + (lock ? ' lock' : '') + '" data-drs="' + x.id + '" style="--rc:' + colOf(x) + '"><b>' + esc(x.name) + '</b><small>' + esc(G(x.grade).name) + (rg ? '・' + esc(rg.n) : '') + (x.status === 'forbidden' ? '・公會禁止進入' : x.status === 'lock' ? '・還不能進' : '') + '</small></button>'; };
+  const siteBtn = x => { const rg = regionOf(x), lock = x.status === 'lock' || x.status === 'forbidden'; return '<button type="button" class="dr-site' + (x.id === siteId ? ' on' : '') + (lock ? ' lock' : '') + '" data-drs="' + x.id + '" style="--rc:' + colOf(x) + '"><b>' + (x.special ? '<em style="color:#FF6AD8;font-style:normal">【特殊】</em>' : '') + esc(x.name) + '</b><small>' + esc(x.special ? '特殊・' : '') + esc(G(x.grade).name) + (rg ? '・' + esc(rg.n) : '') + (x.status === 'forbidden' ? '・公會禁止進入' : x.status === 'lock' ? '・還不能進' : '') + '</small></button>'; };
   const SUBS = [['mob', '小怪'], ['lord', '領主體'], ['info', '遺跡詳情']];
   const siteList = () => {
     const list = ruins(gtab);
@@ -226,7 +226,7 @@
   };
   const infoTab = s => {
     const g = G(s.grade), rg = regionOf(s), t = R.TYPES[s.type];
-    return '<div class="dr-info" style="--rc:' + colOf(s) + '"><p><b>' + esc(g.name) + '</b>（' + esc(g.letter || '') + '・' + esc(g.zone || '') + '）' + (t ? '・' + esc(t.name) : '') + (s.env ? '・' + esc(envName(s.env)) + '環境' : '') + '・約 ' + floorsOf(s) + ' 層</p>'
+    return '<div class="dr-info" style="--rc:' + colOf(s) + '"><p><b>' + esc(g.name) + '</b>（' + esc(g.letter || '') + '・' + esc(g.zone || '') + '）' + (t ? '・' + esc(t.name) : '') + (s.env ? '・' + esc(envName(s.env)) + '環境' : '') + '・約 ' + floorsOf(s) + ' 層' + (s.type === 'island' && R.islandZonesAvg ? '（每層約 ' + R.islandZonesAvg(s.grade) + ' 區、每區 12～16 間房）' : '') + (s.special ? '・<b style="color:#FF6AD8">特殊遺跡</b>（' + esc(R.specialRuleText ? R.specialRuleText(s) : '') + '）' : '') + '</p>'
       + '<p>' + esc(s.desc || '') + '</p>' + (rg ? '<p class="note"><b>' + esc(rg.n) + '</b>：' + esc(rg.d || '') + '</p>' : '') + (t && t.desc ? '<p class="note">' + esc(t.name) + '：' + esc(t.desc) + '</p>' : '') + '</div>'
       + fields(s) + coreCard(s) + layers(s);
   };
@@ -252,7 +252,7 @@
   const ruinInfo = s => {
     const g = G(s.grade), rg = regionOf(s), t = R.TYPES[s.type], main = R.siteMain ? R.siteMain(s) : [];
     return '<div class="dx-banner">' + esc(s.name) + '</div>'
-      + '<div class="dr-info" style="--rc:' + colOf(s) + '"><p><b>' + esc(g ? g.name : '') + '</b>（' + esc(g ? g.letter || '' : '') + '）' + (t ? '・' + esc(t.name) : '') + (s.env ? '・' + esc(envName(s.env)) + '環境' : '') + '・約 ' + floorsOf(s) + ' 層</p>'
+      + '<div class="dr-info" style="--rc:' + colOf(s) + '"><p><b>' + esc(g ? g.name : '') + '</b>（' + esc(g ? g.letter || '' : '') + '）' + (t ? '・' + esc(t.name) : '') + (s.env ? '・' + esc(envName(s.env)) + '環境' : '') + '・約 ' + floorsOf(s) + ' 層' + (s.type === 'island' && R.islandZonesAvg ? '（每層約 ' + R.islandZonesAvg(s.grade) + ' 區、每區 12～16 間房）' : '') + (s.special ? '・<b style="color:#FF6AD8">特殊遺跡</b>（' + esc(R.specialRuleText ? R.specialRuleText(s) : '') + '）' : '') + '</p>'
       + '<p>' + esc(s.desc || '') + '</p>' + (rg ? '<p class="note"><b>' + esc(rg.n) + '</b>：' + esc(rg.d || '') + '</p>' : '')
       + (main.length ? '<p class="note">常見：' + main.map(id => esc(E()[id].name)).join('、') + '</p>' : '')
       + '</div><p class="note">點左邊的小頭像看那一隻的介紹；「遺跡詳情」裡有佩特拉核心和場地效果。</p>';

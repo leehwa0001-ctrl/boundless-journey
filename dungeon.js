@@ -3,7 +3,7 @@
 // 五種形式長得不一樣：高塔型是圓形的塔室與懸在深淵上的橋；城區型是街道、房子與廣場；
 // 迷宮型是彎來彎去、長滿樹根的窄道；陵墓型是一排排石柱與石棺；浮島型是浮在海上的島與吊橋。
 (function (R) {
-  const RK = 1.75, CW = 66, CH = 56, TS = 2, DOOR = 4.4;   // 2026-10-13 遺跡整改：房間 ×1.75（RK），格子間距跟著放大（38×32 → 66×56，取 TS 的倍數）
+  const RK0 = 1.75, TS = 2, DOOR = 4.4; let RK = RK0, CW = 66, CH = 56;   /* 浮島型的區：房間再大 35%（RK、CW、CH 在 genFloor 開頭照形式換；R.CELL 跟著） */   // 2026-10-13 遺跡整改：房間 ×1.75（RK），格子間距跟著放大（38×32 → 66×56，取 TS 的倍數）
   const VOID = 0, FLOOR = 1, WALL = 2, PIT = 3;
   const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -24,7 +24,7 @@
   R.FORM = {
     tower: { shapes: ['circle', 'ring', 'octagon', 'gear', 'twin', 'hexagon', 'moat', 'ring'],   /* 2026-10-04 作者：高塔型的房間太像——多了齒輪、雙圓、六角、中央平台 */ calm: ['circle', 'octagon', 'hexagon', 'gear'], boss: 'circle', corr: 'bridge', corrW: 2, wallH: [3.6, 4.6], pit: '#2A1640' },
     city: { shapes: ['plaza', 'rect', 'plaza'], calm: 'rect', boss: 'plaza', corr: 'street', corrW: 3, wallH: [3.6, 5.6], facade: 1, big: 1.1, pit: '#08070A' },
-    maze: { shapes: ['blob', 'blob', 'circle'], calm: 'blob', boss: 'blob', corr: 'wind', corrW: 2, wallH: [3.0, 4.2], roots: 1, pit: '#08070A' },
+    maze: { shapes: ['blob', 'blob', 'circle'], calm: 'blob', boss: 'blob', corr: 'wind', corrW: 1,   /* 2026-10-13 作者：迷宮型的通道更窄（2 格 → 1 格＝2 公尺） */ wallH: [3.0, 4.2], roots: 1, pit: '#08070A' },
     tomb: { shapes: ['hall', 'cross', 'hall'], calm: 'octagon', boss: 'octagon', corr: 'straight', corrW: 2, wallH: [2.9, 3.2], stepped: 1, pit: '#08070A' },
     island: { shapes: ['blob', 'circle', 'blob'], calm: 'circle', boss: 'circle', corr: 'bridge', corrW: 2, edge: 'pit', pit: '#1C5A7A' }
   };
@@ -45,10 +45,22 @@
   };
 
   // ---------- 配置 ----------
+  // 2026-10-13 作者：每層的房間數照形式——高塔 10～15、城區 14～21、迷宮 18～25、陵墓越深越多（最多 35）；浮島型的「區」12～16（island.js 給 run.izZ）
+  R.roomsPerFloor = (run, f) => {
+    const type = R.TYPES[run.type] || R.TYPES.city, g = run.grade;
+    if (run.izZ) return rint(12, 16);
+    if ((run.site && (run.site.id === 'kanko' || run.site.outdoor)) || (g && g.id === 'hunt')) return Math.max(4, Math.min(15, type.rooms(f + 1) + g.lv));
+    if (run.type === 'tower') return rint(10, 15);
+    if (run.type === 'maze') return rint(18, 25);
+    if (run.type === 'tomb') { const n0 = run.f0 ? 1 : 0, k = Math.max(0, Math.min(1, (f - n0) / Math.max(1, run.floors - 1 - n0))); return Math.min(35, Math.round(10 + 25 * k) + rint(-1, 1)); }
+    return rint(14, 21);
+  };
   R.genFloor = (run, f) => {
     const g = run.grade, type = R.TYPES[run.type], form = R.FORM[run.type] || R.FORM.city;
+    const Z = run.izZ || null;   // 浮島型的一區（island.js）
+    RK = Z ? RK0 * 1.35 : RK0; CW = Z ? 90 : 66; CH = Z ? 76 : 56; R.CELL.CW = CW; R.CELL.CH = CH; R.CELL.RK = RK;
     const last = f === run.floors - 1;
-    const n = Math.max(4, Math.min(15, type.rooms(f + 1) + g.lv));
+    const n = R.roomsPerFloor(run, f);
     const rooms = [], at = new Map(), K = (x, y) => x + ',' + y;
     const add = (gx, gy, from) => { const r = { i: rooms.length, gx, gy, links: {}, type: 'fight' }; rooms.push(r); at.set(K(gx, gy), r); if (from) { const d = DIRS.find(d => from.gx + d[0] === gx && from.gy + d[1] === gy); from.links[d[2]] = r.i; r.links[{ n: 's', s: 'n', e: 'w', w: 'e' }[d[2]]] = from.i; } return r; };
     add(0, 0, null);
@@ -70,20 +82,30 @@
     rooms.forEach((r, i) => { r.dist = dist[i]; });
     const far = rooms.slice(1).sort((a, b) => b.dist - a.dist);
     rooms[0].type = 'start';
-    const end = far[0];
-    end.type = last ? (g.boss ? 'boss' : 'deep') : 'stairs';
-    const deadEnds = far.filter(r => r !== end && Object.keys(r.links).length === 1);
-    const others = far.filter(r => r !== end);
+    let end = far[0];
+    if (Z) {
+      // 浮島：中心區的中心房間（最靠近整區中間的那一間）＝這一層的領主房／最深處；其他區沒有樓梯
+      if (Z.center) { const cx = rooms.reduce((a, r) => a + r.gx, 0) / n, cy = rooms.reduce((a, r) => a + r.gy, 0) / n; end = rooms.slice(1).sort((a, b) => Math.hypot(a.gx - cx, a.gy - cy) - Math.hypot(b.gx - cx, b.gy - cy))[0] || far[0] || rooms[0]; end.izCenter = 1; end.type = last ? (g.boss ? 'boss' : 'deep') : (g.lords && g.lords.length ? 'lord' : 'fight'); if (end.type === 'fight') end.izElite = 1; }
+      else end = null;
+    } else end.type = last ? (g.boss ? 'boss' : 'deep') : 'stairs';
+    if (Z) {
+      // 渡島晶：只放在這一區外圍的房間（離整區中間最遠），一條連結一顆
+      const cx = rooms.reduce((a, r) => a + r.gx, 0) / n, cy = rooms.reduce((a, r) => a + r.gy, 0) / n;
+      const outer = rooms.filter(r => r !== end).sort((a, b) => Math.hypot(b.gx - cx, b.gy - cy) - Math.hypot(a.gx - cx, a.gy - cy) + (a.i === 0) - (b.i === 0));
+      Z.links.forEach((to, k) => { const r = outer[k % Math.max(1, outer.length)]; if (r) (r.izTo = r.izTo || []).push(to); });
+    }
+    const deadEnds = far.filter(r => r !== end && !r.izTo && Object.keys(r.links).length === 1);
+    const others = far.filter(r => r !== end && !r.izTo);
     const nChest = n >= 9 ? 2 : 1;
     (deadEnds.length ? deadEnds : others).slice(0, nChest).forEach(r => { r.type = 'chest'; });
     if (g.pool.includes('kousaku')) { const o = others.find(r => r.type === 'fight'); if (o && n >= 5) o.type = 'ore'; }
     // 克森特級：有「領主體」支配的區（最後一層以外的奇數層）
-    if (g.lords && !last && f % 2 === 1) { const o = others.find(r => r.type === 'fight' && r.dist >= 2); if (o) o.type = 'lord'; }
+    if (g.lords && !last && f % 2 === 1 && !Z) { const o = others.find(r => r.type === 'fight' && r.dist >= 2); if (o) o.type = 'lord'; }
     // 摩爾斯級：獨立的陷阱區；阿彌勒級：部分區域有陷阱
     if (g.traps === 'rooms') others.filter(r => r.type === 'fight').slice(1, f % 2 ? 3 : 2).forEach(r => { r.type = 'trap'; });
     if (g.traps === 'some') rooms.forEach(r => { if (r.type === 'fight' && Math.random() < 0.3) r.traps = 1; });
     // 摩爾斯級最深處：送犬的巢（特殊生態區）
-    if (g.nest && last) end.nest = 1;
+    if (g.nest && last && end) end.nest = 1;
     // 尺寸、形狀、位置（hx、hz：半寬、半深）
     rooms.forEach(r => {
       const hs0 = r.type === 'boss' ? [15, 12] : r.type === 'lord' ? [13.5, 11] : r.type === 'start' ? [8, 7] : r.type === 'chest' ? [7.5, 6.5] : r.type === 'deep' ? (r.nest ? [12.5, 10] : [10, 8]) : r.type === 'stairs' ? [9.5, 8] : [rnd(10.5, 15), rnd(8.5, 12)]; const hs = [hs0[0] * RK, hs0[1] * RK];
@@ -173,14 +195,14 @@
     // 房間裡的結構：柱子、有缺口的隔牆、石塊、L 形的牆（入口、寶箱、樓梯、最深處、領主、核心的房間不放）
     // 只放在離房間邊緣三格以上的地方（門口和繞一圈的路都留著），放完確認整間還是連通的，不通就拿掉
     rooms.forEach(r => {
-      if ((run.type === 'tower' && (!['circle', 'octagon', 'hexagon'].includes(r.shape) || Math.random() < 0.5)) || !['fight', 'trap', 'ore'].includes(r.type) || (!r.big && Math.random() < 0.3)) return;   // 高塔：圓、八角、六角的房間一半立柱子
+      if ((run.type === 'tower' && (!['circle', 'octagon', 'hexagon'].includes(r.shape) || Math.random() < 0.5)) || !['fight', 'trap', 'ore'].includes(r.type) || (!r.big && run.type !== 'maze' && Math.random() < 0.3)) return;   /* 迷宮型：每一間戰鬥房都有結構 */   // 高塔：圓、八角、六角的房間一半立柱子
       const set = new Set(r.tiles), depth = new Map(), q = [];
       r.tiles.forEach(k => { const tx = k % nx, tz = (k - tx) / nx; if (N4.some(([dx, dz]) => !set.has(id(tx + dx, tz + dz)))) { depth.set(k, 0); q.push(k); } });
       for (let i = 0; i < q.length; i++) { const k = q[i], tx = k % nx, tz = (k - tx) / nx; N4.forEach(([dx, dz]) => { const m = id(tx + dx, tz + dz); if (set.has(m) && !depth.has(m)) { depth.set(m, depth.get(k) + 1); q.push(m); } }); }
       const ok = (tx, tz) => { const m = id(tx, tz); return set.has(m) && depth.get(m) >= 3; };
       const cx = tX(r.x), cz = tZ(r.z), wall = new Set(), put = (tx, tz) => { if (ok(tx, tz)) wall.add(id(tx, tz)); };
       const kind = run.type === 'tower' ? 'pillars' : run.type === 'tomb' ? pick(['pillars', 'partition']) : run.type === 'city' ? pick(['blocks', 'partition', 'blocks']) : run.type === 'maze' ? pick(['ell', 'ell', 'blocks']) : pick(['pillars', 'blocks', 'ell', 'partition']);
-      const kinds = r.big ? [kind, pick(['blocks', 'ell', 'pillars'])] : [kind];
+      const kinds = run.type === 'maze' ? [kind, pick(['partition', 'ell', 'pillars']), pick(['blocks', 'ell'])] : r.big ? [kind, pick(['blocks', 'ell', 'pillars'])] : [kind];   /* 2026-10-13 作者：迷宮型的房間內部更複雜（三層結構：L 牆、隔牆、柱子、石塊；放完照樣檢查連通） */
       kinds.forEach(kd => {
         if (kd === 'pillars') { const step = rint(3, 4); for (let tz = cz - 12; tz <= cz + 12; tz += step) for (let tx = cx - 16; tx <= cx + 16; tx += step) if (Math.abs(tx - cx) + Math.abs(tz - cz) > 2) put(tx, tz); }
         else if (kd === 'partition') { const alongX = r.hx >= r.hz, off = rint(-2, 2), gaps = [rint(-6, -2), rint(2, 6)]; for (let i = -18; i <= 18; i++) { if (gaps.some(g2 => Math.abs(i - g2) <= 1)) continue; if (alongX) put(cx + off, cz + i); else put(cx + i, cz + off); } }
@@ -565,10 +587,10 @@
       }
       const near = (x, z) => { const [px, pz] = R.nearestFloorLocal(t, x, z); return [px, pz]; };
       if (r.type === 'trap' || r.traps) spikes(r, r.type === 'trap');
-      if (r.type === 'start') upstairs(r);
+      if (r.type === 'start' && !(run.izZ && !run.izZ.entry)) upstairs(r);   /* 浮島：只有入口區有往上的通道 */
       if (r.type === 'deep' && run.grade.zone === '保留區') coreView(r);
       if (r.type === 'chest' || r.type === 'deep') { const [x, z] = near(r.x, r.z + (r.type === 'deep' ? 1 : 0)); R.addChest(group, F, x, z, run.grade.lv >= 2 && Math.random() < 0.35 ? 2 : run.grade.lv >= 1 ? 1 : 0, r.i); }
-      if (r.type === 'start' && (run.grade.crystal === 'start' || (run.grade.crystal === 'stairs' && F.f === (run.f0 ? 1 : 0)))) { /* 第一層的落點也有（作者 2026-10-04） */ const [x, z] = near(r.x, r.z - r.hz + 2.8); R.addCrystal(group, F, x, z, r.i); }
+      if (r.type === 'start' && !(run.izZ && !run.izZ.entry) && (run.grade.crystal === 'start' || (run.grade.crystal === 'stairs' && F.f === (run.f0 ? 1 : 0)))) { /* 第一層的落點也有（作者 2026-10-04） */ const [x, z] = near(r.x, r.z - r.hz + 2.8); R.addCrystal(group, F, x, z, r.i); }
       if (r.type === 'stairs') { R.addStairs(group, F, r.x, r.z, r.i, th); if (run.grade.crystal === 'stairs') { const [x, z] = near(r.x - 5, r.z - r.hz + 3); R.addCrystal(group, F, x, z, r.i); } }
       if (r.type === 'deep') { const [x, z] = near(r.x, r.z + r.hz - 3); R.addCrystal(group, F, x, z, r.i); }
       if (r.type === 'ore') for (let k = 0; k < 6; k++) { const s = spot(r, { wall: true, rad: 0.4 }); if (!s) continue; const c = new TH.Mesh(new TH.OctahedronGeometry(0.5 + Math.random() * 0.4, 0), lam(Math.random() < 0.5 ? '#8A74FF' : '#A3ACB6', { emissive: '#1A1030' })); c.position.set(s[0], 0.6 + Math.random(), s[1]); c.rotation.set(Math.random(), Math.random(), Math.random()); group.add(c); }

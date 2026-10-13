@@ -12,31 +12,36 @@
 (function (R) {
   const W = () => R.W;
   // 2026-10-04 作者：遺跡最多可以到 100 層、後面的分級每 20 層一個存檔點，其他遺跡也加深（50、60 層沒問題）
-  const RANGE = { hamilia: [4, 7], amile: [8, 16], mors: [14, 28], kesent: [30, 60], kaso: [70, 100], kansait: [70, 100] }, MAXF = 100;
+  // 2026-10-13 作者：層數重訂——哈米莉亞 8～12、阿彌勒 18～25、摩爾斯 20～40、克森特 35～60、卡索 70～120；
+  //   高塔 ×1.75、迷宮 ×0.65、陵墓 ×1.25、城區 ×1；卡索級不吃形式倍率。浮島型另外算（island.js：哈米莉亞、阿彌勒 1 層、摩爾斯 2、克森特 3、卡索 4，每層分好幾區）。
+  const RANGE = { hamilia: [8, 12], amile: [18, 25], mors: [20, 40], kesent: [35, 60], kaso: [70, 120], kansait: [70, 120] }, MAXF = 250;
   const NOTYPE = { kaso: 1, kansait: 1 };   // 不吃形式倍率、夾在範圍內
-  const TYPEK = { tower: 1.35, city: 1, maze: 0.65, tomb: 1, island: 0.85 };
+  const TYPEK = { tower: 1.75, city: 1, maze: 0.65, tomb: 1.25 };
+  R.ISLAND_FLOORS = { hamilia: 1, amile: 1, mors: 2, kesent: 3, kaso: 4, kansait: 4 };
   const hash = s => { let h = 2166136261; for (const c of String(s)) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return (h >>> 0) / 4294967296; };
   const oldFloors = site => { const g = R.gradeById(site.grade), t = R.TYPES[site.type]; return Math.max(2, ((g && g.floors) || 2) + (t ? t.floors : 0)); };
   R.floorsFor = site => {
+    if (site && site.floorsFixed) return site.floorsFixed;   // 特殊遺跡（special.js）：固定層數
     const g = R.gradeById(site.grade); if (!g || !RANGE[g.id] || site.id === 'kanko' || site.kind === 'hunt' || site.outdoor) return oldFloors(site);
+    if (site.type === 'island') return R.ISLAND_FLOORS[g.id] || 1;
     const [a, b] = RANGE[g.id];
     if (NOTYPE[g.id]) return Math.max(a, Math.min(b, MAXF, Math.round(a + (b - a) * hash(site.id))));
     const n = Math.round((a + (b - a) * hash(site.id)) * (TYPEK[site.type] || 1));
-    return Math.max(Math.max(2, Math.round(a * 0.65)), Math.min(MAXF, Math.round(b * 1.3), n));
+    return Math.max(2, Math.min(MAXF, n));
   };
   // 克森特級每 10 層、卡索級以上每 20 層（2026-10-04 作者：每 20 層一個是後面的等級；克森特級怎麼沒有存檔點）
-  R.saveEvery = run => { const n = run.floors - (run.f0 ? 1 : 0); return n <= 12 ? 3 : n <= 16 ? 4 : n <= 25 ? 5 : n <= 40 ? 6 : n <= 60 ? 8 : 10; };
+  R.saveEvery = run => { if (run && run.type === 'island') return 1; const n = run.floors - (run.f0 ? 1 : 0); return n <= 12 ? 3 : n <= 16 ? 4 : n <= 25 ? 5 : n <= 40 ? 6 : n <= 60 ? 8 : 10; };
   // 出發：記下難度換算的比例
   const sr0 = R.startRun;
   R.startRun = id => {
     const r = sr0(id), run = W().run;
-    if (run && run.site && run.site.id === id && run.depthK == null) { const real = run.floors - (run.f0 ? 1 : 0), old = oldFloors(run.site); run.depthK = real > old ? (old - 1) / Math.max(1, real - 1) : 1; }
+    if (run && run.site && run.site.id === id && run.depthK == null) { const real = run.floors - (run.f0 ? 1 : 0), old = oldFloors(run.site); run.depthK = real > old || run.type === 'island' ? (old - 1) / Math.max(1, real - 1) : 1; }   /* 浮島型層數少：每層換算成原本的深處（depthK > 1） */
     return r;
   };
   // 遺跡生物的強度、寶箱的等級：用換算回原本層數的那一層
-  const eff = (run, f) => (run && run.depthK && run.depthK < 1 ? Math.round(f * run.depthK) : f);
+  const eff = (run, f) => (run && run.depthK && run.depthK !== 1 ? Math.round(f * run.depthK) : f);
   const se0 = R.spawnEnemy;
-  R.spawnEnemy = (...a) => { const run = W().run; if (!run || !run.depthK || run.depthK >= 1) return se0(...a); const f = run.floor; run.floor = eff(run, f); try { return se0(...a); } finally { run.floor = f; } };
+  R.spawnEnemy = (...a) => { const run = W().run; if (!run || !run.depthK || run.depthK === 1) return se0(...a); const f = run.floor; run.floor = eff(run, f); try { return se0(...a); } finally { run.floor = f; } };
   const rc0 = R.rollChest;
   R.rollChest = (g, floor, cls, tier) => rc0(g, eff(W().run, floor), cls, tier);
 })(window.R);

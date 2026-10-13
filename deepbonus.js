@@ -20,7 +20,7 @@
   const NONE = { n: 0, total: 0, p: 0, k: 0, amp: 0, cap: 0, hp: 0, dmg: 0, qty: 0, rare: 0, xp: 0 };
   R.depthBonus = run => {
     if (!run || !run.grade || !run.site || run.grade.id === 'hamilia' || run.grade.id === 'hunt' || run.site.id === 'kanko' || run.site.outdoor) return NONE;
-    const cap = TOTAL[run.grade.id] || 0; if (!cap) return NONE;
+    const cap = (run.site && run.site.special && run.site.depthMax != null ? run.site.depthMax : TOTAL[run.grade.id]) || 0; if (!cap) return NONE;   /* 特殊遺跡（special.js）：自己的最深增幅 */
     const n = Math.max(0, shown(run)), total = totalFloors(run), p = Math.max(0, Math.min(1, n / total));
     // 複利：第 1 層 +0%，之後每層乘同一個倍率，最深層剛好到這個分級的最深增幅
     const steps = Math.max(1, total - 1), i = Math.max(0, Math.min(steps, n - 1));
