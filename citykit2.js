@@ -507,7 +507,7 @@
     tw.inter.forEach(it => { if (!it.icon) return; const m = pt(it.x, it.z); x.fillStyle = stampDone(city, it) ? '#5AC87A' : it.icon; x.strokeStyle = '#141018'; x.lineWidth = 1.5; x.beginPath(); x.arc(m[0], m[1], 4.5, 0, Math.PI * 2); x.fill(); x.stroke(); });
     x.textAlign = 'center'; x.textBaseline = 'middle';
     tw.D.labels.forEach(([t, wx, wz, big]) => { const m = pt(wx, wz); x.font = 'bold ' + (big ? 14 : 11) + 'px sans-serif'; const w = x.measureText(t).width + 8; x.fillStyle = 'rgba(244,233,205,.9)'; x.fillRect(m[0] - w / 2, m[1] - 8, w, 16); x.fillStyle = '#1A1410'; x.fillText(t, m[0], m[1]); });
-    const m = pt(P.x, P.z); x.fillStyle = '#FFE08A'; x.strokeStyle = '#1A1410'; x.lineWidth = 2; x.beginPath(); x.arc(m[0], m[1], 6, 0, Math.PI * 2); x.fill(); x.stroke();
+    const m = pt(P.x, P.z); x.fillStyle = '#FFE08A'; x.strokeStyle = '#1A1410'; x.lineWidth = 2; x.beginPath(); x.arc(m[0], m[1], 6, 0, Math.PI * 2); x.fill(); x.stroke(); $('ck-big').dataset.px = m[0] / wpx; $('ck-big').dataset.py = m[1] / hpx;   // mapzoom.js
     (CK.mapHooks || []).forEach(f => { try { f(x, pt, 'big', { canvas: $('ck-big'), inv: (px, py) => [px / (MPPM * sc) + mc.userData.x0, py / (MPPM * sc) + mc.userData.z0], redraw: bigMap }); } catch (e) { } });   // 目的地、導航線；點地圖設目的地（ckmove.js）
   };
   const QN = ['低', '中', '高'];

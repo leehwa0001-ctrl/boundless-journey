@@ -653,7 +653,7 @@
     tw.inter.forEach(it => { if (!it.icon) return; const m = pt(it.x, it.z), sid = (/觀光景點：([^（]*)/.exec(it.label) || [])[1], done = sid && SIGHTS.some(v => v[1] === sid && g[v[0]]); x.fillStyle = done ? '#5AC87A' : it.icon; x.strokeStyle = '#141018'; x.lineWidth = 1.5; x.beginPath(); x.arc(m[0], m[1], 4.5, 0, Math.PI * 2); x.fill(); x.stroke(); });
     x.font = 'bold 12px sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
     LABELS.forEach(([t, wx, wz]) => { const m = pt(wx, wz), w = x.measureText(t).width + 8; x.fillStyle = 'rgba(244,233,205,.88)'; x.fillRect(m[0] - w / 2, m[1] - 8, w, 16); x.fillStyle = '#1A1410'; x.fillText(t, m[0], m[1]); });
-    const m = pt(P.x, P.z); x.fillStyle = '#FFE08A'; x.strokeStyle = '#1A1410'; x.lineWidth = 2; x.beginPath(); x.arc(m[0], m[1], 6, 0, Math.PI * 2); x.fill(); x.stroke();
+    const m = pt(P.x, P.z); x.fillStyle = '#FFE08A'; x.strokeStyle = '#1A1410'; x.lineWidth = 2; x.beginPath(); x.arc(m[0], m[1], 6, 0, Math.PI * 2); x.fill(); x.stroke(); $('hs-big').dataset.px = m[0] / wpx; $('hs-big').dataset.py = m[1] / hpx;   // mapzoom.js
   };
   const menu = () => {
     R.sheet('<h2>奉主</h2><p class="note">' + (R.today ? esc(R.dateLabel()) : '') + '</p><p class="note">' + (R.touch ? '左搖桿移動・靠近人或店按「互動」' : 'WASD 移動・Shift 跑步・空白鍵互動・Q／E 轉視角・Tab 地圖') + '。回東鶴：到北邊的奉主站買票（' + FARE + ' 費拉）。</p>',

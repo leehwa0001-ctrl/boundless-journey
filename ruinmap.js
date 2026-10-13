@@ -29,6 +29,7 @@
   };
   const draw = () => {
     if (!cv || !cv.isConnected) return; const F = W.F, run = W.run, P = W.P; if (!F || !run || !P) return;
+    run._rmView = { f: run.floor, cx: view.cx, cz: view.cz, k: view.k };
     const g = cv.getContext('2d'), cw = cv.width, ch = cv.height, t = F.tile;
     g.fillStyle = '#0E0B12'; g.fillRect(0, 0, cw, ch);
     // 世界座標 → 畫布
@@ -57,17 +58,21 @@
     const F = W.F, run = W.run, P = W.P; if (!F || !run || !P) return;
     off = paint(F);
     const side = window.innerWidth > 820, cw = Math.max(260, Math.round(Math.min(window.innerWidth - 72 - (side ? 292 : 0), 1040))), ch = Math.max(240, Math.round(Math.min(window.innerHeight * (side ? 0.74 : 0.52), side ? 780 : cw)));
-    view = { cx: P.x, cz: P.z, k: Math.max(2, Math.min(5, cw / 90)) };
+    // 2026-10-14：縮放、位置記在這一趟（同一層再打開照上次的樣子）
+    const sv = run._rmView; view = sv && sv.f === run.floor ? { cx: sv.cx, cz: sv.cz, k: sv.k } : { cx: P.x, cz: P.z, k: Math.max(2, Math.min(5, cw / 90)) };
     const vis = F.rooms.filter(r => r.visited).length, aw = Math.floor(run.aware || 0);
     const info = '<p><b>' + esc(run.site.name) + '</b><br><small>' + esc(run.grade.name) + '・' + esc(R.TYPES[run.type] ? R.TYPES[run.type].name : '') + (run.env ? '・' + esc(R.ENVS[run.env].name) : '') + '</small></p>'
       + '<p class="note">第 ' + (run.floor + 1) + '／' + run.floors + ' 層・探索了 ' + vis + '／' + F.rooms.length + ' 間<br>佩特拉的注意 ' + aw + '%' + (F.puzzles && F.puzzles.length ? '<br>這一層有 ' + F.puzzles.length + ' 間謎題房（支線）' : '') + '</p>';
     const lg = [['入', '#F4E9CD', '入口'], ['▼', '#FFE08A', '樓層通道'], ['出', '#FFF1D0', '出口'], ['▣', '#D8B060', '寶箱（灰色：開過了）'], ['晶', '#7FE8FF', '回歸水晶'], ['礦', '#9AE0FF', '礦'], ['?', '#B8E07A', '謎題房'], ['領', '#FF8A6A', '領主區'], ['◉', '#FF6A7A', '核心'], ['◆', '#C8A0FF', '最深處'], ['！', '#FF8A3A', '陷阱區']];
     R.sheet('<h2>遺跡地圖</h2><div class="gmap"><canvas id="rm-cv" width="' + cw + '" height="' + ch + '"></canvas><div class="gmap-side">' + info
       + '<h3>圖例</h3><div class="glegend">' + lg.map(([g2, c, n]) => '<span class="gl"><b style="background:#141018;color:' + c + ';border-color:' + c + '">' + g2 + '</b>' + n + '</span>').join('') + '<span class="gl"><b style="background:#E0584A"> </b>遺跡生物</span><span class="gl"><b style="background:#6FE08A"> </b>隊友</span></div>'
-      + '<p class="note">拖曳移動、滾輪縮放（手機兩指）。只畫走過、看過的地方；紅色的房間是鎖住的。</p></div></div>',
-      '<div class="row"><button type="button" class="btn pri" id="rm-x">關上（Tab）</button><button type="button" class="btn" id="rm-me">回到自己的位置</button><button type="button" class="btn" id="rm-all">整層</button></div>');
+      + '<p class="note">拖曳移動、滾輪縮放（手機兩指）、＋／− 按鈕；雙擊回到自己的位置。只畫走過、看過的地方；紅色的房間是鎖住的。</p></div></div>',
+      '<div class="row"><button type="button" class="btn pri" id="rm-x">關上（Tab）</button><button type="button" class="btn" id="rm-in">＋ 放大</button><button type="button" class="btn" id="rm-out">− 縮小</button><button type="button" class="btn" id="rm-me">回到自己的位置</button><button type="button" class="btn" id="rm-all">整層</button></div>');
     $('r-sheet').classList.add('wide');
-    cv = $('rm-cv');
+    cv = $('rm-cv'); cv.style.touchAction = 'none'; cv.style.cursor = 'grab';
+    const zc = f => { view.k = Math.max(1, Math.min(14, view.k * f)); draw(); };
+    $('rm-in').onclick = () => zc(1.4); $('rm-out').onclick = () => zc(1 / 1.4);
+    cv.addEventListener('dblclick', e => { e.preventDefault(); view.cx = P.x; view.cz = P.z; draw(); });
     $('rm-x').onclick = R.closeSheet; $('rm-me').onclick = () => { view.cx = P.x; view.cz = P.z; draw(); };
     $('rm-all').onclick = () => { const t = F.tile, w = t.nx * t.TS, h = t.nz * t.TS; view.cx = t.X0 + w / 2; view.cz = t.Z0 + h / 2; view.k = Math.min(cw / w, ch / h) * 0.95; draw(); };
     const pts = new Map(); let pinch = 0;

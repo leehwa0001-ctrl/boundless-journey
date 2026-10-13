@@ -315,6 +315,7 @@
     if (F.up && F.rooms[0].visited) { const m = pt(F.up.x, F.up.z); x.fillStyle = '#FFF1D0'; x.fillText('▲', m[0], m[1]); }
     x.fillStyle = '#7FE8FF'; (F.crystals || []).forEach(c => { if (!F.rooms[c.room].visited) return; const m = pt(c.x, c.z); x.beginPath(); x.arc(m[0], m[1], 4, 0, Math.PI * 2); x.fill(); });
     const m = pt(P.x, P.z); x.fillStyle = '#FFE08A'; x.strokeStyle = '#1A1410'; x.lineWidth = 2; x.beginPath(); x.arc(m[0], m[1], 5, 0, Math.PI * 2); x.fill(); x.stroke();
+    const bc = $('big-map'); bc.dataset.px = m[0] / s; bc.dataset.py = m[1] / s;   // mapzoom.js：⌖ 回到自己身上
   };
   R.pauseSheet = () => {
     const run = W.run; if (!run) return;
