@@ -25,7 +25,7 @@
   // ======================= 牧師：信仰 =======================
   CORE.priest = {
     name: '信仰', col: '#FFE8A0',
-    help: P => '信仰：補血（照補了多少）、放祝福和治療的技能攢信仰；一次補 2% 以上、補過頭的量會變成一道光，打最近的遺跡生物（兩倍）。X（信仰 100）神蹟：自己和隊友回 30%、周圍 5 公尺 4 倍傷害、清掉負面狀態。'
+    help: P => '信仰：補血（照補了多少，補隊友算一半）、給護盾、放祝福和治療的技能攢信仰；神蹟自己補的不算；一次補 2% 以上、補過頭的量會變成一道光，打最近的遺跡生物（兩倍）。X（信仰 100）神蹟：自己和隊友回 30%、周圍 5 公尺 4 倍傷害、清掉負面狀態。'
       + ({ bishop: '主教：神蹟扶起倒下的隊友。', druid: '德魯伊：神蹟讓周圍的遺跡生物定身 3 秒。', shinkan: '神官：神蹟張開 6 秒大結界。' }[adv(P)] || ''),
     add(P, n) { P._faith = Math.min(100, (P._faith || 0) + n); },
     onCast(P, i, id, sk) { const L = R.SKILL_LIB && R.SKILL_LIB[id]; if (L && (L.type === 'heal' || L.type === 'buff' || L.type === 'revive')) this.add(P, 12); },
@@ -39,7 +39,7 @@
       if (adv(P) === 'shinkan') P.buff.kekkai = Math.max(P.buff.kekkai || 0, 6);
       say(P, '神蹟', 'heal');
     },
-    gauge(P) { const f = P._faith || 0, need = (R.legOf ? R.legOf(P) : null) === 'lg_saint' ? 70 : 100; return { v: f, max: 100, full: f >= need, sub: '補血、祝福攢信仰', x: f >= need ? '神蹟' : '' }; }
+    gauge(P) { const f = P._faith || 0, need = (R.legOf ? R.legOf(P) : null) === 'lg_saint' ? 70 : 100; return { v: f, max: 100, full: f >= need, sub: '補血、護盾、祝福攢信仰', x: f >= need ? '神蹟' : '' }; }
   };
   const hl0 = R.healP;
   R.healP = (v, q) => {
