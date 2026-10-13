@@ -21,8 +21,8 @@
     const k = (e.key || '').toLowerCase();
     if (/^(w|a|s|d|arrowup|arrowdown|arrowleft|arrowright)$/.test(k)) hit('move');
     if (k === 'shift') hit('run'); if (k === ' ') hit('act'); if (k === 't') hit('ft'); if (k === 'x') hit('cls');
-    if (/^[1-6]$/.test(k) || k === 'q' || k === 'e' || k === 'r') hit('skill'); if (k === 'r') hit('rot');
-    if (k === 'm' || k === 'tab') hit('map'); if (k === 'f') hit('pot'); if (k === 'c' || k === 'control') hit('dodge');
+    if (/^[3-6]$/.test(k) || k === 'r') hit('skill'); if (k === 'r') hit('rot');
+    if (k === 'm' || k === 'tab') hit('map'); if (k === '1') hit('pot'); if (k === 'shift') hit('dodge');
   }, true);
   addEventListener('mousedown', e => { if (e.button === 0 && e.target && e.target.id === 'gl') hit('fire'); }, true);
   addEventListener('pointerdown', e => { const t = e.target; if (!t || !t.closest) return; if (t.closest('#joy-l')) hit('move'); if (t.closest('#joy-r')) hit('fire'); if (t.closest('[id^="r-skill"]')) hit('skill'); if (t.closest('#core-g')) hit('cls'); if (t.closest('#r-pot')) hit('pot'); if (t.closest('#r-map,#b-map')) hit('map'); if (t.closest('.tk-it')) hit('drag'); if (t.closest('[data-tkrot],[data-tkrotin]')) hit('rot'); }, true);
@@ -42,10 +42,10 @@
     ] },
     combat: { n: '戰鬥', ctx: inRun, steps: [
       evStep('普通攻擊', () => T('用滑鼠瞄準，按 <kbd>左鍵</kbd> 攻擊。', '右邊的搖桿拖曳瞄準、放開出手；也可以直接點敵人。'), () => touch() ? '#joy-r' : null, 'fire'),
-      evStep('技能', () => T('技能在下方的技能列：<kbd>右鍵</kbd>、<kbd>Q</kbd> <kbd>E</kbd> <kbd>R</kbd> 和數字鍵施放，圓圈轉完才能再用。', '點下方的技能鈕施放，圓圈轉完才能再用。'), '#r-skill', 'skill'),
+      evStep('技能', () => T('技能在下方的技能列：<kbd>右鍵</kbd>（或 <kbd>R</kbd>）、<kbd>3</kbd> <kbd>4</kbd> <kbd>5</kbd> <kbd>6</kbd> 施放，圓圈轉完才能再用。', '點下方的技能鈕施放，圓圈轉完才能再用。'), '#r-skill', 'skill'),
       step('血量和魔力', () => '左下是生命（紅）和魔力（藍）。生命見底就會被抬回城裡，背包裡沒帶出來的東西會掉一些。', '#r-hp'),
-      step('回復藥', () => T('快沒血時按 <kbd>F</kbd> 或點藥瓶喝回復藥。藥在白藤堂買。', '快沒血時點藥瓶喝回復藥。藥在白藤堂買。'), '#r-pot'),
-      step('閃避', () => T('按 <kbd>Ctrl</kbd> 或 <kbd>C</kbd> 翻滾，翻滾中不會受傷。', '點翻滾鈕閃開，翻滾中不會受傷。'), '#r-dodge-cd'),
+      step('回復藥', () => T('快沒血時按 <kbd>1</kbd> 或點藥瓶喝回復藥（<kbd>2</kbd> 是魔力藥）。藥在白藤堂買。', '快沒血時點藥瓶喝回復藥。藥在白藤堂買。'), '#r-pot'),
+      step('閃避', () => T('點一下 <kbd>Shift</kbd> 翻滾，翻滾中不會受傷（按住是跑步）。', '點翻滾鈕閃開，翻滾中不會受傷。'), '#r-dodge-cd'),
       evStep('地圖', () => T('按 <kbd>Tab</kbd> 或 <kbd>M</kbd> 看這一層的地圖。', '點地圖鈕看這一層的地圖。'), () => touch() ? '#r-map' : null, 'map')
     ] },
     ruin: { n: '遺跡', ctx: inRun, steps: [
@@ -81,7 +81,7 @@
     ] },
     archer: { n: '弓箭手：續力', ctx: inRun, steps: [
       evStep('續力', () => T('按住 <kbd>左鍵</kbd> 續力、放開射出。沒蓄力＝沒傷害，蓄滿＝100%（普攻 2 秒、技能 4 秒）。', '按住右邊搖桿續力、放開射出。沒蓄力＝沒傷害，蓄滿＝100%。'), () => touch() ? '#joy-r' : null, 'fire'),
-      step('續力條', () => '左邊的續力條顯示蓄了幾 %，和現在搭上的箭矢。', () => byText('#run div', /續力|蓄力/) ),
+      step('續力條', () => '左下角角色資訊上方的續力條顯示蓄了幾 %，和現在搭上的箭矢。', () => byText('#run div', /續力|蓄力/) ),
       evStep('換箭矢', () => T('傷害型技能是一種箭矢：按技能鍵「換上」，再按一次卸下，射出去才扣魔力和冷卻。', '點技能鈕「換上」箭矢，再點一次卸下，射出去才扣魔力和冷卻。'), '#r-skill', 'skill'),
       step('武器差別', () => '長弓能蓄到 120%；十字弩會自己蓄滿，點一下就射。攻速越高蓄得越快。', null)
     ] },
@@ -90,14 +90,16 @@
       step('施法', () => T('按技能會先顯示 50% 透明的範圍，<kbd>左鍵</kbd> 確認後蓄力放出。技能中心只要在普攻範圍內，哪裡都能放（增益、回復也是）。', '點技能先顯示範圍，再點一下確認。技能中心只要在普攻範圍內，哪裡都能放。'), '#r-skill'),
       step('節點數', () => '能用的節點一開始 2 個，每 5 級多 1 個，最多 7 個。', null)
     ] },
-    mage: { n: '術士：自己配法術', ctx: inRun, steps: [   // 2026-10-13 術士：三選
-      step('法術書', () => '暫停選單或城裡選單點「法術書」：每一句法術選元素、形狀、效果，再綁到技能格。', null),
-      evStep('放法術', () => T('按技能鍵放出配好的法術。', '點技能鈕放出配好的法術。'), '#r-skill', 'skill'),
-      evStep('換元素', () => T('按一下 <kbd>X</kbd>：剛剛放的那一句換成下一個元素（火→冰→雷）。', '點一下職業條：剛剛放的那一句換成下一個元素。'), '#core-g', 'cls'),
-      step('地形', () => '「牆」和「球＋爆炸」會留下 8 秒的地形，擋住敵人和敵人的投射物。', null)
+    mage: { n: '術士：普攻上元素、技能引爆', ctx: inRun, steps: [   // 2026-10-13 術士：元素反應（elemreact.js）
+      evStep('換元素', () => T('點一下 <kbd>X</kbd> 換普攻的元素：火 → 冰 → 雷 → 木。', '點一下職業條換普攻的元素：火 → 冰 → 雷 → 木。'), '#core-g', 'cls'),
+      evStep('上元素', () => T('用 <kbd>左鍵</kbd> 普攻打中敵人，牠頭上會出現元素小方塊（留 5 秒）。', '用右搖桿普攻打中敵人，牠頭上會出現元素小方塊（留 5 秒）。'), () => touch() ? '#joy-r' : null, 'fire'),
+      evStep('技能引爆', () => T('再用技能（<kbd>右鍵</kbd>）打牠：技能的元素跟方塊不一樣就會引爆，例如火＋冰＝蒸發。', '再點技能鈕打牠：技能的元素跟方塊不一樣就會引爆，例如火＋冰＝蒸發。'), '#r-skill', 'skill'),
+      step('反應表', () => T('按住 <kbd>X</kbd> 會跳出反應表，放開就關。表上也能直接點「風」「金」：風會把元素傳給旁邊的敵人，金會打破護甲。', '長按職業條會跳出反應表，點外面就關。表上也能直接點「風」「金」：風會把元素傳給旁邊的敵人，金會打破護甲。'), '#core-g'),
+      step('法術書', () => '技能是你自己配的法術：暫停選單（Esc）→「法術書」，每一句選元素、形狀、效果，再綁到技能格。', null)
     ] },
     summoner: { n: '召喚師：意念與收回', ctx: inRun, steps: [   // 2026-10-13 召喚師
       evStep('意念', () => T('點一下 <kbd>X</kbd> 換意念：集火 → 護衛 → 狂奔。', '點一下職業條換意念。'), '#core-g', 'cls'),
+      evStep('協同攻擊', () => T('普攻不花魔力。用 <kbd>左鍵</kbd> 普攻打中敵人時，召喚物會馬上一起撲上去（2.5 秒一次）。', '普攻不花魔力。用右搖桿普攻打中敵人時，召喚物會馬上一起撲上去（2.5 秒一次）。'), () => touch() ? '#joy-r' : null, 'fire'),
       step('收回', () => T('按住 <kbd>X</kbd> 0.5 秒＝收回所有召喚物，退回一半魔力。', '長按職業條＝收回所有召喚物，退回一半魔力。'), '#core-g'),
       step('魔力', () => '召喚物不限時間，但每隻每秒吃一點魔力；職業條下面寫著現在每秒吃多少。魔力見底時最弱的那隻先散掉。', null),
       step('帶召喚獸', () => '每次進遺跡，休息區會問你這一趟要帶哪些召喚獸（最多五格）。進去之後就不能換，在休息區可以按左下角的按鈕再改。你的身體很脆弱，讓召喚物站在前面。', null),
@@ -119,6 +121,31 @@
       step('居合', () => '收刀 4 秒刀意集滿，下一次普攻或技能就是「居合」：大範圍、傷害 ×2，之後 5 秒「殘心」減傷 20%。', '#core-g'),
       step('反切', () => T('拔刀時普攻打中也會漲刀意。拔刀＋刀意滿＝「刀意渾圓」，這時被打會自動「反切」：不受傷、回砍一刀。再按 <kbd>X</kbd> 拔刀。', '拔刀時普攻打中也會漲刀意。拔刀＋刀意滿＝「刀意渾圓」，這時被打會自動「反切」：不受傷、回砍一刀。再點職業條拔刀。'), null)
     ] },
+    warrior: { n: '戰士：怒氣', ctx: inRun, steps: [   // 2026-10-13 每個職業都有職業教學
+      step('怒氣', () => '戰士用「怒氣」放技能，不用魔力。打中敵人、被敵人打都會漲；4 秒沒打也沒被打就慢慢掉。', '#core-g'),
+      evStep('先打', () => T('用 <kbd>左鍵</kbd> 普攻打幾下，看職業條的怒氣漲起來。', '用右搖桿普攻打幾下，看職業條的怒氣漲起來。'), () => touch() ? '#joy-r' : null, 'fire'),
+      evStep('怒吼', () => T('怒氣到 50 以上時按 <kbd>X</kbd> 怒吼：把怒氣全部吼出去，越多越痛，之後 6 秒傷害提高。', '怒氣到 50 以上時點職業條怒吼：把怒氣全部吼出去，越多越痛，之後 6 秒傷害提高。'), '#core-g', 'cls')
+    ] },
+    gunner: { n: '槍手：換彈與彈種', ctx: inRun, steps: [
+      step('彈匣', () => '槍手的子彈有限，職業條寫著還剩幾發。打完會自動換彈。', '#core-g'),
+      evStep('完美換彈', () => T('換彈時職業條會出現金色的一格，指針走到金色那一格時按 <kbd>X</kbd>：馬上換好，這一匣傷害 +25%。按錯會卡彈一下。', '換彈時職業條會出現金色的一格，指針走到金色那一格時點職業條：馬上換好，這一匣傷害 +25%。'), '#core-g', 'cls'),
+      step('換彈種', () => T('彈匣是滿的時候按 <kbd>X</kbd> 換子彈：一般 → 穿甲（打硬的）→ 燃燒 → 冰凍（讓敵人變慢）。', '彈匣是滿的時候點職業條換子彈：一般 → 穿甲（打硬的）→ 燃燒 → 冰凍（讓敵人變慢）。'), '#core-g')
+    ] },
+    knight: { n: '騎士：舉盾', ctx: inRun, steps: [
+      evStep('舉盾', () => T('按住 <kbd>X</kbd> 舉盾，擋住前面打來的攻擊 80%。放開就放下盾。', '按住職業條舉盾，擋住前面打來的攻擊 80%。放開就放下盾。'), '#core-g', 'cls'),
+      step('完美防禦', () => '敵人快打到你的時候才舉盾（剛舉起的一瞬間被打）＝完美防禦：幾乎不受傷，對方暈 1.5 秒，還會回體力。', '#core-g'),
+      step('自動盾擊', () => '舉著盾被打到，會自動用盾撞回去。舉盾時身邊的隊友也比較不痛。舉盾會花體力，體力沒了就舉不起來。', null)
+    ] },
+    priest: { n: '牧師：信仰與神蹟', ctx: inRun, steps: [
+      step('信仰', () => '補血、給護盾、放祝福都會攢「信仰」（職業條）。補過頭的量會變成一道光，打最近的敵人。', '#core-g'),
+      evStep('補血', () => T('用技能（<kbd>右鍵</kbd>、<kbd>3</kbd>～<kbd>6</kbd>）補血或祝福，看信仰漲起來。', '點技能鈕補血或祝福，看信仰漲起來。'), '#r-skill', 'skill'),
+      step('神蹟', () => T('信仰滿 100 時按 <kbd>X</kbd> 放神蹟：自己和隊友回 30% 生命、清掉壞狀態，周圍的敵人也會被打。', '信仰滿 100 時點職業條放神蹟：自己和隊友回 30% 生命、清掉壞狀態，周圍的敵人也會被打。'), '#core-g')
+    ] },
+    enchanter: { n: '附魔師：刻印', ctx: inRun, steps: [
+      evStep('換刻印', () => T('按 <kbd>X</kbd> 換武器上的刻印：焰 → 霜 → 雷 → 風 → 金。', '點職業條換武器上的刻印：焰 → 霜 → 雷 → 風 → 金。'), '#core-g', 'cls'),
+      step('刻印的效果', () => '焰：技能更痛、會燒。霜：讓敵人變慢。雷：技能冷卻更快、打得更快。風：普攻會射出劍氣。金：打破護甲。', '#core-g'),
+      evStep('攢力量', () => T('用 <kbd>左鍵</kbd> 普攻打中敵人會攢刻印的力量，攢滿了自動放出來。', '用右搖桿普攻打中敵人會攢刻印的力量，攢滿了自動放出來。'), () => touch() ? '#joy-r' : null, 'fire')
+    ] },
     monk: { n: '武術家：四法與勢', ctx: inRun, steps: [   // 2026-10-13 作者：武術家也要職業提示（monkstance.js）
       evStep('換法', () => T('按 <kbd>X</kbd> 依序換「法」：拳法 → 掌法 → 步法 → 腿法 → 拳法。', '點職業條依序換「法」：拳法 → 掌法 → 步法 → 腿法 → 拳法。'), '#core-g', 'cls'),
       step('四種法', () => '拳法出拳快；掌法把敵人打飛；步法每一拳往前跨一步；腿法很慢但一腳很重、範圍大。', '#core-g'),
@@ -128,7 +155,7 @@
     ] }
   };
   const ok = id => CH[id].ctx() && !(R.sheetOpen && R.sheetOpen());
-  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'mage', 'summoner', 'scroll', 'arraymage', 'bard', 'monk', 'blade'];
+  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'warrior', 'archer', 'gunner', 'mage', 'priest', 'knight', 'blade', 'monk', 'bard', 'summoner', 'arraymage', 'enchanter', 'scroll'];
   // ---------- 畫面 ----------
   const css = document.createElement('style'); css.id = 'tu2-css';
   css.textContent = '#tu2-ring{position:fixed;z-index:9998;pointer-events:none;border:2px solid #C9A13A;border-radius:10px;box-shadow:0 0 0 3px rgba(201,161,58,.25),0 0 18px rgba(201,161,58,.45);transition:all .2s;animation:tu2p 1.4s infinite}'
@@ -225,5 +252,7 @@
     document.querySelectorAll('[data-tus]').forEach(b => { b.onclick = () => { t.on = 1; R.closeSheet(); setTimeout(() => start(b.dataset.tus, true), 80); }; });
   };
   const tm = R.townMenu; if (tm) R.townMenu = (...a) => { const r = tm(...a), row = $('r-sheet') && $('r-sheet').querySelector('.row'); if (row && !row.querySelector('#tu2-open')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'tu2-open'; b.textContent = '新手教學'; b.onclick = () => { R.closeSheet(); setTimeout(R.tutSheet, 50); }; row.insertBefore(b, row.children[1] || null); } return r; };
+  // 2026-10-13 遺跡的暫停選單（Esc）：「職業教學」＝馬上重看這個職業的教學
+  const ps = R.pauseSheet; if (ps) R.pauseSheet = (...a) => { const r = ps(...a); try { const c = R.S && R.S.cls, sh = $('r-sheet'); if (CH[c] && sh && !sh.querySelector('#tu2-cls')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'tu2-cls'; b.textContent = '職業教學'; b.onclick = () => { R.closeSheet(); if (W.paused) W.paused = false; const t = st(); if (t) t.on = 1; setTimeout(() => start(c, true), 120); }; const row = sh.querySelector('.row') || sh; row.appendChild(b); } } catch (e) { } return r; };
   R.tut2 = { start: id => start(id, true), chapters: CH, ev };
 })(window.R);
