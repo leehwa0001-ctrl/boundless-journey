@@ -40,7 +40,7 @@
   const RAISE_CAP = 4;
   const fadeOne = p => { p.left = 0; R.fx && R.fx('poof', p.x, 0.6, p.z, { color: '#C8A878', n: 10 }); };
   const enforce = P => {
-    const L1 = pets(), nor = L1.filter(p => !p.raised), rz = L1.filter(p => p.raised);
+    const L1 = pets(), nor = L1.filter(p => !p.raised && !p.ghost)   /* 2026-10-14 鴉群、蟲群（敵人打不到）不佔上限 */, rz = L1.filter(p => p.raised);
     const byAge = a => a.slice().sort((x, y) => (x.born || 0) - (y.born || 0));
     if (nor.length > capOf(P)) byAge(nor).slice(0, nor.length - capOf(P)).forEach(fadeOne);
     if (rz.length > RAISE_CAP) byAge(rz).slice(0, rz.length - RAISE_CAP).forEach(fadeOne);

@@ -53,7 +53,7 @@
     R._petMat = k;   // netsummon.js 送給隊友
   };
   // 召喚技能花了多少魔力（收回時退一半）
-  const wrapCast = (f, sl) => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const slot = sl(a); const m0 = P.mp; castMp = 0; const L0 = pets().length; const r = f(...a); const used = m0 - P.mp; if (used > 0 && pets().length > L0) { const nw = pets().slice(L0); nw.forEach(p => { p.mp0 = used / nw.length; }); } let sk = null; try { sk = R.slotSkill(P, slot); } catch (e) { } const nw2 = pets().slice(L0); nw2.forEach(p => { if (p.slot == null) p.slot = slot; p.skId = sk; }); if (sk && nw2.length && adv(P) !== 'beastlord') pets().forEach(p => { if (p.skId === sk && !nw2.includes(p)) { p.left = 0; R.fx && R.fx('poof', p.x, 0.6, p.z, { color: '#C8A878', n: 8 }); } }); return r; };
+  const wrapCast = (f, sl) => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const slot = sl(a); const m0 = P.mp; castMp = 0; const B0 = new Set(pets()), fresh = () => pets().filter(p => !B0.has(p)); const r = f(...a); const used = m0 - P.mp; if (used > 0 && fresh().length) { const nw = fresh(); nw.forEach(p => { p.mp0 = used / nw.length; }); } let sk = null; try { sk = R.slotSkill(P, slot); } catch (e) { } const nw2 = fresh();   /* 2026-10-14：舊的被上限擠掉時 slice 會對錯 */ nw2.forEach(p => { if (p.slot == null) p.slot = slot; p.skId = sk; }); if (sk && nw2.length && adv(P) !== 'beastlord') pets().forEach(p => { if (p.skId === sk && !nw2.includes(p)) { p.left = 0; R.fx && R.fx('poof', p.x, 0.6, p.z, { color: '#C8A878', n: 8 }); } }); return r; };
   if (R.castSlot) R.castSlot = wrapCast(R.castSlot, a => (typeof a[0] === 'number' ? a[0] : 0));
   if (R.useSkill) R.useSkill = wrapCast(R.useSkill, () => 0);
   // ---------- 意念 ----------
@@ -143,17 +143,23 @@
   };
   R.summonRecall = () => { const P = W().P; return isS(P) ? recall(P) : false; };
   // X：點一下＝換意念；按住 0.5 秒＝收回（剛剛換的意念換回來）
-  C.act = function (P) { P._modePrev = modeOf(P); const i = MODES.findIndex(m => m[0] === modeOf(P)); P._petMode = MODES[(i + 1) % MODES.length][0]; say(P, '意念：' + MODES.find(m => m[0] === P._petMode)[1]); };
-  let holdT = null;
+  let xDown = false;   // 2026-10-14：鍵盤 X 改成放開時才換意念（短按）；按住收回絕不換意念，按鍵連發不算
+  const cyc = function (P) { P._modePrev = modeOf(P); const i = MODES.findIndex(m => m[0] === modeOf(P)); P._petMode = MODES[(i + 1) % MODES.length][0]; say(P, '意念：' + MODES.find(m => m[0] === P._petMode)[1]); };
+  C.act = function (P) { if (xDown) return; setTimeout(() => { if (!xDown && !viaKey) cyc(P); viaKey = false; }, 0); };   // 鍵盤 X 由 keyup 換（C.act 可能比 keydown 早被叫到，等一下再判斷）
+  let viaKey = false;
+  let holdT = null, xT0 = 0, xDone = true;
+  // 鍵盤 X：按下去開始計時，0.5 秒到就收回（輪詢，不靠計時器）；放開時還沒到 0.5 秒＝短按＝換意念
+  setInterval(() => { if (!xDown || xDone || performance.now() - xT0 < 500) return; xDone = true; const Q = W().P; if (!isS(Q) || !live()) return; recall(Q); }, 40);
   const holdStart = () => { const P = W().P; if (!isS(P) || !live()) return; clearTimeout(holdT); holdT = setTimeout(() => { holdT = null; const Q = W().P; if (!isS(Q) || !live()) return; Q._petMode = Q._modePrev || modeOf(Q); recall(Q); }, 500); };
   const holdEnd = () => { clearTimeout(holdT); holdT = null; };
   const typing = e => { const t = e.target; return t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable); };
-  window.addEventListener('keydown', e => { if (typing(e) || e.repeat) return; if ((e.key || '').toLowerCase() === 'x') holdStart(); }, true);
-  window.addEventListener('keyup', e => { if ((e.key || '').toLowerCase() === 'x') holdEnd(); }, true);
+  window.addEventListener('keydown', e => { if ((e.key || '').toLowerCase() !== 'x' || typing(e)) return; const P = W().P; if (!isS(P)) return; if (e.repeat || xDown) { xDown = true; return; } xDown = true; viaKey = true; xT0 = performance.now(); xDone = false; P._modePrev = modeOf(P); }, true);
+  window.addEventListener('keyup', e => { if ((e.key || '').toLowerCase() !== 'x' || !xDown) return; xDown = false; const short = !xDone && performance.now() - xT0 < 500; xDone = true; setTimeout(() => { viaKey = false; }, 60); const P = W().P; if (short && isS(P) && live()) cyc(P); }, true);
+  window.addEventListener('blur', () => { xDown = false; holdEnd(); });
   // 手機／滑鼠：點職業條＝換意念、長按＝收回
   let tapOn = false;
   document.addEventListener('pointerdown', e => { const P = W().P; if (!isS(P) || !live() || !(e.target && e.target.closest && e.target.closest('#core-g'))) return; e.preventDefault(); tapOn = true; P._modePrev = modeOf(P); holdStart(); }, true);
-  document.addEventListener('pointerup', () => { if (!tapOn) return; tapOn = false; if (holdT) { holdEnd(); const P = W().P; if (isS(P) && live()) C.act(P); } }, true);
+  document.addEventListener('pointerup', () => { if (!tapOn) return; tapOn = false; if (holdT) { holdEnd(); const P = W().P; if (isS(P) && live()) cyc(P); } }, true);
   document.addEventListener('pointercancel', () => { tapOn = false; holdEnd(); }, true);
   // ---------- 獻祭：自己選要不要帶的技能 ----------
   const L = R.SKILL_LIB, T = R.SKILL_TYPES;
