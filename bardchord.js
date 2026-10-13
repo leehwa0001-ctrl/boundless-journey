@@ -442,7 +442,7 @@
   const fiT = R.fire;
   R.fire = o => { const s = fiT(o); try { if (s && ST.src && o && o.owner === 'p' && !o._bd) tagShot(s, ST.src); } catch (e) { } try { const P = W().P; if (s && o && o.owner === 'p' && !o.primary && !o._bd && IS(P) && now() < (ST.trioT || 0)) { dress(s, { d: 1, k: 'a' }); s.bdBoom = { r: 3, dmg: s.dmg || 0, col: '#FF6A5A', wall: 1 }; } } catch (e) { } return s; };
   // 攻擊音符、三重奏的音符：碰到敵人的那一下炸開；撞牆、飛到最遠（從子彈裡消失）也炸（2026-10-11 作者）。打中不出聲（聲音只在演奏）
-  const boom = s => { const b = s.bdBoom; s.bdBoom = null; R.fx && R.fx('boom', s.x, 0.6, s.z, { r: b.r, color: b.col }); const pv = ST.src; ST.src = s.bdSrc || pv; try { R.aoe(s.x, s.z, b.r, b.dmg, { props: true }); } finally { ST.src = pv; } };
+  const boom = s => { const b = s.bdBoom; s.bdBoom = null; if (R.bardSonic) R.bardSonic(s.x, s.z, b.r, b.col); else R.fx && R.fx('boom', s.x, 0.6, s.z, { r: b.r, color: b.col });   /* 2026-10-14 bardsonic.js：音波，不是火焰爆炸 */ const pv = ST.src; ST.src = s.bdSrc || pv; try { R.aoe(s.x, s.z, b.r, b.dmg, { props: true }); } finally { ST.src = pv; } };
   const up0 = R.updateShots;
   R.updateShots = dt => {
     const arr = W().shots || [], run = W().run;
