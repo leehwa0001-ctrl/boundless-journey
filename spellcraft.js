@@ -19,6 +19,10 @@
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => (R.esc ? R.esc(String(s == null ? '' : s)) : String(s));
   const CT = () => (R.coreTime ? R.coreTime() : performance.now() / 1000), rnd = Math.random;
   const isM = P => !!(P && P.cls === 'mage');
+  // 2026-10-13 符卷師（諾克薩派）也用同一套咒文：符卷書（S.scrollbook）、在書桌寫成卷軸，戰鬥中撕開（scrollwrite.js）
+  const isSc = P => !!(P && P.cls === 'scroll');
+  const isMS = P => isM(P) || isSc(P);
+  const scCls = () => !!(S() && S().cls === 'scroll');
   const live = () => { const w = W(); return !!(w && w.run && !w.run.done && w.P && !w.P.dead && !w.town); };
   const toast = (t, c) => R.toast && R.toast(t, c || '#C8B0FF');
   const say = (P, t, c) => R.num && R.num(P.x, 2.8, P.z, t, c || 'crit');
@@ -132,9 +136,14 @@
   const NSLOT = 5, NSP = 6;
   const book = () => {
     const s = S(); if (!s) return null;
-    let b = s.spellbook;
+    const sc = s.cls === 'scroll', KEY = sc ? 'scrollbook' : 'spellbook';
+    let b = s[KEY];
+    if (sc && (!b || !Array.isArray(b.spells))) {   // 符卷書：預設咒；舊的卷軸技能格先不動（沒綁的格照舊放原本的技能）
+      b = s[KEY] = { v: 1, spells: [], bind: Array(NSLOT).fill(null), mainEl: '' };
+      ['火彈', '冰槍', '雷擊', '魔力飛彈', '石牆', '爆炸'].forEach(n => { const p = PRESETS.find(x => x[0] === n); b.spells.push({ n, code: p[1] }); });
+    }
     if (!b || !Array.isArray(b.spells)) {
-      b = s.spellbook = { v: 1, spells: [], bind: Array(NSLOT).fill(null), mainEl: '' };
+      b = s[KEY] = { v: 1, spells: [], bind: Array(NSLOT).fill(null), mainEl: '' };
       ['火射線', '屏障', '爆炸', '水流', '火彈', '雷擊'].forEach(n => { const p = PRESETS.find(x => x[0] === n); b.spells.push({ n, code: p[1] }); });
       // 綁定：舊存檔對得上的技能才換；新角色第 1～4 格全部換成咒
       const fresh = !s.classes || !s.classes.mage || (s.classes.mage.lv || s.lv || 1) <= 1;
@@ -487,7 +496,7 @@
   const UNLOCK = i => (R.SKILL_UNLOCK || [1, 3, 6, 10, 15])[i] || 1;
   const cdGet = (P, i) => (i === 0 ? P.skillCd || 0 : (P.skCd && P.skCd[i]) || 0);
   const cdSet = (P, i, v) => { if (i === 0) P.skillCd = v; else { P.skCd = P.skCd || [0, 0, 0, 0, 0]; P.skCd[i] = v; } };
-  const boundK = (P, i) => { if (!isM(P)) return -1; const b = book(); if (!b) return -1; const k = b.bind[i]; return k != null && b.spells[k] ? k : -1; };
+  const boundK = (P, i) => { if (!isMS(P)) return -1; const b = book(); if (!b) return -1; const k = b.bind[i]; return k != null && b.spells[k] ? k : -1; };
   const curSpell = k => RT.rw[k] ? JSON.parse(JSON.stringify(RT.rw[k])) : spellOf(k);
   const hasSt = (sp, st) => ['v', 'a', 'p', 'c'].some(s => sp[s].adj && sp[s].st === st);
   const ctxFor = (P, k, roll) => {
@@ -501,6 +510,7 @@
     say(P, '斷序', 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.3, color: '#C8C0B0' }); if (why) toast(why, '#C8C0B0'); return true;
   };
   const castSpell = (P, slot, k) => {
+    if (isSc(P)) return R.scrollTear ? R.scrollTear(P, slot, k) : undefined;
     if (RT.cast) { if (RT.cast.slot === slot) danxu(P, '斷序：退回 70% 魔力'); else toast('正在詠唱「' + RT.cast.r.sp.n + '」'); return; }
     if ((P.lv || 1) < UNLOCK(slot)) { toast('職業等級 ' + UNLOCK(slot) + ' 才會打開這一格'); return; }
     if (cdGet(P, slot) > 0 || P.dead || P.knockT > 0 || P.stance > 0) return;
@@ -535,7 +545,7 @@
 
   // ---------- 包外面 ----------
   const cs0 = R.castSlot, us0 = R.useSkill, ss0 = R.slotSkill;
-  const mine = (P, i) => isM(P) && live() && boundK(P, i) >= 0;
+  const mine = (P, i) => isMS(P) && live() && boundK(P, i) >= 0;
   R.castSlot = i => { const P = W() && W().P; if (mine(P, i | 0)) return castSpell(P, i | 0, boundK(P, i | 0)); return cs0 ? cs0(i) : undefined; };
   R.useSkill = (...a) => { const P = W() && W().P; if (mine(P, 0)) return castSpell(P, 0, boundK(P, 0)); return us0 ? us0(...a) : undefined; };
   const skCache = {};
@@ -557,7 +567,7 @@
     try {
       if (w && !w.paused && w.run && w.P) {
         const P = w.P;
-        if (RT.cast) { if (!isM(P) || P.dead || !live()) RT.cast = null; else { RT.cast.t += dt; P.slowT = Math.max(P.slowT || 0, 0.1); if (RT.cast.t >= RT.cast.dur) finishCast(P); } }
+        if (RT.cast) { if (!isMS(P) || P.dead || !live()) RT.cast = null; else { RT.cast.t += dt; P.slowT = Math.max(P.slowT || 0, 0.1); if (RT.cast.t >= RT.cast.dur) finishCast(P); } }
         if (RT.bolts.length || RT.barrier) stepBolts(dt);
         if (RT.solids.length) stepSolids(dt);
       }
@@ -712,7 +722,8 @@
     const P = W().P, b = book(); if (!b) return '';
     BK.i = Math.max(0, Math.min(b.spells.length - 1, BK.i));
     const skillName = i => { let id = null; try { id = ss0 ? ss0(P, i) : null; } catch (e) { } return id && R.SKILLS[id] ? R.SKILLS[id].name : '（空）'; };
-    return '<div class="spb" role="dialog" aria-label="咒式書"><div class="sp-h"><h3>咒式書</h3><small>照《法術統整》的格式編咒：活力-聚合-定點-控制，每段後面可以接調適項與狀態項。消耗＝古克 ÷10 ÷4。</small><button type="button" data-a="x">關閉</button></div>'
+    const ttl = scCls() ? '符卷書' : '咒式書';
+    return '<div class="spb" role="dialog" aria-label="' + ttl + '"><div class="sp-h"><h3>' + ttl + '</h3>' + (scCls() ? '<small>符卷師：編好的咒要到白藤堂的書桌寫成卷軸，戰鬥中按技能格撕開（零前搖、不耗魔力）。</small>' : '') + '<small>照《法術統整》的格式編咒：活力-聚合-定點-控制，每段後面可以接調適項與狀態項。消耗＝古克 ÷10 ÷4。</small><button type="button" data-a="x">關閉</button></div>'
       + '<div class="sp-cols"><div><div class="sp-list">' + b.spells.map((x, i) => { let r = null; try { r = evalSpell(parse(x.code, x.n), { P }); } catch (e) { } return '<div data-a="pick" data-i="' + i + '" class="' + (i === BK.i ? 'on' : '') + '"><b>' + (i + 1) + '. ' + esc(x.n) + '</b>' + (r ? ' <small>' + r.mp + ' MP' + (r.errs.length ? '・⚠' : '') + '</small>' : '') + '<code>' + esc(x.code) + '</code></div>'; }).join('') + '</div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:4px"><button type="button" data-a="new"' + (b.spells.length >= NSP ? ' disabled' : '') + '>新增</button><select data-a="preset">' + opt('', '放預設咒…', '') + PRESETS.map(p => opt(p[0], p[0] + '　' + p[1], '')).join('') + '</select><button type="button" data-a="del"' + (b.spells.length ? '' : ' disabled') + '>刪掉這句</button></div>'
       + (advOf(P) === 'elementalist' ? '<div class="sp-seg"><b>主元素</b><select data-a="mainEl">' + opt('', '（還沒選）', b.mainEl) + ELA.concat(ELO).map(g => opt(g, MASTER[g] + '（' + g + EL[g].n + '）', b.mainEl)).join('') + '</select><span class="hint">那一元素當主注釋時消耗 −30%、活力項可多 1 文。</span></div>' : '')
@@ -758,15 +769,15 @@
     });
   };
   R.openSpellBook = () => {
-    const P = W() && W().P; if (!S() || (P && !isM(P)) || (!P && S().cls !== 'mage')) return;
+    const P = W() && W().P; if (!S() || (P && !isMS(P)) || (!P && S().cls !== 'mage' && S().cls !== 'scroll')) return;
     let el = $('sp-book'); if (!el) { el = document.createElement('div'); el.id = 'sp-book'; document.body.appendChild(el); el.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); R.closeSpellBook(); } }); el.addEventListener('pointerdown', e => { if (e.target === el) R.closeSpellBook(); }); }
     el.hidden = false; const w = W(); BK.paused = !!(w && w.run && !w.paused); if (BK.paused) w.paused = true;
     render();
   };
   R.closeSpellBook = () => { const el = $('sp-book'); if (el) el.hidden = true; const w = W(); if (BK.paused && w) w.paused = false; BK.paused = false; };
   // 城裡選單、暫停選單：多一顆「咒式書」
-  const addBtn = again => { const P = W() && W().P; if (!isM(P) && !(S() && S().cls === 'mage')) return; const row = $('r-sheet') && $('r-sheet').querySelector('.row'); if (!row || row.querySelector('#sp-open')) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'sp-open'; b.textContent = '咒式書'; b.onclick = () => { R.closeSheet && R.closeSheet(); R.openSpellBook(); }; row.appendChild(b); };
+  const addBtn = again => { const P = W() && W().P; if (!isMS(P) && !(S() && (S().cls === 'mage' || S().cls === 'scroll'))) return; const row = $('r-sheet') && $('r-sheet').querySelector('.row'); if (!row || row.querySelector('#sp-open')) return; const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'sp-open'; b.textContent = scCls() ? '符卷書' : '咒式書'; b.onclick = () => { R.closeSheet && R.closeSheet(); R.openSpellBook(); }; row.appendChild(b); };
   const ps = R.pauseSheet; if (ps) R.pauseSheet = (...a) => { const r = ps(...a); try { addBtn(); } catch (e) { } return r; };
   const tm = R.townMenu; if (tm) R.townMenu = (...a) => { const r = tm(...a); try { addBtn(); } catch (e) { } return r; };
-  R.spellKit = { parse, toCode, evalSpell, PRESETS, OLD2SP, react, RT, book, boundK, castSpell, finishCast, release, editorHtml: bookHtml, SOLID };
+  R.spellKit = { isSc, ctxFor, curSpell, hasSt, cdSet, cdGet, UNLOCK, parse, toCode, evalSpell, PRESETS, OLD2SP, react, RT, book, boundK, castSpell, finishCast, release, editorHtml: bookHtml, SOLID };
 })(window.R);

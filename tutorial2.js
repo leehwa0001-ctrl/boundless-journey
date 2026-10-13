@@ -101,6 +101,11 @@
       step('精神', () => '畫面下方的紫色細條是精神：召喚物在場會消耗，25 以下召喚物失控，歸零＝剝離 6 秒。收掉召喚物就會慢慢回來。', () => document.getElementById('sm-spirit')),
       step('材質', () => '召喚物的身體看遺跡的環境用元素捏成，職業條下面會寫這一層是哪兩種材質。', null)
     ] },
+    scroll: { n: '符卷師：咒卷', ctx: inRun, steps: [   // 2026-10-13 符卷師重做
+      step('寫咒卷', () => '回城到白藤堂的「符卷師的書桌」：在符卷書裡編咒、綁技能格，再把咒寫到牛皮紙上。', null),
+      evStep('撕卷', () => T('按綁了咒的技能鍵撕開一張咒卷：零前搖、不耗魔力。0.6 秒內連撕＝齊發。', '點綁了咒的技能鈕撕開一張咒卷；連點＝齊發。'), '#r-skill', 'skill'),
+      step('卷軸數', () => '左上角顯示一般卷軸和咒卷的張數。戰鬥中不會再扣錢。', () => document.getElementById('r-scrolls'))
+    ] },
     bard: { n: '吟遊詩人：樂譜', ctx: inRun, steps: [
       evStep('和弦', () => T('按一下 <kbd>X</kbd> 換和弦（大調／小調）。', '點一下職業條換和弦。'), '#core-g', 'cls'),
       step('寫樂譜', () => T('按住 <kbd>X</kbd> 0.45 秒開始錄：10 秒內的普攻、技能會寫成音符。', '長按職業條開始錄：10 秒內的普攻、技能會寫成音符。'), '#core-g'),
@@ -121,7 +126,7 @@
     ] }
   };
   const ok = id => CH[id].ctx() && !(R.sheetOpen && R.sheetOpen());
-  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'mage', 'summoner', 'arraymage', 'bard', 'monk', 'blade'];
+  const ORDER = ['basics', 'combat', 'ruin', 'guild', 'stash', 'smith', 'shop', 'archer', 'mage', 'summoner', 'scroll', 'arraymage', 'bard', 'monk', 'blade'];
   // ---------- 畫面 ----------
   const css = document.createElement('style'); css.id = 'tu2-css';
   css.textContent = '#tu2-ring{position:fixed;z-index:9998;pointer-events:none;border:2px solid #C9A13A;border-radius:10px;box-shadow:0 0 0 3px rgba(201,161,58,.25),0 0 18px rgba(201,161,58,.45);transition:all .2s;animation:tu2p 1.4s infinite}'
