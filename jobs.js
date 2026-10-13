@@ -81,7 +81,8 @@
   };
   R.questLog = () => {
     const s = S();
-    R.sheet('<h2>手上的委託</h2>' + ((s.jobs || []).length ? jobLines() : '<p class="note">沒有私人委託。公會的遺跡委託在公會的告示板上。</p>'), '<div class="row"><button type="button" class="btn pri" id="ql-x">好</button></div>');
+    const other = !!s.heldTask || !!(s.errands && s.errands.length);
+    R.sheet('<h2>手上的委託</h2>' + ((s.jobs || []).length ? '<h3 class="ql-priv">私人委託</h3>' + jobLines() : other ? '' : '<p class="note ql-empty">手上沒有任何委託。遺跡委託和初心跑腿在公會分館的「委託」分頁接，私人委託在城裡的木板上。</p>'), '<div class="row"><button type="button" class="btn pri" id="ql-x">好</button></div>');
     $('ql-x').onclick = R.closeSheet;
   };
 

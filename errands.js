@@ -140,4 +140,20 @@
   const css = document.createElement('style');
   css.textContent = '.er-row .row{margin-top:4px;gap:6px}.er-steps{display:flex;flex-wrap:wrap;gap:2px 6px;font-size:12px;margin-top:3px;opacity:.9}.er-steps i{opacity:.5;font-style:normal}.er-st.ok{color:#8FD08A}.er-st.now{color:#E8C04A;font-weight:bold}';
   document.head.appendChild(css);
+  // 城裡的「手上的委託」也列出跑腿（2026-10-13 修正：以前只看私人委託，接了跑腿／遺跡委託還是寫「沒有私人委託」）
+  const ql0 = R.questLog;
+  if (ql0) R.questLog = (...a) => {
+    const r = ql0(...a);
+    try {
+      const qs = (S() && S().errands) || [], sh = $('r-sheet');
+      if (qs.length && sh) {
+        const d = document.createElement('div'); d.className = 'ql-errands';
+        d.innerHTML = '<h3>初心跑腿（' + qs.length + '／' + MAX + '）</h3>' + qs.map(q => { const e = byId(q.eid); if (!e) return ''; const st = e.steps[q.step];
+          return '<p><b>F 級・' + esc(e.name) + '</b>：' + (q.done || !st ? '都跑完了，回公會分館繳交（' + total(e) + ' 費拉）' : '第 ' + (q.step + 1) + '／' + e.steps.length + ' 站・下一站：' + esc(st.txt)) + '</p>'; }).join('');
+        const after = sh.querySelector('h2'); const ref = sh.querySelector('.ql-priv') || sh.querySelector('.row:last-child');
+        if (ref && ref.parentNode) ref.parentNode.insertBefore(d, ref); else if (after) after.after(d); else sh.appendChild(d);
+      }
+    } catch (err) { console.warn('[errands]', err); }
+    return r;
+  };
 })(window.R);
