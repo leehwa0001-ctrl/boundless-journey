@@ -34,7 +34,9 @@
     const P = W() && W().P, L = shapes(), E = { naDmg: 0, skDmg: 0, loopDmg: 0, naArea: 0, skArea: 0, loopArea: 0, atkSpd: 0, naWind: 0, skWind: 0, skDur: 0, loopWind: 0,
       coreShield: 0, lineShield: 0, loopShield: 0, naHeal: 0, skHeal: 0, loopHeal: 0, coreCd: 0, lineHaste: 0, loopHaste: 0, naMp: 0, nCore: 0, skMp: 0, loopMp: 0, auras: [], lines: [] };
     let budget = cap(P);
-    const coreM = pv('ry7') ? 2 : 1, lineM = pv('ry8') ? 1.5 : 1, loopM = pv('ry9') ? 1.3 : 1;
+    // 2026-10-14 傳說：閉環羅盤（Loop +40%、光環半徑 +50%）、連鎖陣盤（Line +40%、技能蓄力 −20%）；跟被動相加，不相乘
+    const leg = R.legOf ? R.legOf(P) : null, legLoop = leg === 'lg_compass', legLine = leg === 'lg_chaindisc';
+    const coreM = pv('ry7') ? 2 : 1, lineM = 1 + (pv('ry8') ? 0.5 : 0) + (legLine ? 0.4 : 0), loopM = 1 + (pv('ry9') ? 0.3 : 0) + (legLoop ? 0.4 : 0);
     const r1 = v => Math.round(v * 100) / 100;
     // 一個節點 k 在圖形 t 裡發揮效果；m＝倍率（被動、連接節點 30%）
     const one = (k, t, pc, m, add) => {
@@ -76,11 +78,11 @@
       if ((t === 'line' && pv('ry8')) || (t === 'loop' && pv('ry9'))) sh.n.slice(1).forEach(i => one(NODES[i].k, t, pc, m * 0.3, s => E.lines.push([NODES[i].c, lab + '→' + NODES[i].n + '（30%）', s])));
     });
     E.naWind = Math.min(0.9, E.naWind); E.naMp = Math.min(1, E.naMp);
-    const ar = 1 + E.skArea + E.loopArea; E.auras.forEach(a => { a.r = a.pc * ar; });
+    const ar = 1 + E.skArea + E.loopArea; E.auras.forEach(a => { a.r = a.pc * ar * (legLoop ? 1.5 : 1); });
     // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋Loop 的攻擊範圍）
     E.rangeUp = Math.max(0, ((P && P.rangeMult) || 1) - 1 + E.loopArea); E.windMul = 1 + 0.5 * E.rangeUp;
     E.pvArea = pv('ry2') ? 0.3 : 0;   // 抑制圈：技能範圍 +30%（另外乘）
-    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul * (pv('ry1') ? 0.75 : 1) * (pv('ry3') ? 2 : 1);
+    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul * (pv('ry1') ? 0.75 : 1) * (pv('ry3') ? 2 : 1) * (legLine ? 0.8 : 1);
     E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind))) * E.windMul;
     E.reach = pv('ry4') ? 1.5 : 1;   // 定點
     E.multi = pv('ry3');   // 閉環（被動）
