@@ -53,6 +53,7 @@
   R.setWaypoint = (sx, sy, name) => { const tw = W.town; if (tw && tw.ck) { S().ckWaypoint = { city: tw.ck, x: sx, z: sy, name: name || '標記的地點' }; R.save && R.save(); route.key = ''; beacon(); return; } if (sw0) sw0(sx, sy, name); };
   R.clearWaypoint = () => { const tw = W.town; if (tw && tw.ck) { if (S()) S().ckWaypoint = null; R.save && R.save(); route.key = ''; beacon(); return; } if (cw0) cw0(); };
   const route = { key: '', pts: null, t: 0 };
+  R.ckRoute = () => (wp() && route.pts ? route.pts : null);   // questguide.js：箭頭、距離跟路線用同一條
   const updRoute = dt => { const w = wp(), P = W.P; if (!w || !P) { route.pts = null; return; } route.t -= dt; const key = w.x + ',' + w.z; if (route.key === key && route.t > 0) return; route.key = key; route.t = 1.2; const p = CK.navPath(P.x, P.z, w.x, w.z); route.pts = p ? [[P.x, P.z]].concat(p, [[w.x, w.z]]) : [[P.x, P.z], [w.x, w.z]]; };
   // 光柱
   const beacon = () => {

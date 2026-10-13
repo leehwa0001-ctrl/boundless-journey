@@ -68,6 +68,7 @@
     const path = findPath(a, b);
     route = [[px, py]].concat(path || [], [[wp.sx, wp.sy]]);
   };
+  R.gtaRoute = () => (R.S && R.S.waypoint && route ? route.map(p => [WX(p[0]), WZ(p[1])]) : null);   // questguide.js：世界座標的路線
   const routeLen = () => { let L = 0; if (route) for (let i = 1; i < route.length; i++) L += Math.hypot(route[i][0] - route[i - 1][0], route[i][1] - route[i - 1][1]); return L; };
   // 城裡的光柱（目的地）
   const makeBeacon = () => {
