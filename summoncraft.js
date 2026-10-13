@@ -3,7 +3,7 @@
 // - 拿掉「精神」條（遊戲本來就有理智條，不另外加新的資源）。理智照舊：召喚物打倒的人不算你親手殺的（san.js）。
 // - 召喚物不再有時間限制：在場的每一隻每秒吃一點魔力（小隻約 0.6、大隻約 2 魔力/秒）。魔力見底時，最弱、最早的那隻先散掉（一次一隻）。
 // - 按住 X（0.5 秒）＝收回：所有召喚物安靜地回來，不爆炸，退回一半的召喚魔力。手機：長按職業條。
-// - 獻祭不再放在 X 上，變成可以自己選要不要帶的技能「獻祭」；執念改成讓召喚物變強（每 2 點執念 +1% 傷害，最多 +50%）。
+// - 獻祭不再放在 X 上，變成可以自己選要不要帶的技能「獻祭」；（後來拿掉執念：召喚物一律傷害 +50%）。
 // - 材質：火＝燃燒、冰＝變慢、雷＝連鎖、土＝擊退、少吃 20% 魔力、金＝傷害 +15%、破甲、水＝每一下回你 0.5% 生命、木＝定身 0.3 秒、風＝移動 +40%。
 // - 意念（X 點一下換）：集火 → 護衛 → 狂奔。
 // - 轉職：萬獸師＝維持魔力 −25%；靈媒師＝收回時每隻回 3% 生命；遺跡馴獸師＝集火時傷害 +30%（照舊）；式神使＝收回退回 80% 魔力。
@@ -53,13 +53,13 @@
     R._petMat = k;   // netsummon.js 送給隊友
   };
   // 召喚技能花了多少魔力（收回時退一半）
-  const wrapCast = (f, sl) => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const slot = sl(a); const m0 = P.mp; castMp = 0; const L0 = pets().length; const r = f(...a); const used = m0 - P.mp; if (used > 0 && pets().length > L0) { const nw = pets().slice(L0); nw.forEach(p => { p.mp0 = used / nw.length; }); } pets().slice(L0).forEach(p => { if (p.slot == null) p.slot = slot; }); return r; };
+  const wrapCast = (f, sl) => (...a) => { const P = W() && W().P; if (!isS(P)) return f(...a); const slot = sl(a); const m0 = P.mp; castMp = 0; const L0 = pets().length; const r = f(...a); const used = m0 - P.mp; if (used > 0 && pets().length > L0) { const nw = pets().slice(L0); nw.forEach(p => { p.mp0 = used / nw.length; }); } let sk = null; try { sk = R.slotSkill(P, slot); } catch (e) { } const nw2 = pets().slice(L0); nw2.forEach(p => { if (p.slot == null) p.slot = slot; p.skId = sk; }); if (sk && nw2.length && adv(P) !== 'beastlord') pets().forEach(p => { if (p.skId === sk && !nw2.includes(p)) { p.left = 0; R.fx && R.fx('poof', p.x, 0.6, p.z, { color: '#C8A878', n: 8 }); } }); return r; };
   if (R.castSlot) R.castSlot = wrapCast(R.castSlot, a => (typeof a[0] === 'number' ? a[0] : 0));
   if (R.useSkill) R.useSkill = wrapCast(R.useSkill, () => 0);
   // ---------- 意念 ----------
   R.petThink = (pet, P, dt, tg, w) => {
     if (!isS(P)) return null;
-    const M = MAT[pet.mat] || {}, mode = modeOf(P), d2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z), obs = 1 + Math.min(0.5, (P._obs || 0) / 200);
+    const M = MAT[pet.mat] || {}, mode = modeOf(P), d2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z), obs = 1.5;   // 2026-10-13 作者：拿掉執念，召喚物一律傷害 +50%
     if (pet.hpMax) {   // 貼著召喚物的敵人會打它；離開戰鬥慢慢回血
       let hurt = 0; (w.enemies || []).forEach(e => { if (e.dead || e.under || (e.st && (e.st.stun > 0 || e.st.freeze > 0))) return; if (d2(e, pet) < 1 + (e.def ? e.def.size * 0.5 : 0.5)) hurt += (e.dmg || 5) * 0.5; });
       if (hurt > 0) { pet.hp -= hurt * dt; pet.calm = 0; } else { pet.calm = (pet.calm || 0) + dt; if (pet.calm > 3) pet.hp = Math.min(pet.hpMax, pet.hp + pet.hpMax * 0.04 * dt); }
@@ -99,7 +99,7 @@
     if (e.dead && !(e.hp > 0)) return;
     const L = pets().filter(p => mode !== 'guard' ? d2(p, P) < 18 : d2(e, P) < 5 && d2(p, P) < 6);   // 護衛：只打你身邊的
     if (!L.length) return;
-    coopAt = CT(); const obs = 1 + Math.min(0.5, (P._obs || 0) / 200);
+    coopAt = CT(); const obs = 1.5;
     L.forEach((p, i) => {
       if (e.dead) return;
       const a = Math.atan2(p.x - e.x, p.z - e.z), rr = 0.9 + (e.def ? e.def.size * 0.45 : 0.4);
@@ -168,11 +168,11 @@
     if (R.SKILLS && R.SKILLS.sn_sacrifice) R.SKILLS.sn_sacrifice.desc = '（想用再帶）讓在場的召喚物在原地炸開；沒有召喚物時改成在身邊炸一圈。不用也完全沒關係——想收回召喚物請按住 X。';
   }
   C.gauge = function (P) {
-    const o = P._obs || 0, n = pets().length, m = MODES.find(x => x[0] === modeOf(P))[1], pair = matsHere(), up = Math.round(totalUp(P) * 10) / 10;
-    return { name: '意念：' + m, v: o, max: 100, full: o >= 100, text: '執念 ' + Math.floor(o) + '（召喚物傷害 +' + Math.round(Math.min(50, o / 2)) + '%）', sub: (coopLeft() > 0 ? '協同 ' + coopLeft().toFixed(1) + ' 秒' : '協同 好了') + '・召喚物 ' + n + ' 隻・維持 ' + up + ' 魔力/秒・材質 ' + MAT[pair[0]].n + '／' + MAT[pair[1]].n, x: '換意念（按住＝收回）' };
+    const n = pets().length, cl = coopLeft(), m = MODES.find(x => x[0] === modeOf(P))[1], pair = matsHere(), up = Math.round(totalUp(P) * 10) / 10;
+    return { name: '意念：' + m, v: COOP_CD - cl, max: COOP_CD, full: cl <= 0, col: cl <= 0 ? '#B8E07A' : '#6A8A4A', text: cl > 0 ? '協同攻擊 ' + cl.toFixed(1) + ' 秒' : '協同攻擊 好了', sub: '召喚物 ' + n + ' 隻・維持 ' + up + ' 魔力/秒・材質 ' + MAT[pair[0]].n + '／' + MAT[pair[1]].n, x: '換意念（按住＝收回）' };
   };
   C.act0 = null;
-  C.help = P => '召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。召喚物不限時間，在場時每隻每秒吃一點魔力；魔力見底，最弱的那隻先散掉。X 點一下換意念：集火（打你最後打的那隻）→ 護衛（守在你身邊）→ 狂奔（各打各的）；按住 X＝收回所有召喚物，退回一半魔力。召喚物打中、打倒都攢執念，執念讓召喚物更痛。普攻不吃魔力；普攻打中時，所有召喚物會馬上一起撲上去打那一隻（協同攻擊，2.5 秒一次；護衛只打你身邊的）。召喚物有血量，顯示在技能格上面，被打倒就散掉。'
+  C.help = P => '召喚物的身體用元素材質捏成，材質看這一層的環境（現在：' + matsHere().map(k => MAT[k].n).join('／') + '）。召喚物不限時間，在場時每隻每秒吃一點魔力；魔力見底，最弱的那隻先散掉。X 點一下換意念：集火（打你最後打的那隻）→ 護衛（守在你身邊）→ 狂奔（各打各的）；按住 X＝收回所有召喚物，退回一半魔力。召喚物的傷害一律 +50%。同一招召喚技能在場上只會有一組，重放會換掉舊的（萬獸師例外，可以一直疊）。普攻不吃魔力；普攻打中時，所有召喚物會馬上一起撲上去打那一隻（協同攻擊，2.5 秒一次；護衛只打你身邊的）。召喚物有血量，顯示在技能格上面，被打倒就散掉。'
     + ({ beastlord: '萬獸師：召喚物可以一直疊（最多 12 隻），每隻少吃一半魔力；倒下時退回 80% 魔力。', medium: '死靈法師：打倒的敵人可以叫起來當亡者（最多 4 隻）；「獻祭」炸掉亡者，每隻回 5% 生命、5% 魔力。', shikigami: '式神使：式神最多 2 隻但很強；你受到的傷害有 30% 由式神分擔；收回退回 80% 魔力。' }[adv(P)] || '');
   // ---------- 技能格上面的召喚物血條 ----------
   const bars = {};
