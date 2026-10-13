@@ -22,10 +22,15 @@
   R.keyText = s => sub(String(s), false);
   const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'INPUT', 'SELECT', 'CODE']);
   const seen = new WeakMap();   // 文字節點 → { o: 原本的字, out: 換好的字 }
-  const skipNode = n => { const p = n.parentElement; return !p || SKIP.has(p.tagName) || p.closest('.keys,.keyrow,[data-nokeyhint],#chat,.chat-log') || (p.tagName === 'KBD' && p.closest('[data-tact],[id^="r-skill"]')); };   // 快捷欄上的 kbd 由 keybinds.js 自己標
+  // 2026-10-13 作者：「我說的是技能那些的，沒叫你介面也改」——只改技能、戰鬥、職業的提示（白名單），公會、鐵匠鋪、倉庫、商店、Esc 選單的分頁快捷鍵一律不動
+  const SCOPE = '[id^="r-skill"],#core-g,#er-panel,#tu2-card,#sb-host,#sp-host,[data-keyhint]';
+  const inRunNow = () => { const w = R.W; return !!(w && w.run && !w.town); };
+  const inScope = p => !!(p.closest(SCOPE) || (inRunNow() && p.closest('#r-toast')));
+  const skipNode = n => { const p = n.parentElement; return !p || SKIP.has(p.tagName) || !inScope(p) || p.closest('.keys,.keyrow,[data-nokeyhint]') || (p.tagName === 'KBD' && p.closest('[data-tact],[id^="r-skill"]')); };   // 快捷欄上的 kbd 由 keybinds.js 自己標
   const fix = n => {
-    if (n.nodeType !== 3 || skipNode(n)) return;
+    if (n.nodeType !== 3) return;
     let st = seen.get(n); const d = n.data;
+    if (skipNode(n)) { if (st && d === st.out && st.o !== d) { n.data = st.o; st.out = st.o; } return; }   // 不在白名單：換回原本的字
     if (!st || d !== st.out) { st = { o: d, out: d }; seen.set(n, st); }
     const out = sub(st.o, n.parentElement.tagName === 'KBD');
     if (out !== d) { st.out = out; n.data = out; } else st.out = d;
@@ -39,7 +44,7 @@
   // 換鍵（或恢復預設）之後：把畫面上所有記得原文的字重新算一次
   const refresh = () => {
     const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT); let n;
-    while ((n = w.nextNode())) { const st = seen.get(n); if (st && n.data === st.out) { const out = sub(st.o, n.parentElement && n.parentElement.tagName === 'KBD'); st.out = out; if (out !== n.data) n.data = out; } else fix(n); }
+    while ((n = w.nextNode())) { const st = seen.get(n); if (st && n.data === st.out && st.o !== st.out) { n.data = st.o; st.out = st.o; } fix(n); }
   };
   let last = '';
   const poll = () => { if (R.touch) return; const s = JSON.stringify(binds()); if (s === last) return; last = s; changed = calc(); if (any()) observe(); refresh(); };
