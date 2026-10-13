@@ -105,8 +105,13 @@
       if (TT[k] !== 2) continue;
       const n = d[k] === 1 ? 2 : d[k] === 2 ? 2 : d[k] === 3 ? (rnd() < 0.8 ? 1 : 2) : d[k] === 4 ? (rnd() < 0.7 ? 1 : 0) : (rnd() < 0.35 ? 1 : 0);
       const tx = k % nx, tz = (k - tx) / nx;
-      for (let i = 0; i < n; i++) list.push({ x: t.cX(tx) + (rnd() - 0.5) * TS * 0.8, z: t.cZ(tz) + (rnd() - 0.5) * TS * 0.8, s: d[k] && d[k] <= 2 ? 0.95 + rnd() * 0.4 : 0.85 + rnd() * 0.5, near: d[k] && d[k] <= 3 });
+      for (let i = 0; i < n; i++) list.push({ x: t.cX(tx) + (rnd() - 0.5) * TS * 0.6, z: t.cZ(tz) + (rnd() - 0.5) * TS * 0.6, s: d[k] && d[k] <= 2 ? 0.95 + rnd() * 0.4 : 0.85 + rnd() * 0.5, near: d[k] && d[k] <= 3 });
     }
+    // 2026-10-14 修正：牆外面（地圖外、兩條獸徑中間夾的空格）以前一棵樹都沒種，看起來像一條能走的雪路，其實被牆擋住。
+    // 現在牆外 3 格內也種滿，只有真的能走的地方（空地、獸徑）才是空的雪地
+    { const dv = new Uint8Array(N); let q2 = []; for (let k = 0; k < N; k++) if (TT[k] === 2) q2.push(k);
+      for (let step = 1; step <= 3 && q2.length; step++) { const nq = []; q2.forEach(k => { const tx = k % nx, tz = (k - tx) / nx; for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const x = tx + dx, z = tz + dz; if (x < 0 || z < 0 || x >= nx || z >= nz) continue; const m = z * nx + x; if (TT[m] === 0 && !dv[m]) { dv[m] = step; nq.push(m); } } }); q2 = nq; }
+      for (let k = 0; k < N; k++) { if (!dv[k]) continue; const n = dv[k] <= 2 ? 2 : 1, tx = k % nx, tz = (k - tx) / nx; for (let i = 0; i < n; i++) list.push({ x: t.cX(tx) + (rnd() - 0.5) * TS * 0.8, z: t.cZ(tz) + (rnd() - 0.5) * TS * 0.8, s: 0.9 + rnd() * 0.45, near: dv[k] === 1 }); } }
     // 遠的先畫、近的後畫（同一種大小的樹是一批）
     list.sort((a, b) => a.z - b.z);
     woodsF = { F, list, near: list.filter(x => x.near), field: R.treeField(list, F.group) };
