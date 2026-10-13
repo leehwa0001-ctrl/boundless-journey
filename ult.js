@@ -31,7 +31,8 @@
   const aimPt = (P, max) => { let x = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA || 0) * 6, z = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA || 0) * 6; const d = Math.hypot(x - P.x, z - P.z), m = max || 12; if (d > m) { x = P.x + (x - P.x) / d * m; z = P.z + (z - P.z) / d * m; } return floor(x, z); };
 
   // ---------- 畫面效果：閃光、大字 ----------
-  const flash = (c, ms) => { const el = document.createElement('div'); el.className = 'ul-flash'; el.style.setProperty('--c', c); el.style.animationDuration = (ms || 500) + 'ms'; document.body.appendChild(el); setTimeout(() => el.remove(), (ms || 500) + 50); };
+  let lastFl = 0;   // 減少閃光：全螢幕閃光最多 0.22、0.45 秒內只閃一次（2026-10-13 作者：調低隕星的特效閃光）
+  const flash = (c, ms) => { const lf = R.lessFlash ? R.lessFlash() : true, now = performance.now(); if (lf && now - lastFl < 450) return; lastFl = now; const el = document.createElement('div'); el.className = 'ul-flash' + (lf ? ' lf' : ''); el.style.setProperty('--c', c); el.style.animationDuration = (ms || 500) + 'ms'; document.body.appendChild(el); setTimeout(() => el.remove(), (ms || 500) + 50); };
   const cutIn = (name, sub, c) => { const el = document.createElement('div'); el.className = 'ul-cut'; el.style.setProperty('--c', c); el.innerHTML = '<b>' + R.esc(name) + '</b><small>' + R.esc(sub) + '</small>'; document.body.appendChild(el); setTimeout(() => el.remove(), 1700); };
   let castEl = null;
   const castName = (name, c) => { if (!castEl) { castEl = document.createElement('div'); castEl.className = 'ul-cast'; document.body.appendChild(castEl); } castEl.style.setProperty('--c', c); castEl.textContent = name; castEl.classList.remove('on'); void castEl.offsetWidth; castEl.classList.add('on'); };
@@ -128,7 +129,7 @@
   R.hudTick = dt => { ht0(dt); const P = W().P; if (!P || !W().run) return; const b = ensureBtn(); if (!b) return; const v = Math.max(0, Math.min(100, P.ult || 0)); b.style.setProperty('--u', (v / 100).toFixed(3)); b.classList.toggle('ready', v >= 100); const t = b.querySelector('.ul-txt'), s = v >= 100 ? (ULT[P.cls] || ULT.warrior).name : Math.floor(v) + '%'; if (t && t.textContent !== s) t.textContent = s; };
 
   const css = document.createElement('style');
-  css.textContent = '.ul-flash{position:fixed;inset:0;z-index:70;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.75),var(--c) 60%,transparent);mix-blend-mode:screen;animation:ulf .5s ease-out forwards}@keyframes ulf{0%{opacity:.95}100%{opacity:0}}'
+  css.textContent = '.ul-flash{position:fixed;inset:0;z-index:70;pointer-events:none;background:radial-gradient(circle,rgba(255,255,255,.75),var(--c) 60%,transparent);mix-blend-mode:screen;animation:ulf .5s ease-out forwards}@keyframes ulf{0%{opacity:.95}100%{opacity:0}}.ul-flash.lf{background:radial-gradient(circle,var(--c),transparent 70%);animation-name:ulfL}@keyframes ulfL{0%{opacity:.22}100%{opacity:0}}'
     + '.ul-cut{position:fixed;left:0;right:0;top:34%;z-index:71;pointer-events:none;text-align:center;animation:ulc 1.7s ease-out forwards}.ul-cut b{display:block;font:900 clamp(34px,7vw,72px)/1.1 var(--serif,serif);color:#FFF;letter-spacing:.18em;text-shadow:0 0 18px var(--c),0 0 40px var(--c),0 3px 0 #000}.ul-cut small{display:block;margin-top:6px;font-size:14px;color:#F4EEE0;text-shadow:0 1px 3px #000}'
     + '.ul-cut::before{content:"";position:absolute;left:0;right:0;top:50%;height:110px;transform:translateY(-50%) skewY(-4deg);background:linear-gradient(90deg,transparent,rgba(0,0,0,.55) 20%,rgba(0,0,0,.55) 80%,transparent);z-index:-1;border-top:2px solid var(--c);border-bottom:2px solid var(--c)}'
     + '@keyframes ulc{0%{opacity:0;transform:translateX(-60px) scale(1.15)}12%{opacity:1;transform:none}75%{opacity:1}100%{opacity:0;transform:translateX(40px)}}'

@@ -67,7 +67,7 @@
     g.setAttribute('position', new TH.BufferAttribute(pos, 3)); g.setAttribute('pc', new TH.BufferAttribute(pc, 4)); g.setAttribute('ps', new TH.BufferAttribute(ps, 1));
     const m = new TH.ShaderMaterial({ vertexShader: VS, fragmentShader: FS, transparent: true, depthWrite: false, blending: add ? TH.AdditiveBlending : TH.NormalBlending });
     const pts = new TH.Points(g, m); pts.frustumCulled = false; pts.renderOrder = add ? 4 : 3;
-    return { pts, pos, pc, ps, N, head: 0, life: new Float32Array(N), max: new Float32Array(N), v: new Float32Array(N * 3), c: new Float32Array(N * 3), a0: new Float32Array(N), s0: new Float32Array(N), s1: new Float32Array(N), grav: new Float32Array(N), drag: new Float32Array(N), live: 0 };
+    return { add, pts, pos, pc, ps, N, head: 0, life: new Float32Array(N), max: new Float32Array(N), v: new Float32Array(N * 3), c: new Float32Array(N * 3), a0: new Float32Array(N), s0: new Float32Array(N), s1: new Float32Array(N), grav: new Float32Array(N), drag: new Float32Array(N), live: 0 };
   };
   let A = null, N = null;
   const sys = () => {
@@ -79,7 +79,7 @@
     o = o || {}; const i = s.head; s.head = (s.head + 1) % s.N; const c = typeof col === 'string' ? hexc(col) : col;
     s.pos[i * 3] = x; s.pos[i * 3 + 1] = y; s.pos[i * 3 + 2] = z; s.v[i * 3] = vx; s.v[i * 3 + 1] = vy; s.v[i * 3 + 2] = vz;
     s.life[i] = life; s.max[i] = life; s.c[i * 3] = c[0]; s.c[i * 3 + 1] = c[1]; s.c[i * 3 + 2] = c[2];
-    s.a0[i] = o.a == null ? 1 : o.a; s.s0[i] = (o.size || 3) * SZ; s.s1[i] = (o.size1 == null ? (o.size || 3) * 0.5 : o.size1) * SZ; s.grav[i] = o.grav || 0; s.drag[i] = o.drag || 0;
+    s.a0[i] = o.a == null ? 1 : o.a; if (s.add && (R.lessFlash ? R.lessFlash() : true)) { const sz = o.size || 3; s.a0[i] *= sz >= 8 ? 0.4 : 0.8; if (c[0] + c[1] + c[2] > 2.6) { s.c[i * 3] *= 0.75; s.c[i * 3 + 1] *= 0.75; s.c[i * 3 + 2] *= 0.75; } }   // 減少閃光：加亮的大光團、純白粒子調暗 s.s0[i] = (o.size || 3) * SZ; s.s1[i] = (o.size1 == null ? (o.size || 3) * 0.5 : o.size1) * SZ; s.grav[i] = o.grav || 0; s.drag[i] = o.drag || 0;
   };
   const stepSys = (s, dt) => {
     let live = 0;

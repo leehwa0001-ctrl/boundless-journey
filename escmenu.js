@@ -5,6 +5,7 @@
 // 按鈕都是原本那幾顆搬過來的（onclick 不變），沒有拿掉任何功能；認不出來的放「其他」。
 // 很多檔案晚一點才把按鈕塞進選單（setTimeout），所以用 MutationObserver 看著 #r-sheet，有新按鈕就再排一次。
 (function (R) {
+  R.lessFlash = () => { try { return localStorage.getItem('tfl_lessflash') !== '0'; } catch (e) { return true; } };
   const $ = id => document.getElementById(id);
   const MENU = /^(ps-x|tm-x|ck-x)$/;
   const SECS = [
@@ -15,7 +16,7 @@
     ['leave', /回到標題|直接回程|放棄|離開|存檔/, /^(ps-quit|tm-title|ck-title)$/],
     ['keys', /按鍵|操作|搖桿|手把/],
     ['sound', /音效|音樂|音量|聲音/],
-    ['screen', /畫質|鏡頭|幀數|像素版|畫面|視角|亮度|字體|介面大小/],
+    ['screen', /畫質|鏡頭|幀數|像素版|畫面|視角|亮度|字體|介面大小|閃光/],
     ['social', /回報|穿模|公告|更新|隊伍|連線|好友|房間|聊天|分享|排行/],
     ['char', /技能|天賦|被動|捏角|披風|轉職|稱號|裝備|種族|人物|法術書|符卷書|兜帽|召喚|職業|角色/],
     ['game', /繼續|隔間牆|卡住|地圖|快速移動|委託|手冊|指南|圖鑑|教學|瓦版|日誌|任務|觀光/]
@@ -52,6 +53,12 @@
         w = build(sh);
         const anchor = sh.querySelector('.mt-wrap') || cont.closest('.row') || cont;
         anchor.before(w);
+      }
+      // 減少閃光（預設開）：全螢幕閃光、加亮光團、畫面晃動都調弱
+      if (!sh.querySelector('#nf-tg')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'nf-tg';
+        const lab = () => { b.textContent = '減少閃光：' + (R.lessFlash() ? '開' : '關'); };
+        lab(); b.onclick = () => { try { localStorage.setItem('tfl_lessflash', R.lessFlash() ? '0' : '1'); } catch (e) { } lab(); }; slot(w, 'screen').appendChild(b);
       }
       // 按鍵設定：鍵盤玩家一定看得到（城市選單原本沒有）
       if (!R.touch && R.keySheet && !sh.querySelector('#kb-open')) {

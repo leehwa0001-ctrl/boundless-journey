@@ -460,7 +460,7 @@
     W.moon.position.set(P.x - 8, 22, P.z + 10); W.moon.target.position.set(P.x, 0, P.z);
     R.hudTick(dt);
   };
-  R.shake = a => { W.shakeT = 0.3; W.shakeA = a * 3; };
+  R.shake = a => { if (!R.lessFlash || R.lessFlash()) a = Math.min(a, 0.35) * 0.7; W.shakeA = W.shakeT > 0 ? Math.max(W.shakeA || 0, a * 3) : a * 3; W.shakeT = 0.3; };   // 減少閃光：晃動上限
   // 鏡頭：以人物為中心。像《飢荒》一樣每次轉 45 度（Z／C），滾輪拉近拉遠
   // 2026-10-04 作者：仿《飢荒》——鏡頭放低到 45 度左右（原本 h 19、back 12.5，56.7 度），人物看起來比較站得起來
   // 俯角：原本的（57 度，h 19、back 12.5）或 45 度；選單的「鏡頭」換（記在瀏覽器裡，換了要重新整理，因為人物、牆的點陣是照俯角畫的）
