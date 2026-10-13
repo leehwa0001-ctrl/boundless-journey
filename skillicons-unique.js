@@ -8,7 +8,7 @@
   }
   const old = R.skillIconURL, oldInfo = R.skillArtInfo;
   const sheets = new Map(), cache = new Map(), pending = new Map();
-  const canonical = id => id && id.startsWith('ult_') ? 'ult:' + id.slice(4) : id;
+  const canonical = id => R.SKILLS[id]?.artId || (id && id.startsWith('ult_') ? 'ult:' + id.slice(4) : id);
   const refresh = () => {
     const changed = new Set();
     document.querySelectorAll('img').forEach(img => {
