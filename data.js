@@ -111,8 +111,8 @@ window.R = window.R || {};
     rifle: { name: '步槍', cls: ['gunner'], kind: 'gun', dmg: 3.25, rate: 9, speed: 32, range: 16, mag: 30, reload: 3.2, spread: 0.08 },
     shotgun: { name: '霰彈槍', cls: ['gunner'], kind: 'gun', dmg: 5.5, pellets: 6, rate: 1.3, speed: 24, range: 7, mag: 6, reload: 1.5, spread: 0.45 },
     shortbow: { name: '短弓', cls: ['archer'], kind: 'bow', dmg: 13, rate: 3, speed: 24, range: 15 },
-    longbow: { name: '長弓', cls: ['archer'], kind: 'bow', dmg: 30, rate: 1.1, speed: 30, range: 20, pierce: 1, charge: 1 },
-    crossbow: { name: '弩', cls: ['archer'], kind: 'bow', dmg: 23, rate: 1.6, speed: 36, range: 17, pierce: 1 },
+    longbow: { name: '長弓', cls: ['archer'], kind: 'bow', dmg: 30, rate: 1.1, speed: 30, range: 20, charge: 1 },
+    crossbow: { name: '弩', cls: ['archer'], kind: 'bow', dmg: 23, rate: 1.6, speed: 36, range: 17 },   // 2026-10-14 作者：長弓、弩拿掉內建貫穿（改成蓄滿 100% 貫穿 +1，archerdraw.js）
     greatsword: { name: '大劍', cls: ['warrior'], kind: 'melee', dmg: 28, rate: 1, range: 2.9, arc: 2.4, kb: 3 },
     axe: { name: '戰斧', cls: ['warrior'], kind: 'melee', dmg: 21, rate: 1.4, range: 2.5, arc: 1.9, kb: 2 },
     sword: { name: '長劍', cls: ['warrior', 'knight'], kind: 'melee', dmg: 14, rate: 2.3, range: 2.3, arc: 1.8, kb: 1 },
@@ -130,7 +130,7 @@ window.R = window.R || {};
   // 登記武器：勇者證上寫的是主要武器，公會照它的類別派委託（類別就是職業）。騎士是「武器＋盾」
   R.REG = [
     { cls: 'gunner', group: '槍械', list: [['pistol', '手槍類（包含雙持），單發準、換彈快。'], ['rifle', '連射，彈匣大。'], ['shotgun', '近距離一發打一片。'], ['sniperrifle', '狙擊槍，射得慢但射程遠、單發重。']] },
-    { cls: 'archer', group: '弓', list: [['shortbow', '射得快。'], ['longbow', '按住蓄力，射得遠又痛。'], ['crossbow', '一箭貫穿。']] },
+    { cls: 'archer', group: '弓', list: [['shortbow', '射得快。'], ['longbow', '按住蓄力，射得遠又痛。'], ['crossbow', '會自己蓄滿。']] },
     { cls: 'warrior', group: '重兵器', list: [['sword', '平衡，揮得快。'], ['greatsword', '慢，一刀掃一大片。'], ['axe', '重，把敵人打退。']] },
     { cls: 'mage', group: '魔導具', list: [['staff', '會爆炸的法彈。'], ['orb', '三發會追蹤的法彈。']] },
     { cls: 'priest', group: '聖具', list: [['holystaff', '法彈打中會回一點生命。'], ['mace', '近身打，有機會把敵人打暈。']] },

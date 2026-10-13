@@ -87,7 +87,7 @@
     if (f.melee && (k === 'melee' || k === 'thrust')) ws.dmg *= 1 + f.melee; if (f.magic && k === 'magic') ws.dmg *= 1 + f.magic; if (f.ranged && (k === 'gun' || k === 'bow')) ws.dmg *= 1 + f.ranged;
     if (f.crit) ws.crit = (ws.crit || 0) + f.crit; if (f.critMult) P.critMult += f.critMult; if (f.rate && ws.rate) ws.rate *= 1 + f.rate;
     if (f.reload && ws.reload) ws.reload *= 1 - f.reload; if (f.mag && ws.mag) ws.mag = Math.round(ws.mag * (1 + f.mag)); if (f.range && ws.range) ws.range *= 1 + f.range;
-    if (f.arc && ws.arc) ws.arc *= 1 + f.arc; if (f.splash && ws.splash) ws.splash *= 1 + f.splash; if (f.pierce && ws.pierce) ws.pierce += f.pierce;
+    if (f.arc && ws.arc) ws.arc *= 1 + f.arc; if (f.splash && ws.splash) ws.splash *= 1 + f.splash; if (f.pierce && (ws.pierce || ws.kind === 'bow')) ws.pierce = (ws.pierce || 0) + f.pierce;   /* 2026-10-14：弓沒有內建貫穿了，被動照加 */
     if (f.dodge) P.dodgeCdMax *= 1 - f.dodge; if (f.skillCd) P.skillCdMult *= 1 - f.skillCd; if (f.regen) P.regen = (P.regen || 0) + f.regen; if (f.calm) P.calm = (P.calm || 0) + f.calm;
     P.pv = f;
     return P;

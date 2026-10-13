@@ -65,7 +65,7 @@
     if (CTX && o && o.owner === 'p') {
       o = Object.assign({}, o); o.dmg = (o.dmg || 0) * CTX.dmg; o.life = (o.life || 1.5) * CTX.area; if (o.radius) o.radius *= CTX.area;
       if (CTX.spd !== 1 && o.speed) { o.speed *= CTX.spd; o.life /= CTX.spd; }
-      o._arch = 1; if (CTX.pen) o.xPen = CTX.pen;
+      o._arch = 1; if (CTX.pen) { o.xPen = CTX.pen; if (o.pierce !== 99) o.pierce = (o.pierce || 0) + 1; }   // 2026-10-14 作者：弓本身不再貫穿；蓄滿 100% 的箭（普攻、技能箭）貫穿 +1，詞條照加
     }
     return fi0(o);
   };
