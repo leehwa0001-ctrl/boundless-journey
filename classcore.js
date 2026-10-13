@@ -170,8 +170,8 @@
   };
 
   // ======================= 術士：元素反應 =======================
-  const EL = { fire: ['火', '#FF6A2A'], frost: ['冰', '#9AD8FF'], shock: ['雷', '#FFE070'] }, ELS = ['fire', 'frost', 'shock'];
-  const REACT = { 'fire+frost': '蒸發', 'frost+shock': '碎冰', 'fire+shock': '過載' };
+  const EL = { fire: ['火', '#FF6A2A'], frost: ['冰', '#9AD8FF'], shock: ['雷', '#FFE070'], wood: ['木', '#7ACF5A'], wind: ['風', '#BFF0E0'], metal: ['金', '#D8C890'] }, ELS = ['fire', 'frost', 'shock', 'wood'], AUX = ['wind', 'metal'];
+  const REACT = { 'fire+frost': '蒸發', 'frost+shock': '碎冰', 'fire+shock': '過載', 'shock+wood': '激化', 'fire+wood': '燃燒', 'frost+wood': '凍藤' };
   CORE.mage = {
     name: '元素', col: '#B88AFF',
     help: P => '元素反應：X 換元素（火、冰、雷），之後的攻擊、法術都帶著這個元素。同一隻遺跡生物身上疊到不同元素就引爆——火＋冰＝蒸發（大傷害）、冰＋雷＝碎冰（暈眩＋小範圍）、雷＋火＝過載（大範圍爆炸）。元素在牠身上留 4 秒。'
@@ -181,20 +181,40 @@
       if (!e || o.reflect || o.thorns || o.dot || o.tick || o.burn) return;
       const m = e._el || (e._el = {});
       // 2026-10-13：普攻＝把目前的元素留在敵人身上 5 秒；技能打到身上有「別種」元素的敵人才引爆（印記用掉）
-      if (o.primary) { if (e.dead) return; const pe = EL[P._el] ? P._el : 'fire'; ELS.forEach(x => { if (x !== pe) delete m[x]; }); m[pe] = CT + 5; return; }
-      const el = o.elem && EL[o.elem] ? o.elem : P._el || 'fire', other = ELS.find(x => x !== el && (m[x] || 0) > CT);
-      if (!other) return;
+      if (o.primary && !AUX.includes(P._el)) { if (e.dead) return; const pe = EL[P._el] ? P._el : 'fire'; ELS.forEach(x => { if (x !== pe) delete m[x]; }); m[pe] = CT + 5; return; }
+      const el = o.primary ? P._el : o.elem && EL[o.elem] ? o.elem : P._el || 'fire';
+      if (AUX.includes(el)) {   // 風、金：碰到任何元素印記就觸發（不用掉印記；同一隻 1 秒一次）
+        const mk = ELS.find(x => (m[x] || 0) > CT); if (!mk || e.dead || (e._auxT || 0) > CT) return; e._auxT = CT + 1;
+        const k2 = (adv(P) === 'elementalist' ? 1.5 : 1) * pw(P);
+        if (el === 'wind') { R.num && R.num(e.x, 2.6, e.z, '擴散', 'crit'); R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 4, color: EL.wind[1] }); (W().enemies || []).forEach(x => { if (x !== e && !x.dead && dist(x, e) < 4) { const mm = x._el || (x._el = {}); ELS.forEach(y => delete mm[y]); mm[mk] = CT + 5; } }); }
+        else { R.num && R.num(e.x, 2.6, e.z, '破甲', 'crit'); R.fx && R.fx('ring', e.x, 0.6, e.z, { r: 1.2, color: EL.metal[1] }); if (!e._brk) { e._brk = e.def; e.def = Object.assign({}, e.def, { armor: Math.max(0, (e.def.armor || 0) - 0.3) }); } e._brkT = CT + 4; }
+        if (!e.dead) R.coreHit(e, k2 * 0.6, {});
+        return;
+      }
+      const other = ELS.find(x => x !== el && (m[x] || 0) > CT);
       delete m[other]; delete m[el];
       const key = [el, other].sort().join('+'), name = REACT[key], tri = (R.legOf ? R.legOf(P) : null) === 'lg_tri', k = (adv(P) === 'elementalist' ? 1.5 : 1) * (tri ? 1.5 : 1) * pw(P);
-      if (tri) P._el = ELS[(ELS.indexOf(P._el || 'fire') + 1) % 3];   // 三相之杖：反應之後自動換元素
+      if (tri) P._el = ELS[(Math.max(0, ELS.indexOf(P._el || 'fire')) + 1) % ELS.length];   // 三相之杖：反應之後自動換元素
       R.num && R.num(e.x, 2.6, e.z, name, 'crit');
       if (key === 'fire+frost') { R.fx && R.fx('poof', e.x, 1, e.z, { color: '#F0F0F0', n: 18 }); if (!e.dead) R.coreHit(e, k * 1.6, {}); }
       else if (key === 'frost+shock') { R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 2.5, color: '#BFE8FF' }); if (!e.dead) e.st.stun = Math.max(e.st.stun || 0, 1.5); R.coreAoe(e.x, e.z, 2.5, k * 1.0, {}); }
+      else if (key === 'shock+wood') { R.fx && R.fx('bolt', e.x, 2.5, e.z, { to: e, color: '#B8FF6A' }); if (!e.dead) { e.st.stun = Math.max(e.st.stun || 0, 1.2); e.st.root = Math.max(e.st.root || 0, 1.2); R.coreHit(e, k * 1.4, {}); } }
+      else if (key === 'fire+wood') { R.fx && R.fx('poof', e.x, 1, e.z, { color: '#C8701A', n: 14 }); e._mBurn = { left: 5, tick: 0.5, per: k * 0.18 }; }
+      else if (key === 'frost+wood') { R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 1.4, color: '#7AD8B0' }); if (!e.dead) { e.st.slow = Math.max(e.st.slow || 0, 4); e._mSlowT = CT + 4; R.coreHit(e, k * 1.0, {}); } }
       else { R.fx && R.fx('boom', e.x, 0.4, e.z, { r: 3.5, color: '#FFB45A' }); R.shake && R.shake(0.2); R.coreAoe(e.x, e.z, 3.5, k * 1.8, { kb: 2 }); }
       if (adv(P) === 'hexer') (W().enemies || []).forEach(x => { if (!x.dead && dist(x, e) < 4) x.st.curse = Math.max(x.st.curse || 0, 4); });
       if (adv(P) === 'shikigami' || adv(P) === 'waixiu') P.mp = Math.min(P.mpMax, P.mp + 6);
     },
-    act(P) { const i = ELS.indexOf(P._el || 'fire'); P._el = ELS[(i + 1) % 3]; say(P, EL[P._el][0], 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: EL[P._el][1] }); },
+    step(dt, P) {   // 燃燒（5 秒 10 下，共 180%）、凍藤（再慢一點，總共約 −60%）、破甲到期
+      (W().enemies || []).forEach(e => {
+        if (e._brk && (e.dead || CT > (e._brkT || 0))) { e.def = e._brk; e._brk = null; }
+        if (e.dead) return;
+        const b = e._mBurn; if (b) { b.left -= dt; b.tick -= dt; if (b.tick <= 0) { b.tick += 0.5; R.coreHit(e, b.per, { dot: 'burn', critChance: 0 }); } if (b.left <= 0 || e.dead) e._mBurn = null; }
+        if ((e._mSlowT || 0) > CT && e._px != null) { e.x = e._px + (e.x - e._px) * 0.73; e.z = e._pz + (e.z - e._pz) * 0.73; }
+        e._px = e.x; e._pz = e.z;
+      });
+    },
+    act(P) { const i = Math.max(0, ELS.indexOf(P._el || 'fire')); P._el = ELS[(i + 1) % ELS.length]; say(P, EL[P._el][0], 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: EL[P._el][1] }); },
     gauge(P) { const el = P._el || 'fire'; return { name: '元素：' + EL[el][0], col: EL[el][1], text: '火＋冰 蒸發・冰＋雷 碎冰・雷＋火 過載', x: '換成' + EL[ELS[(ELS.indexOf(el) + 1) % 3]][0] }; }
   };
 

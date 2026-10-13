@@ -25,8 +25,8 @@
   const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
   const foes = () => (W().enemies || []).filter(e => !e.dead && !e.under);
   // ---------- 三個選擇 ----------
-  const ELS = { fire: { n: '火', c: '#FF6A3A', t: 'lava', tn: '熔岩' }, frost: { n: '冰', c: '#9AD8FF', t: 'ice', tn: '冰刺' }, shock: { n: '雷', c: '#FFE070', t: 'spark', tn: '雷柱' } };
-  const ELK = ['fire', 'frost', 'shock'];
+  const ELS = { fire: { n: '火', c: '#FF6A3A', t: 'lava', tn: '熔岩' }, frost: { n: '冰', c: '#9AD8FF', t: 'ice', tn: '冰刺' }, shock: { n: '雷', c: '#FFE070', t: 'spark', tn: '雷柱' }, wood: { n: '木', c: '#7ACF5A', t: 'vine', tn: '毒藤' }, wind: { n: '風', c: '#BFF0E0', t: 'gust', tn: '旋風' }, metal: { n: '金', c: '#D8C890', t: 'blade', tn: '刀樁' } };
+  const ELK = ['fire', 'frost', 'shock', 'wood'], ELALL = ['fire', 'frost', 'shock', 'wood', 'wind', 'metal'];
   const SHP = {
     bolt: { n: '彈', d: '一發快速的法術彈', k: 2.2, mp: 10, cd: 3, sp: 24, life: 0.8, rad: 0.3, size: 0.28, cnt: 1 },
     fan: { n: '扇', d: '五發散開的小彈，近距離很痛', k: 0.62, mp: 14, cd: 5, sp: 20, life: 0.6, rad: 0.25, size: 0.2, cnt: 5, spread: 0.9 },
@@ -52,7 +52,7 @@
   const OLDN = { 火射線: 'fire-bolt-pierce', 屏障: 'frost-wall-bounce', 爆炸: 'fire-orb-boom', 水流: 'frost-fan-pierce', 火彈: 'fire-bolt-boom', 冰槍: 'frost-bolt-pierce', 雷擊: 'shock-pillar-boom', 魔力飛彈: 'shock-fan-home', 石牆: 'frost-wall-boom' };
   const parse = (code, name) => {
     code = String(code || '');
-    let m = code.match(/^(fire|frost|shock)-(bolt|fan|pillar|orb|wall|shield)-(boom|pierce|home|bounce|curse|seal)$/);
+    let m = code.match(/^(fire|frost|shock|wood|wind|metal)-(bolt|fan|pillar|orb|wall|shield)-(boom|pierce|home|bounce|curse|seal)$/);
     if (!m && name && OLDN[name]) m = OLDN[name].match(/^(\w+)-(\w+)-(\w+)$/);
     if (!m) {   // 舊咒文
       const el = /Bo|La/.test(code) && !/^Ya/.test(code) ? 'frost' : /Lo/.test(code) && !/^Ya/.test(code) ? 'shock' : 'fire';
@@ -134,7 +134,7 @@
   const hit = (e, dmg, b, extra) => {
     if (!e || e.dead) return;
     let el = b.el; const f = b.field || fieldAt(e.x, e.z);
-    if (f && f.has('zd') && e._el && (e._el[el] || 0) > CT()) el = ELK[(ELK.indexOf(el) + 1) % 3];   // 魔法場「變調」
+    if (f && f.has('zd') && e._el && (e._el[el] || 0) > CT()) el = ELK[(Math.max(0, ELK.indexOf(el)) + 1) % ELK.length];   // 魔法場「變調」
     const o = Object.assign({ spell: 1, vSk: 'spell', primary: false, elem: el }, extra || {});
     R.hurtEnemy(e, dmg, o);
     if (b.fx === 'curse' && !e.dead) { e.st.curse = Math.max(e.st.curse || 0, 6); R.fx && R.fx('ring', e.x, 0.6, e.z, { r: 0.9, color: '#A86AE8' }); }
@@ -147,7 +147,7 @@
     if (t) {
       if (kind === 'lava') { me = mk(new t.CircleGeometry(1.1, 20), '#FF5A1A', 0.6); if (me) { me.rotation.x = -Math.PI / 2; me.position.set(x, 0.07, z); } }
       else if (kind === 'ice') { me = mk(new t.ConeGeometry(0.5, 1.8, 6), '#BFE8FF', 0.9); if (me) me.position.set(x, 0.9, z); }
-      else { me = mk(new t.CylinderGeometry(0.35, 0.45, 2, 8), '#FFE070', 0.8); if (me) me.position.set(x, 1, z); }
+      else { me = mk(new t.CylinderGeometry(0.35, 0.45, 2, 8), ELS[el] ? ELS[el].c : '#FFE070', 0.8); if (me) me.position.set(x, 1, z); }
     }
     const s = { kind, x, z, r: kind === 'lava' ? 1.1 : 0.65, block: kind !== 'lava', t: 8, el, mesh: me, dmg, tick: 0 };
     RT.solids.push(s); return s;
@@ -162,7 +162,7 @@
         foes().forEach(e => { const d = Math.hypot(e.x - s.x, e.z - s.z), need = s.r + e.def.size * 0.5; if (d < need && d > 1e-4) { const k = (need - d) / d; e.x += (e.x - s.x) * k; e.z += (e.z - s.z) * k; } });
       }
       s.tick -= dt;
-      if (s.tick <= 0) { s.tick = 0.5; foes().forEach(e => { const d = Math.hypot(e.x - s.x, e.z - s.z); if (d < s.r + e.def.size * 0.5 + 0.4) { if (s.kind === 'lava') hit(e, s.dmg * 0.3, { el: 'fire' }); else if (s.kind === 'ice') e.st.slow = Math.max(e.st.slow || 0, 1); else { R.fx && R.fx('bolt', s.x, 1.6, s.z, { to: e, color: '#FFE070' }); hit(e, s.dmg * 0.25, { el: 'shock' }); } } }); }
+      if (s.tick <= 0) { s.tick = 0.5; foes().forEach(e => { const d = Math.hypot(e.x - s.x, e.z - s.z); if (d < s.r + e.def.size * 0.5 + 0.4) { if (s.kind === 'lava') hit(e, s.dmg * 0.3, { el: 'fire' }); else if (s.kind === 'ice') e.st.slow = Math.max(e.st.slow || 0, 1); else { if (s.el === 'shock') R.fx && R.fx('bolt', s.x, 1.6, s.z, { to: e, color: '#FFE070' }); hit(e, s.dmg * 0.25, { el: ELS[s.el] ? s.el : 'shock' }); } } }); }
       if (s.t <= 0) { s.dead = true; drop(s.mesh); }
     }
     RT.solids = RT.solids.filter(s => !s.dead);
@@ -300,13 +300,13 @@
   const C = R.CORE.mage;
   const pickK = P => { const b = book(); if (RT.lastK >= 0 && b.spells[RT.lastK]) return RT.lastK; const k = boundK(P, 0); return k >= 0 ? k : -1; };
   C.act = function (P) {   // X 點一下：普攻的元素 火→冰→雷（按住 X 看元素反應表，elemreact.js）
-    P._el = ELK[(ELK.indexOf(P._el || 'fire') + 1) % 3]; say(P, '普攻：' + ELS[P._el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[P._el].c });
+    P._el = ELK.indexOf(P._el || 'fire') < 0 ? 'fire' : ELK[(ELK.indexOf(P._el || 'fire') + 1) % ELK.length]; say(P, '普攻：' + ELS[P._el].n, 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: ELS[P._el].c });
   };
-  C.help = P => '普攻上元素、技能引爆：X 點一下換普攻的元素（火→冰→雷），普攻打中就在敵人頭上留這個元素 5 秒。法術（在「法術書」裡配：元素＋形狀＋效果）打到身上有「別種」元素的敵人就引爆：火＋冰＝蒸發（單體 160%）、冰＋雷＝碎冰（暈 1.5 秒＋小範圍）、雷＋火＝過載（大範圍爆炸）。按住 X 看反應表。'
+  C.help = P => '普攻上元素、技能引爆：X 點一下換普攻的元素（火→冰→雷→木；按住 X 的表上也能直接點風、金），普攻打中就在敵人頭上留這個元素 5 秒。法術（在「法術書」裡配：元素＋形狀＋效果）打到身上有「別種」元素的敵人就引爆：火＋冰＝蒸發（單體 160%）、冰＋雷＝碎冰（暈 1.5 秒＋小範圍）、雷＋火＝過載（大範圍爆炸）。按住 X 看反應表。'
     + ({ elementalist: '元素師：在法術書選一個拿手元素，那個元素的法術傷害 +30%、魔力 −20%。', hexer: '咒術師：多一種效果「詛咒」。', waixiu: '外修者：多一種形狀「罩」（魔力護盾）。' }[advOf(P)] || '');
   C.gauge = function (P) {
     const k = pickK(P), b = book(), x = k >= 0 ? b.spells[k] : null, sp = x ? parse(x.code, x.n) : null, el = P._el || 'fire';
-    return { name: '普攻元素：' + ELS[el].n, col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : (sp ? '技能：' + x.n + '・' : '') + '按住 X 看反應', x: '換成' + ELS[ELK[(ELK.indexOf(el) + 1) % 3]].n };
+    return { name: '普攻元素：' + ELS[el].n, col: ELS[el].c, text: P._spUlt ? '下一句：三重咒（×3、不耗魔）' : (sp ? '技能：' + x.n + '・' : '') + '按住 X 看反應', x: '換成' + ELS[ELK.indexOf(el) < 0 ? 'fire' : ELK[(ELK.indexOf(el) + 1) % ELK.length]].n };
   };
   if (R.ULTS && R.ULTS.mage) Object.assign(R.ULTS.mage, { name: '三重咒', sub: '術士的大招：下一句法術傷害 ×3、不耗魔力，技能冷卻全部歸零', go: P => { P._spUlt = true; [0, 1, 2, 3, 4].forEach(i => cdSet(P, i, 0)); say(P, '三重咒'); toast('下一句法術：傷害 ×3、不耗魔力！', '#FFE08A'); } });
   // ---------- 法術書 ----------
@@ -335,9 +335,9 @@
     return '<div class="spb" role="dialog" aria-label="' + ttl + '"><div class="sp-h"><h3>' + ttl + '</h3><small>' + (sc ? '配好的法術要到白藤堂的書桌寫成卷軸，戰鬥中按技能鍵撕開。' : '每一句法術選三樣：元素、形狀、效果。魔力和傷害會自動算好。') + '</small><button type="button" data-a="x">關閉</button></div>'
       + '<div class="sp-cols"><div><div class="sp-list">' + b.spells.map((y, i) => { let q = null; try { q = evalSpell(parse(y.code, y.n), { P, book: b }); } catch (e) { } const s2 = parse(y.code, y.n); return '<div data-a="pick" data-i="' + i + '" class="' + (i === BK.i ? 'on' : '') + '"><b>' + esc(y.n) + '</b><small>' + esc(ELS[s2.el].n + '・' + SHP[s2.sh].n + '・' + EFX[s2.fx].n) + (q && !sc ? '　魔力 ' + q.mp : '') + '</small></div>'; }).join('') + '</div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:4px"><button type="button" data-a="new"' + (b.spells.length >= NSP ? ' disabled' : '') + '>新增</button><button type="button" data-a="del"' + (b.spells.length ? '' : ' disabled') + '>刪掉</button></div>'
-      + (advOf(P) === 'elementalist' ? '<div class="sp-row"><b>拿手元素（元素師）</b><div class="chips">' + ELK.map(k => '<button type="button" data-a="mainEl" data-v="' + k + '" class="' + (b.mainEl === k ? 'on' : '') + '">' + ELS[k].n + '</button>').join('') + '</div><span class="hint">這個元素的法術傷害 +30%、魔力 −20%。</span></div>' : '')
+      + (advOf(P) === 'elementalist' ? '<div class="sp-row"><b>拿手元素（元素師）</b><div class="chips">' + ELALL.map(k => '<button type="button" data-a="mainEl" data-v="' + k + '" class="' + (b.mainEl === k ? 'on' : '') + '">' + ELS[k].n + '</button>').join('') + '</div><span class="hint">這個元素的法術傷害 +30%、魔力 −20%。</span></div>' : '')
       + '</div><div>' + (sp ? '<div class="sp-row"><b>名字</b><input data-f="name" value="' + esc(x.n) + '" maxlength="10"></div>'
-        + '<div class="sp-row"><b>元素</b>' + chips('el', ELK, ELS, sp.el, P) + '</div>'
+        + '<div class="sp-row"><b>元素</b>' + chips('el', ELALL, ELS, sp.el, P) + '</div>'
         + '<div class="sp-row"><b>形狀</b>' + chips('sh', SHK, SHP, sp.sh, P) + '<span class="hint">' + esc(SHP[sp.sh].d) + '</span></div>'
         + '<div class="sp-row"><b>效果</b>' + chips('fx', EFK, EFX, sp.fx, P) + '<span class="hint">' + esc(EFX[sp.fx].d) + '</span></div>'
         + '<div class="sp-out">' + (sc ? '' : '<span>魔力 <b>' + r.mp + '</b></span>') + '<span>傷害 <b>' + r.dmgShow + '</b></span><span>範圍 <b>' + (r.r ? r.r + ' 公尺' : '單體') + '</b></span><span>射程 <b>' + r.range + ' 公尺</b></span><span>冷卻 <b>' + r.cd + ' 秒</b></span>' + (r.leaves ? '<span>留下地形 <b>' + esc(r.terr) + ' 8 秒</b></span>' : '') + '</div>'
