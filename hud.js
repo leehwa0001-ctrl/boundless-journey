@@ -112,8 +112,11 @@
   // ---------- 傷害數字 ----------
   const nums = [];
   R.addNum = (x, y, z, txt, cls) => {
+    // 2026-10-13 作者截圖：同一隻身上連續的數字疊在一起蓋住名牌 → 附近 0.4 秒內已經有的數字越多，新的就左右錯開、往下一點
+    let k = 0; for (const m of nums) if (m.t < 0.4 && Math.abs(m.x0 - x) < 1.2 && Math.abs(m.z0 - z) < 1.2) k++;
+    const x0 = x, z0 = z; if (k) { const c = R.W && R.W.camera, side = (k % 2 ? 1 : -1) * 0.5 * Math.ceil(k / 2), a = c ? Math.atan2(c.position.x - x, c.position.z - z) : 0; x += Math.cos(a) * side; z -= Math.sin(a) * side; y -= 0.15 * Math.min(k, 4); }
     const el = document.createElement('div'); el.className = 'num ' + (cls || ''); el.textContent = txt; $('r-nums').appendChild(el);
-    nums.push({ el, x, y, z, t: 0 });
+    nums.push({ el, x, y, z, t: 0, x0, z0 });
     if (nums.length > 40) { const o = nums.shift(); o.el.remove(); }
   };
   // 換場景時把還浮在畫面上的傷害數字清掉

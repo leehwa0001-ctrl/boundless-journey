@@ -160,9 +160,22 @@
     // 2026-10-13 作者：訓練場燈光再調亮回來，地板改成深灰色（牆、物件照原色，特效靠深灰地板跳出來）
     const sc = w.scene; if (sc) { sc.children.forEach(c => { if (c.isHemisphereLight) c.intensity = 0.8; }); if (sc.fog) { sc.fog.color.set('#2A2E34'); sc.fog.density = 0.008; } if (sc.background && sc.background.isColor) sc.background.set('#2A2E34'); }
     if (w.moon) w.moon.intensity = 0.75;
-    // 地板：每個房間鋪一層深灰色的地面（顯示出來約 #3C3F45；渲染器輸出會把顏色提亮，所以填得比較深）（貼在原本地板磚上面，只加在這層樓自己的模型裡，換層就跟著清掉）
-    if (F.group && F.group.add && typeof THREE !== 'undefined') { const mat = new THREE.MeshBasicMaterial({ color: '#0D0E11', fog: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
-      (F.rooms || []).forEach(r => { if (!(r.hx > 0 && r.hz > 0)) return; const m = new THREE.Mesh(new THREE.PlaneGeometry(r.hx * 2, r.hz * 2), mat); m.rotation.x = -Math.PI / 2; m.position.set(r.x, 0.21, r.z); m.renderOrder = -1; m.userData.trFloor = 1; F.group.add(m); }); }
+    // 地板：每個房間鋪一層深灰色石磚（2026-10-13 作者：純色地板加上白點看起來像透明、看到星空 → 改成看得出磚縫、每塊深淺不一的石磚，約 #55585E）
+    //   渲染器輸出會把顏色提亮，所以畫布上的顏色填得比較深。貼在原本地板磚上面，只加在這層樓自己的模型裡，換層就跟著清掉
+    if (F.group && F.group.add && typeof THREE !== 'undefined') {
+      const cv = document.createElement('canvas'); cv.width = cv.height = 256; const x = cv.getContext('2d'), N = 4, S = 256 / N;
+      x.fillStyle = '#060607'; x.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) { const off = (j % 2) * S / 2, v = 19 + Math.floor(Math.random() * 9), px = (i * S + off) % 256;
+        const draw = (X) => { x.fillStyle = 'rgb(' + v + ',' + (v + 1) + ',' + (v + 3) + ')'; x.fillRect(X + 2, j * S + 2, S - 4, S - 4); x.fillStyle = 'rgba(255,255,255,0.025)'; x.fillRect(X + 2, j * S + 2, S - 4, 3); x.fillStyle = 'rgba(0,0,0,0.25)'; x.fillRect(X + 2, j * S + S - 5, S - 4, 3);
+          for (let k = 0; k < 14; k++) { const g = v + (Math.random() < 0.5 ? -4 : 4); x.fillStyle = 'rgb(' + g + ',' + g + ',' + (g + 2) + ')'; x.fillRect(X + 4 + Math.random() * (S - 12), j * S + 4 + Math.random() * (S - 12), 3 + Math.random() * 5, 2 + Math.random() * 3); } };
+        draw(px); if (px + S > 256) draw(px - 256); }
+      const tex = new THREE.CanvasTexture(cv); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
+      (F.rooms || []).forEach(r => { if (!(r.hx > 0 && r.hz > 0)) return; const t = tex.clone(); t.needsUpdate = true; t.repeat.set(r.hx * 2 / 6, r.hz * 2 / 6);   // 一塊磚 1.5 公尺
+        const mat = new THREE.MeshBasicMaterial({ map: t, fog: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(r.hx * 2, r.hz * 2), mat); m.rotation.x = -Math.PI / 2; m.position.set(r.x, 0.21, r.z); m.renderOrder = -1; m.userData.trFloor = 1; F.group.add(m); });
+      // 牆頂原本是亮白色（作者不喜歡亮白）：只在訓練場把這層樓模型裡接近白色的材質換成暗石綠灰（複製材質，不動共用的）
+      const cl = new Map(); F.group.traverse(o => { if (!o.isMesh || !o.material || o.userData.trFloor) return; const fix = m => { if (!m || !m.color || m.transparent) return m; const c = m.color; if (c.r + c.g + c.b < 2.5) return m; if (!cl.has(m)) { const n = m.clone(); n.color.set('#2C3530'); cl.set(m, n); } return cl.get(m); }; o.material = Array.isArray(o.material) ? o.material.map(fix) : fix(o.material); });
+    }
     // 站到最大的那片空地
     const P = w.P, big = F.rooms.slice().sort((a, b) => (b.hx * b.hz || 0) - (a.hx * a.hz || 0))[0];
     if (P && big) { [P.x, P.z] = R.nearestFloor ? R.nearestFloor(big.x, big.z + 2.5) : [big.x, big.z + 2.5]; P.yaw = Math.PI; P.h.g.position.set(P.x, 0, P.z); R.placeCam && R.placeCam(null); }
@@ -172,6 +185,9 @@
     return r;
   };
   const fl0 = R.floorLabel;
+  // 2026-10-13 作者：訓練場地上的白色小點（環境粒子）看起來像星空、地板像透明 → 在訓練場裡先藏起來，離開就放回去
+  const hidPts = []; const st1 = R.step; let ptT = 0;
+  R.step = dt => { const r = st1(dt); try { const sc = W().scene; if (here() && sc) { ptT -= dt; if (ptT <= 0) { ptT = 0.5; sc.traverse(o => { if (o.isPoints && o.visible && o.material && o.material.isPointsMaterial) { o.visible = false; hidPts.push(o); } }); } } else if (hidPts.length) { hidPts.forEach(o => { o.visible = true; }); hidPts.length = 0; } } catch (e) { } return r; };
   R.floorLabel = run => (isTrain(run) ? '訓練場' : fl0 ? fl0(run) : '');
   // 不會受傷、不會倒下；回歸水晶、上下樓都是「離開」
   const hp0 = R.hurtPlayer;
