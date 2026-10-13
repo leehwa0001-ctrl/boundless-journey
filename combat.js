@@ -270,6 +270,7 @@
   R.attack = () => {
     const w = W(), P = w.P, ws = P.ws;
     if (P.atkCd > 0 || P.dead || P.knockT > 0 || P.stance > 0) return;
+    if (P.cls === 'blade' && ws.kind === 'melee' && R.bladeAttack) return R.bladeAttack();   // 2026-10-13 刀客重製：先衝再砍（classcore.js）
     const aim = P.aimA;
     if (ws.kind === 'gun') {
       if (P.reloadT > 0) return;

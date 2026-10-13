@@ -25,8 +25,8 @@
     ['lg_dragon', '龍息霰彈', 'shotgun', '燃燒彈一定會燒；打倒燃燒中的敵人會炸開。'],
     ['lg_hawkking', '鷹王之弦', 'longbow', '鷹眼最多 8 層；被打只掉一半。'],
     ['lg_beads', '連珠', 'repeater', '完美射擊之後 3 秒，普攻都會暴擊。'],
-    ['lg_sheathless', '無鞘', 'nodachi', '刀意累積快一倍。'],
-    ['lg_seam', '影縫', 'dualblades', '見切之後 3 秒，每一刀都帶一半的居合加成。'],
+    ['lg_sheathless', '無鞘', 'nodachi', '刀意獲得量 ×2。'],
+    ['lg_seam', '影縫', 'dualblades', '進入殘心後 3 秒，所有傷害 +50%。'],
     ['lg_vow', '不落之誓', 'halberd', '完美格擋的時間從 0.3 秒變成 0.5 秒。'],
     ['lg_judge', '審判長槍', 'spear', '反制（完美格擋後的盾擊）範圍變大、暈 3 秒。'],
     ['lg_thousand', '千手', 'claws', '連段上限 +100；終結技之後連段只少一半。'],
@@ -67,10 +67,7 @@
   // 連珠
   wrapM('archer', 'shoot', function (f0, P, perfect) { const r = f0 && f0.call(this, P, perfect); if (perfect && R.legOf(P) === 'lg_beads') P._beadsT = CT() + 3; return r; });
   wrapM('archer', 'mod', function (f0, e, raw, o, P) { const r = f0 ? f0.call(this, e, raw, o, P) : raw; if (o.primary && (P._beadsT || 0) > CT()) { o.crit = true; } return r; });
-  // 無鞘、影縫
-  wrapM('blade', 'step', function (f0, dt, P) { const v0 = P._iai || 0, r = f0 && f0.call(this, dt, P); if (R.legOf(P) === 'lg_sheathless' && (P._iai || 0) > v0) P._iai = Math.min(this.max(P), P._iai + (P._iai - v0)); return r; });
-  wrapM('blade', 'mikiri', function (f0, P, src) { const r = f0 && f0.call(this, P, src); if (R.legOf(P) === 'lg_seam') P._seamT = CT() + 3; return r; });
-  wrapM('blade', 'mod', function (f0, e, raw, o, P) { let r = f0 ? f0.call(this, e, raw, o, P) : raw; if ((P._seamT || 0) > CT() && P._iaiUse == null) { if (typeof r === 'number') r *= 1.75; else if (r && typeof r === 'object') r.raw *= 1.75; } return r; });
+  // 無鞘、影縫：2026-10-13 刀客重製後寫在 classcore.js 的刀客裡（刀意獲得 ×2；殘心開始後 3 秒傷害 +50%）
   // 群獸圖騰：多一隻
   if (R.SKILL_TYPES && R.SKILL_TYPES.pet) { const pt0 = R.SKILL_TYPES.pet; R.SKILL_TYPES.pet = (s, P, w, pw) => pt0(P && R.legOf(P) === 'lg_pack' ? Object.assign({}, s, { n: (s.n || 1) + 1 }) : s, P, w, pw); }
 

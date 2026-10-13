@@ -12,8 +12,7 @@
 //   彈匣滿的時候按 X 換彈種：一般→穿甲（對有甲的 +30%）→燃燒→冰凍。狙擊手打背後、暈住的 ×1.5；魔導槍手彈種效果兩倍；爆破手燃燒彈打倒的會炸開。
 // - 弓箭手「完美蓄力」：X 拉滿弓，圈縮到金色那一格時再按 X＝完美射擊（四倍、貫穿全部、必定暴擊、疊一層鷹眼：每層 +6%、最多 5 層、被打就沒了）；
 //   沒抓到就是普通的兩倍箭。魔弓手完美箭分成三支追蹤；遊俠在準心處放一個捕獸夾；破魔弓手射中的留破魔印（8 秒，你的傷害 +20%）。
-// - 刀客「居合」：不攻擊（收刀）的時候累積刀意，下一刀照刀意加倍（滿了必定暴擊）；X 納刀 0.4 秒，這時被打就「見切」：不受傷、反斬周圍、刀意滿。
-//   翻滾的一開始被打也算見切。劍豪刀意上限 150、倍率高；影刃見切後閃到背後隱身；妖刀使擊倒也漲刀意，但刀意滿著不用會吸你的血。
+// - 刀客（2026-10-13 重製）：X 收刀／拔刀（各讀 2 秒）、刀意、居合、殘心、刀意渾圓、反切；普攻先衝再砍（橫斬／直劈／突刺）。細節見下面刀客那段。
 // - 騎士「格擋」：（2026-10-13 改成按住 X）按住 Z 防禦的頭 0.3 秒被打＝完美格擋（不受傷、對方暈 1.5 秒、盾反擊、回體力）；防禦時身邊的隊友受到的傷害 −40%；
 //   X 盾擊往前衝（完美格擋後 2 秒內＝反制，三倍）。殿堂騎士完美格擋把傷害整個彈回去；聖騎士完美格擋回 8% 生命；龍騎士完美格擋後的盾擊變成龍躍。
 // - 武術家「連段」：打中就疊連段，2.5 秒沒打中或被打（掉超過 2% 生命）就斷；每 5 段普攻 +1%（最多 +20%）；
@@ -274,41 +273,176 @@
     }
   };
 
-  // ======================= 刀客：居合 =======================
+  // ======================= 刀客：收刀・刀意・居合・殘心・反切（2026-10-13 作者重製）=======================
+  // 普攻（R.bladeAttack，combat.js 的 R.attack 轉過來）：先往前衝一段再出手，前面有敵人就停在牠前面 2 公尺（×攻擊距離增幅）。
+  //   橫斬：120 度、衝 1 公尺；直劈：寬 0.4、長＝攻擊距離、傷害 +40%、衝 2 公尺；突刺：寬 0.4、長＝攻擊距離 ×1.2、穿透 +40%、衝 4 公尺。
+  //   長度、寬度、角度、衝刺距離都照「攻擊距離增幅」（目前攻擊距離 ÷ 武器原本的攻擊距離）放大；衝刺速度＝移動速度 ×3。
+  //   選招：10 公尺（×增幅）內 1 隻：比（攻擊距離＋直劈衝刺距離）遠用突刺，不然直劈；2～4 隻：橫斬→直劈→突刺輪流；5 隻以上：橫斬；
+  //   沒有敵人：直劈。翻滾後的下一刀必定突刺（居合除外）。
+  // X 職業鍵：收刀／拔刀，各要讀 2 秒（不會被打斷，期間移動 −50%）；收刀中、讀條中不能普攻、不能放技能（大招可以）。
+  // 刀意（0～100）：不會自己漲；收刀狀態下 4 秒集滿；普攻打中每一刀 +15（雙刀每下 +7.5，約 7 刀集滿）。滿了：移動 +25%，
+  //   收刀中→下一次普攻或技能＝居合（消耗全部刀意、直接拔刀；普攻必定橫斬、範圍 +40%、傷害 ×2、穿透 +40%、衝 4 公尺；技能傷害 +40%）→之後進入殘心；
+  //   拔刀中→刀意渾圓（攻速 +25%、範圍 +10%、傷害 +10%）；渾圓時被打＝反切：免疫這一下、無敵 0.4 秒、原地橫斬，刀意歸零。
+  // 殘心（5 秒）：收刀／拔刀時間 ×0.5、刀意獲得 +40%、受到傷害 −20%。
+  // 劍豪：居合加成 ×1.5、殘心效果 ×2（時間 ×0.25、刀意 +80%、減傷 40%）且 10 秒、收刀時間 ×0.5。
+  // 影刃：反切砍 2 刀、無敵 1 秒、反切後也進殘心；普攻衝刺速度 ×10、距離 ×2。
+  // 妖刀使：渾圓效果 ×2，渾圓時吸血系數 +75；每次普攻扣 1% 目前生命、放技能扣 10% 目前生命（不會扣到死）。
+  // 武器：刀 1 秒一刀、傷害 ×2.5；雙刀 1.5 秒一次、每刀傷害跟刀一樣、一次砍 2 下、收刀時間 ×1.5、不能反切；野太刀 1.5 秒一刀、傷害 ×2。
+  //   （只改普攻：武器卡片、技能威力照舊，避免技能跟著變兩三倍。）
+  const BD = {
+    W: { katana: { rate: 1, dmg: 2.5 }, dualblades: { rate: 1 / 1.5, dmg: 37.5 / 8.5, hits: 2, sheath: 1.5, noCounter: true }, nodachi: { rate: 1 / 1.5, dmg: 2 } },
+    GAIN: 15, FULL_T: 4, READ: 2
+  };
+  const legOf = P => (R.legOf ? R.legOf(P) : null);
+  const bw = P => { const b = P.item && P.item.base, w = BD.W[b] || BD.W.katana, w0 = R.WEAPONS[b] || R.WEAPONS.katana; return { w, w0, b }; };
+  const bdState = P => P._bdSt || 'drawn';   // drawn／sheathing／sheathed／drawing
+  const zanOn = P => (P._zanT || 0) > CT;
+  const zanK = P => (adv(P) === 'kensei' ? 2 : 1);
+  const full = P => (P._iai || 0) >= 100;
+  const enso = P => full(P) && bdState(P) === 'drawn';
+  const iaiReady = P => full(P) && bdState(P) === 'sheathed';
+  const ensoK = P => (adv(P) === 'yoto' ? 2 : 1);
+  const rangeK = P => { const { w0 } = bw(P); return Math.max(0.5, (P.ws.range || w0.range) / (w0.range || 2.6)); };
+  const readT = P => { let t = BD.READ * (bw(P).w.sheath || 1); if (adv(P) === 'kensei') t *= 0.5; if (zanOn(P)) t *= Math.pow(0.5, zanK(P)); return t; };
+  const gainK = P => (zanOn(P) ? 1 + 0.4 * zanK(P) : 1) * (legOf(P) === 'lg_sheathless' ? 2 : 1);
+  const addIai = (P, n) => { const was = full(P); P._iai = Math.min(100, (P._iai || 0) + n * gainK(P)); if (!was && full(P)) { say(P, bdState(P) === 'drawn' ? '刀意渾圓' : '居合', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.6, color: '#DDEEFF' }); } };
+  const noVampO = o => (R.markNoVamp ? R.markNoVamp(o || {}) : Object.assign(o || {}, { reflect: true, noVamp: true }));
+  const startZan = P => { P._zanT = CT + 5 * zanK(P); say(P, '殘心', 'heal'); if (legOf(P) === 'lg_seam') P._seamT = CT + 3; };
+  const nowMs = () => performance.now();
+  const blockMsg = (P, t) => { if (nowMs() - (P._bdMsgT || 0) > 900) { P._bdMsgT = nowMs(); toast(t, '#DDEEFF'); } };
+  const bdLater = (P, f, ms) => { const run = W().run, sc = W().scene; setTimeout(() => { const w = W(); if (w.run === run && w.scene === sc && w.P === P && !P.dead && !run.done) f(); }, ms); };
+  const hpCost = (P, frac) => { if (adv(P) !== 'yoto' || !(P.hp > 1)) return; P.hp = Math.max(1, P.hp - P.hp * frac); };
+  // 一刀（不含衝刺）：kind 'slash'／'cleave'／'thrust'
+  const strike = (P, a, kind, o) => {
+    o = o || {};
+    const { w } = bw(P), k = rangeK(P) * (enso(P) && !o.counter ? 1 + 0.1 * ensoK(P) : 1) * (o.iai ? 1 + 0.4 * o.iaiK : 1);
+    let dmg = P.ws.dmg * w.dmg * (kind === 'cleave' ? 1.4 : 1) * (o.iai ? 1 + 1 * o.iaiK : 1) * (enso(P) && !o.counter ? 1 + 0.1 * ensoK(P) : 1);
+    const pen = (kind === 'thrust' ? 0.4 : 0) + (o.iai ? 0.4 * o.iaiK : 0);
+    const range = P.ws.range * (kind === 'thrust' ? 1.2 : 1) * (kind === 'slash' ? k : k), arc = kind === 'slash' ? Math.min(Math.PI * 2, (2 * Math.PI / 3) * k) : 0, width = kind === 'slash' ? 0 : 0.2 * k;
+    const hits = o.counter ? 1 : (w.hits || 1), id = (P._bdId = (P._bdId || 0) + 1);
+    R.swingAnim && R.swingAnim(P.h, 0.04, 0.3);
+    for (let i = 0; i < hits; i++) {
+      const go = () => {
+        const p0 = P.pen; P.pen = Math.min(0.95, (p0 || 0) + pen);
+        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), hs: 1 })); }
+        finally { P.pen = p0; }
+      };
+      if (i === 0) go(); else bdLater(P, go, 120 * i);
+    }
+    if (o.iai || kind === 'thrust') R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range });
+    R.sfx && R.sfx('swing');
+  };
+  const pickForm = (P, k) => {
+    if (P._bdRolled) { P._bdRolled = false; return 'thrust'; }
+    const R10 = 10 * k, es = (W().enemies || []).filter(e => !e.dead && !e.under && dist(e, P) < R10 + e.def.size * 0.5);
+    if (es.length === 1) return dist(es[0], P) - es[0].def.size * 0.5 > P.ws.range * k + 2 * k ? 'thrust' : 'cleave';
+    if (es.length >= 5) return 'slash';
+    if (es.length >= 2) { P._bdCyc = ((P._bdCyc == null ? -1 : P._bdCyc) + 1) % 3; return ['slash', 'cleave', 'thrust'][P._bdCyc]; }
+    return 'cleave';
+  };
+  // 往前衝多遠：停在路上第一隻敵人前面 stop 公尺；不衝出地板
+  const dashLen = (P, a, len, stop) => {
+    const sx = Math.sin(a), sz = Math.cos(a); let d = len;
+    (W().enemies || []).forEach(e => { if (e.dead || e.under) return; const dx = e.x - P.x, dz = e.z - P.z, along = dx * sx + dz * sz, side = Math.abs(dx * sz - dz * sx), r = e.def.size * 0.5; if (along > 0 && side < 0.9 + r) d = Math.min(d, Math.max(0, along - r - stop)); });
+    if (R.isFloor && W().F) { let ok = 0; for (let t = 0.25; t <= d + 1e-6; t += 0.25) { const x = P.x + sx * t, z = P.z + sz * t; if (!R.isFloor(x, z) || (R.pointBlocked && R.pointBlocked(x, z))) break; ok = t; } d = Math.min(d, ok); }
+    return d;
+  };
+  R.bladeAttack = () => {
+    const P = W().P; if (!P || P.dead) return;
+    if ((P._bdBusy || 0) > CT) return;
+    const st = bdState(P);
+    if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀…' : '正在拔刀…'); return; }
+    const iai = st === 'sheathed';
+    if (iai && !full(P)) { blockMsg(P, '收刀中：等刀意集滿再出居合，或按 X 拔刀'); return; }
+    const { w } = bw(P), k = rangeK(P), iaiK = adv(P) === 'kensei' ? 1.5 : 1;
+    const kind = iai ? 'slash' : pickForm(P, k);
+    if (iai) { P._iai = 0; P._bdSt = 'drawn'; }
+    const a = P.aimA, shadow = adv(P) === 'shadow';
+    let len = (iai ? 4 : { slash: 1, cleave: 2, thrust: 4 }[kind]) * k * (shadow ? 2 : 1);
+    const reach = P.ws.range * k * (kind === 'thrust' ? 1.2 : 1) * (iai ? 1 + 0.4 * iaiK : 1) * (enso(P) ? 1 + 0.1 * ensoK(P) : 1);
+    len = dashLen(P, a, len, Math.min(2 * k, reach * 0.8));   // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
+    const sp = P.speed * (shadow ? 10 : 3), dur = len > 0.05 ? len / sp : 0;
+    let rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (enso(P) ? 1 + 0.25 * ensoK(P) : 1);
+    P.atkCd = 1 / rate; P.atkHold = 0.35 + dur; P._bdBusy = CT + dur; P._bdN = (P._bdN || 0) + 1;
+    if (dur > 0 && R.dash) R.dash(a, len, dur, {});
+    hpCost(P, 0.01);
+    const fire = () => { P.aimA = a; strike(P, a, kind, { iai, iaiK }); if (iai) { say(P, '居合', 'crit'); R.shake && R.shake(0.25); startZan(P); } };
+    if (dur > 0) bdLater(P, fire, dur * 1000); else fire();
+  };
   CORE.blade = {
     name: '刀意', col: '#DDEEFF',
-    help: P => '居合：不攻擊（收刀）的時候累積刀意，下一刀照刀意加倍（滿了必定暴擊）。X 納刀 0.4 秒：這時被打就「見切」——不受傷、反斬周圍、刀意直接滿；翻滾的一開始被打也算見切。'
-      + ({ kensei: '劍豪：刀意上限 150，倍率更高。', shadow: '影刃：見切後閃到敵人背後、隱身 2 秒。', yoto: '妖刀使：擊倒也漲刀意；刀意滿著 3 秒不用，會開始吸你的血。' }[adv(P)] || ''),
-    max: P => (adv(P) === 'kensei' ? 150 : 100),
+    help: P => '收刀（X）：收刀、拔刀各讀 2 秒（不會被打斷、期間移動 −50%），收刀時不能普攻、不能放技能（大招可以）。刀意只在收刀狀態下（4 秒集滿）或普攻打中時漲。'
+      + '刀意滿：移動 +25%；收刀中→下一次普攻或技能是居合（普攻必定橫斬、範圍 +40%、傷害 ×2、穿透 +40%；技能傷害 +40%），之後進入殘心 5 秒（收刀快一倍、刀意 +40%、減傷 20%）；'
+      + '拔刀中→刀意渾圓（攻速 +25%、範圍 +10%、傷害 +10%），這時被打就反切：免疫這一下、無敵 0.4 秒、原地橫斬，刀意歸零。'
+      + '普攻會先往前衝再出手：橫斬（120 度）、直劈（+40% 傷害）、突刺（長 1.2 倍、穿透 +40%），照周圍敵人數自動選；翻滾後下一刀是突刺。'
+      + ({ kensei: '劍豪：居合加成 ×1.5、殘心效果 ×2 且 10 秒、收刀時間 ×0.5。', shadow: '影刃：反切砍 2 刀、無敵 1 秒、反切後也進殘心；普攻衝刺快 10 倍、距離 ×2。', yoto: '妖刀使：刀意渾圓效果 ×2、渾圓時吸血系數 +75；每次普攻扣 1% 目前生命、放技能扣 10%（不會扣到死）。' }[adv(P)] || '')
+      + ({ dualblades: '雙刀：一次砍兩下，收刀時間 ×1.5，不能反切。' }[P.item && P.item.base] || ''),
+    max: () => 100,
+    floor(P) { P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; },
     step(dt, P) {
-      if ((P.atkCd || 0) > 0 || (P.atkHold || 0) > 0) P._lastAtk = CT;
-      if (CT - (P._lastAtk || 0) > 0.6) P._iai = Math.min(this.max(P), (P._iai || 0) + 30 * dt);
-      if (P._noto > 0) P._noto -= dt;
-      const roll = P.h && P.h.roll > 0; if (roll && !P._rolling) { P._rolling = true; P._rollT = CT; } if (!roll) P._rolling = false;
-      if (adv(P) === 'yoto') { if ((P._iai || 0) >= this.max(P)) { P._fullT = P._fullT || CT; if (CT - P._fullT > 3) P.hp = Math.max(1, P.hp - P.hpMax * 0.01 * dt); } else P._fullT = 0; }
+      const roll = P.h && P.h.roll > 0; if (roll && !P._rolling) P._bdRolled = true; P._rolling = roll;
+      const rd = P._bdRead;
+      if (rd) { rd.t += dt; if (rd.t >= rd.dur) { P._bdSt = rd.to; P._bdRead = null; say(P, rd.to === 'sheathed' ? '收刀' : '拔刀', 'heal'); } }
+      if (bdState(P) === 'sheathed') addIai(P, 100 / BD.FULL_T * dt / 1);
+      // 移動：讀條 −50%、刀意滿 +25%（記住自己乘上去的倍率；別人重算過 P.speed 就重來）
+      const want = (P._bdRead ? 0.5 : 1) * (full(P) ? 1.25 : 1);
+      if (P._bdSpSet !== P.speed) { P._bdSpBase = P.speed; }
+      P.speed = P._bdSpBase * want; P._bdSpSet = P.speed;
+      // 妖刀使：渾圓時吸血系數 +75
+      const vx = adv(P) === 'yoto' && enso(P) ? 75 : 0; if ((P._bdVx || 0) !== vx) { P.vampX = (P.vampX || 0) - (P._bdVx || 0) + vx; P._bdVx = vx; }
     },
     mod(e, raw, o, P) {
-      if (o.reflect) return raw;
-      if (P._iaiUse == null && (P._iai || 0) >= 20) { P._iaiUse = P._iai; P._iai = 0; queueMicrotask(() => { P._iaiUse = null; }); }
-      const v = P._iaiUse; if (v == null) return raw;
-      const k = 1 + v / 100 * (adv(P) === 'kensei' ? 2 : 1.5);
-      if (v >= 100) { o = Object.assign({}, o, { crit: true }); if (!P._iaiSaid) { P._iaiSaid = 1; say(P, '居合', 'crit'); queueMicrotask(() => { P._iaiSaid = 0; }); } }
-      return { raw: raw * k, o };
+      if (o.reflect || o.bdCounter) return raw;
+      let k = 1;
+      if (!o.primary && (P._iaiSkT || 0) > CT) k *= 1 + 0.4 * (adv(P) === 'kensei' ? 1.5 : 1);   // 居合的技能
+      if (!o.primary && enso(P)) k *= 1 + 0.1 * ensoK(P);   // 渾圓：所有傷害 +10%（普攻在 strike 裡算過）
+      if ((P._seamT || 0) > CT) k *= 1.5;   // 影縫（buildfx.js 的傳說雙刀）
+      return raw * k;
     },
-    onHit(e, d, o, P, killed) { if (killed && adv(P) === 'yoto') P._iai = Math.min(this.max(P), (P._iai || 0) + 20); },
-    mikiri(P, src) {
-      P._noto = 0; P._iai = this.max(P); P.iframe = Math.max(P.iframe || 0, 0.4); P._mikiriCd = CT + 0.6;
-      say(P, '見切', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3, color: '#FFFFFF' }); R.shake && R.shake(0.2);
-      R.coreAoe(P.x, P.z, 3, pw(P) * 2.5, R.markNoVamp ? R.markNoVamp({ stun: 1 }) : { stun: 1, reflect: true, noVamp: true });   // 見切反斬：不觸發吸血
-      if (adv(P) === 'shadow' && src && src.x != null) { const a = src.yaw || 0, q = R.nearestFloor ? R.nearestFloor(src.x - Math.sin(a) * 1.4, src.z - Math.cos(a) * 1.4) : [src.x, src.z]; R.fx && R.fx('blink', P.x, 1, P.z); P.x = q[0]; P.z = q[1]; P.invis = Math.max(P.invis || 0, 2); }
+    onHit(e, d, o, P) { if (!o.primary || o.bdCounter || !o.bd || d <= 0) return; P._bdHitIds = P._bdHitIds || {}; const key = o.bd + ':' + (o.dir || 0); if (P._bdHitIds.last === key) return; P._bdHitIds.last = key; addIai(P, BD.GAIN / (o.bdHits || 1)); },
+    counter(P, src) {
+      const shadow = adv(P) === 'shadow';
+      P._iai = 0; P.iframe = Math.max(P.iframe || 0, shadow ? 1 : 0.4);
+      say(P, '反切', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2.5, color: '#FFFFFF' }); R.shake && R.shake(0.2);
+      const a = src && src.x != null ? angTo(P, src) : P.aimA;
+      strike(P, a, 'slash', { counter: true });
+      if (shadow) { bdLater(P, () => strike(P, a, 'slash', { counter: true }), 150); startZan(P); }
     },
     onHurt(raw, src, o, P) {
-      if ((P._mikiriCd || 0) > CT) return;
-      if (P._noto > 0 || (P._rolling && CT - (P._rollT || 0) < 0.25 && (P.iframe || 0) > 0)) { this.mikiri(P, src); return false; }
+      if ((P.iframe || 0) > 0 || !(raw > 0)) return;
+      if (enso(P) && !bw(P).w.noCounter && !P._bdRead) { this.counter(P, src); return false; }
+      if (zanOn(P)) return raw * (1 - 0.2 * zanK(P));
     },
-    act(P) { if ((P._notoCd || 0) > CT) return; P._noto = 0.4; P._notoCd = CT + 1.5; P.stance = Math.max(P.stance || 0, 0.4); say(P, '納刀', 'heal'); },
-    gauge(P) { const m = this.max(P), v = P._iai || 0; return { v, max: m, full: v >= 100, sub: P._noto > 0 ? '納刀中' : v >= 100 ? '下一刀必定暴擊' : '收刀累積', x: '納刀（見切）' }; }
+    onCast(P, i, id) { hpCost(P, 0.1); if ((P._iaiSkPend || 0) > CT) { P._iaiSkPend = 0; P._iai = 0; P._bdSt = 'drawn'; P._iaiSkT = CT + 1.2; say(P, '居合', 'crit'); bdLater(P, () => startZan(P), 1200); } },
+    act(P) {
+      if (P._bdRead) { blockMsg(P, '讀條中，不能中斷'); return; }
+      const to = bdState(P) === 'sheathed' ? 'drawn' : 'sheathed';
+      P._bdRead = { to, t: 0, dur: readT(P) }; P._bdSt = to === 'sheathed' ? 'sheathing' : 'drawing';
+      say(P, to === 'sheathed' ? '收刀…' : '拔刀…', 'heal');
+    },
+    gauge(P) {
+      const v = P._iai || 0, st = bdState(P), rd = P._bdRead, zan = zanOn(P) ? '・殘心 ' + Math.max(0, P._zanT - CT).toFixed(1) + 's' : '';
+      if (rd) return { name: (rd.to === 'sheathed' ? '收刀中' : '拔刀中') + ' ' + Math.max(0, rd.dur - rd.t).toFixed(1) + 's', col: '#9AB0D0', v: rd.t, max: rd.dur, text: '刀意 ' + Math.floor(v), sub: '讀條中：移動 −50%、不能攻擊' + zan, x: '' };
+      if (st === 'sheathed') return { name: '【收刀】刀意', v, max: 100, full: v >= 100, sub: (v >= 100 ? '居合就緒：普攻或技能出手' : '收刀累積中（4 秒集滿）') + zan, x: '拔刀' };
+      return { name: '【拔刀】刀意', v, max: 100, full: v >= 100, col: v >= 100 ? '#FFE08A' : null, sub: (v >= 100 ? (bw(P).w.noCounter ? '刀意渾圓' : '刀意渾圓・被打反切') : '普攻打中累積') + zan, x: '收刀' };
+    }
   };
+  // 收刀中、讀條中不能放技能（大招可以）；收刀＋刀意滿＝居合技能
+  ['castSlot', 'useSkill'].forEach(fn => {
+    const f0 = R[fn]; if (!f0) return;
+    R[fn] = (...a) => {
+      const P = W().P;
+      if (P && P.cls === 'blade' && live()) {
+        const st = bdState(P);
+        if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀…' : '正在拔刀…'); return; }
+        if (st === 'sheathed') { if (!full(P)) { blockMsg(P, '收刀中不能放技能（大招可以）；按 X 拔刀'); return; } P._iaiSkPend = CT + 0.05; }
+      }
+      return f0(...a);
+    };
+  });
+  // 手機：點職業條＝職業鍵
+  document.addEventListener('pointerdown', e => { const P = W().P; if (P && P.cls === 'blade' && live() && e.target && e.target.closest && e.target.closest('#core-g')) { e.preventDefault(); R.reload(); } });
+
 
   // ======================= 騎士：格擋 =======================
   CORE.knight = {
