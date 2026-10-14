@@ -16,7 +16,7 @@
   const c = k => '<em style="color:' + EL[k][1] + '">' + EL[k][0] + '</em>';
   const R2 = (a, b, n, t) => '<div class="r"><b>' + c(a) + '＋' + c(b) + ' ' + n + '</b><span>' + t + '</span></div>';
   const html = P => '<h4>元素反應</h4><div class="s">選普攻元素：</div><div class="pk">'
-    + PICK.map(k => '<button type="button" data-el="' + k + '" style="--c:' + EL[k][1] + '" class="' + ((P._el || 'fire') === k ? 'on' : '') + '">' + EL[k][0] + '</button>').join('') + '</div>'
+    + PICK.map(k => '<button type="button" data-el="' + k + '" style="--c:' + EL[k][1] + '" class="' + ((P._el || 'fire') === k ? 'on' : '') + '">' + (R.spellArtTag ? R.spellArtTag('element', k) : '') + EL[k][0] + '</button>').join('') + '</div>'
     + '<div class="s">技能打到別種元素就引爆：</div>'
     + R2('fire', 'frost', '蒸發', '+160%')
     + R2('frost', 'shock', '碎冰', '暈＋周圍傷害')

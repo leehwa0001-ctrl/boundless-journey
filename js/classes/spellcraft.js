@@ -277,7 +277,7 @@
     if (!skCache[id] || skCache[id].code !== x.code || skCache[id].n !== x.n) {
       let r = null; const sp = parse(x.code, x.n); try { r = evalSpell(sp, { P }); } catch (e) { }
       skCache[id] = { code: x.code, n: x.n };
-      R.SKILLS[id] = { name: x.n, cls: P.cls, cd: r ? r.cd : 2, mp: isSc(P) ? 0 : r ? r.mp : 0, spell: 1, desc: r ? descOf(sp, r) : '' };
+      R.SKILLS[id] = { name: x.n, cls: P.cls, cd: r ? r.cd : 2, mp: isSc(P) ? 0 : r ? r.mp : 0, spell: 1, artId: R.SKILL_ART_MAP && R.SKILL_ART_MAP.icons['shape:' + sp.sh] ? 'shape:' + sp.sh : 'element:' + sp.el, desc: r ? descOf(sp, r) : '' };
     }
     return id;
   };
@@ -334,7 +334,7 @@
   document.head.appendChild(css);
   const BK = { i: 0, paused: false };
   const opt = (v, t, cur) => '<option value="' + esc(v) + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + esc(t) + '</option>';
-  const chips = (f, keys, tbl, cur, P) => '<div class="chips">' + keys.filter(k => okFor(P, tbl[k]) && !(isSc(P) && tbl[k].only === 'waixiu')).map(k => '<button type="button" data-f="' + f + '" data-v="' + k + '" class="' + (k === cur ? 'on' : '') + '" title="' + esc(tbl[k].d || '') + '">' + esc(tbl[k].n) + '</button>').join('') + '</div>';
+  const chips = (f, keys, tbl, cur, P) => '<div class="chips">' + keys.filter(k => okFor(P, tbl[k]) && !(isSc(P) && tbl[k].only === 'waixiu')).map(k => '<button type="button" data-f="' + f + '" data-v="' + k + '" class="' + (k === cur ? 'on' : '') + '" title="' + esc(tbl[k].d || '') + '">' + (R.spellArtTag ? R.spellArtTag(f === 'el' ? 'element' : f === 'sh' ? 'shape' : 'effect', k) : '') + esc(tbl[k].n) + '</button>').join('') + '</div>';
   const bookHtml = () => {
     const w = W(), P = (w && w.P) || { cls: S().cls, adv: (S().classes[S().cls] || {}).adv || '', lv: (S().classes[S().cls] || {}).lv || 1 }, b = book(), sc = scCls();
     BK.i = Math.max(0, Math.min(b.spells.length - 1, BK.i));
@@ -342,9 +342,9 @@
     const skillName = i => { let id = null; try { id = ss0 ? ss0(P, i) : null; } catch (e) { } return id && R.SKILLS[id] ? R.SKILLS[id].name : '（空）'; };
     const ttl = sc ? '符卷書' : '法術書';
     return '<div class="spb" role="dialog" aria-label="' + ttl + '"><div class="sp-h"><h3>' + ttl + '</h3><small>' + (sc ? '配好的法術要到白藤堂的書桌寫成卷軸，戰鬥中按技能鍵撕開。' : '每一句法術選三樣：元素、形狀、效果。魔力和傷害會自動算好。') + '</small><button type="button" data-a="x">關閉</button></div>'
-      + '<div class="sp-cols"><div><div class="sp-list">' + b.spells.map((y, i) => { let q = null; try { q = evalSpell(parse(y.code, y.n), { P, book: b }); } catch (e) { } const s2 = parse(y.code, y.n); return '<div data-a="pick" data-i="' + i + '" class="' + (i === BK.i ? 'on' : '') + '"><b>' + esc(y.n) + '</b><small>' + esc(ELS[s2.el].n + '・' + SHP[s2.sh].n + '・' + EFX[s2.fx].n) + (q && !sc ? '　魔力 ' + q.mp : '') + '</small></div>'; }).join('') + '</div>'
+      + '<div class="sp-cols"><div><div class="sp-list">' + b.spells.map((y, i) => { let q = null; try { q = evalSpell(parse(y.code, y.n), { P, book: b }); } catch (e) { } const s2 = parse(y.code, y.n); return '<div data-a="pick" data-i="' + i + '" class="' + (i === BK.i ? 'on' : '') + '"><b>' + (R.spellArtTag ? R.spellArtTag('shape', s2.sh) + R.spellArtTag('element', s2.el) : '') + esc(y.n) + '</b><small>' + esc(ELS[s2.el].n + '・' + SHP[s2.sh].n + '・' + EFX[s2.fx].n) + (q && !sc ? '　魔力 ' + q.mp : '') + '</small></div>'; }).join('') + '</div>'
       + '<div style="display:flex;flex-wrap:wrap;gap:4px"><button type="button" data-a="new"' + (b.spells.length >= NSP ? ' disabled' : '') + '>新增</button><button type="button" data-a="del"' + (b.spells.length ? '' : ' disabled') + '>刪掉</button></div>'
-      + (advOf(P) === 'elementalist' ? '<div class="sp-row"><b>拿手元素（元素師）</b><div class="chips">' + ELALL.map(k => '<button type="button" data-a="mainEl" data-v="' + k + '" class="' + (b.mainEl === k ? 'on' : '') + '">' + ELS[k].n + '</button>').join('') + '</div><span class="hint">這個元素的法術傷害 +30%、魔力 −20%。</span></div>' : '')
+      + (advOf(P) === 'elementalist' ? '<div class="sp-row"><b>拿手元素（元素師）</b><div class="chips">' + ELALL.map(k => '<button type="button" data-a="mainEl" data-v="' + k + '" class="' + (b.mainEl === k ? 'on' : '') + '">' + (R.spellArtTag ? R.spellArtTag('element', k) : '') + ELS[k].n + '</button>').join('') + '</div><span class="hint">這個元素的法術傷害 +30%、魔力 −20%。</span></div>' : '')
       + '</div><div>' + (sp ? '<div class="sp-row"><b>名字</b><input data-f="name" value="' + esc(x.n) + '" maxlength="10"></div>'
         + '<div class="sp-row"><b>元素</b>' + chips('el', ELALL, ELS, sp.el, P) + '</div>'
         + '<div class="sp-row"><b>形狀</b>' + chips('sh', SHK, SHP, sp.sh, P) + '<span class="hint">' + esc(SHP[sp.sh].d) + '</span></div>'

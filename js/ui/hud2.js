@@ -78,7 +78,7 @@
     br.querySelectorAll('.act').forEach(b => [...b.childNodes].forEach(nd => { if (nd.nodeType === 3 && nd.textContent.trim()) { const s = document.createElement('span'); s.textContent = nd.textContent.trim(); b.replaceChild(s, nd); } }));
     br.querySelectorAll('.act').forEach(b => { if (b.querySelector('.h2-ic')) return; const im = document.createElement('img'); im.className = 'h2-ic'; im.alt = ''; b.insertBefore(im, b.firstChild); const n = document.createElement('i'); n.className = 'h2-n'; b.appendChild(n); });
     const fixed = { hp: 'hp', mp: 'mp', bag: 'bag', order: 'order', dodge: 'dash' };
-    br.querySelectorAll('.act').forEach(b => { const k = fixed[b.dataset.tact] || fixed[b.dataset.h2]; if (k) b.querySelector('.h2-ic').src = icon(k); });
+    br.querySelectorAll('.act').forEach(b => { const k = fixed[b.dataset.tact] || fixed[b.dataset.h2]; if (k) b.querySelector('.h2-ic').src = ['bag', 'order', 'dodge'].includes(b.dataset.tact) && R.skillIconURL ? R.skillIconURL('ui:' + b.dataset.tact) : icon(k); });
   };
 
   const setF = (el, v, prop) => { if (el) el.style.setProperty(prop || '--f', Math.max(0, Math.min(1, v)).toFixed(3)); };
@@ -99,8 +99,8 @@
     const S = R.S, slots = [['r-skill', 0], ['r-skill2', 1], ['r-skill3', 2], ['r-skill4', 3], ['r-skill5', 4]];
     slots.forEach(([id, i]) => {
       const b = $(id); if (!b) return; const sid = R.slotSkill ? R.slotSkill(P, i) : (i ? null : P.skill), sk = sid && R.SKILLS[sid];
-      const cd = i === 0 ? P.skillCd : (P.skCd && P.skCd[i]) || 0, ic = b.querySelector('.h2-ic'), k = 'sk:' + (sid || '');
-      if (ic && ic.dataset.k !== k) { ic.dataset.k = k; ic.src = sid && R.skillIconURL ? R.skillIconURL(sid) : icon(iconFor(sid)); }   // skillicons.js：每一招自己的圖示
+      const cd = i === 0 ? P.skillCd : (P.skCd && P.skCd[i]) || 0, ic = b.querySelector('.h2-ic'), artId = sk && sk.artId || sid, k = 'sk:' + (sid || '') + ':' + (artId || '');
+      if (ic && ic.dataset.k !== k) { ic.dataset.k = k; ic.src = sid && R.skillIconURL ? R.skillIconURL(artId) : icon(iconFor(sid)); }   // skillicons.js：每一招自己的圖示
       b.classList.toggle('lit', !!sk && cd <= 0.05 && P.mp >= sk.mp && !P.dead);
       const r = sid && R.skillRank ? R.skillRank(sid) : 0, n = b.querySelector('.h2-n'); if (n) { const t = r ? '★' + r : ''; if (n.textContent !== t) n.textContent = t; }
     });

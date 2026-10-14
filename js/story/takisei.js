@@ -180,7 +180,7 @@
   // 圖示
   // 2026-10-13：skill-art-map.js 比這個檔案晚載入、會把 R.SKILL_ART_MAP 整個換掉——等全部載完再登記，不然刀勢四招沒有圖示
   const regArt = () => { const map = R.SKILL_ART_MAP;
-  if (map) { map.sheets['taki-sei'] = { file: 'taki-sei-v1.png', cols: 4, rows: 1, count: 4 }; NEW.forEach((id, i) => { map.icons[id] = { sheet: 'taki-sei', tile: i, name: LESSONS[i].name, family: id }; }); } };
+  if (map) { map.sheets['taki-sei'] = { file: 'taki-sei-v1.png', cols: 4, rows: 1, count: 4 }; NEW.forEach((id, i) => { if (!map.icons[id]) map.icons[id] = { sheet: 'taki-sei', tile: i, name: LESSONS[i].name, family: id }; }); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', regArt); else regArt();
   // ---------- 畫面左邊的刀勢 ----------
   let el = null, last = '';
