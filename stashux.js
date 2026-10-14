@@ -66,7 +66,6 @@
         }
         const h3 = [...sec.querySelectorAll('h3')].find(x => /^倉庫裡的東西/.test(x.textContent || ''));
         if (h3) {
-          const base = h3.childNodes[0];
           // 更新括號數字旁提示
           let tip = h3.querySelector('.sx-qtip');
           if (q) {

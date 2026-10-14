@@ -14,7 +14,6 @@
 // 放在 skillpoints.js 後面。
 (function (R) {
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => R.esc(s);
-  const pct = v => Math.round(v * 1000) / 10 + '%';
   // 每個節點：[id, 名字, 最多幾級, 每級的說明, (P, 級數) => 加到身上]
   // tr：增益減益參半的節點（2026-10-04 作者：天賦樹也可以有減益增益參半的，像是技能傷害 +30%、普攻傷害 −15%，攻速 +60%、技能冷卻 +30%）——說明用「｜」分開好處和代價
   const N = (id, n, mx, d, f, tr) => ({ id, n, mx, d, f, tr });

@@ -35,13 +35,6 @@
   };
   const B_ = (c, o) => lam(c, Object.assign({ see: 1 }, o));   // 建築
   const segDist = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / L)); return Math.hypot(px - (ax + dx * t), pz - (az + dz * t)); };
-  const lineDist = (px, pz, pts) => { let d = 1e9; for (let i = 0; i < pts.length - 1; i++) d = Math.min(d, segDist(px, pz, pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1])); return d; };
-  const segX = (a, b, c, d) => {
-    const r = [b[0] - a[0], b[1] - a[1]], s = [d[0] - c[0], d[1] - c[1]], den = r[0] * s[1] - r[1] * s[0]; if (Math.abs(den) < 1e-9) return null;
-    const t = ((c[0] - a[0]) * s[1] - (c[1] - a[1]) * s[0]) / den, u = ((c[0] - a[0]) * r[1] - (c[1] - a[1]) * r[0]) / den;
-    return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [a[0] + r[0] * t, a[1] + r[1] * t, Math.atan2(r[1], r[0])] : null;
-  };
-  const inTown = (sx, sy, pad) => sx > G.town[0] - (pad || 0) && sx < G.town[2] + (pad || 0) && sy > G.town[1] - (pad || 0) && sy < G.town[3] + (pad || 0);
 
   // ---------- 小地圖的底圖（只畫一次） ----------
   let mapCanvas = null;

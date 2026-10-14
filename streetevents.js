@@ -14,7 +14,7 @@
   // 2026-10-09：在精緻城市（W.town.ck）用世界座標、精緻城市的路網（ckmove.js）；路人是 W.town.walkers；巷子是城的設定 alleys、吵架的地方是 brawl（ckextra.js）
   const CKT = () => !!(W.town && W.town.ck), NAV = () => (CKT() ? W.town.nav : R.NAV), navPath = (a, b, c, d) => (CKT() ? (R.CK && R.CK.navPath ? R.CK.navPath(a, b, c, d) : null) : (R.navPath ? R.navPath(a, b, c, d) : null));
   const walkers = () => (CKT() ? (W.town.walkers || []) : W.town.npcs.filter(n => n.walk));
-  const TOPS = ['#3A4A5A', '#5A3A3A', '#3A5A4A', '#6A5A3A', '#4A3A5A', '#7A6A5A', '#2E2E38', '#8A4A3A'], HAIRS = ['#1A1410', '#2A2420', '#4A3424', '#6A4A2E', '#8A8A88'];
+  const HAIRS = ['#1A1410', '#2A2420', '#4A3424', '#6A4A2E', '#8A8A88'];
   const hour = () => (R.hourNow ? ((R.hourNow() % 24) + 24) % 24 : 12);
   const S = () => R.S, P = () => W.P, tw = () => W.town;
   const runSp = () => (P() ? P().speed * 1.65 : 9);

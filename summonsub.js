@@ -13,7 +13,6 @@
   const toast = (t, c) => R.toast && R.toast(t, c);
   const say = (P, t, k) => R.num && R.num(P.x, 2.6, P.z, t, k || 'heal');
   const L = R.SKILL_LIB || {}, T = R.SKILL_TYPES || {};
-  const MAT = R.SUMMON_MAT || {};
   // ---------- 遺跡馴獸師：刪掉＋存檔轉移 ----------
   Object.keys(L).forEach(id => { if (L[id] && L[id].adv === 'tamer') { delete L[id]; if (R.SKILLS) delete R.SKILLS[id]; } });
   if (R.ADV && R.ADV.summoner) R.ADV.summoner = R.ADV.summoner.filter(a => a.id !== 'tamer');

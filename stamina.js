@@ -99,11 +99,6 @@
   document.addEventListener('pointerdown', e => { if (e.target && e.target.closest && e.target.closest('#core-g')) touchGuard = true; });
   ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => { touchGuard = false; }));
   window.addEventListener('blur', () => { touchGuard = false; });
-  const ensureBtn = () => {
-    const br = $('r-br'); if (!br || br.querySelector('[data-tact="guard"]')) return;
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'act dungeon-only touch-only'; b.dataset.tact = 'guard'; b.textContent = '防禦';
-    b.addEventListener('click', () => R.tact('guard')); br.appendChild(b);
-  };
   // ---------- 體力條 ----------
   const ensureBar = () => {
     let el = $('st-bar'); if (el) return el;

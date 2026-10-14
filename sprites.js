@@ -721,15 +721,6 @@
 
   // ---------- 城外的松樹（點陣看板）：三種大小是分別畫的，不是放大縮小，像素密度一樣 ----------
   const pineCs = {};
-  const pineCanvas = n => {   // n：幾層枝葉
-    if (pineCs[n]) return pineCs[n];
-    const hw = Math.ceil(3 + (n - 1) * 1.8), w = hw * 2 + 4, h = n * 5 + 9, cx = w / 2;
-    const c = cvs(w, h), x = c.getContext('2d'), P = (a, b, ww, hh, col) => { x.fillStyle = col; x.fillRect(a, b, ww, hh); };
-    for (let i = 0; i < n; i++) { const y0 = 3 + i * 5, half = 3 + i * 1.8, l = Math.round(cx - half), ww = Math.round(half * 2); P(l, y0 + 2, ww, 4, '#3E5A48'); P(l, y0 + 5, ww, 1, '#2E4A3A'); P(l + 1, y0 + 2, Math.max(1, ww - 3), 1, '#F4F8FA'); P(l + 2, y0 + 3, Math.max(1, ww - 6), 1, '#DDE8EE'); P(Math.round(cx - half / 2), y0 + 1, Math.round(half), 1, '#4E6A58'); }
-    P(cx - 1, 1, 2, 3, '#F4F8FA'); P(cx - 2, h - 6, 4, 5, '#4A3424'); P(cx - 2, h - 6, 1, 5, '#6A4A34');
-    outline(c, '#1E2A24');
-    return (pineCs[n] = c);
-  };
   // ---------- 2026-10-14 作者：樹只留 3D 的（點陣看板的樹一直消失、跳出來）----------
   // 松樹（積雪）、落葉樹各一份合併好的形狀（頂點顏色），所有樹共用；大量的樹用 InstancedMesh（一種一次畫完）。
   const tree3 = {};
@@ -775,16 +766,6 @@
   };
   // 冬天的行道樹（落葉的樹，枝上積雪）
   const bareCs = {};
-  const bareCanvas = n => {
-    if (bareCs[n]) return bareCs[n];
-    const w = 22 + n * 4, h = 34 + n * 6, c = cvs(w, h), x = c.getContext('2d'), P = (a, b, ww, hh, col) => { x.fillStyle = col; x.fillRect(a, b, ww, hh); }, cx = Math.floor(w / 2);
-    let s = 31 + n; const r = () => { s = (s * 16807) % 2147483647; return (s - 1) / 2147483646; };
-    P(cx - 1, h - 14, 3, 14, '#4A3A2E'); P(cx - 1, h - 14, 1, 14, '#6A5240');
-    const branch = (bx, by, dx, len, depth) => { let px = bx, py = by; for (let i = 0; i < len; i++) { px += dx * (r() < 0.7 ? 1 : 0); py -= 1; P(Math.round(px), py, 1, 1, '#4A3A2E'); if (r() < 0.25) P(Math.round(px), py - 1, 1, 1, '#F2F6F8'); if (depth < 2 && r() < 0.18) branch(px, py, -dx || 1, Math.floor(len * 0.5), depth + 1); } P(Math.round(px), py - 1, 1, 1, '#F2F6F8'); };
-    for (let i = 0; i < 5 + n; i++) branch(cx + (r() - 0.5) * 2, h - 12 - Math.floor(r() * 8), r() < 0.5 ? -1 : 1, 8 + Math.floor(r() * (8 + n * 2)), 0);
-    P(cx - 4, h - 2, 9, 2, '#F2F6F8');
-    outline(c); return (bareCs[n] = c);
-  };
   // list：[{ x, z, s, bare, hide }]；回傳 { update(yaw, force), out }（API 跟以前的看板版一樣）
   // hide 的樹不再一下子消失：每次 update 慢慢縮下去／長回來（狩獵場擋鏡頭的樹）
   R.treeField = (list, group) => {

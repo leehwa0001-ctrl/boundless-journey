@@ -14,7 +14,7 @@
 (function (R) {
   if (!R || !R.CORE || !R.CORE.mage) return;
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => (R.esc ? R.esc(String(s == null ? '' : s)) : String(s));
-  const CT = () => (R.coreTime ? R.coreTime() : performance.now() / 1000), rnd = Math.random;
+  const CT = () => (R.coreTime ? R.coreTime() : performance.now() / 1000);
   const isM = P => !!(P && P.cls === 'mage'), isSc = P => !!(P && P.cls === 'scroll'), isMS = P => isM(P) || isSc(P);
   const scCls = () => !!(S() && S().cls === 'scroll');
   const live = () => { const w = W(); return !!(w && w.run && !w.run.done && w.P && !w.P.dead && !w.town); };

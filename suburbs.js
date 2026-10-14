@@ -9,9 +9,7 @@
   const C = R.CITY, S = C.S, WX = C.WX, WZ = C.WZ, HALF = C.HALF;
   let seed = 1; const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
   const pick = a => a[Math.floor(rnd() * a.length)];
-  const hit = (a, b, m) => { m = m || 0; return a[0] < b[2] + m && a[2] > b[0] - m && a[1] < b[3] + m && a[3] > b[1] - m; };
   // 一塊地離一條路（折線）近不近
-  const nearLine = (r, pts, m) => { for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], n = Math.ceil(Math.hypot(bx - ax, by - ay) / 3); for (let j = 0; j <= n; j++) { const x = ax + (bx - ax) * j / n, y = ay + (by - ay) * j / n; if (x > r[0] - m && x < r[2] + m && y > r[1] - m && y < r[3] + m) return true; } } return false; };
 
   // ---------- 鐵路、車站、河西的區域、每一塊地：city.js ----------
   const RAIL = C.RAIL, PLAT = C.PLAT, STATION = C.STATION, PLAZA = C.PLAZA, BRIDGE = C.BRIDGE, CROSS = C.CROSS, Z = C.Z;

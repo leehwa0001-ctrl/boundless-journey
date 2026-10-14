@@ -8,7 +8,7 @@
 // 被通緝的時候開車，巡邏車和路障在 pursuit.js。
 (function (R) {
   const W = R.W, rnd = Math.random, pick = a => a[Math.floor(rnd() * a.length)];
-  const C = R.CITY, toS = v => v / C.S + 500, toW = s => (s - 500) * C.S;
+  const C = R.CITY, toW = s => (s - 500) * C.S;
   const S = () => R.S, P = () => W.P, tw = () => W.town;
   const MODELS = {
     van: { name: '輕型貨車', price: 600, max: 11, acc: 7, turn: 1.9, col: '#E8E8EC', len: 4.4, low: 0 },
@@ -93,7 +93,7 @@
     if (f > 0) v.v += (v.v < 0 ? 16 : M.acc) * f * dt; else if (f < 0) v.v += (v.v > 0 ? -16 : -M.acc * 0.6) * -f * dt; else v.v *= Math.max(0, 1 - 1.2 * dt);
     v.v = Math.max(-max * 0.35, Math.min(max, v.v)); if (Math.abs(v.v) < 0.05 && !f) v.v = 0;
     v.yaw -= s * M.turn * dt * Math.max(-1, Math.min(1, v.v / 5));
-    const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw), ox = v.x, oz = v.z;
+    const fx = -Math.sin(v.yaw), fz = -Math.cos(v.yaw);
     v.x += fx * v.v * dt; v.z += fz * v.v * dt;
     // 撞牆：前後兩個圓
     let bump = 0; const L = (M.len / 2 - 1.0);

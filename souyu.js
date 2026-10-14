@@ -194,7 +194,6 @@
   const learned = () => { const s = S(); if (!s) return false; if (s.cls === 'bard') { const sb = s.classes && s.classes.bard; return !!(sb && sb.adv2 === 'awaken' && R.skillsLearned && R.skillsLearned('bard').includes(BID)); } if (s.cls !== 'mage') return false; const st = s.classes && s.classes.mage; return !!(st && st.adv2 === 'harmonic' && R.skillsLearned && R.skillsLearned('mage').includes(ID)); };
   const html = () => {
     const c = conf(), st = star(), p = pick();
-    const stars = n => '★'.repeat(Math.min(n, 9)) || '★0';
     return '<h4>' + (isB() ? '演奏場 ' : '諧鳴奏域 ') + '★'.repeat(st) + '<span style="opacity:.4">' + '☆'.repeat(9 - st) + '</span>（' + st + '／9）</h4>'
       + tiers().map(t => { const open = st >= t.star, cur = v => p.at[t.star] === v; return '<div class="sy-row"><span class="sy-st">' + (t.star ? '★' + t.star : '★0') + '</span>' + (open ? t.opts.map(o => '<button type="button" data-sy="' + t.star + '" data-v="' + o[0] + '" class="' + (cur(o[0]) ? 'on' : '') + '" title="' + esc(o[2]) + '">' + esc(o[1]) + '</button>').join('') : '<span class="sy-lock">' + t.opts.map(o => o[1]).join('・') + '（奏域練到 ★' + t.star + ' 才能選）</span>') + '</div>'; }).join('')
       + '<div class="sy-row"><span class="sy-st">形態</span><button type="button" data-sy="form" data-v="" class="' + (p.form ? '' : 'on') + '" title="不選">不選</button>' + FORMS.map(f => '<button type="button" data-sy="form" data-v="' + f[0] + '" class="' + (p.form === f[0] ? 'on' : '') + '" title="' + esc(f[2]) + '">' + esc(f[1]) + '</button>').join('') + '</div>'
