@@ -1,6 +1,8 @@
 // 補齊召喚、毒附魔與法術編排的簡潔色塊圖示。
 (function (R) {
   const map = R.SKILL_ART_MAP;
+  map.sheets['utility-v1'] = { file: 'utility-v1.webp', cols: 3, rows: 1 };
+  ['bag', 'order', 'dodge'].forEach((id, tile) => { map.icons['ui:' + id] = {sheet:'utility-v1',tile,family:'ui:' + id}; });
   const ids = ['bl_alpha', 'bl_pack', 'en_burst', 'element:wood', 'element:wind',
     'element:metal', 'element:fire', 'element:frost', 'element:shock', 'shape:bolt',
     'shape:fan', 'shape:pillar', 'shape:orb', 'shape:wall'];

@@ -366,14 +366,12 @@
     for (let i = 0; i < hits; i++) {
       const go = () => {
         const p0 = P.pen; P.pen = Math.min(0.95, (p0 || 0) + pen);
-        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), hs: 1 })); }
+        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), bladeCleave: kind === 'cleave' && !o.iai, hs: 1 })); }
         finally { P.pen = p0; }
       };
       if (i === 0) go(); else bdLater(P, go, 120 * i);
     }
     if (o.iai || kind === 'thrust') R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range });
-    // 直劈：由上往下的一刀——落點冒出光柱、地面裂開一道震波（跟突刺的細長直線分開）
-    if (kind === 'cleave' && !o.iai && R.fx) { const d = range * 0.75, x = P.x + Math.sin(a) * d, z = P.z + Math.cos(a) * d; R.fx('pillar', x, 0, z, { r: 0.45, color: '#DDEEFF' }); R.fx('groundwave', x, 0.06, z, { a, r: 1.2, color: '#BFD8FF' }); R.fx('dust', x, 0.15, z, {}); }
     R.sfx && R.sfx('swing');
   };
   const pickForm = (P, k) => {

@@ -78,7 +78,7 @@
     br.querySelectorAll('.act').forEach(b => [...b.childNodes].forEach(nd => { if (nd.nodeType === 3 && nd.textContent.trim()) { const s = document.createElement('span'); s.textContent = nd.textContent.trim(); b.replaceChild(s, nd); } }));
     br.querySelectorAll('.act').forEach(b => { if (b.querySelector('.h2-ic')) return; const im = document.createElement('img'); im.className = 'h2-ic'; im.alt = ''; b.insertBefore(im, b.firstChild); const n = document.createElement('i'); n.className = 'h2-n'; b.appendChild(n); });
     const fixed = { hp: 'hp', mp: 'mp', bag: 'bag', order: 'order', dodge: 'dash' };
-    br.querySelectorAll('.act').forEach(b => { const k = fixed[b.dataset.tact] || fixed[b.dataset.h2]; if (k) b.querySelector('.h2-ic').src = icon(k); });
+    br.querySelectorAll('.act').forEach(b => { const k = fixed[b.dataset.tact] || fixed[b.dataset.h2]; if (k) b.querySelector('.h2-ic').src = ['bag', 'order', 'dodge'].includes(b.dataset.tact) && R.skillIconURL ? R.skillIconURL('ui:' + b.dataset.tact) : icon(k); });
   };
 
   const setF = (el, v, prop) => { if (el) el.style.setProperty(prop || '--f', Math.max(0, Math.min(1, v)).toFixed(3)); };
