@@ -23,7 +23,8 @@ jobs:
       - name: 包成完整的網頁
         run: |
           mkdir -p _site
-          cp *.js emblem.png flag.webp _site/
+          cp emblem.png flag.webp _site/
+          cp -R js _site/   # 2026-10-14：程式照負責的事分資料夾放在 js/ 底下
           cp -R assets _site/
           {
             printf '%s\n' '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'

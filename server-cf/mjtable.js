@@ -5,7 +5,7 @@
 // 訊息（JSON）：
 //   用戶端 → { t:'hello', name, token }、{ t:'start' }（桌主）、{ t:'act', a }、{ t:'next' }、{ t:'again' }（桌主）、{ t:'leave' }、'ping'
 //   伺服器 → { t:'lobby', code, you, host, seats:[{ name, human, on }], started }、{ t:'state', v, dl（你的剩餘秒數）, bank }、{ t:'err', msg }、'pong'
-import MJmod from '../mjcore.js';
+import MJmod from '../js/minigames/mjcore.js';
 const MJ = MJmod && MJmod.evalWin ? MJmod : globalThis.MJCore;
 const BASE_S = 5, BANK_S = 20, NEXT_S = 15, BOT_MS = 650;
 const BOTN = ['電腦・玉枝', '電腦・權藏', '電腦・新田', '電腦・小雀'];
