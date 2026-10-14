@@ -9,7 +9,6 @@
 (function (R) {
   const W = () => R.W;
   const INST = { lute: 'pluck', flute: 'flute', harp: 'harp' };
-  const COL = { lute: '#FFE08A', flute: '#BFE8FF', harp: '#FFB8E0' };
   const instOf = P => INST[P && P.item && P.item.base] || 'pluck';
   const RAIN = ['#FF2E55', '#FF8A00', '#FFD000', '#1ED760', '#1A9CFF', '#8A4DFF'];   // 普攻音符輪流換的顏色
   // ---------- 音符的樣子（精靈圖：一直面向鏡頭） ----------

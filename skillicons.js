@@ -10,9 +10,6 @@
 // 快捷欄（hud2.js 改一行）、技能點畫面（talentui.js）都用 R.skillIconURL。
 // 放在 hud2.js、talentui.js 後面。
 (function (R) {
-  const SZ = 24, RES = 32, K = RES / SZ;   // 畫的座標用 24，實際 32×32（快捷欄顯示 32px，不會糊）
-  const hex = c => { const r = /^rgb\((\d+),(\d+),(\d+)\)$/.exec(String(c || '')); if (r) return [+r[1], +r[2], +r[3]]; const m = /^#?([0-9a-f]{6})$/i.exec(String(c || '')); const n = m ? parseInt(m[1], 16) : 0xC8C0B0; return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
-  const mix = (a, b, k) => { const A = hex(a), B = hex(b); return 'rgb(' + A.map((v, i) => Math.round(v + (B[i] - v) * k)).join(',') + ')'; };
   // 技能 → 畫什麼
   const BASE_KIND = { roll: 'dash', volley: 'arrow', whirl: 'spin', fireball: 'fireball', heal: 'heal', flash: 'xslash', charge: 'dash', snipe: 'snipe', element: 'shot', grenade: 'boom', homing: 'shot', trap: 'trap', hamaya: 'arrow', rage: 'rage', combo: 'spin', qijin: 'palm', meteor: 'meteor',
     flashbang: 'boom', barrage: 'shot', pin: 'arrow', leap: 'jump', quake: 'quake', warcry: 'horn', frostnova: 'frost', chain: 'bolt', smite: 'pillar', ward: 'guard', flurry: 'xslash', parry: 'parry', shieldbash: 'guard', guard: 'guard' };

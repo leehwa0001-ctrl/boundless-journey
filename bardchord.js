@@ -526,7 +526,6 @@
   document.head.appendChild(css);
   const box = document.createElement('div'); box.id = 'bd-staff'; const can = document.createElement('canvas'); box.appendChild(can); document.body.appendChild(box);
   const DPR = () => Math.min(2, window.devicePixelRatio || 1);
-  const icons = {};
   // 五線譜：E4（64）在最下面那條線，每半格一個音階（照白鍵粗略換算）
   const STEP = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6];
   const posOf = m => { const o = Math.floor(m / 12) - 5, d = o * 7 + STEP[((m % 12) + 12) % 12]; return d - 2; };   // E4＝0

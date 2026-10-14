@@ -34,7 +34,6 @@
     return (mats[k] = m);
   };
   const B_ = (c, o) => lam(c, Object.assign({ see: 1 }, o));   // 建築
-  const segDist = (px, pz, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1, t = Math.max(0, Math.min(1, ((px - ax) * dx + (pz - az) * dz) / L)); return Math.hypot(px - (ax + dx * t), pz - (az + dz * t)); };
 
   // ---------- 小地圖的底圖（只畫一次） ----------
   let mapCanvas = null;

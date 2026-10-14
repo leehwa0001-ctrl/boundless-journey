@@ -720,7 +720,6 @@
   R.makePlayerHero = (cls, base, eq) => { const h = R.makeHeroSprite(cls, base, R.playerLook ? R.playerLook() : null); if (eq) R.dressHero(h, eq); return h; };
 
   // ---------- 城外的松樹（點陣看板）：三種大小是分別畫的，不是放大縮小，像素密度一樣 ----------
-  const pineCs = {};
   // ---------- 2026-10-14 作者：樹只留 3D 的（點陣看板的樹一直消失、跳出來）----------
   // 松樹（積雪）、落葉樹各一份合併好的形狀（頂點顏色），所有樹共用；大量的樹用 InstancedMesh（一種一次畫完）。
   const tree3 = {};
@@ -765,7 +764,6 @@
     g.userData.bb = m; g.userData.tree3d = true; return g;
   };
   // 冬天的行道樹（落葉的樹，枝上積雪）
-  const bareCs = {};
   // list：[{ x, z, s, bare, hide }]；回傳 { update(yaw, force), out }（API 跟以前的看板版一樣）
   // hide 的樹不再一下子消失：每次 update 慢慢縮下去／長回來（狩獵場擋鏡頭的樹）
   R.treeField = (list, group) => {

@@ -44,7 +44,6 @@
   const offOpen = (pts, d, round) => { const C = L(), co = new C.ClipperOffset(2, 12); co.AddPath(toC(pts), round ? C.JoinType.jtRound : C.JoinType.jtMiter, C.EndType.etOpenButt); const out = new C.Paths(); co.Execute(out, d * SC); return out; };
   const rectP = r => [[{ X: r[0] * SC, Y: r[1] * SC }, { X: r[2] * SC, Y: r[1] * SC }, { X: r[2] * SC, Y: r[3] * SC }, { X: r[0] * SC, Y: r[3] * SC }]];
   const polyP = poly => [toC(poly)];
-  const pip = (x, z, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[i], b = P[j]; if ((a.Y > z) !== (b.Y > z) && x < (b.X - a.X) * (z - a.Y) / (b.Y - a.Y) + a.X) c = !c; } return c; };
   const exBB = e => { let x0 = 1e18, z0 = 1e18, x1 = -1e18, z1 = -1e18; e.outer.forEach(p => { x0 = Math.min(x0, p.X); z0 = Math.min(z0, p.Y); x1 = Math.max(x1, p.X); z1 = Math.max(z1, p.Y); }); return [x0 / SC, z0 / SC, x1 / SC, z1 / SC]; };
   // 一塊（外圈＋洞）→ ShapeGeometry（以 (cx, cz) 為原點），加進合併繪製
   const addShape = (Bt, e, mat, y, cx, cz) => {
