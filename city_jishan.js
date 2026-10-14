@@ -31,7 +31,7 @@
     vendLines: ['德克斯凡的能量罐，藍色的那種。', '熱的機械町咖啡，有一點鐵的味道。', '罐裝的焙茶。吉山的自動販賣機會跟你說謝謝。'],
     carCols: ['#1A1A20', '#E8E4DC', '#C83A3A', '#2E4A8A', '#3A3A44', '#E8B830', '#5A5A62'],
     build(B) {
-      const M = CK.M, g = B.g, P = B.part, BOX = B.box, rr = B.rr, pk = B.pk, rnd = B.rnd;
+      const M = CK.M, g = B.g, P = B.part, rr = B.rr, pk = B.pk, rnd = B.rnd;
       // ---------- 道路 ----------
       B.road(-136, -100, 120, -92, { sw: 4, name: '北通' });
       B.road(-8, -100, 8, 96, { sw: 5, name: '吉山大通', line: 'y' });

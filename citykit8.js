@@ -45,7 +45,6 @@
   const rectP = r => [[{ X: r[0] * SC, Y: r[1] * SC }, { X: r[2] * SC, Y: r[1] * SC }, { X: r[2] * SC, Y: r[3] * SC }, { X: r[0] * SC, Y: r[3] * SC }]];
   const polyP = poly => [toC(poly)];
   const pip = (x, z, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const a = P[i], b = P[j]; if ((a.Y > z) !== (b.Y > z) && x < (b.X - a.X) * (z - a.Y) / (b.Y - a.Y) + a.X) c = !c; } return c; };
-  const inEx = (ex, x, z) => { x *= SC; z *= SC; return ex.some(e => pip(x, z, e.outer) && !e.holes.some(h => pip(x, z, h))); };
   const exBB = e => { let x0 = 1e18, z0 = 1e18, x1 = -1e18, z1 = -1e18; e.outer.forEach(p => { x0 = Math.min(x0, p.X); z0 = Math.min(z0, p.Y); x1 = Math.max(x1, p.X); z1 = Math.max(z1, p.Y); }); return [x0 / SC, z0 / SC, x1 / SC, z1 / SC]; };
   // 一塊（外圈＋洞）→ ShapeGeometry（以 (cx, cz) 為原點），加進合併繪製
   const addShape = (Bt, e, mat, y, cx, cz) => {
@@ -85,7 +84,6 @@
       for (let t = 0; t + 1 < xs.length; t += 2) { const i0 = Math.max(0, Math.ceil((xs[t] - H.x0) / H.cs - 0.5)), i1 = Math.min(H.nx - 1, Math.floor((xs[t + 1] - H.x0) / H.cs - 0.5)); for (let i = i0; i <= i1; i++) { const k = j * H.nx + i; H.a[k] = f(k, H.a[k]); } }
     }
   };
-  const hgSet = (bb, f) => { const H = CK.HG; if (!H.a) return; const i0 = Math.max(0, Math.floor((bb[0] - H.x0) / H.cs)), i1 = Math.min(H.nx - 1, Math.ceil((bb[2] - H.x0) / H.cs)), j0 = Math.max(0, Math.floor((bb[1] - H.z0) / H.cs)), j1 = Math.min(H.nz - 1, Math.ceil((bb[3] - H.z0) / H.cs)); for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) { const x = H.x0 + (i + 0.5) * H.cs, z = H.z0 + (j + 0.5) * H.cs, k = j * H.nx + i, v = f(x, z, H.a[k]); if (v != null) H.a[k] = v; } };
 
   // ---------- 蓋地面（finishGround 裡、人行道的高度之後） ----------
   (CK.groundHooks = CK.groundHooks || []).push(B => {

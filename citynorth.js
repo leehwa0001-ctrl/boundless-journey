@@ -47,7 +47,7 @@
   const SHOPS = [['北口書房', '#2E4A3A', 'book'], ['雪見甘味', '#8A2A24'], ['古道具・北斗', '#4A3A2E'], ['北口寫真館', '#4A3A2E', 'photo'], ['玩具屋・兔', '#C83A3A'], ['和服・椿', '#5A2A4A'], ['洋菓子・鈴蘭', '#C87A8A'], ['北口理髮', '#2E3A5A', 'barber'],
     ['花屋・雪割', '#3A5A4A'], ['眼鏡・時計 北斗', '#3A3A44', 'watch'], ['乾貨・海鶴', '#2E4A6A'], ['文具・燕', '#4A5A2E'], ['茶葉・霜溪', '#3E5A2E'], ['毛線・雪兔', '#8A6A8A'], ['魔導零件・北口', '#3A4A6A'], ['唱片・夜曲', '#3A2A4A', 'record']];
   let shopI = 0;
-  const SIZES = [[26, 30], [22, 26], [18, 24], [14, 20], [12, 14]], GAP = 0.3, SIZES_RES = [[22, 22], [20, 24], [24, 18], [18, 20], [16, 16], [12, 14]];
+  const SIZES = [[26, 30], [22, 26], [18, 24], [14, 20], [12, 14]], GAP = 0.3;
   const kindFor = (rd, w, d, res) => {
     const r0 = rnd();
     if (res) { if (r0 < 0.08) return { type: 'garden' }; if (r0 < 0.12) return { type: 'vacant' }; if (r0 < 0.26 && w > 24) return { type: 'apt', floors: rnd() < 0.6 ? 2 : 3 }; if (r0 < 0.3 && rd) { const s = SHOPS[shopI++ % SHOPS.length]; return { type: 'shop', name: s[0], sc: s[1], kind: s[2], low: true, awn: pick(['#C83A3A', '#3A6A8A']) }; } return { type: 'house', floors: rnd() < 0.8 ? 2 : 1 }; }

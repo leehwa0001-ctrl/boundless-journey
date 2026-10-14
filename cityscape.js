@@ -30,7 +30,6 @@
     // 沿著折線每隔 step 單位做一件事（cb(x, y, ux, uy, 第幾個)），x、y 是示意圖座標
     const along = (pts, step, start, cb) => { let k = 0, acc = start || 0; for (let i = 0; i < pts.length - 1; i++) { const [ax, ay] = pts[i], [bx, by] = pts[i + 1], L = Math.hypot(bx - ax, by - ay); if (L < 0.01) continue; const ux = (bx - ax) / L, uy = (by - ay) / L; while (acc <= L) { cb(ax + ux * acc, ay + uy * acc, ux, uy, k++); acc += step; } acc -= L; } };
     const nearJ = (x, y, m) => C.junctions.some(J => Math.hypot(J.x - x, J.y - y) < m);
-    const jFor = (x, y) => C.junctions.filter(J => Math.hypot(J.x - x, J.y - y) < 40);
 
     // ---------- 舊城、站前的地面 ----------
     rectG(C.OLD, lam('#CEC8BA', { tex: 'gravel' }), 0.004);

@@ -18,7 +18,6 @@
   const CORE = R.CORE, K = R.coreKit; if (!CORE || !K) return;
   const { W, pw, adv, toast, say, dist, rnd } = K, CT = () => R.coreTime();
   const allies = () => (W().allies || []).filter(a => !a.downed);
-  const nearest = (P, r) => { let b = null, bd = r || 1e9; (W().enemies || []).forEach(e => { if (e.dead || e.under) return; const d = dist(e, P); if (d < bd) { bd = d; b = e; } }); return b; };
   const buff = (P, id, o) => { P.sb = P.sb || {}; P.sb['core:' + id] = Object.assign({ left: o.t, t: o.t }, o); if (o.speed) P.speed *= o.speed; if (o.speed) P.sb['core:' + id].spd = o.speed; };
 
   // ======================= 牧師：信仰 =======================

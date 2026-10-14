@@ -91,7 +91,6 @@
       { const roofM = R.seeThrough(lam('#3E4E60')), ridgeM = R.seeThrough(lam('#2A3644')); [-1, 1].forEach(sd => { const m = box(roofM, cx, 3.35, cz + sd * (d / 4 + 0.15), w + 0.8, 0.18, d / 2 + 0.6); m.rotation.x = sd * 0.22; }); box(ridgeM, cx, 3.62, cz, w + 0.9, 0.16, 0.3); for (let x = cx - w / 2; x <= cx + w / 2; x += 1.2) [-1, 1].forEach(sd => { const m = box(ridgeM, x, 3.46, cz + sd * (d / 4 + 0.15), 0.08, 0.06, d / 2 + 0.6); m.rotation.x = sd * 0.22; }); } [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, b]) => box(lam('#4A5058'), cx + a * w / 2, 1.6, cz + b * d / 2, 0.3, 3.2, 0.3));
       box(lam('#C8C4BC'), cx, 0.06, cz, w, 0.1, d);
       for (let i = 0; i < 6; i++) { const bx = cx - w / 2 + 1.2 + (i % 3) * (w - 2.4) / 2, bz = cz - d / 4 + Math.floor(i / 3) * d / 2; box(lam('#2E6A8A'), bx, 0.45, bz, 1.6, 0.7, 0.9); box(lam('#E8F2F8'), bx, 0.82, bz, 1.4, 0.06, 0.7); for (let f = 0; f < 3; f++) box(lam(['#9AA8B8', '#C88A6A', '#7A8A9A'][f]), bx - 0.4 + f * 0.4, 0.9, bz, 0.3, 0.08, 0.6); block(bx - 0.8, bx + 0.8, bz - 0.45, bz + 0.45, 'deco'); }
-      const sign = R.makeSign ? null : null;   // 招牌用文字點陣：簡單一點，掛一塊藍布
       box(lam('#2E5A8A'), cx, 3.6, cz + d / 2 + 0.35, w * 0.6, 0.5, 0.05);
       const vend = R.makeHero('warrior', null, { top: '#E8E4DC', hair: '#2A2420', cloak: '#2E5A8A', weapon: null, shield: false }); vend.g.position.set(cx + 1, 0, cz + d / 2 - 1); vend.g.rotation.y = 0; g.add(vend.g);
       tw.inter.push({ x: cx, z: cz + d / 2 + 0.8, r: 2.8, label: '東鶴魚市場（賣魚、買海產）', act: market }); }

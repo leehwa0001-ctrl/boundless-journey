@@ -6,7 +6,7 @@
 // - 新的飾品三種（寶箱會掉、飾品工房做得出來）：腳鍊（輕身＝移動）、臂環（穿透）、墜飾（回魔）。
 // 放在 crafting.js、raid.js、hub.js 後面。
 (function (R) {
-  const S = () => R.S, $ = id => document.getElementById(id);
+  const S = () => R.S;
   if (!R.GEAR_KEYS.includes('acc2')) R.GEAR_KEYS.push('acc2');
   R.GEAR_NAME.acc2 = '飾品二';
   // ---------- 戴在哪一格 ----------

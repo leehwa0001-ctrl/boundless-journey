@@ -25,7 +25,7 @@
   const order = run => {
     if (run.biomeOrder) return run.biomeOrder;
     const h = hash(run.site.id), lv = run.grade.lv || 1;
-    const easy = ['plain', 'forest'], mid = ['ruin', 'forest', 'cave', 'plain'], hard = ['cave', 'crystal', 'lava', 'ruin'];
+    const mid = ['ruin', 'forest', 'cave', 'plain'], hard = ['cave', 'crystal', 'lava', 'ruin'];
     let seq;
     if (run.grade.id === 'hamilia') seq = h < 0.5 ? ['plain', 'forest'] : ['forest', 'plain'];
     else { const a = mid.slice().sort((x, y) => hash(run.site.id + x) - hash(run.site.id + y)), b = hard.slice().sort((x, y) => hash(run.site.id + y) - hash(run.site.id + x)); seq = lv <= 2 ? a.concat(b.slice(0, 2)) : [a[0]].concat(b, a.slice(1)); }

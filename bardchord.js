@@ -160,7 +160,7 @@
     Cmaj9: [48, 52, 55, 59, 62], Am9: [45, 48, 52, 55, 59], Dm9: [50, 53, 57, 60, 64], Fmaj9: [41, 45, 48, 52, 55], Em9: [40, 47, 50, 54, 55],
     Dm11: [38, 45, 48, 53, 55, 64], Cm7: [48, 51, 55, 58], Fm9: [41, 44, 48, 51, 55], G11sus: [43, 48, 50, 53, 57], 'Cmaj9#11': [48, 52, 55, 59, 62, 66], 'Fmaj9#11': [41, 45, 48, 52, 55, 59] };
   // 協奏音 do-re-mi-fa-mi-re（再回到 do 一直繞），C 大調
-  const CONC = [60, 62, 64, 65, 64, 62], ARP = [60, 67, 64, 67], CMAJ = { sc: [0, 2, 4, 5, 7, 9, 11] };
+  const ARP = [60, 67, 64, 67];
   // 戰鼓手的鼓點（2026-10-12 作者）：4/4、直拍、八分音符；位置照八分音符數（第 1 個八分＝1）；最後一拍加四下十六分的筒鼓過門
   const DRUM = { 4: { k: [3, 7], s: [1, 2, 5, 6] }, 6: { k: [3, 7, 11], s: [1, 2, 5, 6, 9, 10] } };
   const drums = (cap, bt) => {
@@ -527,14 +527,6 @@
   const box = document.createElement('div'); box.id = 'bd-staff'; const can = document.createElement('canvas'); box.appendChild(can); document.body.appendChild(box);
   const DPR = () => Math.min(2, window.devicePixelRatio || 1);
   const icons = {};
-  const iconOf = c => {
-    if (icons[c.id]) return icons[c.id];
-    const k = document.createElement('canvas'); k.width = k.height = 64; const g = k.getContext('2d');
-    const gr = g.createLinearGradient(0, 0, 0, 64); gr.addColorStop(0, '#3A2238'); gr.addColorStop(1, '#160C16'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
-    g.strokeStyle = 'rgba(255,184,224,.35)'; g.lineWidth = 1; for (let i = 0; i < 5; i++) { g.beginPath(); g.moveTo(6, 38 + i * 4.5); g.lineTo(58, 38 + i * 4.5); g.stroke(); }
-    g.fillStyle = '#FFB8E0'; g.font = 'bold ' + (c.sym.length > 2 ? 20 : 26) + 'px "Segoe UI",sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.shadowColor = '#FF6AB8'; g.shadowBlur = 8; g.fillText(c.sym, 32, 22);
-    return (icons[c.id] = k.toDataURL());
-  };
   // 五線譜：E4（64）在最下面那條線，每半格一個音階（照白鍵粗略換算）
   const STEP = [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6];
   const posOf = m => { const o = Math.floor(m / 12) - 5, d = o * 7 + STEP[((m % 12) + 12) % 12]; return d - 2; };   // E4＝0

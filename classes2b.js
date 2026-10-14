@@ -4,7 +4,7 @@
 // 放在 skillbook2.js、ult.js、passives.js 後面。
 (function (R) {
   const W = () => R.W, rnd = Math.random, dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
-  const T = R.SKILL_TYPES, LIB = R.SKILL_LIB, K = R.SKILL_KIT;
+  const T = R.SKILL_TYPES, LIB = R.SKILL_LIB;
   if (!T || !LIB) return;
   // ---------- 召喚物 ----------
   T.pet = (s, P, w, pw) => {

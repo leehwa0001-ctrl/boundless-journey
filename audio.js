@@ -45,7 +45,6 @@
   const sweep = (type, f0, f1, t, d, v, dest) => { const g = gainAt(t, 0.005, v, d, dest), o = osc(type, f0, t, t + d + 0.05, g); o.frequency.exponentialRampToValueAtTime(Math.max(20, f1), t + d); return o; };
   // 太鼓：音高往下掉的正弦＋一點噪音
   const taiko = (t, v, dest, f) => { sweep('sine', f || 120, 42, t, 0.42, v, dest); noiseHit(t, 0.08, v * 0.4, dest, 'lowpass', 900); };
-  const woodTick = (t, v, dest) => { sweep('sine', 1700, 1500, t, 0.05, v, dest); };
   // 篠笛（晚上當尺八用，吹低一點）：正弦為主、帶二倍泛音，音頭從下面滑上來，有顫音和氣音
   const fue = (m, t, d, v, dest, breath) => {
     const f = mtof(m), g = ctx.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.linearRampToValueAtTime(v, t + 0.07); g.gain.setValueAtTime(v, t + Math.max(0.08, d - 0.14)); g.gain.linearRampToValueAtTime(0.0001, t + d); g.connect(dest); toRev(g, 0.65);

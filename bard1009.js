@@ -11,7 +11,6 @@
   const INST = { lute: 'pluck', flute: 'flute', harp: 'harp' };
   const COL = { lute: '#FFE08A', flute: '#BFE8FF', harp: '#FFB8E0' };
   const instOf = P => INST[P && P.item && P.item.base] || 'pluck';
-  const colOf = P => COL[P && P.item && P.item.base] || '#FFE8A0';
   const RAIN = ['#FF2E55', '#FF8A00', '#FFD000', '#1ED760', '#1A9CFF', '#8A4DFF'];   // 普攻音符輪流換的顏色
   // ---------- 音符的樣子（精靈圖：一直面向鏡頭） ----------
   const TEX = {};
@@ -48,7 +47,6 @@
     return r;
   };
   // ---------- 旋律 ----------
-  const PENTA = [0, 2, 4, 7, 9];   // 五聲音階
   const hash = s => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
   const motif = id => {   // 這一招的一小段：四個音，照技能編號固定
     const h = hash(String(id)), root = 62 + (h % 5), out = []; let at = 0, last = 0;   // D4～F#4 起頭，音域一個八度多一點
