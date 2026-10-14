@@ -8,10 +8,10 @@
 (function (R) {
   const KEEP = new Set(['pickaxe', 'gauntlet', 'staffpole']);
   // 縮放（圖示 16 格的幾倍）
-  const SIZE = { greatsword: 1, spear: 1, sniperrifle: 1, staff: 0.94, holystaff: 0.94, longbow: 0.94, rifle: 0.88, katana: 0.88, sword: 0.81, runeblade: 0.81, axe: 0.81, shotgun: 0.81, mace: 0.75, dualblades: 0.75, shortbow: 0.75, crossbow: 0.75, runedagger: 0.62, pistol: 0.62, dualpistol: 0.62, orb: 0.56 };
+  const SIZE = { greatsword: 1, spear: 1, sniperrifle: 1, staff: 0.94, holystaff: 0.94, longbow: 0.94, rifle: 0.88, katana: 0.88, sword: 0.81, runeblade: 0.81, axe: 0.81, shotgun: 0.81, mace: 0.75, dualblades: 0.75, shortbow: 0.75, crossbow: 0.75, runedagger: 0.62, pistol: 0.62, orb: 0.56 };
   const HELD = { lute: 1, flute: 1, tome: 1, bell: 1, chalk: 1, disc: 1, scrollb: 1, talisman: 1 };
   // 握的地方（圖示裡的座標）
-  const GRIP = { sword: [3, 12], greatsword: [3, 12], runeblade: [3, 12], katana: [4, 12], dualblades: [8, 11], axe: [4, 13], mace: [4, 13], spear: [3, 13], staff: [4, 14], holystaff: [5, 14], orb: [8, 13], pistol: [5, 10], dualpistol: [5, 10], rifle: [4, 9], shotgun: [4, 9], sniperrifle: [4, 9], shortbow: [10, 8], longbow: [11, 8], crossbow: [8, 11], runedagger: [5, 10] };
+  const GRIP = { sword: [3, 12], greatsword: [3, 12], runeblade: [3, 12], katana: [4, 12], dualblades: [8, 11], axe: [4, 13], mace: [4, 13], spear: [3, 13], staff: [4, 14], holystaff: [5, 14], orb: [8, 13], pistol: [5, 10], rifle: [4, 9], shotgun: [4, 9], sniperrifle: [4, 9], shortbow: [10, 8], longbow: [11, 8], crossbow: [8, 11], runedagger: [5, 10] };
   const BY_KIND = { melee: [3, 12], thrust: [3, 13], gun: [4, 9], bow: [10, 8], magic: [5, 14] };
   const FW = (R.HERO_FRAME && R.HERO_FRAME.FW) || 24, FH = (R.HERO_FRAME && R.HERO_FRAME.FH) || 30, BX = 4, BY = 5;
   R.drawHeldIcon = (x, ox, oy, dir, fr, L, pose, swingP) => {

@@ -1,9 +1,5 @@
 // 2026-10-06：裝備詞綴／槍手細部平衡。放在 affixround.js 後、main.js 前。
 (function (R) {
-  // 舊雙槍仍可使用，但不再當成新武器種類掉落；手槍類合併，新增狙擊步槍。
-  const wf0 = R.weaponsFor;
-  if (wf0) R.weaponsFor = cls => wf0(cls).filter(id => !(R.WEAPONS[id] && R.WEAPONS[id].legacy));
-
   // 詞條：固定數字看物品等級；百分比增幅看稀有度。專注（技能冷卻）再額外降成原本 1/4。
   const PCT = new Set(['sharp','swift','crit','vamp','fire','frost','shock','heavy','cursed','pen','evade','focus','calm','greed','reach','might','keen','haste','fleet','leech','guard','wisdom','lucky','ember','chill','spark','pen2']);
   const DISCRETE = new Set(['pierce','multi']);

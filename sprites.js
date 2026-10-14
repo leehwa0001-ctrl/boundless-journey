@@ -248,7 +248,7 @@
       return;
     }
     if (k === 'gun') {
-      const snipe = wp === 'sniperrifle', dual = wp === 'pistol' || wp === 'dualpistol', len = snipe ? 10 : wp === 'rifle' ? 7 : wp === 'shotgun' ? 6 : 5;
+      const snipe = wp === 'sniperrifle', dual = wp === 'pistol', len = snipe ? 10 : wp === 'rifle' ? 7 : wp === 'shotgun' ? 6 : 5;
       if (side) { p(hx, hy - 1, len, 2, dark); p(hx, hy - 1, len, 1, lt(dark)); p(hx, hy + 1, 2, 2, wood); if (snipe) { p(hx + 3, hy - 3, 4, 2, '#1E1E26'); p(hx + 6, hy - 3, 1, 1, '#9AD8FF'); p(hx - 2, hy, 2, 2, wood); } if (dual) { p(hx - 3, hy + 1, len - 1, 2, shade(dark, -0.2)); } }
       else { p(hx, hy - 3, 2, len, dark); p(hx, hy - 3, 1, len, lt(dark)); if (snipe) { p(hx - 1, hy - 1, 1, 3, '#1E1E26'); p(hx - 1, hy - 1, 1, 1, '#9AD8FF'); } if (dual) { p(back ? 13 : 1, hy - 3, 2, len, dark); p(back ? 13 : 1, hy - 3, 1, len, lt(dark)); } }
     }
