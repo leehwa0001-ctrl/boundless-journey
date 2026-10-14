@@ -115,7 +115,7 @@
         let ok = true; const path = [];
         for (let s = 1; s <= steps + 1; s++) { const tx = p0.tx + dx * s, tz = p0.tz + dz * s; if (!free(tx, tz)) { ok = false; break; } path.push([tx, tz]); }
         if (!ok) continue;
-        let rock = path[steps - 1], stand = path[steps];
+        let rock = path[steps - 1];
         if (hard && rnd() < 0.6) {   // 先橫再直：石頭再往旁邊挪一格，要先往側面推一格
           const [ex, ez] = dz ? [pick([1, -1]), 0] : [0, pick([1, -1])], r2 = [rock[0] + ex, rock[1] + ez], st2 = [rock[0] + 2 * ex, rock[1] + 2 * ez];
           if (free(r2[0], r2[1]) && free(st2[0], st2[1])) { path.push(r2, st2); rock = r2; }

@@ -14,7 +14,7 @@
   const PU = { cars: [], blocks: [], spawnT: 4, blockT: 8, bustT: 0, sirenT: 0, msgT: 0 };
 
   const policeMesh = () => {
-    const v = V(), g = v.carMesh('sedan', '#F2F2F4'), TH = THREE;
+    const v = V(), g = v.carMesh('sedan', '#F2F2F4');
     v.box(g, 2.02, 0.4, 1.8, v.lam('#1A1A22'), 0, 0.72, 0);   // 黑色的車門
     const red = v.box(g, 0.6, 0.18, 0.4, v.lam('#FF2A2A', { em: '#FF2A2A', ei: 1 }), -0.35, 1.78, 0.15), blue = v.box(g, 0.6, 0.18, 0.4, v.lam('#2A6AFF', { em: '#2A6AFF', ei: 1 }), 0.35, 1.78, 0.15);
     g.userData.lights = [red, blue]; return g;

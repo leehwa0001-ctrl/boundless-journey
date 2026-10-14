@@ -7,7 +7,6 @@
 //    招牌照設計的數值；其他加成照比例縮放（0.3～1.6 倍）；還不夠的用生命、傷害補——每一族的特色是招牌那一項，強度差不多。
 // 放在 races.js、races2.js、luck.js 後面。
 (function (R) {
-  const add = (b, x) => { Object.keys(x || {}).forEach(k => { if (k === 'immune') b.immune = Object.assign({}, b.immune || {}, x.immune); else b[k] = Math.round(((b[k] || 0) + x[k]) * 1000) / 1000; }); return b; };
   const FAM = {
     大陸族種: { xp: 0.15, skillCd: 0.05 }, 精靈族種: { mp: 0.2, skillCd: 0.1, range: 0.15 }, 矮人族種: { def: 4, hp: 0.12, ore: 0.3 },
     鰭人族種: { regen: 0.6, immune: { slow: 1 } }, 翼人族種: { dodge: 0.2, speed: 0.08 }, 地精族種: { luck: 3, dodge: 0.15 },

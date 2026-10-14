@@ -9,7 +9,6 @@
   const $ = id => document.getElementById(id);
   const esc = s => R.esc(s);
   const W = R.W;
-  const pick = a => a[Math.floor(Math.random() * a.length)];
   const k = (m, d, y) => R.absOf(y || 2836, m, d);
   const S = () => R.S;
   const aff = id => (S().aff[id] || 0);

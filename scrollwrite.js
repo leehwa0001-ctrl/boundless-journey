@@ -17,7 +17,7 @@
 // 放在 classes2.js、gearmore.js、skillbook.js、skillpoints.js、hub.js 後面。
 (function (R) {
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => R.esc(s);
-  const PRICE = 4, PAPER = { scrollb: 1, talisman: 1, parchment: 1 };
+  const PRICE = 4;
   R.WEAPONS.parchment = { name: '牛皮紙', cls: ['scroll'], kind: 'magic', dmg: 13, pellets: 2, rate: 1.5, speed: 18, range: 13, mp: 1.5, spread: 0.3 };
   if (R.WEAPON_LOOK) R.WEAPON_LOOK.parchment = 'scrollb';
   R.ICON_EXTRA = Object.assign(R.ICON_EXTRA || {}, { parchment: ({ rc }) => { rc(2, 3, 12, 10, '#D8C098'); rc(2, 3, 12, 1, '#A8885A'); rc(2, 12, 12, 1, '#A8885A'); rc(4, 6, 8, 1, '#5A3A2A'); rc(4, 8, 6, 1, '#5A3A2A'); rc(10, 9, 2, 2, '#C83A3A'); } });

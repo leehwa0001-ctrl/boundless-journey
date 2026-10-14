@@ -75,7 +75,6 @@
 
   // ---------- 色光之室：開關紅、綠、藍三盞燈，讓混出來的顏色和石碑上的一樣 ----------
   const RGB = ['#FF4A3A', '#4AE05A', '#4A7AFF'], MIX = c => { const v = [c[0] ? 255 : 0, c[1] ? 255 : 0, c[2] ? 255 : 0]; return '#' + v.map(x => x.toString(16).padStart(2, '0')).join(''); };
-  const CNAME = { '#ff0000': '紅', '#00ff00': '綠', '#0000ff': '藍', '#ffff00': '黃', '#ff00ff': '紫', '#00ffff': '青', '#ffffff': '白' };
   EXT.color = {
     name: '色光之室',
     build(pz, K) {

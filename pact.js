@@ -175,7 +175,7 @@
   const ex0 = R.extract;
   R.extract = how => {
     const run = W().run, s = S(); if (!run || run.done) return ex0(how);
-    const before = (s.cleared || {})[run.grade.id] || 0, g0 = s.gold;
+    const before = (s.cleared || {})[run.grade.id] || 0;
     const r = ex0(how);
     const full = ((s.cleared || {})[run.grade.id] || 0) > before, p = run.pact, pay = (p ? p.pts * 0.1 : 0) + tb('pay');
     if (pay && run.reward) { run.pactBonus = Math.round(run.reward * pay); s.gold += run.pactBonus; }

@@ -12,7 +12,7 @@
     ['鈴', 'R', '7', '鈴', 'R', '瓜', '鈴', 'R', 'B', '鈴', 'R', '鶴', '鈴', 'R', '7', '鈴', 'R', '瓜', '鈴', 'R', '鶴'],
     ['R', '鈴', '7', 'R', '鈴', '瓜', 'R', '鈴', 'B', 'R', '鈴', '鶴', 'R', '鈴', '7', 'R', '鈴', '瓜', 'R', '鈴', '鶴']
   ];
-  const N = 21, BET = 3, BUY = 50, BUY_GOLD = 10, CASH = 6, SLIDE = 4;
+  const N = 21, BET = 3, BUY = 50, BUY_GOLD = 10, CASH = 6;
   // 內部抽選（每一把）：機率、中線要對齊的圖案
   const LOT = [['big', 1 / 280], ['reg', 1 / 440], ['melon', 1 / 90], ['cherry', 1 / 36], ['bell', 1 / 7], ['replay', 1 / 7.3]];
   const PAY = { big: 252, reg: 96, melon: 12, cherry: 2, bell: 8, replay: 0 };
@@ -63,7 +63,7 @@
     };
     // 畫面
     const drawSym = (s, cx, cy, h, dim) => {
-      const d = SYM[s]; x.save(); x.globalAlpha = dim ? 0.45 : 1;
+      x.save(); x.globalAlpha = dim ? 0.45 : 1;
       if (s === 'B') { x.fillStyle = '#1A1A1A'; x.fillRect(cx - 30, cy - 12, 60, 24); x.fillStyle = '#F4F0E8'; x.font = 'bold 15px sans-serif'; x.fillText('BAR', cx, cy + 5); }
       else if (s === '7') { x.fillStyle = '#7A1A1A'; x.font = '900 40px serif'; x.fillText('7', cx + 2, cy + 15); x.fillStyle = '#E83A3A'; x.fillText('7', cx, cy + 13); }
       else if (s === '鈴') { x.fillStyle = '#C89A2A'; x.beginPath(); x.moveTo(cx - 14, cy + 10); x.quadraticCurveTo(cx - 14, cy - 16, cx, cy - 16); x.quadraticCurveTo(cx + 14, cy - 16, cx + 14, cy + 10); x.closePath(); x.fill(); x.fillStyle = '#F2C83A'; x.beginPath(); x.moveTo(cx - 11, cy + 8); x.quadraticCurveTo(cx - 11, cy - 13, cx, cy - 13); x.quadraticCurveTo(cx + 11, cy - 13, cx + 11, cy + 8); x.closePath(); x.fill(); x.fillStyle = '#8A6A1A'; x.fillRect(cx - 3, cy + 9, 6, 5); }

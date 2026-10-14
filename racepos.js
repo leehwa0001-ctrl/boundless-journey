@@ -3,7 +3,7 @@
 // - 存在這台電腦（localStorage，跟按鍵設定一樣），每個存檔都一樣。手機的按鈕排法不變。
 // 放在 racial.js、keybinds.js、hud3.js 後面。
 (function (R) {
-  const KEY = 'ruins1433-racepos', $ = id => document.getElementById(id);
+  const KEY = 'ruins1433-racepos';
   const get = () => { try { return localStorage.getItem(KEY) || 'mid'; } catch (e) { return 'mid'; } };
   const apply = v => { document.body.dataset.racePos = v; };
   const set = v => { try { localStorage.setItem(KEY, v); } catch (e) { } apply(v); };
