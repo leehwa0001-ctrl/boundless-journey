@@ -19,6 +19,6 @@ j.layers.forEach(l => {
   if (Object.keys(vs).length) layers[l.name] = vs;
 });
 const out = { grid: j.grid, race: race.name, body, layers };
-const dst = path.join(__dirname, '..', 'charkit-data.js');
+const dst = path.join(__dirname, '..', 'js', 'art', 'charkit-data.js');
 fs.writeFileSync(dst, '// 人物素材的資料（tools/charkit-convert.js 從作者的 character-kit-layers.json 轉出來的，不要手改）\nwindow.R = window.R || {}; window.R.CHARKIT = ' + JSON.stringify(out) + ';\n');
 console.log('寫好了：' + dst + '（' + Math.round(fs.statSync(dst).size / 1024) + ' KB）；圖層：' + Object.keys(layers).map(k => k + '×' + Object.keys(layers[k]).length).join('、'));

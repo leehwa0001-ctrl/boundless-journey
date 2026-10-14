@@ -2,7 +2,7 @@
 const fs = require('fs'), vm = require('vm');
 const R = { W: {}, ENEMIES: {}, spawnEnemy: () => null, hurtEnemy: () => 0, updateEnemies: () => 0, step: () => 0, hurtPlayer: () => 0 };
 global.window = { R }; global.document = { createElement: () => ({}), head: { appendChild() {} } };
-vm.runInThisContext(fs.readFileSync(process.argv[2] || require('path').join(__dirname, '..', 'ruinis.js'), 'utf8'));
+vm.runInThisContext(fs.readFileSync(process.argv[2] || require('path').join(__dirname, '..', 'js', 'ruins', 'ruinis.js'), 'utf8'));
 const T = R.RUIN_IS, floors = { hamilia: 3, amile: 15, mors: 10, kesent: 58, kaso: 75 };
 for (const g of Object.keys(T.IS_TABLE)) {
   const t = T.IS_TABLE[g], rows = [];

@@ -1,5 +1,5 @@
 // 雀莊：電腦四家打完整的東風戰（檢查不會卡住、點數守恆）：node tools/mj-sim.js [場數]
-const MJ = require('../mjcore.js');
+const MJ = require('../js/minigames/mjcore.js');
 const N = +process.argv[2] || 50; const yk = {}; let hands = 0, draws = 0, ext = 0;
 for (let g = 0; g < N; g++) {
   const G = MJ.newMatch({ names: ['A', 'B', 'C', 'D'], bots: [1, 1, 1, 1], seed: g + 1 }); MJ.startHand(G);

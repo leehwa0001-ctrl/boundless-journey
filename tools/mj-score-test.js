@@ -1,5 +1,5 @@
 // 雀莊（mjcore.js）的役・符・點數測試：node tools/mj-score-test.js
-const MJ = require('../mjcore.js');
+const MJ = require('../js/minigames/mjcore.js');
 const parse = s => { const out = []; let buf = []; for (const ch of s.replace(/\s/g, '')) { if (/\d/.test(ch)) buf.push(+ch); else { const base = { m: 0, p: 9, s: 18, z: 27 }[ch]; buf.forEach(n => out.push(base + (ch === 'z' ? n - 1 : n === 0 ? 4 : n - 1))); buf = []; } } return out; };
 const used = {}; const tileOf = id => { used[id] = (used[id] || 0) + 1; return id * 4 + 4 - used[id]; };   // 用每種的後幾張（避開赤牌 t%4==0）
 const C = s => { const c = new Array(34).fill(0); parse(s).forEach(i => c[i]++); return c; };
