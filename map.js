@@ -35,7 +35,7 @@
   const inside = (p, poly) => { let c = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if (((a[1] > p[1]) !== (b[1] > p[1])) && (p[0] < (b[0] - a[0]) * (p[1] - a[1]) / (b[1] - a[1]) + a[0])) c = !c; } return c; };
 
   // ---------- 圖例用的符號 ----------
-  const INK = '#4A3A28', PAPER = '#F4E9CD', SEA = '#C4D6D6', SEALINE = '#7FA0A6', RED = '#B8322A', GREEN = '#3E7A48', GOLD = '#C9A13A';
+  const INK = '#4A3A28', PAPER = '#F4E9CD', SEA = '#C4D6D6', SEALINE = '#7FA0A6', RED = '#B8322A', GOLD = '#C9A13A';
   const mountain = (x, y, s, snow) => '<g transform="translate(' + f1(x) + ' ' + f1(y) + ') scale(' + s.toFixed(2) + ')"><path d="M-13 8L-1 -12L13 8Z" fill="' + PAPER + '" stroke="' + INK + '" stroke-width="1.5" stroke-linejoin="round"/>'
     + (snow ? '<path d="M-5.2 -3.6L-1 -12L3.4 -4.8L1 -3.2L-1.6 -5.2Z" fill="#FFFFFF" stroke="' + INK + '" stroke-width=".8"/>' : '')
     + '<path d="M-1 -12L2 -3L0 -1L4 8M3 -5L9 6M5 -1L11 7" fill="none" stroke="' + INK + '" stroke-width=".8" opacity=".75"/></g>';

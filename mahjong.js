@@ -534,7 +534,6 @@
     FN.mahjong = c => {
       const { bx, block, inter, npc, lamp, sign, HW, HD, NW } = c, K = R.INTERIOR_KIT;
       const LOOKS = [['#3A4A5A', '#8A8A88'], ['#5A3A3A', '#2A2420'], ['#2E2E38', '#1A1410'], ['#6A5A3A', '#4A3424'], ['#3A5A4A', '#C8C0B0']];
-      const TALK = ['「碰！……啊，沒有役。」', '「立直！」', '「又是你放槍。」', '「那張東風我早就想打了。」', '「再一場就回家，真的。」', '「自摸，三千、六千。」'];
       const table = (tx, tz, busy, mine) => {
         bx(1.7, 0.1, 1.7, '#2E6A4A', tx, 0.78, tz); bx(1.9, 0.08, 1.9, '#4A3424', tx, 0.72, tz); bx(0.3, 0.7, 0.3, '#3A2A1C', tx, 0.36, tz);
         for (let i = 0; i < 4; i++) for (let k = 0; k < 6; k++) { const a = i * Math.PI / 2, ox = Math.sin(a) * 0.62, oz = Math.cos(a) * 0.62, px = -Math.cos(a) * (k - 2.5) * 0.17, pz = Math.sin(a) * (k - 2.5) * 0.17; bx(0.14, 0.1, 0.1, '#F2ECD8', tx + ox + px, 0.88, tz + oz + pz); }

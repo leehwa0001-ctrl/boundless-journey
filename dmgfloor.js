@@ -26,15 +26,6 @@
     return hp * (a + 30) / 30;
   };
   // （舊的）你的等效生命：留著給其他檔案參考，保底不再用
-  const effHp = (P, mag) => {
-    const a = Math.max(0, (mag ? P.mdef : P.def) || 0);
-    let k = 1 - a / (a + 30);
-    k *= 1 - Math.max(0, Math.min(0.5, P.ttGuard || 0));
-    k *= 1 - Math.max(0, Math.min(0.5, P.talGuard || 0));
-    k *= 1 - Math.max(0, Math.min(0.5, P.setGuard || 0));
-    k *= 1 - Math.max(0, Math.min(0.5, P.accGuard || 0));
-    return (P.hpMax || 0) / Math.max(0.05, k);
-  };
   R.dmgFloor = (e, o) => {
     const w = W(), run = w.run, P = w.P;
     if (!e || !e.def || !run || !run.grade || !P || !P.hpMax || run.done) return 0;

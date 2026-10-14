@@ -5,7 +5,6 @@
 // 極端環境的四種（深淵鰩、熔岩龜、砂蠕蟲、霜岩像）照 env 出現，不放進一般的生物池。
 (function (R) {
   const W = () => R.W, ART = R.BEAST_ART, rnd = Math.random;
-  const later = (f, ms) => { const run = W().run; setTimeout(() => { if (W().run === run && run && !run.done) f(); }, ms); };
   const targets = () => { const w = W(); return [w.P].concat((w.allies || []).filter(a => !a.downed), R.netTargets ? R.netTargets() : []).filter(t => t && !t.dead); };   // 多人連線：房主這邊也算別人（net2.js）
   const dist2 = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 

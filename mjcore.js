@@ -229,7 +229,6 @@
     ev(G, { k: 'draw', s });
   };
   const isOpen = o => o.melds.some(m => m.type !== 'ankan');
-  const handIds = o => counts(o.hand);
   const waitsOf = o => { const c = counts(o.hand); return waitsOfC(c, o.melds.length); };
   const furiten = (G, s) => { const o = G.seats[s]; if (o.furitenTemp || o.furitenRiichi) return true; const w = waitsOf(o); return o.discards.some(t => w.includes(t >> 2)); };
   const winInfo = (G, s, tile, opt) => {

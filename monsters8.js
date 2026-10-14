@@ -9,7 +9,7 @@
 // 放在 monsters7.js 後面。
 (function (R) {
   const W = () => R.W, rnd = Math.random, pick = a => a[Math.floor(rnd() * a.length)];
-  const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z), angTo = (a, b) => Math.atan2(b.x - a.x, b.z - a.z);
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
   const later = (f, ms) => { const run = W().run; setTimeout(() => { if (W().run === run && run && !run.done) f(); }, ms); };
   const floorAt = (x, z) => (R.safeLand ? R.safeLand(x, z) : R.nearestFloor ? R.nearestFloor(x, z) : [x, z]);   // ruinsafe.js：落點要是空地、看得到（2026-10-08 三羽鴉瞬移出牆外）
   const AFX = {

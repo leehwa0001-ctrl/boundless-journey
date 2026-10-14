@@ -2,7 +2,6 @@
 (function (R) {
   const $ = id => document.getElementById(id);
   const esc = s => R.esc(s);
-  const KEY = 'ruins1433-v1';
   const SCREENS = ['title', 'map', 'bestiary', 'pick', 'hub', 'run'];
   // R.base：地圖、圖鑑的「返回」要回到標題還是東鶴
   R.base = 'title';

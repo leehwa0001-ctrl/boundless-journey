@@ -174,7 +174,7 @@
   const ensureCss = () => { if ($('mj2-css')) return; const st = document.createElement('style'); st.id = 'mj2-css'; st.textContent = CSS; document.head.appendChild(st); };
 
   // ---------------- 狀態 ----------------
-  let ROOT = null, V = null, MODE = null, OFF = null, NET = null, SEL = null, CHIMENU = false, RIICHI = false, lastSeq = 0, hoverT = null, autoT = null, offT = null, tickT = null, MUL = 1, rewardDone = false, order = [], dlAt = 0, dl = null, offTurn = null;
+  let ROOT = null, V = null, MODE = null, OFF = null, NET = null, SEL = null, CHIMENU = false, RIICHI = false, lastSeq = 0, autoT = null, offT = null, tickT = null, MUL = 1, rewardDone = false, order = [], dlAt = 0, dl = null, offTurn = null;
   const rel = s => (s - V.me + 4) % 4;
   const WIND = ['東', '南', '西', '北'];
   const roundName = v => (v.round >= 4 ? '南' : '東') + ' ' + (v.round % 4 + 1) + ' 局';

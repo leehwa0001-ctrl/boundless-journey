@@ -17,7 +17,7 @@
   const draw = kind => {
     const c = document.createElement('canvas'); c.width = c.height = 16; const x = c.getContext('2d');
     const M = (R.MATS && R.MATS[kind]) || {}, col = M.color || '#C8C0B0';
-    const hi = '#FFFFFF', dk = '#2A2430';
+    const hi = '#FFFFFF';
     switch (kind) {
       // ---- 基本 ----
       case 'branch':

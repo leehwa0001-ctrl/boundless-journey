@@ -9,7 +9,6 @@
 (function (R) {
   const S = () => R.S, $ = id => document.getElementById(id), esc = s => R.esc(String(s == null ? '' : s));
   const NAME = k => (k === 'acc' ? '飾品一' : k === 'acc2' ? '飾品二' : (R.GEAR_NAME && R.GEAR_NAME[k]) || k);
-  const n1 = v => (Number.isFinite(+v) ? Math.round(v * 10) / 10 : 0);
   const usable = it => !R.canUse || R.canUse(it, S().cls);
   const slotsFor = it => (it.kind === 'acc' ? ['acc', 'acc2'] : [R.slotOf(it)]).filter(k => (R.GEAR_KEYS || []).includes(k));
   // ---------- 角色數值（跟角色總數值同一套算法，只挑會變的） ----------
