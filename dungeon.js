@@ -404,7 +404,7 @@
     [body, cap, cap2].forEach(m => { if (!m) return; m.castShadow = true; m.receiveShadow = true; group.add(m); });
     F.wallMeshes = [body, cap, cap2].filter(Boolean);
     // 擋住人物時換上的半透明牆（平常縮成 0）
-    const ghostMat = new TH.MeshLambertMaterial({ color: '#FFFFFF', transparent: true, opacity: 0.2, depthWrite: false }), zeroM = new TH.Matrix4().makeScale(0, 0, 0);
+    const ghostMat = new TH.MeshLambertMaterial({ color: '#FFFFFF', transparent: true, opacity: 0.45, depthWrite: false })   /* 2026-10-14 作者：0.2 太淡，像整面牆不見了 → 0.45，看得出那裡有牆，牆後的遺跡生物也看得到 */, zeroM = new TH.Matrix4().makeScale(0, 0, 0);
     F.ghosts = F.wallMeshes.map(src => { const gm = new TH.InstancedMesh(unit, ghostMat, src.count); for (let i = 0; i < src.count; i++) { gm.setMatrixAt(i, zeroM); if (src.instanceColor) { src.getColorAt(i, col); gm.setColorAt(i, col); } } gm.count = 0; gm.visible = false; gm.frustumCulled = false; group.add(gm); return gm; });   // 2026-10-10：平常不畫（縮成 0 的也要一個一個算頂點）；擋住的那幾格才排進來（updateCutaway）
     [floorMesh, ...F.wallMeshes].forEach(m => { m.frustumCulled = false; });
     if (wins.length) {

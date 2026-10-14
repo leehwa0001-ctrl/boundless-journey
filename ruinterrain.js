@@ -135,7 +135,7 @@
       F.wallMeshes.concat(F.ghosts || []).forEach(m => group.remove(m));
       if (F.winMesh) { group.remove(F.winMesh); F.winMesh = null; F.wins = []; }
       const pix = R.pixelOn && R.pixelOn(), mat = pix && R.pixMat ? R.pixMat(cfg.tex) : new TH.MeshLambertMaterial({ color: '#FFFFFF' }); mat.flatShading = cfg.geo === 'rock';
-      const gm = new TH.MeshLambertMaterial({ color: '#FFFFFF', transparent: true, opacity: 0.2, depthWrite: false });
+      const gm = new TH.MeshLambertMaterial({ color: '#FFFFFF', transparent: true, opacity: 0.45, depthWrite: false });   // 2026-10-14：跟 dungeon.js 一樣 0.2 → 0.45
       // 2026-10-10：每種形狀只放選到它的那幾格（以前三個 mesh 都放滿、沒選到的縮成 0——縮成 0 一樣要算頂點，草丘一層 50 幾萬個三角形）
       F.wallPick = new Uint8Array(n); F.wallRotY = new Float32Array(n); F.wallSX = new Float32Array(n); F.wallSlot = new Int32Array(n);
       const cnt = [0, 0, 0]; for (let i = 0; i < n; i++) { const k = F.wallTile[i], tx = k % t.nx, tz = (k - tx) / t.nx, pk = Math.floor(hash('p', tx, tz) * 3) % 3; F.wallSlot[i] = cnt[pk]++; }

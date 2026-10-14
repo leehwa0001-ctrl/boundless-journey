@@ -81,7 +81,6 @@
   atlas.src = 'assets/art/skill-icons-clean-v1.png';
   extra.src = 'assets/art/skill-icons-extra-v1.png';
   R.skillArtInfo = id => { const o = describe(id); return { ...o, covered: tiles[o.kind] != null || extraKinds.includes(o.kind) }; };
-  R.skillArtStatus = () => ({ loaded: loaded.size, failed: failed.size });
   R.ultIconURL = (cls, adv) => {
     const st = R.S && R.S.classes && R.S.classes[cls], active = adv === undefined ? st && st.adv : adv;
     const chosen = active && R.ultPathOf && R.ultPathOf(cls, active);

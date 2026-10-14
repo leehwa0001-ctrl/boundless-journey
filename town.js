@@ -812,13 +812,4 @@
     const m = pt(P.x, P.z); x.fillStyle = '#FFE08A'; x.strokeStyle = '#1A1410'; x.lineWidth = 2; x.beginPath(); x.arc(m[0], m[1], 6, 0, Math.PI * 2); x.fill(); x.stroke();
   };
   // 小地圖：把地面的畫布轉一轉、縮一縮
-  R.drawTownMinimap = (x, s) => {
-    const P = W.P, tw = W.town, yaw = W.cam.yaw, N = tw.groundCanvas.width, k = N / (HALF * 2), zoom = 0.9;
-    x.save(); x.translate(s / 2, s / 2); x.rotate(yaw); x.scale(zoom / k * 1.4, zoom / k * 1.4); x.translate(-(P.x + HALF) * k, -(P.z + HALF) * k);
-    x.imageSmoothingEnabled = false; x.drawImage(tw.groundCanvas, 0, 0); x.restore();
-    const pt = (wx, wz) => { const dx = (wx - P.x) * zoom * 1.4, dz = (wz - P.z) * zoom * 1.4, c = Math.cos(yaw), sn = Math.sin(yaw); return [s / 2 + dx * c - dz * sn, s / 2 + dx * sn + dz * c]; };
-    Object.entries(tw.gates || {}).forEach(([id, [gx, gz]]) => { const m = pt(gx, gz), site = R.SITES.find(v => v.id === id); x.fillStyle = R.GRADE_COLOR[site.grade]; x.beginPath(); x.arc(m[0], m[1], 4.5, 0, Math.PI * 2); x.fill(); x.strokeStyle = '#FFF'; x.lineWidth = 1.5; x.stroke(); });
-    tw.inter.filter(v => v.door).forEach(it => { const m = pt(it.x, it.z); x.fillStyle = '#3E7A48'; x.fillRect(m[0] - 3, m[1] - 3, 6, 6); });
-    if (R.crimeMinimap) R.crimeMinimap(x, pt);
-  };
 })(window.R);

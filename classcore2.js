@@ -30,7 +30,7 @@
     onCast(P, i, id, sk) { const L = R.SKILL_LIB && R.SKILL_LIB[id]; if (L && (L.type === 'heal' || L.type === 'buff' || L.type === 'revive')) this.add(P, 12); },
     act(P) {
       const need = (R.legOf ? R.legOf(P) : null) === 'lg_saint' ? 70 : 100; if ((P._faith || 0) < need) { toast('信仰要 ' + need + '（現在 ' + Math.floor(P._faith || 0) + '）'); return; }
-      P._faith = 0; P._miracle = true; try { R.healP(P.hpMax * 0.3); } finally { P._miracle = false; }   // 神蹟自己的補血不算信仰 P.slowT = 0; P.blindT = 0; if (P.dbf) Object.keys(P.dbf).forEach(k => { P.dbf[k] = 0; });
+      P._faith = 0; P._miracle = true; try { R.healP(P.hpMax * 0.3); } finally { P._miracle = false; } P.slowT = 0; P.blindT = 0; if (P.dbf) Object.keys(P.dbf).forEach(k => { P.dbf[k] = 0; });   // 神蹟自己的補血不算信仰；清掉負面狀態（2026-10-14：原本這段被夾在註解後面，沒有作用）
       W().allies && W().allies.forEach(a => { if (a.downed) { if (adv(P) === 'bishop') { a.downed = false; a.hp = a.hpMax * 0.4; } return; } a.hp = Math.min(a.hpMax, a.hp + a.hpMax * 0.3); });
       R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 5, color: '#FFE8A0' }); R.fx && R.fx('pillar', P.x, 0, P.z, { color: '#FFE8A0' }); R.shake && R.shake(0.25);
       R.coreAoe(P.x, P.z, 5, pw(P) * 4, {});

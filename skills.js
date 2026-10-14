@@ -30,7 +30,6 @@
   R.SKILL_UNLOCK = [1, 3, 6, 10, 15];   // 2026-10-04 玩家回饋：技能格多一點（原本三格：1、3、6 級）——第四格 10 級、第五格 15 級，按鍵 5、6
   R.SKILL_KEYS = ['R／右鍵', '3', '4'];
   // 第 i 格（0～2）的技能；還沒學會是 null
-  R.slotSkill = (P, i) => (i === 0 ? P.skill : P.lv >= R.SKILL_UNLOCK[i] ? (R.SKILL_SLOTS[P.cls] || [])[i - 1] || null : null);
   const cdOf = (P, i) => (i === 0 ? P.skillCd : (P.skCd && P.skCd[i]) || 0);
 
   // 技能的力道：用武器每秒的傷害換算（不然連射快、單發低的武器，技能會弱得很不公平）
@@ -39,18 +38,6 @@
   const power = ws => { const na = ws.dmg * (R.multiN ? R.multiN(ws) : (ws.pellets > 1 ? ws.pellets : 1) * (ws.hits || 1)), r = ws.rate || 1; return Math.max(na * r / 2, na * Math.min(2.5, Math.max(2, r))); };
 
   // ---------- 用技能 ----------
-  R.castSlot = i => {
-    const w = W(), P = w.P; if (!P || !w.run || w.paused) return;
-    if (i === 0) { R.useSkill(); return; }
-    const id = R.slotSkill(P, i);
-    if (!id) { R.toast('職業等級 ' + R.SKILL_UNLOCK[i] + ' 才會學會這一格的技能'); return; }
-    const sk = R.SKILLS[id]; P.skCd = P.skCd || [0, 0, 0];
-    if (P.skCd[i] > 0 || P.dead || P.knockT > 0 || P.jump || P.stance > 0) return;
-    if (P.mp < sk.mp) { R.toast('魔力不夠'); return; }
-    P.mp -= sk.mp; P.skCd[i] = sk.cd * P.skillCdMult;
-    if (cast(id, P, w) === false) { P.mp += sk.mp; P.skCd[i] = 0.3; return; }   // 放不出來（例如沒有目標）：魔力還回去
-    R.sfx && R.sfx('skill');
-  };
   const cast = (id, P, w) => {
     const a = P.aimA, ws = P.ws, pow = power(ws), x0 = P.x, z0 = P.z;
     const aimIn = max => { const d = Math.hypot(P.aimX - P.x, P.aimZ - P.z), k = d > max ? max / d : 1; return [P.x + (P.aimX - P.x) * k, P.z + (P.aimZ - P.z) * k]; };

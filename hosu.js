@@ -567,7 +567,6 @@
     if (first) setTimeout(() => R.toast('第一次來奉主：Tab 看地圖。觀光景點有章可以蓋；回東鶴到北邊的奉主站買票。', '#E8C04A'), 3800);
   };
   R.goHosu = () => { const s = S(); s.gold = Math.max(0, s.gold - FARE); R.save(); R.closeSheet(); R.fade(enter); };
-  R.inHosu = () => !!(W.town && W.town.hosu);
   R.hosuEnter = enter;   // 不收車錢、直接進奉主（hosubranch.js：從奉主分館出發的遺跡回來）
   // 2026-10-09：精緻城市版的奉主（city_hosu.js）用這裡的觀光章、小吃、天守閣、奉主塔、回東鶴
   R.hosuApi = { SIGHTS, FOOD, visit, book, eat, castleTop, towerTop, backToDonghe, FARE, enterOld: enter };

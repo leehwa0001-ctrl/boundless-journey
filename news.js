@@ -4,6 +4,12 @@
 (function (R) {
   R.UPDATES = [
     { d: '2026-10-14', items: [
+      '槍手的雙槍換彈速度再快一倍（換彈 0.5 → 0.25 秒）。',
+      '修正槍手「翻滾射擊」會在準心的位置下一陣箭雨、打傷敵人的問題（同時修好熟練度 ★3「要害」：翻滾後 3 發必定暴擊，之前沒有作用）。',
+      '修正牧師的「神蹟」沒有清掉負面狀態（緩速、看不見、破防、虛弱、重傷）的問題。',
+      '遺跡裡擋住人物、遺跡生物的牆，改成比較看得出來的半透明，不會像整面牆不見了。',
+      '金幣圖示改成跟文字一樣大、拿掉底色和框；修正金幣圖示會一直變多、點在圖示上按鈕沒反應的問題。',
+      '城裡的「瓦版（東鶴日報）」又看得到了（之前不小心都跳成更新公告）。',
       '舊制的「雙槍（舊制）」整個移除：身上、倉庫裡的舊制雙槍自動換成現在的雙槍（稀有度、詞綴、強化照舊），武器熟練度也併過去。',
       '城外、近郊、狩獵場的樹全部換成 3D 的松樹和落葉樹（積雪），不會再轉鏡頭或走動時一下消失、一下冒出來；狩獵場擋住鏡頭的樹改成慢慢縮下去再長回來。',
       '所有視窗的關閉鍵統一放在右上角（✕）：遊戲裡的背包、地圖、技能書、Esc 選單、委託等視窗，公會、鐵匠鋪、倉庫、白藤堂上的小視窗都一樣；東鶴的公會整頁右上角的 ✕＝回到街上。',
@@ -780,7 +786,8 @@
     + '.news-close{position:sticky;top:0;float:right;margin:-6px -8px 0 8px;width:34px;height:34px;border-radius:50%;border:1px solid var(--line,#5A4A3A);background:var(--bg,#1A1612);color:inherit;font-size:22px;line-height:1;cursor:pointer;z-index:2}.news-close:hover{border-color:var(--gold,#C9A13A);color:var(--gold,#C9A13A)}'
     + '.news-box .row{display:flex;justify-content:flex-end;margin-top:12px}.t-btns .news-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#FF5A4A;margin-left:6px;vertical-align:middle}';
   document.head.appendChild(css);
-  R.newsSheet = () => {
+  // 2026-10-14：改名 R.updatesSheet——原本也叫 R.newsSheet，蓋掉了 calendar.js 的「瓦版（東鶴日報）」，城裡看瓦版都跳成更新公告
+  R.updatesSheet = () => {
     markSeen(); const dot = document.querySelector('#t-news .news-dot'); if (dot) dot.remove();
     const ov = document.createElement('div'); ov.className = 'news-ov';
     ov.innerHTML = '<div class="news-box" role="dialog" aria-label="更新公告"><button type="button" class="news-close" id="news-xt" aria-label="關閉" title="關閉（Esc）">×</button><p class="kicker">公會東鶴分館・告示板</p><h2>更新公告</h2>'
@@ -798,15 +805,15 @@
     const box = document.querySelector('#title .t-btns') || document.querySelector('.t-btns'); if (!box || document.getElementById('t-news')) return;
     const b = document.createElement('button'); b.type = 'button'; b.id = 't-news';
     b.innerHTML = '更新公告' + (seen() ? '' : '<span class="news-dot"></span>') + '<small>' + esc(top.d) + ' 的更新</small>';
-    b.onclick = R.newsSheet; box.appendChild(b);
-    if (!seen()) setTimeout(() => { if (!document.querySelector('.news-ov')) R.newsSheet(); }, 600);
+    b.onclick = R.updatesSheet; box.appendChild(b);
+    if (!seen()) setTimeout(() => { if (!document.querySelector('.news-ov')) R.updatesSheet(); }, 600);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addTitle); else addTitle();
   // 城裡的選單
   const tm = R.townMenu;
   if (tm) R.townMenu = (...a) => {
     const r = tm(...a), row = document.getElementById('r-sheet') && document.getElementById('r-sheet').querySelector('.row');
-    if (row && !row.querySelector('#nw-open')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'nw-open'; b.textContent = '更新公告'; b.onclick = () => { R.closeSheet(); R.newsSheet(); }; row.appendChild(b); }
+    if (row && !row.querySelector('#nw-open')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'nw-open'; b.textContent = '更新公告'; b.onclick = () => { R.closeSheet(); R.updatesSheet(); }; row.appendChild(b); }
     return r;
   };
 })(window.R);

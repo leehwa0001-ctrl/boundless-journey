@@ -159,7 +159,9 @@
     circ(x, 8, 8.5, 6.5, '#7A5414'); circ(x, 8, 8, 6, '#E8B83A'); circ(x, 8, 8, 4.2, '#C8922A'); rc(x, 7, 5, 2, 6, '#FFE08A'); rc(x, 6, 6, 4, 1, '#FFE08A'); rc(x, 6, 9, 4, 1, '#FFE08A'); circ(x, 5.5, 5.5, 1, '#FFF6D0');
     return (goldURL = c.toDataURL());
   };
-  R.goldIcon = () => '<img class="gicon" src="' + R.goldIconURL() + '" alt="">';
+  // 2026-10-14：金幣自己一個 class「goldi」——原本叫 gicon，跟裝備圖示（index.html 的 .gicon：44px 方框、邊框、底色）撞名，
+  // 金幣被套上方框和底色（看起來很大、有背景），倉庫格子裡還被撐到整格大。
+  R.goldIcon = () => '<img class="goldi" src="' + R.goldIconURL() + '" alt="">';
   // cls: chip（手邊素材膠囊）、sm（收購列）、card（配方旁）
   R.matIconTag = (k, cls) => {
     const M = R.MATS && R.MATS[k]; if (!M) return '';
@@ -175,12 +177,26 @@
   };
   // 錢出現的地方都帶金幣圖示：畫面上「費拉」兩個字前面自動補一個（新加進來的節點才檢查，很便宜）
   const SKIP = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, INPUT: 1, OPTION: 1, CANVAS: 1, TITLE: 1 };
+  // 2026-10-14 作者：「那個金幣會無限增殖」——原本把文字切開、塞圖示之後，別的程式（顯示數字的、keyhint.js 換鍵名的）
+  // 再把整句寫回切剩的那一段，舊的圖示和舊的「費拉」都還留著，每寫一次就多一組。改成記住每一段字切出去了什麼：
+  // 那段字被別人整段改寫過，先把上次切出去的圖示、字收回來，再照新的字重新放。
+  const made = new WeakMap();   // 文字節點 → { val: 切完剩下的字, nodes: [放進去的圖示、切出去的字] }
+  const isG = n => !!(n && n.nodeType === 1 && n.classList.contains('goldi'));
+  const mk = () => { const img = document.createElement('img'); img.className = 'goldi'; img.alt = ''; img.src = R.goldIconURL(); return img; };
   const deco = t => {
-    const v = t.nodeValue, i = v.indexOf('費拉'); if (i < 0) return;
+    const old = made.get(t);
+    if (old) { if (t.nodeValue === old.val) return; made.delete(t); old.nodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); }); }   // 被整段改寫：收回上次的
+    const v = t.nodeValue; let i = v.indexOf('費拉'); if (i < 0) return;
     const p = t.parentNode; if (!p || SKIP[p.nodeName] || (p.closest && p.closest('[data-nogicon]'))) return;
-    if (i === 0 && t.previousSibling && t.previousSibling.classList && t.previousSibling.classList.contains('gicon')) { const j = v.indexOf('費拉', 2); if (j < 0) return; const r = t.splitText(j); return deco(r); }
-    const r = i ? t.splitText(i) : t, img = document.createElement('img'); img.className = 'gicon'; img.alt = ''; img.src = R.goldIconURL(); p.insertBefore(img, r);
-    if (r.nodeValue.length > 2) { const r2 = r.splitText(2); deco(r2); }
+    if (i === 0 && isG(t.previousSibling)) { i = v.indexOf('費拉', 2); if (i < 0) return; }   // 這段是之前切出來的，前面已經有圖示
+    const rec = { val: null, nodes: [] };
+    let cur = t;
+    while (i >= 0) {
+      const r = i ? cur.splitText(i) : cur; if (r !== t) rec.nodes.push(r);
+      const img = mk(); p.insertBefore(img, r); rec.nodes.push(img);
+      cur = r; i = cur.nodeValue.indexOf('費拉', 2);
+    }
+    rec.val = t.nodeValue; made.set(t, rec);
   };
   const scan = n => {
     if (n.nodeType === 3) return deco(n);
@@ -203,7 +219,8 @@
     '.recipe .mats-need{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;font-size:12px;opacity:.9}',
     '.recipe .mats-need .mat{padding:2px 8px 2px 4px}',
     '.mat.lack{opacity:.38;filter:grayscale(.85);border-style:dashed}.mat.ok{box-shadow:0 0 0 1px color-mix(in srgb,var(--c) 70%,transparent),0 0 8px color-mix(in srgb,var(--c) 45%,transparent);color:#F4E9CD}',
-    '.gicon{display:inline-block;width:14px;height:14px;image-rendering:pixelated;vertical-align:-2px;margin-right:2px}'
+    // 金幣：跟字一樣大（1em）、沒有框和底色、點下去算點到後面的按鈕
+    '.goldi{display:inline-block;width:1em;height:1em;image-rendering:pixelated;vertical-align:-.14em;margin:0 .12em 0 0;border:0;background:none;padding:0;box-shadow:none;pointer-events:none}'
   ].join('\n');
   document.head.appendChild(css);
 })(window.R);

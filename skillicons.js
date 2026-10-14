@@ -207,9 +207,5 @@
     return c.toDataURL();
   };
 
-  R.skillIconURL = id => {
-    if (!id) return '';
-    const o = info(id); return cache[o.key] || (cache[o.key] = draw(o));
-  };
   R.skillIconInfo = info;   // 測試用
 })(window.R);

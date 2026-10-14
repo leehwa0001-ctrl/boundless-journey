@@ -221,16 +221,6 @@
   };
 
   // ---------- 狀態列：隊友的血量、現在的指揮 ----------
-  R.partyHud = () => {
-    const el = document.getElementById('r-party'); if (!el) return;
-    const list = W.run ? (W.allies || []) : [];
-    const gone = W.run ? (W.run.party || []).filter(pm => pm.gone) : [];
-    el.hidden = !list.length && !gone.length;
-    const ord = W.run && W.run.order ? ORDERS.find(v => v[0] === W.run.order.mode) : null;
-    el.innerHTML = (list.length && ord ? '<div class="ordnow">指揮：<b>' + ord[1] + '</b><small>' + (R.touch ? '「指揮」按鈕' : 'C 鍵') + '換</small></div>' : '')
-      + list.map(a => '<div class="pm' + (a.downed ? ' down' : '') + '"><span>' + R.esc(a.name) + (a.rival ? '（臨時）' : '') + '</span><small>' + R.esc(R.CLASSES[a.cls].name) + ' Lv ' + a.m.lv + '</small><div class="meter"><i style="width:' + Math.max(0, a.hp / a.hpMax * 100) + '%"></i></div>' + (a.downed ? '<b>倒下了</b>' : '') + '</div>').join('')
-      + gone.map(pm => '<div class="pm down"><span>' + R.esc(pm.m.name) + '</span><small>被帶回地面了</small></div>').join('');
-  };
 
   // 跟劇情隊友的 syncStoryLv 掛在一起（people.js／storyally.js 後面才定義；下一輪事件迴圈再包）
   setTimeout(() => {

@@ -350,7 +350,6 @@
   // 這條線電車到得了的城：奉主＋城際交通裡不用換渡輪的城（R.AZUKI_CITIES），每班隨機一個，跟上一班不同
   const destPool = () => ['奉主'].concat((R.AZUKI_CITIES || []).filter(c => !c.island).map(c => c.name));
   const pickDest = T0 => { if (R.trainBoard) { T0.dest = R.trainBoard(1)[0].dest; if (T0.drawDest) T0.drawDest(T0.dest); return; } const pool = destPool().filter(n => n !== T0.dest); T0.dest = pool[Math.floor(Math.random() * pool.length)] || '奉主'; if (T0.drawDest) T0.drawDest(T0.dest); };
-  if (!R.nextTrainDest) R.nextTrainDest = () => { const T0 = R.W.town && R.W.town.train; if (!T0) return ''; if (!T0.dest) pickDest(T0); return T0.dest; };
   let bellT = 0, warnT = 0;
   R.suburbStep = (dt, tw, P) => {
     const T0 = tw.train; if (!T0) return;

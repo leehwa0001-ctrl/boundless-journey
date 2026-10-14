@@ -354,7 +354,7 @@
     const aimIn = max => { const d = Math.hypot(ax - P.x, az - P.z); const k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
     R.sfx && R.sfx('skill');
     switch (P.skill) {
-      case 'roll': R.dash(a + Math.PI, 5, 0.25, { iframe: true }); if (ws.mag) { const add = Math.ceil(ws.mag * 0.3); if (P.reloadT > 0) P._ammoBonus = Math.max(P._ammoBonus || 0, add); else P.ammo = Math.max(P.ammo || 0, Math.min(ws.mag, (P.ammo || 0) + add)); }   // 2026-10-08 作者：換彈中翻滾不打斷換彈，下一匣 ×1.3 if (R.skillVarOf && R.skillVarOf('roll') === 'rollcrit') P.crits = 3; break;   // 2026-10-08：補 30%、★3「要害」才必定暴擊（guns1008.js）
+      case 'roll': R.dash(a + Math.PI, 5, 0.25, { iframe: true }); if (ws.mag) { const add = Math.ceil(ws.mag * 0.3); if (P.reloadT > 0) P._ammoBonus = Math.max(P._ammoBonus || 0, add); else P.ammo = Math.max(P.ammo || 0, Math.min(ws.mag, (P.ammo || 0) + add)); } if (R.skillVarOf && R.skillVarOf('roll') === 'rollcrit') P.crits = 3; break;   // 2026-10-08：補 30%（換彈中翻滾不打斷換彈，下一匣 ×1.3）、★3「要害」才必定暴擊（guns1008.js）。2026-10-14：原本註解夾在中間，把 break 也註解掉了，會接著放「箭雨」在準心炸開
       case 'volley': { const [x, z] = aimIn(12); [0, 0.35, 0.7].forEach(t => later(() => { R.fx('rain', x, 0, z, { r: 2.8 }); R.aoe(x, z, 2.8, base * 0.9); }, t * 1000)); R.fx('mark', x, 0, z, { r: 2.8, t: 1 }); break; }
       case 'whirl': P.buff.whirl = 1.2; break;
       case 'fireball': R.fire({ kind: 'fire', owner: 'p', x: P.x, z: P.z, a, speed: 14, dmg: base * 2.4, life: 1.4, radius: 3, primary: false }); break;
@@ -649,28 +649,6 @@
 
   // ---------- 反應：擠壓、崩塌 ----------
   // 擠壓：牆邊冒出石塊，慢慢往房間中心推進，過一陣子再退回去
-  R.squeeze = room => {
-    const w = W(), TH = T(), mat = new TH.MeshLambertMaterial({ color: R.theme(w.run).wall }), edge = R.roomEdgeTiles(room).sort(() => Math.random() - 0.5).slice(0, 24);
-    const blocks = edge.map(([x, z]) => { const m = new TH.Mesh(new TH.BoxGeometry(1.9, 2.6, 1.9), mat); m.position.set(x, -1.3, z); m.castShadow = true; w.scene.add(m); const c = R.addBox(x - 0.95, x + 0.95, z - 0.95, z + 0.95, 'squeeze'); c.on = false; const d = Math.hypot(room.x - x, room.z - z) || 1; return { m, c, x, z, ux: (room.x - x) / d, uz: (room.z - z) / d, max: d * 0.82 }; });
-    let t = 0;
-    w.dyn.push(dt => {
-      // 先從地上冒出來（0.8 秒的警告），再往中心推進
-      t += dt; const rise = Math.min(1, t / 0.8), tt = t - 0.8, k = tt < 0 ? 0 : tt < 2.5 ? tt / 2.5 : tt < 5.5 ? 1 : tt < 7.5 ? 1 - (tt - 5.5) / 2 : 0;
-      blocks.forEach(b => { const x = b.x + b.ux * b.max * k, z = b.z + b.uz * b.max * k; b.c.x0 = x - 0.95; b.c.x1 = x + 0.95; b.c.z0 = z - 0.95; b.c.z1 = z + 0.95; if (rise >= 1) b.c.on = true; b.m.position.set(x, -1.3 + 2.6 * rise, z); });
-      if (tt >= 7.5) { blocks.forEach(b => { w.scene.remove(b.m); b.c.on = false; }); return false; }
-      return true;
-    });
-  };
-  R.collapse = room => {
-    const w = W(), P = w.P;
-    for (let i = 0; i < 20; i++) later(() => {
-      if (!w.run || w.run.done) return;
-      const near = i % 2 === 0, rp = near ? null : R.roomPoint(room), x = near ? P.x + rnd(-1.5, 1.5) : rp[0], z = near ? P.z + rnd(-1.5, 1.5) : rp[1];
-      R.fx('mark', x, 0, z, { r: 1.5, t: 1 });
-      later(() => { if (!w.run || w.run.done) return; R.fx('rock', x, 6, z, {}); if (Math.hypot(P.x - x, P.z - z) < 1.6) R.hurtPlayer(12 + 12 * w.run.grade.lv, null); W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < 1.6) R.hurtEnemy(e, 18, {}); });
-        const TH = T(); const m = new TH.Mesh(new TH.DodecahedronGeometry(0.7, 0), new TH.MeshLambertMaterial({ color: R.theme(w.run).wall })); m.position.set(x, 0.5, z); m.rotation.set(Math.random(), Math.random(), 0); w.F.group.add(m); R.addBox(x - 0.55, x + 0.55, z - 0.55, z + 0.55, 'rubble'); }, 1000);
-    }, i * 420);
-  };
 
   // 斷尾型（《遺跡》第一章第三節）：把受損的那一區切掉。出入口長出肉壁，往回的路、往前的路一起封死。
   // 時間到還在房間裡：被切掉的區域往內擠，一直受傷；只能打破肉壁（佩特拉的注意會上升）逃出來。

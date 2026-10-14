@@ -1,6 +1,7 @@
 // 槍手的槍（2026-10-08 作者）
 // - 狙擊步槍：傷害 ×1.5、子彈穿透 2 隻；拿在手上是長槍管＋瞄準鏡（以前借步槍的樣子，不像狙擊槍）。
 // - 刪掉手槍：手槍全部變成「雙槍」——每次射出的子彈數 ×2、換彈速度 ×2（換彈時間減半），圖示、拿在手上都是兩把槍。
+//   2026-10-14 作者：雙槍的換彈速度再 ×2（合計 ×4：換彈時間 1 → 0.25 秒）。
 //   存檔裡的手槍不用改（武器種類的 id 一樣是 pistol，名字和數值改成雙槍）。舊的雙槍（舊制）dualpistol 2026-10-14 整個刪掉（weaponprune.js）。
 // - 翻滾射擊：換彈匣改成補 30% 的子彈；必定暴擊改成熟練度 ★3 可以選的變化「要害」（之後 3 發必定暴擊）。
 //   同日：換彈中翻滾不打斷換彈，下一匣多 30%（combat.js 的 P._ammoBonus、run.js 換好的時候加上去）。
@@ -10,7 +11,7 @@
 (function (R) {
   const Wp = R.WEAPONS;
   if (Wp.sniperrifle && !Wp.sniperrifle._g1008) Object.assign(Wp.sniperrifle, { dmg: Wp.sniperrifle.dmg * 1.5, pierce: 2, _g1008: 1 });
-  if (Wp.pistol && !Wp.pistol._g1008) Object.assign(Wp.pistol, { name: '雙槍', pellets: (Wp.pistol.pellets || 1) * 2, reload: Wp.pistol.reload / 2, spread: Math.max(Wp.pistol.spread || 0, 0.07), dual: 1, _g1008: 1 });
+  if (Wp.pistol && !Wp.pistol._g1008) Object.assign(Wp.pistol, { name: '雙槍', pellets: (Wp.pistol.pellets || 1) * 2, reload: Wp.pistol.reload / 4, spread: Math.max(Wp.pistol.spread || 0, 0.07), dual: 1, _g1008: 1 });
   // 登記武器的說明
   const g = R.REG && R.REG.find(x => x.cls === 'gunner');
   if (g) g.list.forEach(row => { if (row[0] === 'pistol') row[1] = '左右手各一把：每次兩發、換彈很快。'; });
