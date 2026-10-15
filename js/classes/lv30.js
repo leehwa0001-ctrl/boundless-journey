@@ -62,11 +62,12 @@
         foes().forEach(e => { const dx = e.x - P.x, dz = e.z - P.z, d = Math.hypot(dx, dz), r = (e.def.size || 1) * 0.5; if (d > 3.6 + r) return; const da = Math.atan2(Math.sin(Math.atan2(dx, dz) - a), Math.cos(Math.atan2(dx, dz) - a)); if (Math.abs(da) > 0.9 && d > r + 0.8) return;
           const exe = e.hp < e.hpMax * 0.3; R.hurtEnemy(e, dmg * 5 * (exe ? 3 : 1), { kb: 4, stun: 0.6, crit: exe, primary: false }); if (exe) R.num && R.num(e.x, 1.8 * (e.def.size || 1) + 1, e.z, '斬殺', 'crit'); }); });
       const C = R.CORE && R.CORE.monk; P._combo = Math.min(C && C.max ? C.max(P) : 100, (P._combo || 0) + 20); P._comboT = CT(); } },
-    bard: { n: '大合奏', cd: 75, d: '把樂譜立刻演奏兩次；演奏期間滑鼠處出現一圈 7 公尺、往中間收的音波，範圍內的敵人一直被聚到滑鼠的位置，演奏完在那裡爆開：200% 最大魔力 ×（100＋√最大魔力 ÷ 2）% 的傷害。', go(P) {
+    bard: { n: '大合奏', cd: 75, d: '按下就把樂譜連續演奏兩次（音符一個一個射出去，不用等演奏時間）；從第一下開始，滑鼠處半徑 7 公尺（吃攻擊範圍加成）內的敵人一直被聚到滑鼠的位置，演奏完在那裡爆開：500% 最大魔力 ×（100＋√最大魔力）% 的傷害。', go(P, s) {
       const notes = R.bardChord && R.bardChord.SV().notes; if (!R.bardEncore || !notes || !notes.length || !R.bardEncore(P, 2)) { R.toast && R.toast('樂譜是空的：先按住 X 寫一段樂譜'); return false; }
-      const dur = Math.max(1.5, notes.length * 2 * 0.1 + 0.3); T.bard = { end: CT() + dur, fx: waves() };
-      sched(dur, () => { if (T.bard && T.bard.fx) T.bard.fx.rm(); T.bard = null; const [x, z] = mouse(P), v = 2 * P.mpMax * (100 + Math.sqrt(P.mpMax) / 2) / 100;   /* 2026-10-16 作者：200% 最大魔力 ×（100＋√最大魔力 ÷ 2）% */ R.fx && R.fx('boom', x, 0.5, z, { r: 7, color: '#E8A0FF' }); R.fx && R.fx('ring', x, 0.1, z, { r: 7, color: '#FFE08A' }); R.shake && R.shake(0.5);
-        within(x, z, 7).forEach(e => R.hurtEnemy(e, v, { primary: false })); }); } },
+      const r = ((s && s.r) || 7) * (P.rangeMult || 1), dur = Math.max(1.5, notes.length * 2 * 0.1 + 0.3); T.bard = { end: CT() + dur, r, fx: waves(r) }; P.castT = dur; sched(0, () => { P.castT = 0; });   // castT：天啟的傷害加成撐到演奏完爆開   // s.r：天啟會把它放大
+      sched(dur, () => { if (T.bard && T.bard.fx) T.bard.fx.rm(); T.bard = null; const [x, z] = mouse(P), v = 5 * P.mpMax * (100 + Math.sqrt(Math.max(0, P.mpMax))) / 100;   /* 2026-10-16 作者：500% 最大魔力 ×（100＋√最大魔力）% */
+        R.fx && R.fx('boom', x, 0.5, z, { r, color: '#E8A0FF' }); R.fx && R.fx('ring', x, 0.1, z, { r, color: '#FFE08A' }); R.shake && R.shake(0.5);
+        within(x, z, r).forEach(e => R.hurtEnemy(e, v, { primary: false })); }); } },
     summoner: { n: '召喚山神', cd: 90, d: '花 20% 最大魔力，召喚一頭巨大的熊（大約領主一半大）：生命 5000、攻擊 500；牠在的時候你受到的所有傷害都由牠承受。每秒消耗（50＋6% 最大魔力）的魔力，魔力見底或牠倒下就消失。', go(P) {
       const need = P.mpMax * 0.2; if (P.mp < need) { R.toast && R.toast('魔力不夠（要 ' + Math.ceil(need) + '）'); return false; }
       if (T.bear) bearGone(); P.mp -= need; const w = W(); let id = 'minobear'; let m = null; try { m = R.makeBeast(id); } catch (e) { m = null; } if (!m) { id = 'okuriinu'; m = R.makeBeast(id); }
@@ -85,11 +86,26 @@
       T.tal = { end: CT() + 5, acc: 0, map: new Map(), live: 0, done: false }; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 14, color: '#E8C86A' }); } }
   };
   R.LV30 = SK;
+  // 「?」看的公式（skillformula.js）：U＝大招基準（R.ultBase）
+  const F = (k, a) => { if (SK[k]) SK[k].f = a; }, n1 = v => Math.round(v * 10) / 10;
+  F('gunner', ['5 秒內：攻速 × 3、穿透 999、子彈穿牆、彈匣一直是滿的（傷害照普攻）']);
+  F('archer', ['6 秒內每 0.3 秒（÷ 攻速倍率）一次：準心處半徑 4 公尺，每次 U × 0.22', P => P ? '　現在每次 ' + n1(base(P) * 0.22) : '']);
+  F('warrior', ['蓄力 2 秒（無敵）→ 跳到準心（10 公尺內）→ 半徑 5.5 公尺：U × 2 ＋ 敵人最大生命 × 100%（首領 × 10%）', P => P ? '　現在 U × 2 = ' + n1(base(P) * 2) : '']);
+  F('mage', ['蓄力 2 秒 → 半徑 7 公尺：一般遺跡生物直接斬殺（無視減傷、護盾、無敵）', '首領：U × 3（燃燒）＋ 直接扣最大生命 × 20%', '代價：佩特拉的注意 → 100']);
+  F('priest', ['三道光柱，半徑 4／6／8 公尺，每道 U × 1.2（最後一道暈 1.5 秒）', '照到的自己和隊友：回復生命上限 × 50%；最後一道：護盾 = 生命上限 × 25%、倒下的隊友回滿救起', P => P ? '　現在每道 ' + n1(base(P) * 1.2) + '、你的回復 ' + n1(P.hpMax * 0.5) + '、護盾 ' + n1(P.hpMax * 0.25) : '']);
+  F('blade', ['5 秒內：刀意一直滿 → 每一刀都是居合（傷害 ×（1＋居合加成）、範圍 +40%、穿透 +40%）＋刀意渾圓（+25% 攻速、+10% 範圍和傷害）', '攻速再 × 3；每刀瞬移到 10 公尺內最近的敵人身前砍完瞬移回來']);
+  F('knight', ['嘲諷並拉近 10 公尺內的敵人；2.5 秒受到的傷害 × 10%、移動 × 20%', '反擊（半徑 5 公尺）=（這段時間受到的原始傷害 ＋ 生命上限 × 1%）× 100', '護盾 = 生命上限 × 40%', P => P ? '　現在光是生命上限那部分就是 ' + n1(P.hpMax * 0.01 * 100) : '']);
+  F('monk', ['19 拳：每拳 普攻傷害 × 0.6；第 20 下重拳：普攻傷害 × 0.6 × 5（生命 30% 以下 × 3）', P => P && P.ws ? '　現在每拳 ' + n1(P.ws.dmg * 0.6) + '、重拳 ' + n1(P.ws.dmg * 3) : '']);
+  F('bard', ['聚怪半徑 7 公尺 × 攻擊範圍倍率（天啟也放大）', '爆開傷害 = 最大魔力 × 500% ×（100 ＋ √最大魔力）%', P => P ? '　現在 ' + n1(P.mpMax * 5 * (100 + Math.sqrt(Math.max(0, P.mpMax))) / 100) + '（最大魔力 ' + n1(P.mpMax) + '）' : '']);
+  F('summoner', ['花最大魔力 × 20%；山神生命 5000、每 1.2 秒咬一口 500', '每秒扣（50 ＋ 最大魔力 × 6%）魔力；你受到的傷害全部由山神扛', P => P ? '　現在召喚花 ' + n1(P.mpMax * 0.2) + '、每秒扣 ' + n1(50 + P.mpMax * 0.06) : '']);
+  F('arraymage', ['蓄力 3 秒（範圍內移動 × 10%）→ 半徑 8 公尺：一般遺跡生物直接擊殺（無視護盾、無敵）', '首領：直接扣最大生命 × 15%、暈 2 秒']);
+  F('enchanter', ['6 秒：5 公尺內一直暈，每 0.5 秒 U × 2.1（兩倍燃燒＋毒＋雷）、受到的傷害 × 1.5', '5～10 公尺：一直往外推、暈眩；之後 6 秒刻印失效', P => P ? '　現在每 0.5 秒 ' + n1(base(P) * 2.1) : '']);
+  F('scroll', ['5 秒內每 0.2 秒一張符（14 公尺內）', '每張 = U × 0.3 ＋ 敵人最大生命 × 40%（首領 2%）；同一隻第二張起 × 30%', '每隻身上的符都夠殺死牠、或時間到最後一張貼上 → 一起引爆']);
   const LV = 30, MP = 20;
   // 放進技能表（技能書 30 級學會、裝在技能格放）
   if (R.SKILL_TYPES && R.SKILL_LIB) {
-    R.SKILL_TYPES.lv30 = (p, P) => { const sk = SK[p.k]; if (!sk || P.cls !== p.k) return false; const r = sk.go(P); if (r !== false) { say(P, sk.n); R.shake && R.shake(0.2); } return r; };
-    Object.keys(SK).forEach(cls => { const sk = SK[cls], id = 'l30_' + cls; R.SKILL_LIB[id] = { id, name: sk.n, cls, lv: LV, cd: sk.cd, mp: MP, type: 'lv30', p: { k: cls }, desc: '【30 級】' + sk.d }; R.SKILLS[id] = { name: sk.n, cd: sk.cd, mp: MP, desc: '【30 級】' + sk.d }; });
+    R.SKILL_TYPES.lv30 = (p, P) => { const sk = SK[p.k]; if (!sk || P.cls !== p.k) return false; const K = R.apoK ? R.apoK() : 1, p2 = K > 1 && p.r ? Object.assign({}, p, { r: p.r * K }) : p; const r = sk.go(P, p2); if (r !== false) { say(P, sk.n); R.shake && R.shake(0.2); } return r; };
+    Object.keys(SK).forEach(cls => { const sk = SK[cls], id = 'l30_' + cls; R.SKILL_LIB[id] = { id, name: sk.n, cls, lv: LV, cd: sk.cd, mp: MP, type: 'lv30', p: cls === 'bard' ? { k: cls, r: 7 } : { k: cls }, desc: '【30 級】' + sk.d }; R.SKILLS[id] = { name: sk.n, cd: sk.cd, mp: MP, desc: '【30 級】' + sk.d }; });
   }
 
   // ---------- 小工具：雲的陰影（雷魔陣）、山神消失 ----------
@@ -99,14 +115,15 @@
     return { m, set: k => { m.material.opacity = 0.55 * k; m.scale.setScalar(0.4 + 0.6 * k); }, rm: () => { if (m.parent) m.parent.remove(m); m.geometry.dispose(); m.material.dispose(); } };
   }
   // 大合奏：滑鼠處畫出拉人的範圍（7 公尺外框）和一圈一圈往中間縮的音波
-  function waves() {
+  function waves(R7) {
+    R7 = R7 || 7;
     const TH = window.THREE, w = W(); if (!TH || !w.scene) return null;
     const g = new TH.Group(), y = (R.inTraining && R.inTraining()) ? 0.05 : 0.08, mat = (c, op) => new TH.MeshBasicMaterial({ color: c, transparent: true, opacity: op, depthWrite: false, side: TH.DoubleSide });
-    const edge = new TH.Mesh(new TH.RingGeometry(6.85, 7, 64), mat('#E8A0FF', 0.6)); edge.rotation.x = -Math.PI / 2; g.add(edge);
-    const fill = new TH.Mesh(new TH.CircleGeometry(7, 48), mat('#B070E0', 0.08)); fill.rotation.x = -Math.PI / 2; g.add(fill);
+    const edge = new TH.Mesh(new TH.RingGeometry(R7 - 0.15, R7, 64), mat('#E8A0FF', 0.6)); edge.rotation.x = -Math.PI / 2; g.add(edge);
+    const fill = new TH.Mesh(new TH.CircleGeometry(R7, 48), mat('#B070E0', 0.08)); fill.rotation.x = -Math.PI / 2; g.add(fill);
     const rings = []; for (let i = 0; i < 4; i++) { const m = new TH.Mesh(new TH.RingGeometry(0.88, 1, 48), mat(i % 2 ? '#FFE08A' : '#E8A0FF', 0.7)); m.rotation.x = -Math.PI / 2; g.add(m); rings.push(m); }
     g.position.y = y; w.scene.add(g); let t = 0;
-    return { set: (x, z, dt) => { t += dt; g.position.set(x, y, z); rings.forEach((m, i) => { const k = 1 - ((t * 0.9 + i / rings.length) % 1), r = 0.3 + 6.7 * k; m.scale.set(r, r, 1); m.material.opacity = 0.75 * Math.min(1, (1 - k) * 4) * Math.min(1, k * 3); }); if (Math.random() < dt * 12) R.fx && R.fx('spark', x + (Math.random() - 0.5) * 10, 0.5, z + (Math.random() - 0.5) * 10, { color: '#E8A0FF' }); },
+    return { set: (x, z, dt) => { t += dt; g.position.set(x, y, z); rings.forEach((m, i) => { const k = 1 - ((t * 0.9 + i / rings.length) % 1), r = 0.3 + (R7 - 0.3) * k; m.scale.set(r, r, 1); m.material.opacity = 0.75 * Math.min(1, (1 - k) * 4) * Math.min(1, k * 3); }); if (Math.random() < dt * 12) R.fx && R.fx('spark', x + (Math.random() - 0.5) * R7 * 1.4, 0.5, z + (Math.random() - 0.5) * R7 * 1.4, { color: '#E8A0FF' }); },
       rm: () => { if (g.parent) g.parent.remove(g); g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); } };
   }
   function bearGone() { const b = T.bear; if (!b) return; T.bear = null; if (b.g && b.g.parent) b.g.parent.remove(b.g); R.fx && R.fx('poof', b.x, 1, b.z, { color: '#B8E07A', n: 24 }); }
@@ -136,7 +153,7 @@
       // 刀意解放：刀意一直滿
       if ((P._l30BdT || 0) > t) P._iai = Math.max(P._iai || 0, P.pv && P.pv.bdMunen ? 200 : 100);
       // 大合奏：把滑鼠處 7 公尺內的敵人聚過來
-      if (T.bard) { const [x, z] = mouse(P); if (T.bard.fx) T.bard.fx.set(x, z, dt); within(x, z, 7).forEach(e => { const dx = x - e.x, dz = z - e.z, d = Math.hypot(dx, dz); if (d > 0.4) { const v = Math.min(d, 9 * dt); e.x += dx / d * v; e.z += dz / d * v; } }); }
+      if (T.bard) { const [x, z] = mouse(P); if (T.bard.fx) T.bard.fx.set(x, z, dt); within(x, z, T.bard.r || 7).forEach(e => { const dx = x - e.x, dz = z - e.z, d = Math.hypot(dx, dz); if (d > 0.4) { const v = Math.min(d, 9 * dt); e.x += dx / d * v; e.z += dz / d * v; } }); }
       // 雷魔陣：雲聚起來、範圍內移動 −90%（每一格把牠走的距離拉回九成）
       if (T.thunder) { const th = T.thunder, k = 1 - Math.max(0, th.end - t) / 3; if (th.shade) th.shade.set(k);
         within(th.x, th.z, th.r).forEach(e => { const p = th.pos.get(e); if (p) { e.x = p[0] + (e.x - p[0]) * 0.1; e.z = p[1] + (e.z - p[1]) * 0.1; } th.pos.set(e, [e.x, e.z]); }); }

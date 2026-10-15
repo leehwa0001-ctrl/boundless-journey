@@ -97,7 +97,7 @@
     lo.forEach((id, j) => { if (j === 0) id = P.skill || id; if (id && R.SKILLS[id] && (P.lv || 1) >= (un[j] || 1)) ids.push([j, id]); });
     const cdK = P.skillCdMult || 1, n1 = v => Math.round(v * 10) / 10;
     const card = ([j, id]) => { const sk = R.SKILLS[id], ic = R.skillIconURL && R.skillIconURL(id), tag = R.skillTag ? R.skillTag(id) : '', rk = R.skillRank ? R.skillRank(id) || 0 : 0;
-      return '<div class="sv-card">' + (ic ? '<img src="' + ic + '" alt="">' : '<i></i>') + '<div><b>第 ' + (j + 1) + ' 格・' + esc(sk.name) + (rk ? ' <small>熟練度 ★' + rk + '</small>' : '') + '</b>'
+      return '<div class="sv-card">' + (R.skillQ ? R.skillQ(id) : '') + (ic ? '<img src="' + ic + '" alt="">' : '<i></i>') + '<div><b>第 ' + (j + 1) + ' 格・' + esc(sk.name) + (rk ? ' <small>熟練度 ★' + rk + '</small>' : '') + '</b>'
         + '<small>' + (tag ? esc(tag) + '・' : '') + '冷卻 ' + n1(sk.cd * cdK) + ' 秒' + (Math.abs(cdK - 1) > 0.01 ? '（原本 ' + sk.cd + '）' : '') + '・' + (P.cls === 'warrior' ? '不耗怒氣' : '魔力 ' + sk.mp) + '</small>'
         + '<p>' + esc(sk.desc) + '</p></div></div>'; };
     R.sheet('<p class="kicker">' + esc((R.CLASSES[P.cls] || {}).name || '') + ' Lv ' + (P.lv || 1) + '</p><h2>目前技能</h2>' + (ids.length ? ids.map(card).join('') : '<p class="note">還沒有裝技能。</p>')

@@ -16,6 +16,7 @@
   const castTime = P => Math.max(P.dashT || 0, P.stance || 0, P.air || 0, P.jump ? Math.max(0, (P.jump.dur || 0.6) - (P.jump.t || 0)) : 0, P.buff && P.buff.whirl > 0 ? P.buff.whirl : 0, P.castT || 0);
   const extraOf = (P, cost) => Math.max(0, Math.min(P.mpMax * 0.5, (P.mp || 0) - (cost || 0)));
   let cur = 1;   // 正在施放的那一招的倍率（R.SKILL_TYPES 用）
+  R.apoK = () => cur;   // 比這個檔晚登記的技能型（lv30.js）自己拿來放大範圍
 
   // ---------- 招式的參數放大 ----------
   const DUR = ['t', 'life', 'stun', 'slow', 'root', 'curse', 'invis', 'iframe', 'burnT'];

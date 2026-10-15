@@ -44,7 +44,7 @@
 //   以前按住左鍵每一格都在叫普攻，點一下的那幾格落在演奏裡就被記成下一次，所以點一下會演奏兩次。技能照舊優先。
 //   寫樂譜的時候放不下的音符略過（不會中斷寫譜）。同一個音符（普攻）、同一招技能打到同一隻敵人：第二下起只剩 20%（三下＝1.4 倍）。
 //   增益二分音符的護盾自己一格（half），下一段演奏不會把它換掉；兩段演奏的二分護盾還是不疊（新的換掉舊的）。
-//   技能傷害的魔力倍率改成 (200＋最大魔力)÷300（原本 最大魔力÷100）。
+//   技能傷害的魔力倍率改成 (200＋最大魔力)÷300（原本 最大魔力÷100）；2026-10-16 再改成 ×（100＋√最大魔力）%。
 //   戰鼓手：每次演奏加一小節鼓（4/4、八分；大鼓 3、7，小鼓 1、2、5、6，踩鈸每個八分，最後一拍過門；樂譜延長 6 拍：大鼓 3、7、11，小鼓 1、2、5、6、9、10）。
 //   （2026-10-12 作者：「悲嘆詩人」是吟遊詩人的筆誤，沒有這個轉職）（2026-10-13 作者）樂譜、和弦都是大調（C、Am、Cmaj7、Fmaj9、Dm11），最後一拍再彈一次和弦收尾；主和弦到第四拍漸弱歸零；伴奏 Do-So-Mi-So。
 //   奏域師：開頭的和弦用管風琴。
@@ -350,7 +350,7 @@
     }
     let ally = null;
     if (type === 'heal' && (o.allies > 0 || o.allyShield > 0)) { ally = { h: (o.allies || 0) * mp, s: (o.allyShield || 0) * mp }; o.allies = 0; o.allyShield = 0; }
-    return [o, typeof pw === 'number' ? pw * (200 + mp) / 300 : pw, ally];   // 2026-10-12 作者：技能傷害 ×(200＋最大魔力)÷300
+    return [o, typeof pw === 'number' ? pw * (100 + Math.sqrt(Math.max(0, mp))) / 100 : pw, ally];   // 2026-10-16 作者：技能傷害 ×（100＋√最大魔力）%（原本 ×(200＋最大魔力)÷300）
   };
   // 終曲（2026-10-11 作者）：朝前方 arc（90 度）、半徑 r 的扇形聲波，連續 waves 波（每一波照你當下的位置和方向）
   const later = (R.SKILL_KIT && R.SKILL_KIT.later) || ((f, ms) => setTimeout(f, ms));
@@ -402,6 +402,7 @@
   const castNow = (P, i) => { const c0 = cdOf(P, i); raw(i); return cdOf(P, i) > c0 + 0.01; };
   const slotCast = (P, i) => {
     const id = i === 0 ? P.skill : R.slotSkill ? R.slotSkill(P, i) : null;
+    if (typeof id === 'string' && id.startsWith('l30_')) return raw(i);   // 2026-10-16 作者：30 級「大合奏」不先演奏，按下就放（從第一下就開始聚怪、天啟一開始就觸發）
     if (ST.rec) { if (castNow(P, i) && id) { const n = noteOfSkill(id); if (n) addNote(P, n); } return; }
     const notes = SV().notes;
     if (!notes || !notes.length || !id) return raw(i);
@@ -637,7 +638,7 @@
   const SUPT = ['heal', 'buff', 'guard'];
   const descOf = l => {
     const S = R.SKILLS[l.id]; if (!S) return;
-    let d = String(S.desc || '').replace(/（效果隨魔力上限變強）/g, '').replace(/（傷害 × 最大魔力 ÷ 100）/g, '').replace(/（傷害 ×（200＋最大魔力）÷ 300）/g, '');   // 重寫第二次的時候先拿掉上次加的
+    let d = String(S.desc || '').replace(/（效果隨魔力上限變強）/g, '').replace(/（傷害 × 最大魔力 ÷ 100）/g, '').replace(/（傷害 ×（200＋最大魔力）÷ 300）/g, '').replace(/（傷害 ×（100＋√最大魔力）%）/g, '');   // 重寫第二次的時候先拿掉上次加的
     const parts = l.type === 'combo' ? (l.p.parts || []) : [[l.type, l.p]];
     const sup = parts.filter(([t, p]) => SUPT.includes(t) || (t === 'zone' && p && p.zone === 'sanct')).map(([t, p]) => partTxt(t, p || {})).filter(Boolean);
     const hurt = parts.some(([t, p]) => p && p.k > 0);
@@ -650,7 +651,7 @@
       const dmgClause = keepDmg && hasC ? (body.split(/[：:]/)[1] || '').split(/[，；、,。]/)[0] : '';
       d = pre + (head ? head + '：' : '') + (dmgClause && !/回復|生命|護盾/.test(dmgClause) ? dmgClause + '；' : '') + sup.join('；') + '。';
     }
-    if (hurt) d = d.replace(/。?$/, '。') + '（傷害 ×（200＋最大魔力）÷ 300）';
+    if (hurt) d = d.replace(/。?$/, '。') + '（傷害 ×（100＋√最大魔力）%）';
     S.desc = d;
   };
   const redesc = () => Object.values(R.SKILL_LIB || {}).forEach(l => { if (l && l.cls === 'bard' && l.p) try { descOf(l); } catch (e) { } });

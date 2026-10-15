@@ -3,5 +3,5 @@
 //   強化的 +% 每 100 點最大魔力算一次，技能傷害 × 最大魔力 ÷ 100）。技能說明不再加「（效果隨魔力上限變強）」。
 // - 這裡只留 R.bardMpK（角色資料的「技能倍率」用）＝最大魔力 ÷ 100。
 (function (R) {
-  R.bardMpK = P => (P && P.cls === 'bard' ? Math.max(0, P.mpMax || 0) / 100 : 1);
+  R.bardMpK = P => (P && P.cls === 'bard' ? (100 + Math.sqrt(Math.max(0, P.mpMax || 0))) / 100 : 1);   // 2026-10-16 作者：技能傷害 ×（100＋√最大魔力）%
 })(window.R);
