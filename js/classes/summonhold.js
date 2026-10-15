@@ -53,7 +53,7 @@
     let d = lits[i];
     if (!on || !el || !el.offsetParent) { if (d) d.style.display = 'none'; return; }
     if (!d) { d = lits[i] = document.createElement('div'); d.className = 'sm-lit'; d.innerHTML = '<em>在場</em>'; document.body.appendChild(d); }
-    const rc = el.getBoundingClientRect(), L = mine(i), is = L.length && L[0].is != null ? '　[IS：' + L[0].is + ']' : '', tx = '在場' + (L.length && L[0].ghost ? '・無敵' : '') + is;
+    const rc = el.getBoundingClientRect(), L = mine(i), tx = '在場' + (L.length && L[0].ghost ? '・無敵' : '');
     if (d.firstChild.textContent !== tx) d.firstChild.textContent = tx;
     Object.assign(d.style, { display: 'block', left: (rc.left - 3) + 'px', top: (rc.top - 3) + 'px', width: (rc.width + 6) + 'px', height: (rc.height + 6) + 'px' });
   };

@@ -1,8 +1,15 @@
 // 遺跡整改（作者 2026-10-13）：IS（Individual survivability，單體生存能力）、素質 ×2、每間房的數量、戰術（巡邏、遠離、合作、短暫逃跑、偷襲）、詞條照 IS
-// - 所有遺跡生物（人、狩獵場的野獸、假的除外）生命、傷害 ×2，再加 IS：每一級 +45 生命、+2 傷害、每秒回復 0.2% 生命上限（×IS，上限每秒 0.5%，被打後 3 秒內不回）。
+// - 2026-10-15 作者《特質與熟練度》第五節：IS 改成「等級基礎值」——拿掉 ×2、拿掉生命／傷害上限（HPCAP、DMGCAP）、召喚物不再套 IS（summonai.js）。
+//   固定基礎值（HPF／ATKF）＝生物原本的數值（變體算加成，用沒變體的那隻）；等級基礎值（HPI／ATKI）＝固定基礎值＋IS 加的；
+//   最終值（HPA／ATKA）＝等級基礎值 × 原本所有的加成（遺跡深度、分級、變體、條款、連線人數……照原本算出來的倍率）。
+//   一般、精英：生命 X＋round[(X×0.45＋10)×0.95]×n；傷害 X＋round[(X×0.65＋3)×0.25]×n（先四捨五入再乘 n，Q39）。
+//   領主體、佩特拉核心（Q45）：生命 X＋round[(X×0.25＋10)×0.55]×n；傷害 X＋round[(X×0.25＋3)×0.15]×n。
+//   異變的領主體：生命 X＋round[(X×0.25＋15)×0.55]×n；傷害 X＋round[(X×0.25＋5)×0.15]×n。
+//   回血：每級 IS 每秒回最大生命的 0.05%（上限每秒 35%，Q41、F17），被打後 3 秒內不回。
+// - （舊）所有遺跡生物（人、狩獵場的野獸、假的除外）生命、傷害 ×2，再加 IS：每一級 +45 生命、+2 傷害、每秒回復 0.2% 生命上限（×IS，上限每秒 0.5%，被打後 3 秒內不回）。
 // - IS 照分級、樓層、種類決定（表在 IS_TABLE），頭上的名牌顯示 [IS：N]，大血條（領主體、核心）也顯示。
 // - 多人連線：IS、生命、傷害、詞條都由房主決定，跟著 net2.js 的生成訊息送給隊友（is 欄位）。
-// - 為了不讓數值疊太誇張：一般、精英的生命最多是同等級「標準一下普攻」的 HPCAP 倍、傷害最多是同等級標準身板的 DMGCAP（條款另外乘）。
+// - （舊，2026-10-15 拿掉）為了不讓數值疊太誇張：一般、精英的生命最多是同等級「標準一下普攻」的 HPCAP 倍、傷害最多是同等級標準身板的 DMGCAP（條款另外乘）。
 // - 戰術：每一級 IS +1.1%（最多 95%）會改用合作包夾、短暫逃跑、偷襲、巡邏繞圈；玩家快倒下或大招集滿時 15% 遠離 7 公尺觀望 4～6 秒。
 // 放在所有包 R.spawnEnemy、R.updateEnemies 的檔案後面（index.html 的最後面、main.js 前面）。
 (function (R) {
@@ -19,12 +26,13 @@
   };
   // 每間房幾隻：[戰鬥房, 非戰鬥房]
   const ROOMS = { hamilia: [[1, 2], [0, 1]], amile: [[2, 5], [0, 2]], mors: [[3, 7], [2, 4]], kesent: [[5, 9], [3, 6]], kaso: [[7, 12], [5, 9]] };
-  const HP_PER = 45, DMG_PER = 2, REGEN_PER = 0.002, REGEN_CAP = 0.005, TAC_PER = 0.011, TAC_CAP = 0.95, AFX_PER = 0.006, AFX_CAP = 0.6;
-  // 疊太多的保護（balance）：照 difficulty.js 的「標準一下普攻」、dmgfloor.js 的「標準身板」
-  //   生命上限＝幾下標準普攻；傷害上限＝標準身板的幾成（一下）。條款的生命、傷害倍率另外乘在上限上。
-  const HPCAP = { hamilia: [8, 20, 60], amile: [14, 40, 260], mors: [24, 60, 400], kesent: [32, 80, 520], kaso: [40, 100, 650] };   // [一般, 精英, 領主體／核心／頭目]
-  const DMGCAP = { hamilia: [0.12, 0.2, 0.3], amile: [0.15, 0.24, 0.34], mors: [0.2, 0.3, 0.42], kesent: [0.24, 0.34, 0.48], kaso: [0.28, 0.38, 0.55] };
-  R.RUIN_IS = { IS_TABLE, ROOMS, HP_PER, DMG_PER, REGEN_PER, REGEN_CAP, TAC_PER, TAC_CAP, AFX_PER, AFX_CAP, HPCAP, DMGCAP };
+  const REGEN_PER = 0.0005, REGEN_CAP = 0.35, TAC_PER = 0.011, TAC_CAP = 0.95, AFX_PER = 0.006, AFX_CAP = 0.6;
+  // 等級基礎值（作者的公式）
+  const FORM = { n: { hp: [0.45, 10, 0.95], atk: [0.65, 3, 0.25] }, lord: { hp: [0.25, 10, 0.55], atk: [0.25, 3, 0.15] }, vlord: { hp: [0.25, 15, 0.55], atk: [0.25, 5, 0.15] } };
+  const lvUp = (X, n, f) => X + Math.round((X * f[0] + f[1]) * f[2]) * n;
+  R.isHPI = (X, n, kind) => lvUp(X, n, (FORM[kind] || FORM.n).hp);
+  R.isATKI = (X, n, kind) => lvUp(X, n, (FORM[kind] || FORM.n).atk);
+  R.RUIN_IS = { IS_TABLE, ROOMS, REGEN_PER, REGEN_CAP, TAC_PER, TAC_CAP, AFX_PER, AFX_CAP, FORM };
 
   const gid = run => run && run.grade && (run.grade.id === 'kansait' ? 'kaso' : run.grade.id);
   const active = run => !!(run && !run.done && run.grade && IS_TABLE[gid(run)] && run.site && !run.site.outdoor && run.grade.id !== 'hunt' && run.site.kind !== 'train');
@@ -69,24 +77,19 @@
   };
 
   // ---------- 素質 ----------
-  const pactK = run => { const s = run.pact && run.pact.sel; return s ? { h: [1, 1.5, 2][s.hp || 0], d: [1, 1.4, 1.8][s.dmg || 0] } : { h: 1, d: 1 }; };
-  const refBody = () => { const P = W().P, st = R.S && R.S.classes && P && R.S.classes[P.cls], lv = Math.max(1, (st && st.lv) || 1), c = (P && R.CLASSES[P.cls]) || { hp: 110 }; return c.hp * (1 + 0.035 * (lv - 1)) * (6 + (lv - 1) + 30) / 30; };
+  const formOf = k => (k === 'lord' || k === 'core' ? 'lord' : k === 'vlord' ? 'vlord' : 'n');
+  const baseDef = e => R.ENEMIES[String(e.id || '').replace(/_v\d$/, '')] || R.ENEMIES[e.id] || e.def;
   const apply = (e, o) => {
     const run = W().run; if (e.isDone || skip(e) || !active(run)) return; e.isDone = 1;
     if (guest(run) || e.mirror) return;   // 隊員：房主送過來
     e.isPre = { hp: Math.round(e.hpMax), dmg: Math.round((e.dmg || 0) * 10) / 10 };
-    const is = isOf(e, o), small = o && o.hpMul && o.hpMul < 1 ? o.hpMul : 1;   // 召喚出來的小隻照比例
-    let hp = e.hpMax * 2 + HP_PER * is * small, dmg = (e.dmg || 0) * 2 + (e.dmg > 0 ? DMG_PER * is : 0);
-    const k = kindOf(e, o), ci = k === 'n' ? 0 : k === 'elite' ? 1 : 2, gi = gid(run);
-    {   // 疊太多的保護：分級、深度、保底、條款、×2、IS 全部算完之後，不超過上限（條款照比例放寬）
-      const pk = pactK(run), hit = R.standardHit ? R.standardHit() : 0, body = refBody();
-      const party = run.coop && run.coop.host && !run.coop.solo && R.net && R.net.room ? 1 + 0.5 * Math.max(0, (R.net.members || []).length - 1) : 1;   // net2.js 的人數加成不被上限吃掉
-      const sk = ci < 2 && small < 1 ? Math.max(0.3, small) : 1;   // 召喚出來的小隻照比例（領主體的 hpMul 0.7 不算）
-      if (hit > 0) hp = Math.min(hp, hit * HPCAP[gi][ci] * pk.h * party * sk);
-      if (body > 0 && dmg > 0) dmg = Math.min(dmg, body * DMGCAP[gi][ci] * pk.d);
-    }
+    const is = isOf(e, o), k = formOf(kindOf(e, o)), b = baseDef(e);
+    const hpF = Math.max(1, (b && b.hp) || e.hpMax || 1), atkF = (b && b.dmg) || 0;
+    const hpMul = e.hpMax > 0 ? e.hpMax / hpF : 1, dmgMul = atkF > 0 ? (e.dmg || 0) / atkF : 0;   // 原本所有的加成（深度、分級、變體、條款、連線……）
+    const hpI = R.isHPI(hpF, is, k), atkI = atkF > 0 ? R.isATKI(atkF, is, k) : 0;
+    const hp = Math.max(1, hpI * hpMul), dmg = atkF > 0 ? atkI * dmgMul : (e.dmg || 0);
     const f = e.hpMax > 0 ? e.hp / e.hpMax : 1; e.hpMax = hp; e.hp = hp * f; e.dmg = dmg;
-    e.isBase = { hp: Math.round(hp), dmg: Math.round(dmg * 10) / 10 };
+    e.isBase = { hpF, hpI, hp: Math.round(hp), atkF, atkI, dmg: Math.round(dmg * 10) / 10 };
   };
   const se0 = R.spawnEnemy;
   R.spawnEnemy = (id, x, z, room, o) => { const run = W().run, outer = run && run.isRealFloor == null; if (outer) run.isRealFloor = run.floor; let e; try { e = se0(id, x, z, room, o); } finally { if (outer) run.isRealFloor = null; } try { if (e) apply(e, o); } catch (err) { console.warn('[ruinis]', err); } return e; };
