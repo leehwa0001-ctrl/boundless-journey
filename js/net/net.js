@@ -138,7 +138,7 @@
     if (N.ws && N.ws.readyState === 1) return Promise.resolve(N.ws);
     if (connecting) return connecting;
     const url = serverUrl();
-    if (!url) return Promise.reject(new Error('尚未設定連線網址，請在「換伺服器」填入《討伐令 1433》的伺服器網址。'));
+    if (!url) return Promise.reject(new Error('尚未設定連線網址，請在「換伺服器」填入《無境之旅》的伺服器網址。'));
     let ws; try { ws = new WebSocket(url); } catch (e) { return Promise.reject(new Error('伺服器網址不對：' + url)); }
     N.ws = ws; N.busy = '連線中……'; refresh();
     let opened = false, settled = false, resolve, reject;
@@ -256,7 +256,7 @@
 
   const onServer = o => {
     // 別的遊戲的伺服器（例如 TOD 格鬥遊戲的房間伺服器會先送 { type: 'connected' }）：講清楚、斷線
-    if (o && o.type && !o.t) { N.busy = ''; R.toast('這個網址是別的遊戲的伺服器，不是討伐令 1433 的（' + serverUrl() + '）。', '#FF9A6A'); try { N.ws.close(); } catch (e) { } return; }
+    if (o && o.type && !o.t) { N.busy = ''; R.toast('這個網址是別的遊戲的伺服器，不是無境之旅的（' + serverUrl() + '）。', '#FF9A6A'); try { N.ws.close(); } catch (e) { } return; }
     if (o.t === 'room') {
       if (o.v !== PROTOCOL) { disconnect('伺服器版本不相容。'); R.toast('伺服器版本不相容，請更新伺服器和遊戲。', '#FF9A6A'); return; }
       finishRequest();

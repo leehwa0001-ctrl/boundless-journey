@@ -1,4 +1,4 @@
-// 討伐令 1433：地面上的東鶴（存檔、選職業、公會、老岩的鐵匠鋪、倉庫、白藤堂）
+// 無境之旅：地面上的東鶴（存檔、選職業、公會、老岩的鐵匠鋪、倉庫、白藤堂）
 (function (R) {
   const $ = id => document.getElementById(id);
   const esc = s => R.esc(s);

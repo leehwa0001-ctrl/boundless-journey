@@ -1,4 +1,4 @@
-// 討伐令 1433：存檔（三格）
+// 無境之旅：存檔（三格）
 // 每一格是一個角色。舊版只有一個存檔，第一次打開時搬到第 1 格。
 (function (R) {
   const OLD = 'ruins1433-v1', PFX = 'ruins1433-slot', LAST = 'ruins1433-last';

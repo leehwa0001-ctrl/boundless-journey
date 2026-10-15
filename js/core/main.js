@@ -1,4 +1,4 @@
-// 討伐令 1433：畫面切換、地圖上的遺跡資料、遺跡生物圖鑑
+// 無境之旅：畫面切換、地圖上的遺跡資料、遺跡生物圖鑑
 (function (R) {
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));

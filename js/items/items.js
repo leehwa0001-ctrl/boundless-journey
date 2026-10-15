@@ -1,4 +1,4 @@
-// 討伐令 1433：裝備與素材（開寶箱、鑑定、製作、強化、分解、賣掉）
+// 無境之旅：裝備與素材（開寶箱、鑑定、製作、強化、分解、賣掉）
 (function (R) {
   const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const pick = a => a[Math.floor(Math.random() * a.length)];
