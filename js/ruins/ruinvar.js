@@ -141,7 +141,7 @@
   };
   // 貪婪的契約：受到的傷害
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (dmg, src, o) => { const P = W().P; return hp0(P && P.frail ? dmg * (1 + P.frail) : dmg, src, o); };
+  R.hurtPlayer = (dmg, src, o) => { const P = W().P; if (P && P.frail && R.dmgRedAdd) R.dmgRedAdd(-P.frail); return hp0(dmg, src, o); };   // 減傷係數（dmgred.js）
 
   // ---------- 偽箱：打開就咬 ----------
   const uc0 = R.useChest;

@@ -347,7 +347,7 @@
     return r;
   };
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const L = sbList(W().P); L.forEach(b => { if (b.def) raw *= 1 - b.def; }); return hp0(raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { const L = sbList(W().P); L.forEach(b => { if (b.def && R.dmgRedAdd) R.dmgRedAdd(b.def); }); /*// 減傷係數（dmgred.js） */ return hp0(raw, src, o); };
   const step0 = R.step;
   R.step = dt => {
     step0(dt);

@@ -122,14 +122,17 @@
     const P = W().P; o = o || {};
     if (P.dead || P.iframe > 0 || P.air > 0) return;
     let dmg = raw * (W().run.dmgScale || 1);
-    dmg *= 1 - P.def / (P.def + 30);
-    if (P.buff.fortress > 0) dmg *= 0.3;
-    if (P.adv === 'templar') dmg *= 0.85;
-    if (P.adv === 'onimusha' && P.hp < P.hpMax * 0.5) dmg *= 0.8;   // 鬼武者
-    if (P.adv === 'staffmonk') dmg *= 0.9;   // 棍僧
-    if (P.buff.kekkai > 0 && src && dist(src, P) < 4.5) dmg *= 0.6;
+    // 2026-10-15 減傷係數（dmgred.js）：下面這些原本各自相乘，改成加進減傷係數（全部相加，最高 75%）
+    const red = R.dmgRedAdd || (() => {});
+    if (P.buff.fortress > 0) red(0.7);
+    if (P.adv === 'templar') red(0.15);
+    if (P.adv === 'onimusha' && P.hp < P.hpMax * 0.5) red(0.2);   // 鬼武者
+    if (P.adv === 'staffmonk') red(0.1);   // 棍僧
+    if (P.buff.kekkai > 0 && src && dist(src, P) < 4.5) red(0.4);
     // 騎士的盾：沒在攻擊時，擋下正面來的傷害
-    if (R.CLASSES[P.cls].shield && src && P.atkHold <= 0) { const fa = Math.abs(wrap(angTo(P, src) - P.yaw)); if (fa < 1) { dmg *= 0.7; R.fx('block', P.x, 1.2, P.z); if (P.adv === 'paladin') R.healP(2, true); } }
+    if (R.CLASSES[P.cls].shield && src && P.atkHold <= 0) { const fa = Math.abs(wrap(angTo(P, src) - P.yaw)); if (fa < 1) { red(0.3); R.fx('block', P.x, 1.2, P.z); if (P.adv === 'paladin') R.healP(2, true); } }
+    if (R.dmgRedMul && !(!src && raw >= 9999)) dmg *= R.dmgRedMul();   // 遺跡崩塌（9999）不減
+    dmg *= 1 - P.def / (P.def + 30);
     if (P.shield > 0) { const s = Math.min(P.shield, dmg); P.shield -= s; dmg -= s; }
     dmg = Math.round(dmg);
     if (P.buff.fortress > 0 && src && src.hp) R.hurtEnemy(src, raw * 0.3 / P.dmgMult, R.markNoVamp ? R.markNoVamp({ fromBehind: false }) : { fromBehind: false, reflect: true, noVamp: true });   // 要塞反彈：不算攻擊，不觸發吸血

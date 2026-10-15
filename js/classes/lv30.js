@@ -110,7 +110,7 @@
   R.hurtPlayer = (raw, src, o) => {
     const P = W().P, t = CT();
     if (P && raw > 0) {
-      if (T.wall && t < T.wall.end && src && src.x != null) { const { cx, cz, a } = T.wall, sP = (P.x - cx) * Math.sin(a) + (P.z - cz) * Math.cos(a), sS = (src.x - cx) * Math.sin(a) + (src.z - cz) * Math.cos(a); if (sP < 0 && sS > 0) raw *= 0.5; }
+      if (T.wall && t < T.wall.end && src && src.x != null) { const { cx, cz, a } = T.wall, sP = (P.x - cx) * Math.sin(a) + (P.z - cz) * Math.cos(a), sS = (src.x - cx) * Math.sin(a) + (src.z - cz) * Math.cos(a); if (sP < 0 && sS > 0 && R.dmgRedAdd) R.dmgRedAdd(0.5); }   // 聖壁：減傷係數 +50%（dmgred.js）
       if (T.undying && t < T.undying) { const C = R.CORE && R.CORE.warrior; if (C && P.cls === 'warrior') C.add(P, raw / P.hpMax * 100 * 0.5); if (P.hp - raw < 1) raw = Math.max(0, P.hp - 1); }
     }
     return hp0(raw, src, o);

@@ -128,6 +128,6 @@
   pset('a2p_summoner_tamer', { killHeal: 0.02, petMul: 0.2 }, '擊倒遺跡生物回復 2% 生命；召喚物的傷害 +20%。', '擊倒遺跡生物回復 2% 生命；移動 +6%。');
   // 生命低於一半時的減傷（%）
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = W().P, f = P && P.pv; if (f && f.lowGuard && raw > 0 && P.hp < P.hpMax * 0.5) raw *= 1 - Math.min(0.5, f.lowGuard); return hp0(raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { const P = W().P, f = P && P.pv; if (f && f.lowGuard && raw > 0 && P.hp < P.hpMax * 0.5 && R.dmgRedAdd) R.dmgRedAdd(Math.min(0.5, f.lowGuard)); return hp0(raw, src, o); };
   R.bal1010 = true;
 })(window.R);

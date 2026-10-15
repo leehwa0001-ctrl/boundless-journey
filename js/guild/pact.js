@@ -151,7 +151,7 @@
   if (ah1) R.allyHit = (e, dmg, by) => { if (e) { const run = W().run; e.hitAt = run ? run.t : 0; } return ah1(e, dmg, by); };
   // 易傷、鈍足
   const hp1 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => hp1(raw * [1, 1.3, 1.6][on('glass')], src, o);
+  R.hurtPlayer = (raw, src, o) => { if (on('glass') && R.dmgRedAdd) R.dmgRedAdd(-[0, 0.3, 0.6][on('glass')]); return hp1(raw, src, o); };   // 減傷係數（dmgred.js）
   const dg1 = R.dodge;
   R.dodge = () => { const P = W().P; if (P && on('nodash') && !P.pactNodash && P.dodgeCdMax) { P.pactNodash = 1; P.dodgeCdMax *= 2; } return dg1(); };
   const hl0 = R.healP;
