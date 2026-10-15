@@ -172,7 +172,7 @@
       const tex = new THREE.CanvasTexture(cv); tex.wrapS = tex.wrapT = THREE.RepeatWrapping; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
       (F.rooms || []).forEach(r => { if (!(r.hx > 0 && r.hz > 0)) return; const t = tex.clone(); t.needsUpdate = true; t.repeat.set(r.hx * 2 / 6, r.hz * 2 / 6);   // 一塊磚 1.5 公尺
         const mat = new THREE.MeshBasicMaterial({ map: t, fog: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
-        const m = new THREE.Mesh(new THREE.PlaneGeometry(r.hx * 2, r.hz * 2), mat); m.rotation.x = -Math.PI / 2; m.position.set(r.x, 0.21, r.z); m.renderOrder = -1; m.userData.trFloor = 1; F.group.add(m); });
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(r.hx * 2, r.hz * 2), mat); m.rotation.x = -Math.PI / 2; m.position.set(r.x, 0.012, r.z); m.renderOrder = -1;   /* 2026-10-16 修：原本墊高到 0.21，地上的範圍特效、元素效果（畫在 0.06～0.2）全被蓋住；原本的地板頂面在 0，貼在上面一點點就好（polygonOffset 會蓋過原本的地磚） */ m.userData.trFloor = 1; F.group.add(m); });
       // 牆頂原本是亮白色（作者不喜歡亮白）：只在訓練場把這層樓模型裡接近白色的材質換成暗石綠灰（複製材質，不動共用的）
       const cl = new Map(); F.group.traverse(o => { if (!o.isMesh || !o.material || o.userData.trFloor) return; const fix = m => { if (!m || !m.color || m.transparent) return m; const c = m.color; if (c.r + c.g + c.b < 2.5) return m; if (!cl.has(m)) { const n = m.clone(); n.color.set('#2C3530'); cl.set(m, n); } return cl.get(m); }; o.material = Array.isArray(o.material) ? o.material.map(fix) : fix(o.material); });
     }
@@ -205,7 +205,8 @@
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, raw, o) => {
     const d = he0(e, raw, o);
-    if (e && e.tdummy && here()) { add(d > 0 ? d : 0); e.hp = e.hpMax; e.dead = false; }
+    // 2026-10-16 修：木樁的血等這一下全部算完才補回去（以前馬上補，職業效果算「打掉多少」都是 0，刀客的刀意、戰士的怒氣打木樁不會漲）
+    if (e && e.tdummy && here()) { add(d > 0 ? d : 0); e.dead = false; if (!e._trRefill) { e._trRefill = 1; queueMicrotask(() => { e._trRefill = 0; e.hp = e.hpMax; e.dead = false; }); } }
     return d;
   };
   const nameOf = id => (id && R.SKILLS[id] ? R.SKILLS[id].name : '技能');
@@ -246,11 +247,4 @@
   css.textContent = '#tr-panel{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(20,16,12,.86);border:1px solid #C9A13A;border-radius:10px;padding:6px 12px;color:#F1E9DA;font-size:13px;max-width:min(680px,calc(100vw - 32px));text-align:center}'
     + '#tr-panel>b{color:#E8C04A}.tr-num{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;margin:4px 0}.tr-num em{font-style:normal;font-weight:bold;color:#FFE08A;margin-left:4px}.tr-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}';
   document.head.appendChild(css);
-  // 2026-10-15 修：訓練場自己鋪的地板在 0.21 公尺高（蓋住原本的地磚），地上的範圍特效（圈、預警、陣地）畫在 0.06～0.15，全被地板蓋住。
-  // 在訓練場裡把貼地的特效抬到地板上面。等所有檔案都包好 R.addFx、R.addZone 以後（頁面載入完）才包在最外面，每一種特效都抬得到。
-  const lift = objs => (objs || []).forEach(m => { if (m && m.position && m.position.y < 0.3) m.position.y += 0.22; });
-  window.addEventListener('load', () => {
-    const af0 = R.addFx; if (af0) R.addFx = function (...a) { if (here() && typeof a[2] === 'number' && a[2] < 0.3) a[2] += 0.22; const fx = W().fxs || [], n0 = fx.length, r = af0.apply(this, a); if (here()) for (let k = n0; k < fx.length; k++) if (fx[k] && !fx[k]._trLift) { fx[k]._trLift = 1; lift(fx[k].objs); } return r; };
-    const az0 = R.addZone; if (az0) R.addZone = function (...a) { const z = az0.apply(this, a); if (here() && z && z.mesh) lift([z.mesh]); return z; };
-  });
 })(window.R);
