@@ -23,6 +23,9 @@
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => R.esc(s);
   const MAX = 20, lvOf = xp => Math.min(MAX, Math.floor(Math.sqrt((xp || 0) / 50))), need = lv => 50 * lv * lv;
   R.PROF_MAX = MAX; R.profLvOf = lvOf; R.profNeed = need;
+  // 有效等級＝訓練等級＋特質額外等級（天資聰穎 +4、最高 24；資質駑鈍上限 −5）：R.profAdj（traitfx.js 換掉）
+  R.profAdj = (lv, kind) => lv;
+  const eff = (xp, kind) => R.profAdj(lvOf(xp), kind);
   // 每一種（除了武器）：名字、升級的說明（R.PROF_LINE 讓 prof2.js 填新的四種）
   const NAME = R.PROF_NAME = { magic: '魔法', agi: '敏捷', str: '力量的鍛鍊', stam: '體力的鍛鍊', int: '智力', spi: '精神', tech: '技巧', prec: '精確' };
   const LINE = R.PROF_LINE = R.PROF_LINE || {};
@@ -32,8 +35,8 @@
   const WEIGHT = { staffpole: 1.2, greatsword: 3, axe: 2.4, mace: 2, spear: 1.6, sword: 1, shotgun: 0.8, rifle: 0.8, crossbow: 0.8 };
   R.WEAPON_WEIGHT = WEIGHT;
   const pf = () => { const s = S(); s.prof = s.prof || { w: {}, magic: 0, agi: 0, ver: 2 }; s.prof.w = s.prof.w || {}; return s.prof; };
-  R.profLv = { weapon: base => lvOf(pf().w[base]) };
-  Object.keys(NAME).forEach(k => { R.profLv[k] = () => lvOf(pf()[k]); });
+  R.profLv = { weapon: base => eff(pf().w[base], 'w') };
+  Object.keys(NAME).forEach(k => { R.profLv[k] = () => eff(pf()[k], k); });
   R.conOf = () => R.profLv.stam();   // 體質（之後特質也會加減；可以是負的）
   // 舊存檔：30 × n² → 50 × n²，照等級換（× 5/3），舊的滿級（10 級、3000 點以上）補到 5000
   const conv = v => Math.round(Math.min(3000, Math.max(0, +v || 0)) * 5 / 3 * 10) / 10;
@@ -48,6 +51,7 @@
   // ---------- 加點數：升級的時候說一聲 ----------
   const gain = (kind, base, v) => {
     if (!(v > 0) || (R.inTraining && R.inTraining()) || (W() && W().run && W().run.train)) return;   // 訓練場裡不累積
+    if (R.profGainMul) v *= R.profGainMul();   // 特質：傻子、資質駑鈍（traitfx.js）
     const p = pf(), before = kind === 'w' ? lvOf(p.w[base]) : lvOf(p[kind]);
     if (kind === 'w') p.w[base] = (p.w[base] || 0) + v; else p[kind] = (p[kind] || 0) + v;
     const after = kind === 'w' ? lvOf(p.w[base]) : lvOf(p[kind]);
@@ -71,7 +75,7 @@
   R.calcPlayer = cls => {
     const P = cp0(cls);
     try {
-      const ws = P.ws, base = P.item && P.item.base, wl = base ? lvOf(pf().w[base]) : 0, ml = lvOf(pf().magic), al = lvOf(pf().agi);
+      const ws = P.ws, base = P.item && P.item.base, wl = base ? R.profLv.weapon(base) : 0, ml = R.profLv.magic(), al = R.profLv.agi();
       if (ws) {
         ws.dmg *= 1 + 0.01 * wl; ws.rate *= (1 + wRate(wl) / 100) * (1 + 0.003 * al);
         if (ws.kind === 'magic') { ws.dmg *= 1 + 0.02 * ml; ws.rate *= 1 + 0.03 * ml; if (ws.mp) ws.mp *= Math.max(0.4, 1 - 0.03 * ml); }
@@ -143,18 +147,18 @@
     const poly = k => AXES.map((x, i) => pt(i, k).map(v => v.toFixed(1)).join(',')).join(' ');
     let g = [0.25, 0.5, 0.75, 1].map(k => '<polygon points="' + poly(k) + '" fill="none" stroke="currentColor" stroke-opacity="' + (k === 1 ? 0.35 : 0.15) + '"/>').join('');
     g += AXES.map((x, i) => { const [x1, y1] = pt(i, 1), [lx, ly] = pt(i, 1.2); return '<line x1="' + cx + '" y1="' + cy + '" x2="' + x1.toFixed(1) + '" y2="' + y1.toFixed(1) + '" stroke="currentColor" stroke-opacity="0.15"/><text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="middle" font-size="11" fill="currentColor">' + x[1] + ' ' + vals[i] + '</text>'; }).join('');
-    g += '<polygon points="' + AXES.map((x, i) => pt(i, Math.max(0.02, vals[i] / MAX)).map(v => v.toFixed(1)).join(',')).join(' ') + '" fill="#C9A13A" fill-opacity="0.35" stroke="#C9A13A" stroke-width="2"/>';
+    g += '<polygon points="' + AXES.map((x, i) => pt(i, Math.max(0.02, Math.min(1.2, vals[i] / MAX))).map(v => v.toFixed(1)).join(',')).join(' ') + '" fill="#C9A13A" fill-opacity="0.35" stroke="#C9A13A" stroke-width="2"/>';
     return '<svg viewBox="0 0 260 236" width="260" height="236" style="display:block;margin:4px auto;max-width:100%" role="img" aria-label="熟練度雷達圖">' + g + '</svg>';
   };
   const box = () => {
     const p = pf(), cls = S().cls, mine = R.weaponsFor ? R.weaponsFor(cls) : [];
     const ws = Object.keys(R.WEAPONS).filter(k => mine.includes(k) || p.w[k]);
     const eq = R.equipped ? R.equipped(cls) : null, cur = eq && eq.weapon ? eq.weapon.base : ws.reduce((b, k) => ((p.w[k] || 0) > (p.w[b] || 0) ? k : b), ws[0]);
-    const row = (name, xp, line, how) => { const lv = lvOf(xp); return '<li><b>' + esc(name) + '</b>　' + lv + ' 級' + bar(xp, lv) + ' <small class="note">' + Math.floor(xp || 0) + (lv < MAX ? '／' + need(lv + 1) : '') + '</small><br><small>' + esc(line(lv)) + '</small>' + (how ? '<br><small class="note">怎麼練：' + esc(how) + '</small>' : '') + '</li>'; };
-    const vals = AXES.map(([k]) => (k === 'w' ? (cur ? lvOf(p.w[cur]) : 0) : lvOf(p[k])));
+    const row = (name, xp, line, how, kind) => { const lv0 = lvOf(xp), lv = R.profAdj(lv0, kind); return '<li><b>' + esc(name) + '</b>　' + lv + ' 級' + (lv !== lv0 ? '（訓練 ' + lv0 + ' 級，特質 ' + (lv > lv0 ? '+' : '') + (lv - lv0) + '）' : '') + bar(xp, lv0) + ' <small class="note">' + Math.floor(xp || 0) + (lv0 < MAX ? '／' + need(lv0 + 1) : '') + '</small><br><small>' + esc(line(lv)) + '</small>' + (how ? '<br><small class="note">怎麼練：' + esc(how) + '</small>' : '') + '</li>'; };
+    const vals = AXES.map(([k]) => (k === 'w' ? (cur ? R.profLv.weapon(cur) : 0) : R.profLv[k]()));
     return '<h3>熟練度</h3>' + radar(vals) + '<p class="note">雷達圖的「武器」是現在拿的這一把。每一種最高 ' + MAX + ' 級（n 級要 50 × n² 點）；效果從下一趟遺跡開始算；訓練場裡不累積。<br>武器的攻擊速度：1～10 級每級 +0.5%、11～20 級每級 +1%（前 10 級 +5%、後 10 級 +10%，合計 +15%）。</p><ul class="loot">'
-      + ws.map(k => row(R.WEAPONS[k].name + (WEIGHT[k] ? '（重量 ' + WEIGHT[k] + '）' : ''), p.w[k], lv => lineOf('w', k, lv) + (WEIGHT[k] ? '；現在走路慢 ' + (WEIGHT[k] * 2.5 * Math.max(0, 1 - lv / 10)).toFixed(1) + '%' : ''), k === cur ? HOW.w : '')).join('')
-      + Object.keys(NAME).map(k => row(NAME[k], p[k], lv => lineOf(k, null, lv), HOW[k])).join('') + '</ul>';
+      + ws.map(k => row(R.WEAPONS[k].name + (WEIGHT[k] ? '（重量 ' + WEIGHT[k] + '）' : ''), p.w[k], lv => lineOf('w', k, lv) + (WEIGHT[k] ? '；現在走路慢 ' + (WEIGHT[k] * 2.5 * Math.max(0, 1 - lv / 10)).toFixed(1) + '%' : ''), k === cur ? HOW.w : '', 'w')).join('')
+      + Object.keys(NAME).map(k => row(NAME[k], p[k], lv => lineOf(k, null, lv), HOW[k], k)).join('') + '</ul>';
   };
   const hub0 = R.hub;
   R.hub = (t, f) => {

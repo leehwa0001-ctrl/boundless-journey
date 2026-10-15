@@ -210,7 +210,7 @@
   R.enchant = (it, cry) => {
     const id = ENCH[cry]; if (!it || it.kind !== 'weapon' || !it.identified || !id) return false;
     if (it.affixes.some(a => a.id === id && it.enchant !== id)) return 'same';
-    const c = { gold: 100, mats: { [cry]: 3 } }; if (!can(c)) return false; pay(c);
+    const c = { gold: R.cost ? R.cost(100, 'smith') : 100, mats: { [cry]: 3 } }; if (!can(c)) return false; pay(c);
     if (it.enchant) it.affixes = it.affixes.filter(a => !(a.id === it.enchant && a.ench));
     const df = R.W_AFFIX.find(a => a.id === id); it.affixes.push({ id, v: rint(Math.ceil((df.roll[0] + df.roll[1]) / 2), df.roll[1]), ench: 1 }); it.enchant = id;
     R.save(); return true;

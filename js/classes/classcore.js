@@ -196,7 +196,7 @@
       const el = o.primary ? P._el : o.elem && EL[o.elem] ? o.elem : P._el || 'fire';
       if (AUX.includes(el)) {   // 風、金：碰到之前留下的元素印記就觸發（不用掉印記；同一隻 1 秒一次）
         const mk = ELS.find(ok); if (!mk || e.dead || (e._auxT || 0) > CT) { if (!mk && ELS.some(x => (m[x] || 0) > CT)) D.self++; return; } e._auxT = CT + 1; D.aux++;
-        const k2 = (adv(P) === 'elementalist' ? 1.5 : 1) * pw(P);
+        const k2 = (adv(P) === 'elementalist' ? 1.5 : 1) * pw(P) * (R.reactMul ? R.reactMul() : 1);   // R.reactMul：特質「元素親和」+15%（traitdeath.js）
         if (el === 'wind') { R.num && R.num(e.x, 2.6, e.z, '擴散', 'crit'); R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 4, color: EL.wind[1] }); (W().enemies || []).forEach(x => { if (x !== e && !x.dead && dist(x, e) < 4) { const mm = x._el || (x._el = {}), ss = x._elSrc || (x._elSrc = {}); ELS.forEach(y => { delete mm[y]; delete ss[y]; }); mm[mk] = CT + 5; ss[mk] = tok; } }); }
         else { R.num && R.num(e.x, 2.6, e.z, '破甲', 'crit'); R.fx && R.fx('ring', e.x, 0.6, e.z, { r: 1.2, color: EL.metal[1] }); if (!e._brk) { e._brk = e.def; e.def = Object.assign({}, e.def, { armor: Math.max(0, (e.def.armor || 0) - 0.3) }); } e._brkT = CT + 4; }
         if (!e.dead) R.coreHit(e, k2 * 0.6, {});
@@ -208,7 +208,7 @@
         if (!e.dead && ELS.includes(el)) { ELS.forEach(x => { if (x !== el) { delete m[x]; delete S[x]; } }); m[el] = CT + 5; S[el] = tok; D.mark++; } return;
       }
       delete m[other]; delete m[el]; delete S[other]; delete S[el]; D.react++;
-      const key = [el, other].sort().join('+'), name = REACT[key], tri = (R.legOf ? R.legOf(P) : null) === 'lg_tri', k = (adv(P) === 'elementalist' ? 1.5 : 1) * (tri ? 1.5 : 1) * pw(P);
+      const key = [el, other].sort().join('+'), name = REACT[key], tri = (R.legOf ? R.legOf(P) : null) === 'lg_tri', k = (adv(P) === 'elementalist' ? 1.5 : 1) * (tri ? 1.5 : 1) * pw(P) * (R.reactMul ? R.reactMul() : 1);
       if (tri) P._el = ELS[(Math.max(0, ELS.indexOf(P._el || 'fire')) + 1) % ELS.length];   // 三相之杖：反應之後自動換元素
       R.num && R.num(e.x, 2.6, e.z, name, 'crit');
       if (key === 'fire+frost') { R.fx && R.fx('poof', e.x, 1, e.z, { color: '#F0F0F0', n: 18 }); if (!e.dead) R.coreHit(e, k * 1.6, {}); }

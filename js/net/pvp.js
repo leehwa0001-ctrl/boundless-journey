@@ -54,7 +54,7 @@
   // ---------- 打到隊友 ----------
   const remotes = () => { const m = N().remotes; return m ? [...m.entries()].filter(([, v]) => v && v.x != null) : []; };
   const hitRemote = (id, v, raw) => {
-    const P = W().P; if (!P) return;
+    const P = W().P; if (!P || (R.hasTrait && R.hasTrait('liangmin'))) return;   // 特質「良民」：打不到其他玩家
     const dmg = Math.max(1, Math.round(raw * (P.dmgMult || 1) * K));
     send({ k: 'ffhit', rid: rid(), dmg }, id); R.num && R.num(v.x, 2.2, v.z, dmg, 'crit');
   };

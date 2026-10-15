@@ -1,4 +1,4 @@
-// 討伐令 1433：多人連線的伺服器（只轉送訊息，不跑遊戲邏輯）
+// 無境之旅：多人連線的伺服器（只轉送訊息，不跑遊戲邏輯）
 // - 一間房最多 4 個人；開房的人是房主（遺跡的樓層、遺跡生物由房主決定）。
 // - 2026-10-05（第二階段）：房主離開或斷線，換下一個人當房主（{ t: 'host', id }），房間不關；所有人都走了才關。
 //   斷線（不是按離開）保留座位 180 秒：其他人收到 { t: 'away', id }；用 { t: 'join', code, rejoin: { id, token } } 連回原本的座位，收到 { t: 'back', id }。
@@ -119,4 +119,4 @@ wss.on('connection', ws => {
 // 每 15 秒確認還連著（有些主機的閒置連線一分鐘就會被切掉）
 setInterval(() => { wss.clients.forEach(ws => { if (ws.dead) return ws.terminate(); ws.dead = true; try { ws.ping(); } catch (e) { } }); }, 15000);
 
-server.listen(PORT, () => console.log('討伐令 1433 連線伺服器：port ' + PORT));
+server.listen(PORT, () => console.log('無境之旅連線伺服器：port ' + PORT));

@@ -1,4 +1,4 @@
-// 討伐令 1433：城裡的人（劇情人物、固定日期出現的人）
+// 無境之旅：城裡的人（劇情人物、固定日期出現的人）
 // - 第一次遇到重要的人，只看得到黑色的剪影「？？？」。過去說話就認識了；那一天沒說話就錯過一次——錯過兩次，就再也不會遇到。
 // - 每個人有自己的行程（哪幾天、在哪裡、多少機率在），照《公會館員日誌》的東鶴篇（2836 冬凌月 12～29 日）排：
 //   瀧在城西遺跡當調查隊的護衛、20 日送勘查報告回分館、23 日撤離時折回去救人受了傷；楚璐在調查點和分館之間騎重機送東西，29 日問你「我要往哪裡騎？」之後離開東鶴；
@@ -14,7 +14,7 @@
   const aff = id => (S().aff[id] || 0);
   // 好感：越往後每一格要的進度越多（2026-10-04 作者：戀人的好感不要累積這麼快）。說話一天 1 點、送禮 0～3 點，進度存在 s.affX
   const COST = a => (a < 3 ? 1 : a < 6 ? 2 : 5);
-  const gain = (id, pts) => { const s = S(); s.affX = s.affX || {}; let x = (s.affX[id] || 0) + pts, a = aff(id); while (a < 10 && x >= COST(a)) { x -= COST(a); a++; } s.affX[id] = a >= 10 ? 0 : x; s.aff[id] = a; return a; };
+  const gain = (id, pts) => { const s = S(); s.affX = s.affX || {}; if (pts > 0 && R.affMul) pts *= R.affMul();   /* 特質：巧言、受歡迎的、低情商、惡名遠洋（traitlife.js），小數照算 */ let x = (s.affX[id] || 0) + pts, a = aff(id); while (a < 10 && x >= COST(a)) { x -= COST(a); a++; } s.affX[id] = a >= 10 ? 0 : x; s.aff[id] = a; return a; };
   R.personExtras = R.personExtras || [];   // 對話畫面多的按鈕：{ html(id), bind(id) }（takiteach.js）
 
   // ---------- 人 ----------
@@ -210,7 +210,7 @@
   const reveal = id => { const lists = [W.town && W.town.npcs, W.inside && W.inside.npcs]; lists.forEach(L => (L || []).forEach(n => { if (n.person === id) { R.spriteLook(n.h, lookOf(id, false)); n.name = P[id].name; } })); };
   const sheet = (id, first) => {
     const p = P[id], s = S(), a = aff(id), lines = p.romance == null ? p.talk[Math.floor(R.hash01(id + s.day + 'v') * p.talk.length)] : p.talk[Math.min(p.talk.length - 1, tierOf(a))], line = lines[Math.floor(R.hash01(id + s.day) * lines.length)];
-    const inParty = (s.party || []).some(m => m.story === id), can = p.recruit && a >= 3 && !inParty, busy = p.busy ? p.busy(R.today()) : null;
+    const inParty = (s.party || []).some(m => m.story === id), can = p.recruit && a >= (R.partyAffNeed ? R.partyAffNeed() : 3) && !inParty, busy = p.busy ? p.busy(R.today()) : null;
     const giftable = Object.keys(s.gifts || {}).filter(g => s.gifts[g] > 0);
     const rel = s.rel[id] === 'lover' ? '<span class="tag gold">戀人</span>' : s.rel[id] === 'friend' ? '<span class="tag">好朋友</span>' : '';
     R.sheet('<p class="kicker">' + (first && p.sil ? '第一次見面' : (p.rank ? esc(p.rank) + '・' : '') + esc(R.RACES[p.race] ? R.RACES[p.race].name : '')) + '</p><h2>' + esc(p.name) + ' ' + rel + '</h2>'
@@ -238,7 +238,8 @@
     $('gf-x').onclick = () => sheet(id);
     document.querySelectorAll('[data-give]').forEach(b => { b.onclick = () => {
       const g = b.dataset.give; s.gifts[g]--; s.gifted[id] = s.day; const v = (p.likes || {})[g] != null ? p.likes[g] : 0, pts = v >= 3 ? 3 : v === 2 ? 2 : v === 1 ? 1 : 0;
-      gain(id, pts); R.save();
+      gain(id, pts); if (pts === 0 && R.hasTrait && R.hasTrait('diqingshang')) { s.aff[id] = Math.max(0, aff(id) - 1); s.affX[id] = 0; }   // 低情商：送到不喜歡的禮物 −1
+      R.save();
       R.townTalk(p.short, [pts >= 3 ? reactLove(id, g) : pts === 2 ? '「謝謝，這個我喜歡。」' : pts === 1 ? '「謝謝你。」' : '「謝謝，我收下了。」', '（好感的進度 ' + (pts ? '+' + pts : '沒有變') + '）']);
     }; });
   };

@@ -1,4 +1,4 @@
-// 討伐令 1433：建築物的裡面（公會東鶴分館一樓、二樓，老岩的鐵匠鋪）
+// 無境之旅：建築物的裡面（公會東鶴分館一樓、二樓，老岩的鐵匠鋪）
 // 在城裡走到門口按空白鍵就會走進去，裡面有好幾個房間可以走：
 //  - 公會一樓：大廳（登記處、委託告示板、收購窗口、等著同行的勇者）＋酒場（老闆和勇者們聊遺跡的傳聞）
 //  - 公會二樓：資料室（遺跡生物圖鑑、全國遺跡分布圖）＋館員的辦公室
@@ -536,7 +536,7 @@
     $('tv-x').onclick = R.closeSheet;
     if ($('tv-talk')) $('tv-talk').onclick = () => rumor('赤提燈的老闆娘', ['「這裡的客人什麼都聊。」']);
     $('tv-sleep').onclick = () => { if (S.gold < room) return; S.gold -= room; R.closeSheet(); R.sleepInn(); };
-    document.querySelectorAll('[data-eat]').forEach(b => { b.onclick = () => { const m = menu.find(v => v[0] === b.dataset.eat), p = pr(m[2]); if (S.gold < p) return; S.gold -= p; S.buff = { kind: 'food', b: m[4], until: S.day }; R.save(); R.closeSheet(); R.toast(m[1] + '：暖和多了。（今天下遺跡有效）'); }; });
+    document.querySelectorAll('[data-eat]').forEach(b => { b.onclick = () => { const m = menu.find(v => v[0] === b.dataset.eat), p = pr(m[2]); if (S.gold < p) return; S.gold -= p; S.buff = { kind: 'food', b: m[4], until: S.day }; R.ateFood && R.ateFood(S.buff); R.save(); R.closeSheet(); R.toast(m[1] + '：暖和多了。（今天下遺跡有效）'); }; });
   };
   // 睡一晚：日子往前一天，城會重蓋（今天在城裡的人不一樣了），醒來在樓梯口
   R.sleepInn = () => {

@@ -13,7 +13,7 @@
     if (code.startsWith('{')) return JSON.parse(code);
     if (code.startsWith('T1433Z-')) { if (!window.DecompressionStream) throw new Error('這個瀏覽器太舊，打不開壓縮的代碼'); return JSON.parse(new TextDecoder().decode(await pipe(unb64(code.slice(7)), DecompressionStream))); }
     if (code.startsWith('T1433J-')) return JSON.parse(new TextDecoder().decode(unb64(code.slice(7))));
-    throw new Error('這不是《討伐令 1433》的存檔代碼');
+    throw new Error('這不是《無境之旅》的存檔代碼');
   };
   const valid = s => s && typeof s === 'object' && s.classes && s.equip && Array.isArray(s.stash) && R.CLASSES[s.cls] && (s.v === 1 || s.v === 2);
 

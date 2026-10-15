@@ -1,4 +1,4 @@
-// 討伐令 1433：昭旭重要城市據點（作者規劃 PDF《昭旭重要城市》）
+// 無境之旅：昭旭重要城市據點（作者規劃 PDF《昭旭重要城市》）
 // - 東鶴＝可走的主城；奉主＝hosu.js 的 3D 城；其餘十一城（皇嶺、吉山、府廳、西見、南瀧、渦旗、征遠、板北、板南、古森、岳北）
 //   從東鶴站售票口搭魔導電車／渡輪前往，進「城市據點」畫面（選單式：設施、觀光章、招牌活動、分館委託）。
 // - 每一城至少：公會分館（地方小委託）、數個設施對話、觀光章、一個招牌活動（吃、賭、訓練、植樹……）。
@@ -276,8 +276,8 @@
   R.addTitle && R.addTitle(['railhand', '鐵道手', '搭城際電車／渡輪造訪 8 座城市', '移動相關小費拉 −10%（旅費顯示已含）', { }]);
 
   // ---------- 工具 ----------
-  const pay = (n, why) => { const s = S(); if (!s || s.gold < n) { R.toast('錢不夠（要 ' + n + ' 費拉）' + (why ? '：' + why : ''), '#FF9A6A'); return false; } s.gold -= n; return true; };
-  const buff = (b) => { const s = S(); s.buff = { kind: 'food', b, until: s.day }; R.save(); };
+  const pay = (n, why) => { n = R.cost ? R.cost(n) : n; const s = S(); if (!s || s.gold < n) { R.toast('錢不夠（要 ' + n + ' 費拉）' + (why ? '：' + why : ''), '#FF9A6A'); return false; } s.gold -= n; return true; };
+  const buff = (b) => { const s = S(); s.buff = { kind: 'food', b, until: s.day }; R.ateFood && R.ateFood(s.buff); R.save(); };
   const toastOk = (t, c) => { R.sfx && R.sfx('pick'); R.toast(t, c || '#E8C04A'); };
 
   // ---------- 觀光章 ----------

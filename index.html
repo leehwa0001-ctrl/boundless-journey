@@ -1,4 +1,4 @@
-<title>討伐令 1433</title>
+<title>無境之旅</title>
 <link rel="preload" as="image" href="assets/art/class-heraldry-v7-ui.webp" type="image/webp">
 <meta name="description" content="艾菲爾斯特・昭旭聯合王國的 2.5D 遺跡冒險戰鬥：在東鶴選職業，下遺跡開寶箱、掘礦，帶著未鑑定的武器回到鐵匠鋪。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -633,7 +633,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
   <div class="t-wrap">
     <div class="t-eye" aria-hidden="true"></div><!-- 佩特拉核心的像素立繪（titleart.js 換成 canvas）；原本的平面 SVG 眼球刪掉了（作者 2026-10-03） -->
     <div class="t-kicker">《艾菲爾斯特——公會特殊討伐令－遺跡》</div>
-    <h1 class="t-name">討伐令 1433<small>昭旭聯合王國・遺跡</small></h1>
+    <h1 class="t-name">無境之旅<small>昭旭聯合王國・遺跡</small></h1>
     <p class="t-sub">遺跡是佩特拉核心長出來的「可循環自然建築」。昭旭的島上到處都是。帶著公會的委託下去，把寶箱裡的東西帶回東鶴的鐵匠鋪鑑定——前提是你回得來。</p>
     <div class="t-btns">
       <button type="button" class="pri" id="t-go" hidden>回到東鶴<small></small></button>
@@ -955,6 +955,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/classes/promote.js"></script>
 <script src="js/classes/promote2.js"></script>
 <script src="js/admin/admin.js"></script>
+<script src="js/combat/traitdown.js"></script><!-- 2026-10-15 特質「不死不休」第一次倒下：要在 deathcause.js 後面、adv2more.js 前面（別的救法優先） -->
 <script src="js/classes/adv2more.js"></script>
 <script src="js/combat/unyield.js"></script><!-- 不屈／神佑：倒下時攔下來，要在 adv2more.js 後面 -->
 <script src="js/stats/talentcap.js"></script><!-- 天賦奧義點滿的效果：千刃、斬鐵、不動如山、不死身、無念、天啟（talenttree.js、unyield.js 後面） -->
@@ -1126,4 +1127,9 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/art/blade-cleave-fx.js"></script>
 <script src="js/classes/lv30.js"></script><!-- 2026-10-15 30 級技能（每個職業一招，放進技能表、30 級學會）：要在 classcore、bardchord、ult 後面 -->
 <script src="js/stats/prof2.js"></script><!-- 2026-10-15 熟練度改版：智力、精神、技巧、精確，力量和體質的效果，閃避率（prof.js 管點數和等級；包在最外面，main.js 前面） -->
+<script src="js/races/traits.js"></script><!-- 2026-10-15 特質：資料、點數、不相容 -->
+<script src="js/races/traitpick.js"></script><!-- 特質的選擇畫面、舊角色問一次（traits.js 後面） -->
+<script src="js/stats/traitfx.js"></script><!-- 特質的效果：數值、開局、裝備和職業的限制（prof2.js 後面，main.js 前面） -->
+<script src="js/life/traitlife.js"></script><!-- 特質的效果：花費、好感度、委託、犯罪、組隊、窮凶極餓、黑市熟人（traitfx.js 後面） -->
+<script src="js/combat/traitdeath.js"></script><!-- 特質：不死不休第二次（永久死亡）、越敗越退、貪生怕死、怕痛之人、元素親和（包在最外面） -->
 <script src="js/core/main.js"></script>

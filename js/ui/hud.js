@@ -1,4 +1,4 @@
-// 討伐令 1433：遺跡裡的畫面（狀態列、小地圖、傷害數字、特效、音效、背包、暫停）
+// 無境之旅：遺跡裡的畫面（狀態列、小地圖、傷害數字、特效、音效、背包、暫停）
 (function (R) {
   const $ = id => document.getElementById(id);
   const T = () => THREE;

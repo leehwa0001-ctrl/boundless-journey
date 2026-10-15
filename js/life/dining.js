@@ -45,11 +45,11 @@
   const menuSheet = k => {
     const s = SHOPS[k], S = R.S;
     R.sheet('<p class="kicker">' + esc(s.name) + '</p><h2>菜單</h2><p class="note">吃了之後，今天下遺跡有加成（一天算最後吃的那一餐）。' + (S.buff && S.buff.until === S.day ? '現在：已經吃過了。' : '') + '</p><div class="dn-menu">'
-      + s.menu.map((m, i) => '<button type="button" class="dn-item" data-dn="' + i + '"' + (S.gold < m[1] || !hasMats(m) ? ' disabled' : '') + '><b>' + esc(m[0]) + '</b><span>' + m[1] + ' 費拉</span><small>' + esc(m[2]) + (m[4] ? '（要' + Object.keys(m[4]).map(k => R.MATS[k].name + ' ×' + m[4][k] + '，有 ' + ((S.mats || {})[k] || 0)).join('、') + '）' : '') + '</small><i>下一趟遺跡：' + esc(buffTxt(m[3])) + '</i></button>').join('') + '</div>',
+      + s.menu.map((m, i) => '<button type="button" class="dn-item" data-dn="' + i + '"' + (S.gold < R.cost(m[1]) || !hasMats(m) ? ' disabled' : '') + '><b>' + esc(m[0]) + '</b><span>' + R.cost(m[1]) + ' 費拉</span><small>' + esc(m[2]) + (m[4] ? '（要' + Object.keys(m[4]).map(k => R.MATS[k].name + ' ×' + m[4][k] + '，有 ' + ((S.mats || {})[k] || 0)).join('、') + '）' : '') + '</small><i>下一趟遺跡：' + esc(buffTxt(m[3])) + '</i></button>').join('') + '</div>',
       '<div class="row"><button type="button" class="btn" id="dn-x">不吃了</button></div>');
     document.getElementById('dn-x').onclick = R.closeSheet;
     document.querySelectorAll('[data-dn]').forEach(b => { b.onclick = () => {
-      const m = s.menu[+b.dataset.dn]; if (S.gold < m[1] || !hasMats(m)) return; S.gold -= m[1]; if (m[4]) Object.keys(m[4]).forEach(k => { S.mats[k] -= m[4][k]; }); S.buff = { kind: 'food', b: m[3], until: S.day }; R.save(); R.sfx && R.sfx('coin');
+      const m = s.menu[+b.dataset.dn]; if (S.gold < R.cost(m[1]) || !hasMats(m)) return; S.gold -= R.cost(m[1]); if (m[4]) Object.keys(m[4]).forEach(k => { S.mats[k] -= m[4][k]; }); S.buff = { kind: 'food', b: m[3], until: S.day }; R.ateFood && R.ateFood(S.buff); R.save(); R.sfx && R.sfx('coin');
       R.closeSheet(); R.townTalk ? R.townTalk(s.chef, [m[4] && m[4].boarmeat ? '「後山的土鎧豬？……這塊油花真漂亮。」（老闆把肉切成厚片，擺上炭火。）' : '', '「' + m[0] + '，久等了！」', '（' + m[2] + '。）', '（今天下遺跡：' + buffTxt(m[3]) + '）']) : R.toast('吃了' + m[0]);
     }; });
   };

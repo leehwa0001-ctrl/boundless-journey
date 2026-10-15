@@ -1,4 +1,4 @@
-// 討伐令 1433：戰鬥（武器、技能、遺跡生物的行為、傷害、佩特拉的注意與反應）
+// 無境之旅：戰鬥（武器、技能、遺跡生物的行為、傷害、佩特拉的注意與反應）
 (function (R) {
   const T = () => THREE;
   const W = () => R.W;
@@ -448,7 +448,7 @@
       const target = !P.invis || P.invis <= 0;
       // 哈米莉亞級（passive）：遺跡生物不會主動攻擊人——走近也不會，被打了才還手（e.provoked）
       if (w.run.grade.passive) { if (!e.provoked) e.aggro = false; }
-      else if (!e.aggro && !e.dormant && d < 13) e.aggro = true;
+      else if (!e.aggro && !e.dormant && d < 13 * (R.aggroMul ? R.aggroMul() : 1)) e.aggro = true;   // 特質：邊緣、矚目（traitlife.js）
       let moving = false;
       if (can && e.aggro && target) {
         const ai = e.def.ai;

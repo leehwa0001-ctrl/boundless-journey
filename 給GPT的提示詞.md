@@ -4,9 +4,9 @@
 
 ---
 
-你要和另一個 AI（Claude Code）一起開發我的網頁遊戲《討伐令 1433》。
+你要和另一個 AI（Claude Code）一起開發我的網頁遊戲《無境之旅》。
 
-- 專案在 `C:\Users\user\Documents\討伐令1433`，用 git 管理。只改這個資料夾。
+- 專案在 `C:\Users\user\Documents\無境之旅`，用 git 管理。只改這個資料夾。
 - 開工前，先讀 `AGENTS.md` 和 `開發說明.md`。裡面有：
   - 程式的結構；
   - 寫法的規矩；

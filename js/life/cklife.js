@@ -100,7 +100,7 @@
       tw.inter.push({ x, z: z + 1.4, r: 2, label: name, when: () => g.visible, act: () => menu() });
       S2.carts.push({ g, b: bx, v }); void ln;
     };
-    const eat = (who, food, price, buff, lines) => () => { if (R.S.gold < price) { R.toast('錢不夠。'); return; } R.S.gold -= price; R.S.buff = { kind: 'yatai', b: buff, until: R.S.day }; R.save(); R.townTalk(who, lines.concat(['（今天下遺跡有加成）'])); };
+    const eat = (who, food, price, buff, lines) => () => { if (R.S.gold < price) { R.toast('錢不夠。'); return; } R.S.gold -= price; R.S.buff = { kind: 'yatai', b: buff, until: R.S.day }; R.ateFood && R.ateFood(R.S.buff); R.save(); R.townTalk(who, lines.concat(['（今天下遺跡有加成）'])); };
     // 長椅上的人、聊天的人也看得到你（ckcrime.js 的視線條）
     if (tw.watchers) S2.sit.concat(...S2.pairs).forEach(n => { n.watch = { range: 6, fov: 1.1, civ: 1 }; tw.watchers.push(n); });
     cart(plaza[0] - 12, plaza[1] + 2, '屋台拉麵（一碗 8 費拉）', '#C83A3A', eat('拉麵屋台的老闆', '拉麵', 8, { hp: 0.05 }, ['「醬油拉麵一碗——來了！」', '你喝了幾口湯，老闆把小碟推過來，叫你小心燙。']));

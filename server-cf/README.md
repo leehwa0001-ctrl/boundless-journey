@@ -1,4 +1,4 @@
-# 討伐令 1433 多人連線伺服器（Cloudflare 版）
+# 無境之旅多人連線伺服器（Cloudflare 版）
 
 和 `server/`（Node.js，給 Render 用）是同一套訊息，換成 Cloudflare Workers ＋ Durable Objects。
 為什麼推薦這一版，見專案根目錄的 `連線報告.md`。

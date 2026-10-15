@@ -1,4 +1,4 @@
-// 討伐令 1433：多人連線伺服器的 Cloudflare Workers 版（和 server/server.js 同一套訊息，只轉送、不跑遊戲邏輯）
+// 無境之旅：多人連線伺服器的 Cloudflare Workers 版（和 server/server.js 同一套訊息，只轉送、不跑遊戲邏輯）
 // 為什麼有這一版（見 連線報告.md）：Render 免費方案閒置 15 分鐘會睡、叫醒要一分鐘，2026-04 起每月流量只剩 5 GB；
 //   Cloudflare 的 Workers 免費方案可以用 Durable Objects（要 SQLite 那種），不會睡、離台灣近、不收流量費。
 // - 全部的房間放在同一個 Durable Object（名字 'lobby'）裡：程式和 server.js 一樣簡單。玩家多到一個物件撐不住再分房。

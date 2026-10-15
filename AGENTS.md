@@ -1,11 +1,11 @@
 # AGENTS.md（給 Codex 和其他 AI 共同開發者）
 
-這個資料夾是作者的網頁遊戲《討伐令 1433》（艾菲爾斯特・昭旭聯合王國的遺跡冒險戰鬥）。
+這個資料夾是作者的網頁遊戲《無境之旅》（艾菲爾斯特・昭旭聯合王國的遺跡冒險戰鬥）。
 **開工前先讀 `開發說明.md`**（換了電腦或換人接手：再看 `交接.md`——待辦、怎麼測試、要問作者的設定）：程式結構、寫法的規矩、設定的規則都在那裡。
 
 ## 協作的規矩（Claude Code 和 Codex 共用這個資料夾）
 
-0. **專案的資料夾：`C:\Users\user\Documents\討伐令1433`**（有 git）。不要再改其他地方的複本（例如 Claude 的暫存資料夾）。
+0. **專案的資料夾：`C:\Users\user\Documents\無境之旅`**（有 git）。不要再改其他地方的複本（例如 Claude 的暫存資料夾）。
    **線上版只有一個網址：https://leehwa0001-ctrl.github.io/taofaling-1433/**（GitHub Pages，repo：https://github.com/leehwa0001-ctrl/taofaling-1433 ，公開）。
    改完、commit 之後 `git push`，GitHub Actions 會自動把 `index.html` 包成完整的網頁發布（`.github/workflows/pages.yml`，一兩分鐘後生效）。兩個帳號的 Claude、Codex 都一樣，**不用再發布到 claude.ai 的 Artifact**。
    舊的 Artifact 網址（S18gM8…、PNpsZN37…）不再更新；玩家在舊網址的標題畫面「匯出存檔」，到新網址「匯入存檔」就能接著玩（savecode.js）。
