@@ -3,7 +3,7 @@
 // 五種形式長得不一樣：高塔型是圓形的塔室與懸在深淵上的橋；城區型是街道、房子與廣場；
 // 迷宮型是彎來彎去、長滿樹根的窄道；陵墓型是一排排石柱與石棺；浮島型是浮在海上的島與吊橋。
 (function (R) {
-  const RK0 = 1.75, TS = 2, DOOR = 4.4; let RK = RK0, CW = 66, CH = 56;   /* 浮島型的區：房間再大 35%（RK、CW、CH 在 genFloor 開頭照形式換；R.CELL 跟著） */   // 2026-10-13 遺跡整改：房間 ×1.75（RK），格子間距跟著放大（38×32 → 66×56，取 TS 的倍數）
+  const RK0 = 1.3125, TS = 2, DOOR = 4.4; let RK = RK0, CW = 50, CH = 42;   /* 浮島型的區：房間再大 35%（RK、CW、CH 在 genFloor 開頭照形式換；R.CELL 跟著） */   // 2026-10-13 遺跡整改：房間 ×1.75（RK），格子間距跟著放大（38×32 → 66×56，取 TS 的倍數）；2026-10-16 作者：房間全部縮小約 25%（RK 1.75 → 1.3125，格子間距 66×56 → 50×42、浮島 90×76 → 68×58）
   const VOID = 0, FLOOR = 1, WALL = 2, PIT = 3;
   const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
   const rnd = (a, b) => a + Math.random() * (b - a);
@@ -58,7 +58,7 @@
   R.genFloor = (run, f) => {
     const g = run.grade, type = R.TYPES[run.type], form = R.FORM[run.type] || R.FORM.city;
     const Z = run.izZ || null;   // 浮島型的一區（island.js）
-    RK = Z ? RK0 * 1.35 : RK0; CW = Z ? 90 : 66; CH = Z ? 76 : 56; R.CELL.CW = CW; R.CELL.CH = CH; R.CELL.RK = RK;
+    RK = Z ? RK0 * 1.35 : RK0; CW = Z ? 68 : 50; CH = Z ? 58 : 42; R.CELL.CW = CW; R.CELL.CH = CH; R.CELL.RK = RK;
     const last = f === run.floors - 1;
     const n = R.roomsPerFloor(run, f);
     const rooms = [], at = new Map(), K = (x, y) => x + ',' + y;

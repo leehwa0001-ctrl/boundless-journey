@@ -105,6 +105,8 @@
       R.save(); R.enterTown();
     };
   };
+  // 2026-10-15 新的建角色畫面（creator2.js）用的：選項、預設外觀
+  R.CREATOR_KIT = { HS, HAIR, EYES, CLOTH, ACC, ACCC, defaultLook: race => defaultLook(race) };
   // 重新捏角：名字、髮型、髮色、膚色、眼睛、衣服、披風、配件（種族要到公會重新登記）
   // o.from：'mirror' 倉庫的大鏡子、'hub' 公會登記處、'town' 街上的暫停選單
   R.restyle = o => {
