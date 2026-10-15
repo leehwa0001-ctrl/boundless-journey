@@ -13,10 +13,10 @@
   const slotsFor = it => (it.kind === 'acc' ? ['acc', 'acc2'] : [R.slotOf(it)]).filter(k => (R.GEAR_KEYS || []).includes(k));
   // ---------- 角色數值（跟角色總數值同一套算法，只挑會變的） ----------
   const stats = P => {
-    const ws = P.ws || {}, w = (P.item && R.WEAPONS[P.item.base]) || {}, hit = (ws.dmg || 0) * (P.dmgMult || 1), per = hit * (ws.pellets || 1) * (w.hits || 1), crit = Math.min(1, ws.crit || 0), cm = P.critMult || 1.5;
+    const ws = P.ws || {}, w = (P.item && R.WEAPONS[P.item.base]) || {}, bdR = P.item && R.bladeWeaponReal ? R.bladeWeaponReal(P.item.base, ws) : null, rate = bdR ? bdR.rate : ws.rate, hit = (bdR ? bdR.dmg : ws.dmg || 0) * (P.dmgMult || 1), per = hit * (ws.pellets || 1) * (w.hits || 1), crit = Math.min(1, ws.crit || 0), cm = P.critMult || 1.5;
     return [
       ['生命', P.hpMax, 0], ['魔力', P.mpMax, 0], ['防禦', P.def, 1], ['魔防', P.mdef, 1], ['移動速度', P.speed, 2],
-      ['每一下', hit, 1], ['攻擊速度', ws.rate, 2], ['估計每秒傷害', per * (ws.rate || 1) * (1 + crit * (cm - 1)), 0], ['暴擊率', crit * 100, 1, '%'], ['暴擊傷害', cm, 2, '×'],
+      ['每一下', hit, 1], ['攻擊速度', rate, 2], ['估計每秒傷害', per * (rate || 1) * (1 + crit * (cm - 1)), 0], ['暴擊率', crit * 100, 1, '%'], ['暴擊傷害', cm, 2, '×'],
       ['攻擊範圍', ws.range, 2], ['技能急速', P.haste, 1], ['穿透', P.pen, 1], ['每秒回魔', R.mpRegenOf ? R.mpRegenOf(P) : P.mpRegen, 1],
       ['受到的傷害減少', ((P.accGuard || 0) + (P.talGuard || 0)) * 100, 1, '%'], ['幸運', P.luck, 0], ['力量', P.str, 0]
     ];

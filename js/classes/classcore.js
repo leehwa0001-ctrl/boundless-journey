@@ -311,7 +311,8 @@
   //   橫斬：120 度、衝 1 公尺；直劈：寬 0.4、長＝攻擊距離、傷害 +40%、衝 2 公尺；突刺：寬 0.4、長＝攻擊距離 ×1.2、穿透 +40%、衝 4 公尺。
   //   長度、寬度、角度、衝刺距離都照「攻擊距離增幅」（目前攻擊距離 ÷ 武器原本的攻擊距離）放大；衝刺速度＝移動速度 ×3。
   //   選招：10 公尺（×增幅）內 1 隻：比（攻擊距離＋直劈衝刺距離）遠用突刺，不然直劈；2～4 隻：橫斬→直劈→突刺輪流；5 隻以上：橫斬；
-  //   沒有敵人：直劈。翻滾後的下一刀必定突刺（居合除外）。
+  //   沒有敵人：橫斬（2026-10-15 作者，原本直劈）。翻滾後的下一刀必定突刺（居合除外）。
+  //   2026-10-15 作者：出刀（揮出劍氣、刺擊）的時候移動 −80%；刀光留在場上 0.5 秒才消失，這段時間刀光範圍裡的敵方子彈全部擋掉。
   // X 職業鍵：收刀／拔刀，各要讀 2 秒（不會被打斷，期間移動 −50%）；收刀中、讀條中不能普攻、不能放技能（大招可以）。
   // 刀意（0～100）：不會自己漲；收刀狀態下 4 秒集滿；普攻打中每一刀 +15（雙刀每下 +7.5，約 7 刀集滿）。滿了：移動 +25%，
   //   收刀中→下一次普攻或技能＝居合（消耗全部刀意、直接拔刀；普攻必定橫斬、範圍 +40%、傷害 ×2、穿透 +40%、衝 4 公尺；技能傷害 +40%）→之後進入殘心；
@@ -371,6 +372,16 @@
   const blockMsg = (P, t) => { if (nowMs() - (P._bdMsgT || 0) > 900) { P._bdMsgT = nowMs(); toast(t, '#DDEEFF'); } };
   const bdLater = (P, f, ms) => { const run = W().run, sc = W().scene; setTimeout(() => { const w = W(); if (w.run === run && w.scene === sc && w.P === P && !P.dead && !run.done) f(); }, ms); };
   const hpCost = (P, frac) => { if (adv(P) !== 'yoto' || !(P.hp > 1)) return; P.hp = Math.max(1, P.hp - P.hp * frac); };
+  // 2026-10-15 作者：普攻的刀光留 0.5 秒（照原本的速度掃出去，停在最亮的那一格，最後照原本的速度淡掉）；這段時間擋子彈、出刀的人移動 −80%
+  const HOLD = 0.5;
+  const holdFx = n0 => { const fx = W().fxs || []; for (let i = n0; i < fx.length; i++) { const f = fx[i]; if (!f || f._bdHold || !(f.life > 0) || f.life >= HOLD) continue; const L0 = f.life, tk = f.tick; f._bdHold = 1; f.life = HOLD;
+    if (tk) f.tick = k => { const t = k * HOLD, a = L0 * 0.45, b = HOLD - L0 * 0.55; tk(t < a ? t / L0 : t < b ? 0.45 : 0.45 + (t - b) / L0); }; } };
+  const walls = [];   // 擋子彈的刀光：{ x, z, a, range, arc, width, until }
+  const inWall = (w, x, z, r) => { const dx = x - w.x, dz = z - w.z, d = Math.hypot(dx, dz);
+    if (w.width) { const along = dx * Math.sin(w.a) + dz * Math.cos(w.a), side = Math.abs(dx * Math.cos(w.a) - dz * Math.sin(w.a)); return along > -0.6 && along < w.range + r + 0.3 && side < w.width + r + 0.2; }
+    return d < w.range + r + 0.3 && (d < 0.8 || Math.abs(wrap(Math.atan2(dx, dz) - w.a)) < w.arc / 2 + 0.15); };
+  const blockShots = () => { if (!walls.length) return; for (let i = walls.length - 1; i >= 0; i--) if (walls[i].until <= CT) walls.splice(i, 1);
+    (W().shots || []).forEach(q => { if (q.dead || q.owner === 'p') return; if (walls.some(w => inWall(w, q.x, q.z, q.rad || 0.2))) { R.fx && R.fx('spark', q.x, 1, q.z, {}); R.killShot ? R.killShot(q) : (q.life = -1); } }); };
   // 一刀（不含衝刺）：kind 'slash'／'cleave'／'thrust'
   const strike = (P, a, kind, o) => {
     o = o || {};
@@ -382,13 +393,14 @@
     R.swingAnim && R.swingAnim(P.h, 0.04, 0.3);
     for (let i = 0; i < hits; i++) {
       const go = () => {
-        const p0 = P.pen; P.pen = Math.min(0.95, (p0 || 0) + pen);
+        const p0 = P.pen, n0 = (W().fxs || []).length; P.pen = Math.min(0.95, (p0 || 0) + pen);
+        if (!o.counter) { P._bdSlowT = CT + HOLD; walls.push({ x: P.x, z: P.z, a, range, arc: arc || 0.5, width, until: CT + HOLD }); }
         try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), bladeCleave: kind === 'cleave' && !o.iai, hs: 1 })); }
-        finally { P.pen = p0; }
+        finally { P.pen = p0; if (!o.counter) holdFx(n0); }
       };
       if (i === 0) go(); else bdLater(P, go, 120 * i);
     }
-    if (o.iai || kind === 'thrust') R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range });
+    if (o.iai || kind === 'thrust') { const n0 = (W().fxs || []).length; R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range }); if (!o.counter) holdFx(n0); }
     R.sfx && R.sfx('swing');
   };
   const pickForm = (P, k) => {
@@ -397,7 +409,7 @@
     if (es.length === 1) return dist(es[0], P) - es[0].def.size * 0.5 > P.ws.range * k + 2 * k ? 'thrust' : 'cleave';
     if (es.length >= 5) return 'slash';
     if (es.length >= 2) { P._bdCyc = ((P._bdCyc == null ? -1 : P._bdCyc) + 1) % 3; return ['slash', 'cleave', 'thrust'][P._bdCyc]; }
-    return 'cleave';
+    return 'slash';
   };
   // 往前衝多遠：停在路上第一隻敵人前面 stop 公尺；不衝出地板
   const dashLen = (P, a, len, stop) => {
@@ -406,6 +418,12 @@
     if (R.isFloor && W().F) { let ok = 0; for (let t = 0.25; t <= d + 1e-6; t += 0.25) { const x = P.x + sx * t, z = P.z + sz * t; if (!R.isFloor(x, z) || (R.pointBlocked && R.pointBlocked(x, z))) break; ok = t; } d = Math.min(d, ok); }
     return d;
   };
+  // 普攻衝刺用的移動速度：扣掉出刀時的 −80%（不然連砍的時候下一刀衝得很慢）
+  const runSpeed = P => (P._bdSpSet === P.speed && P._bdSpBase ? P._bdSpBase * (full(P) ? 1.25 : 1) : P.speed);
+  // 技能「拔刀」（skillbook.js 的 line 型 dash 參數）：跟普攻一樣往前衝（同樣的速度、停在敵人前 2 公尺、不衝出地板），回傳衝刺秒數
+  R.bladeSkillDash = (P, a, len) => { const d = dashLen(P, a, len, 2), dur = d > 0.05 ? d / (runSpeed(P) * (adv(P) === 'shadow' ? 10 : 3)) : 0; if (dur > 0 && R.dash) { R.dash(a, d, dur, {}); P._bdBusy = CT + dur; } return dur; };
+  // 刀客武器實際的攻速（普攻是 classcore 自己算的：刀 1 秒一刀、雙刀和野太刀 1.5 秒一次，再照詞綴、天賦的攻速比例）、實際的一刀傷害；給說明、角色數值用
+  R.bladeWeaponReal = (base, ws) => { const w = BD.W[base], w0 = R.WEAPONS[base]; if (!w || !w0 || !ws) return null; return { rate: w.rate * (ws.rate || w0.rate) / (w0.rate || 1), dmg: (ws.dmg || 0) * w.dmg }; };
   R.bladeAttack = () => {
     const P = W().P; if (!P || P.dead) return;
     if ((P._bdBusy || 0) > CT) return;
@@ -421,7 +439,7 @@
     let len = (iai ? 4 : { slash: 1, cleave: 2, thrust: 4 }[kind]) * k * (shadow ? 2 : 1);
     const reach = P.ws.range * k * (kind === 'thrust' ? 1.2 : 1) * (iai ? 1 + 0.4 * iaiK : 1) * (enso(P) ? 1 + 0.1 * ensoK(P) : 1);
     len = dashLen(P, a, len, Math.min(2 * k, reach * 0.8));   // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
-    const sp = P.speed * (shadow ? 10 : 3), dur = len > 0.05 ? len / sp : 0;
+    const sp = runSpeed(P) * (shadow ? 10 : 3), dur = len > 0.05 ? len / sp : 0;
     let rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (enso(P) ? 1 + 0.25 * ensoK(P) : 1);
     P.atkCd = 1 / rate; P.atkHold = 0.35 + dur; P._bdBusy = CT + dur; P._bdN = (P._bdN || 0) + 1;
     if (dur > 0 && R.dash) R.dash(a, len, dur, {});
@@ -435,11 +453,11 @@
       + '刀意滿：移動 +25%；收刀中→下一次普攻或技能是居合（普攻必定橫斬、範圍 +40%、傷害 ×2、穿透 +40%；技能傷害 +40%），之後進入殘心 5 秒（收刀快一倍、刀意 +40%、減傷 20%）；'
       + '拔刀中→刀意渾圓（攻速 +25%、範圍 +10%、傷害 +10%），這時被打就反切：免疫這一下、無敵 0.4 秒、原地橫斬，用掉 100 刀意（無敵、跳起來時不會反切）。'
       + (pvB(P, 'bdMunen') ? '無念：刀意上限 200，集滿 200 時是「無念．居合」（雙倍居合加成、用掉 200）或「無念．刀意渾圓」（雙倍渾圓效果）；200 刀意可以反切兩次。' : '')
-      + '普攻會先往前衝再出手：橫斬（120 度）、直劈（+40% 傷害）、突刺（長 1.2 倍、穿透 +40%），照周圍敵人數自動選；翻滾後下一刀是突刺。'
+      + '普攻會先往前衝再出手：橫斬（120 度）、直劈（+40% 傷害）、突刺（長 1.2 倍、穿透 +40%），照周圍敵人數自動選（附近沒有敵人時橫斬）；翻滾後下一刀是突刺。出刀時移動 −80%，刀光留在場上 0.5 秒，擋下碰到的所有子彈。'
       + ({ kensei: '劍豪：居合加成 ×1.5、殘心效果 ×2 且 10 秒、收刀時間 ×0.5。', shadow: '影刃：反切砍 2 刀、無敵 1 秒、反切後也進殘心；普攻衝刺快 10 倍、距離 ×2。', yoto: '妖刀使：刀意渾圓效果 ×2、渾圓時吸血系數 +75；每次普攻扣 1% 目前生命、放技能扣 10%（不會扣到死）。' }[adv(P)] || '')
       + ({ dualblades: '雙刀：一次砍兩下，收刀時間 ×1.5，不能反切。' }[P.item && P.item.base] || ''),
     max: P => cap(P),
-    floor(P) { if (P._bdWant && P._bdSpSet === P.speed) P.speed /= P._bdWant; P._bdWant = 1; P._bdSpBase = P.speed; P._bdSpSet = P.speed; P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; },
+    floor(P) { if (P._bdWant && P._bdSpSet === P.speed) P.speed /= P._bdWant; P._bdWant = 1; P._bdSpBase = P.speed; P._bdSpSet = P.speed; P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; P._bdSlowT = 0; walls.length = 0; },
     step(dt, P) {
       const roll = P.h && P.h.roll > 0; if (roll && !P._rolling) { P._bdRolled = true; if (pvB(P, 'bdPierce')) P._bdPierce = true; } P._rolling = roll;
       if (pvB(P, 'bdIntent')) addIaiRaw(P, 5 * dt);   // 被動「刀意」：每秒自動 +5
@@ -450,7 +468,8 @@
       if (rd) { rd.t += dt; if (rd.t >= rd.dur) { P._bdSt = rd.to; P._bdRead = null; say(P, rd.to === 'sheathed' ? '收刀' : '拔刀', 'heal'); } }
       if (bdState(P) === 'sheathed') addIai(P, 100 / BD.FULL_T * dt / 1);
       // 移動：讀條 −50%、刀意滿 +25%（記住自己乘上去的倍率；別人重算過 P.speed 就重來）
-      const want = (P._bdRead ? 0.5 : 1) * (full(P) ? 1.25 : 1);
+      const want = (P._bdRead ? 0.5 : 1) * (full(P) ? 1.25 : 1) * ((P._bdSlowT || 0) > CT ? 0.2 : 1);   // 2026-10-15：出刀時 −80%
+      blockShots();
       // 2026-10-13 修：以前別人改過 P.speed（技能增益、刀勢的 ×1.03 等都是「乘上去／除回來」）就把「已經乘過 want 的速度」當新的底，再乘一次 want → 一直疊。
       // 改成先除掉自己上次乘的倍率，再乘這次的。
       if (P._bdSpSet !== P.speed) P._bdSpBase = P.speed / (P._bdWant || 1);

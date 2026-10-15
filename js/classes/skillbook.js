@@ -57,7 +57,7 @@
     ['p_halo', '光環', 'priest', 12, 16, 18, 'zone', { zone: 'sanct', self: 1, r: 3.5, life: 5, k: 0.3 }, '在腳下展開光環 5 秒：站在裡面回復生命，灼傷進來的敵人。'],
     ['p_seal', '聖印', 'priest', 15, 12, 16, 'mark', { range: 10, r: 3, t: 6, stun: 0.5 }, '在準心處烙下聖印：敵人暈眩一下，6 秒內受到的傷害 +30%。'],
     // 刀客
-    ['b_draw', '拔刀', 'blade', 2, 4, 6, 'line', { len: 3.5, width: 0.8, k: 1.8, crit: 0.5, color: '#FFFFFF' }, '拔刀斬出一直線，50% 機率暴擊。'],
+    ['b_draw', '拔刀', 'blade', 2, 20, 6, 'line', { dash: 6, len: 5.25, width: 1.2, k: 9, crit: 0.5, color: '#FFFFFF' }, '先像普攻一樣往前衝 6 公尺（碰到敵人就停在牠前面），再拔刀斬出一直線，50% 機率暴擊。'],   // 2026-10-15 作者：先衝 6 公尺、範圍 ×1.5、傷害 ×5、冷卻 ×5
     ['b_crescent', '月牙斬', 'blade', 4, 7, 10, 'shots', { k: 1.4, pierce: 3, kind: 'hama', sp: 24, life: 0.5 }, '把刀氣斬出去：飛行的斬擊穿過三隻敵人。'],
     ['b_swallow', '燕返', 'blade', 5, 8, 10, 'arc', { range: 2.8, arc: 2.4, k: 1.3, hits: 2, gap: 140, back: 1 }, '往前斬一刀，馬上反手往後再斬一刀。'],
     ['b_after', '殘影', 'blade', 8, 10, 10, 'blink', { back: 1, range: 4, invis: 1.5 }, '往後撤，只留下殘影：隱身 1.5 秒。'],
@@ -241,6 +241,7 @@
     },
     line(s, P, w, pw) {
       const a = P.aimA; if (s.delay) P.stance = s.delay / 1000;
+      const dashT = s.dash && R.bladeSkillDash ? R.bladeSkillDash(P, a, s.dash) : 0;   // dash：先往前衝（刀客的拔刀，跟普攻一樣的衝法）
       later(() => {
         const sx = P.x, sz = P.z, ca = Math.sin(a), sa = Math.cos(a);
         R.fx('slash', sx, 1, sz, { a, len: s.len });
@@ -252,7 +253,7 @@
           if (s.burn) e.st.burn = 3;
         });
         if (s.aware) R.addAware(s.aware, 'boom'); if (s.k >= 3) R.shake(0.25);
-      }, s.delay || 0);
+      }, (s.delay || 0) + dashT * 1000);
     },
     arc(s, P, w, pw) {
       const n = s.hits || 1; P.stance = Math.max(P.stance || 0, Math.min(0.6, n * (s.gap || 120) / 1000));

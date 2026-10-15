@@ -126,7 +126,8 @@
     if (it.kind === 'weapon') {
       const s = R.weaponStats(it), w = R.WEAPONS[it.base];
       L.push(R.WEAPONS[it.base].cls.map(c => R.CLASSES[c].name).join('、') + '用');
-      L.push('傷害 ' + s.dmg.toFixed(1) + (s.pellets > 1 ? ' × ' + s.pellets : '') + (w.hits ? ' × ' + w.hits : '') + '　攻速 ' + s.rate.toFixed(1) + ' 次／秒');
+      const bdR = R.bladeWeaponReal && R.bladeWeaponReal(it.base, s);   // 2026-10-15：刀客的武器寫實際的一刀傷害和攻速（普攻是 classcore.js 另外算的）
+      L.push('傷害 ' + (bdR ? bdR.dmg : s.dmg).toFixed(1) + (s.pellets > 1 ? ' × ' + s.pellets : '') + (w.hits ? ' × ' + w.hits : '') + '　攻速 ' + (bdR ? bdR.rate.toFixed(2) : s.rate.toFixed(1)) + ' 次／秒');
       if (w.mag) L.push('彈匣 ' + w.mag + ' 發・換彈 ' + w.reload + ' 秒');
       if (w.mp) L.push('每發消耗魔力 ' + w.mp);
     } else if (it.kind === 'armor') { const s = R.armorStats(it); L.push(R.GEAR_NAME[R.ARMOR[it.base].slot] + '・防禦 ' + s.def.toFixed(1) + (s.spd ? '　移動 ' + (s.spd > 0 ? '+' : '') + Math.round(s.spd * 100) + '%' : '')); }

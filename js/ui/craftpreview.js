@@ -18,7 +18,7 @@
   // 一件東西的主要數值（一行字）
   const mainOf = it => {
     if (!it) return '';
-    if (it.kind === 'weapon' && R.WEAPONS[it.base]) { const s = R.weaponStats(it), w = R.WEAPONS[it.base]; return '傷害 ' + n1(s.dmg) + (s.pellets > 1 ? ' × ' + s.pellets : '') + (w.hits ? ' × ' + w.hits : ''); }
+    if (it.kind === 'weapon' && R.WEAPONS[it.base]) { const s = R.weaponStats(it), w = R.WEAPONS[it.base], bdR = R.bladeWeaponReal && R.bladeWeaponReal(it.base, s); return '傷害 ' + n1(bdR ? bdR.dmg : s.dmg) + (s.pellets > 1 ? ' × ' + s.pellets : '') + (w.hits ? ' × ' + w.hits : ''); }
     if (it.kind === 'armor' && R.ARMOR[it.base]) return '物防 ' + n1(R.armorStats(it).def) + '・魔防 ' + n1(mdefOf(it));
     if (it.kind === 'charm' || it.kind === 'acc') return '沒有基礎數值，看詞綴';
     return '';
@@ -30,7 +30,8 @@
     if (kind === 'weapon') {
       const w = R.WEAPONS[base]; if (!w) return '';
       const s = R.weaponStats(fake(kind, base, ilvl, 0));
-      fixed.push('攻速 ' + n1(s.rate) + ' 次／秒', w.kind === 'magic' ? '魔法傷害' : '物理傷害', '暴擊 ' + Math.round((s.crit || 0.05) * 100) + '%');
+      const bdR = R.bladeWeaponReal && R.bladeWeaponReal(base, s);   // 刀客的武器：實際的攻速
+      fixed.push('攻速 ' + (bdR ? bdR.rate.toFixed(2) : n1(s.rate)) + ' 次／秒', w.kind === 'magic' ? '魔法傷害' : '物理傷害', '暴擊 ' + Math.round((s.crit || 0.05) * 100) + '%');
       if (w.mag) fixed.push('彈匣 ' + w.mag + ' 發・換彈 ' + w.reload + ' 秒');
       if (w.mp) fixed.push('每發魔力 ' + w.mp);
     } else if (kind === 'armor') {
