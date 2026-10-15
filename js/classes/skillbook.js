@@ -275,6 +275,7 @@
       let x, z;
       if (s.behind) { const tg = R.nearestEnemy(P.x, P.z, s.range); if (!tg) { R.toast('附近沒有敵人'); return false; } [x, z] = R.nearestFloor(tg.x - Math.sin(tg.yaw || 0) * 1.4, tg.z - Math.cos(tg.yaw || 0) * 1.4); s._tg = tg; }
       else if (s.back) [x, z] = R.nearestFloor(P.x - Math.sin(P.aimA) * s.range, P.z - Math.cos(P.aimA) * s.range);
+      else if (P._blinkTo) [x, z] = R.nearestFloor(P._blinkTo[0], P._blinkTo[1]);   // 術陣師的傳送陣：直接傳到畫好的法陣中心（runedraw.js）
       else [x, z] = R.nearestFloor(...aimIn(P, s.range));
       R.fx('blink', P.x, 1, P.z); P.x = x; P.z = z; R.collide(P, 0.42); R.fx('blink', P.x, 1, P.z);
       P.iframe = Math.max(P.iframe || 0, s.iframe || 0.25);

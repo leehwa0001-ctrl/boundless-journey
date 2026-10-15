@@ -129,7 +129,8 @@
   // ======================= 戰士：怒氣 =======================
   CORE.warrior = {
     name: '怒氣', col: '#E8503A',
-    help: P => '怒氣（取代魔力）：打中、被打都會漲，技能吃怒氣；4 秒沒打沒被打就慢慢掉。X：怒氣 50 以上時怒吼（全部吼出去，越多越痛，之後 6 秒傷害提高）。'
+    // 2026-10-15 作者：怒氣條就是大招條——怒氣 100 才能放大招（放了怒氣歸零）；技能不再吃怒氣；怒氣滿的時候受到的傷害 −20%。
+    help: P => '怒氣（取代魔力）：打中、被打都會漲，4 秒沒打沒被打就慢慢掉。怒氣滿 100 才能放大招（放了歸零），滿的時候受到的傷害 −20%；技能不吃怒氣。X：怒氣 50 以上時怒吼（全部吼出去，越多越痛，之後 6 秒傷害提高）。'
       + ({ berserker: '狂戰士：怒氣不會掉，生命三成以下被打漲兩倍。', gladiator: '劍鬥士：6 秒內放三種不同的技能，下一下普攻變「終幕」（4 倍、範圍）。', onimusha: '鬼武者：怒吼時戴上鬼面（扣 10% 生命，6 秒傷害 +30%、吸血系數 +100）。', inner: '內修者：站著不動每秒 +8 怒氣。' }[adv(P)] || ''),
     calc: P => { P.mpMax = 100; },
     floor: P => { P._rage = 30; P.mp = 30; P._rageT = CT; },
@@ -141,6 +142,9 @@
       if (adv(P) === 'inner' && P.still > 0.5) this.add(P, 8 * dt);
       else if (adv(P) !== 'berserker' && CT - (P._rageT || 0) > 4 && P._rage > 0) { P._rage = Math.max(0, P._rage - 4 * dt); P.mp = P._rage; }
       if (P._mask > 0) P._mask -= dt;
+      // 大招條跟著怒氣：放大招（ult.js 把 P.ult 歸零、P.ulting）就把怒氣用掉
+      if (P.ulting) { if (!P._wUlt) { P._wUlt = true; P._rage = 0; P.mp = 0; } } else P._wUlt = false;
+      P.ult = P.ulting ? 0 : P._rage;
     },
     onHit(e, d, o, P, killed) {
       if (d <= 0) return;
@@ -151,6 +155,7 @@
       if (P._finale && o.primary) { P._finale = false; say(P, '終幕', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3.2, color: '#FFB45A' }); R.coreAoe(P.x, P.z, 3.2, raw * 3, { kb: 2 }); return raw * 4; }
       return raw;
     },
+    onHurt(raw, src, o, P) { if ((P._rage || 0) >= 100 && raw > 0) return raw * 0.8; },   // 怒氣滿：受到的傷害 −20%
     afterHurt(took, src, P) { let n = took / P.hpMax * 100 * 0.8; if (adv(P) === 'berserker' && P.hp < P.hpMax * 0.3) n *= 2; this.add(P, n); },
     onCast(P, i, id) {
       if (adv(P) !== 'gladiator' || !id) return;
@@ -166,7 +171,7 @@
       if (adv(P) === 'onimusha') { P.hp = Math.max(1, P.hp - P.hpMax * 0.1); P._mask = 6; P.sb['core:mask'] = { left: 6, t: 6, dmg: 1.3, vamp: 0.05, color: '#C83A3A' }; say(P, '鬼面', 'crit'); }
       else say(P, '怒吼', 'crit');
     },
-    gauge(P) { const r = P._rage || 0; return { v: r, max: 100, full: r >= 100, sub: P._finale ? '下一下普攻：終幕' : P._mask > 0 ? '鬼面 ' + P._mask.toFixed(1) + ' 秒' : adv(P) === 'berserker' ? '怒氣不會掉' : '', x: r >= 50 ? '怒吼' : '' }; }
+    gauge(P) { const r = P._rage || 0; return { v: r, max: 100, full: r >= 100, sub: P._finale ? '下一下普攻：終幕' : P._mask > 0 ? '鬼面 ' + P._mask.toFixed(1) + ' 秒' : r >= 100 ? '滿怒：可以放大招、受到傷害 −20%' : adv(P) === 'berserker' ? '怒氣不會掉' : '怒氣滿 100 才能放大招', x: r >= 50 ? '怒吼' : '' }; }
   };
 
   // ======================= 術士：元素反應 =======================
@@ -527,6 +532,11 @@
       }
       return f0(...a);
     };
+  });
+  // 戰士（2026-10-15 作者）：技能不吃怒氣——放技能那一下把魔力（＝怒氣）暫時當成無限，放完還原
+  ['castSlot', 'useSkill'].forEach(fn => {
+    const f0 = R[fn]; if (!f0) return;
+    R[fn] = (...a) => { const P = W().P; if (!P || P.cls !== 'warrior' || !live()) return f0(...a); const r = P._rage == null ? P.mp : P._rage; P.mp = 1e9; try { return f0(...a); } finally { P.mp = r; P._rage = r; } };
   });
   // 手機：點職業條＝職業鍵
   document.addEventListener('pointerdown', e => { const P = W().P; if (P && P.cls === 'blade' && live() && e.target && e.target.closest && e.target.closest('#core-g')) { e.preventDefault(); R.reload(); } });

@@ -538,13 +538,13 @@
           // 牛鬼：刨地（地上出現長條）→ 直線衝撞，撞牆就暈；太近會被踩
           if (e.rush) { const ox = e.x, oz = e.z; move(e, e.rush.a, 15, dt); moving = true; e.rush.len -= 15 * dt;
             if (!e.rush.hit && d < 1.7) { e.rush.hit = true; hurtT(P, e.dmg * 1.4, e, { knock: 0.6 }); R.shake(0.4); }
-            if (R.pointBlocked(e.x + Math.sin(e.rush.a) * 1.3, e.z + Math.cos(e.rush.a) * 1.3)) { e.x = ox; e.z = oz; e.rush = null; st.stun = 1.8; R.shake(0.5); R.fx('boom', e.x + Math.sin(e.yaw) * 1.3, 0.5, e.z + Math.cos(e.yaw) * 1.3, { r: 1.8, color: '#8A7A6A' }); R.num(e.x, 3.2, e.z, '撞暈了', ''); }
+            if (R.pointBlocked(e.x + Math.sin(e.rush.a) * 1.3, e.z + Math.cos(e.rush.a) * 1.3)) { e.x = ox; e.z = oz; e.wallA = e.rush.a; st.stun = e.id === 'yoroiboar' ? 3.5 : 1.8; e.wallT = st.stun; e.rush = null; R.shake(0.5);   /* 2026-10-15 作者：撞牆後臉朝著牆（不轉頭看玩家），土鎧豬暈 3.5 秒（原本 1.8） */ R.fx('boom', e.x + Math.sin(e.yaw) * 1.3, 0.5, e.z + Math.cos(e.yaw) * 1.3, { r: 1.8, color: '#8A7A6A' }); R.num(e.x, 3.2, e.z, '撞暈了', ''); }
             else if (e.rush.len <= 0) { e.rush = null; e.cd = 1.4; } }
           else if (e.paw > 0) { e.paw -= dt; if (e.paw <= 0) e.rush = { a: e.rushA, len: 16, hit: false }; }
           else if (e.stomp > 0) { e.stomp -= dt; if (e.stomp <= 0) { R.fx('boom', e.x, 0.3, e.z, { r: 3, color: '#5A4A5A' }); R.shake(0.35); if (d < 3) hurtT(P, e.dmg, e, { knock: 0.4 }); e.cd = 1.8; } }
           else { if (walk && d > 2.5) { move(e, a, sp, dt); moving = true; }
             if (e.cd <= 0) { if (d < 3) { e.stomp = 0.75; R.fx('mark', e.x, 0, e.z, { r: 3, t: 0.75 }); } else if (d < 13) { e.paw = 0.9; e.rushA = a; R.fx('aim', e.x, 0.3, e.z, { a, len: 16, t: 0.9 }); } } }
-          e.yaw = e.rush ? e.rush.a : e.paw > 0 ? e.rushA : a;
+          if (e.wallT > 0) { e.wallT -= dt; e.yaw = e.wallA; } else e.yaw = e.rush ? e.rush.a : e.paw > 0 ? e.rushA : a;
         } else if (ai === 'giant') R.aiGiant(e, d, a, sp, dt, walk);
         else if (ai === 'lord') R.aiLord(e, d, a, sp, dt, walk);
         else if (ai === 'eye') R.aiEye(e, d, a, sp, dt);

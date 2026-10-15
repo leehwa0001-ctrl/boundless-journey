@@ -66,6 +66,8 @@
         const again = cont.id === 'ps-x' ? () => R.pauseSheet() : cont.id === 'tm-x' ? () => R.townMenu() : null;
         b.onclick = () => R.keySheet(again); slot(w, 'keys').appendChild(b);
       }
+      // 遺跡裡的 Esc 選單：查看目前裝著的技能（2026-10-15 作者）
+      if (cont.id === 'ps-x' && R.skillViewSheet && !sh.querySelector('#ps-skills')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ps-skills'; b.textContent = '查看目前技能'; b.onclick = () => R.skillViewSheet(); slot(w, 'char').prepend(b); }
       const vol = sh.querySelector('.vol-row'); if (vol && !vol.closest('.em-wrap')) { const s = w.querySelector('.em-s-sound'); s.insertBefore(vol, s.querySelector('.em-btns')); }
       [...sh.querySelectorAll('button')].forEach(b => {
         if (b.classList.contains('cx-x') || b.closest('.em-wrap') || b.closest('.cs-box') || b.closest('.vol-row') || b.closest('details')) return;   // 2026-10-15 修：右上角的 ✕（closex.js）不要搬——搬走了 closex 又補一顆、再被搬，越長越多
@@ -88,4 +90,21 @@
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   R.escMenuOrganize = organize;
+  // 目前技能：裝著的每一格技能——名字、種類、實際冷卻（含冷卻縮減）、魔力、完整說明、技能變化；看完「回去」回到 Esc 選單
+  R.skillViewSheet = () => {
+    const W = R.W, P = W && W.P; if (!P || !R.SKILLS) return; const esc = t => R.esc(String(t == null ? '' : t));
+    const lo = R.loadoutOf ? R.loadoutOf(P.cls) : [P.skill], un = R.SKILL_UNLOCK || [1, 3, 6, 10, 15], ids = [];
+    lo.forEach((id, j) => { if (j === 0) id = P.skill || id; if (id && R.SKILLS[id] && (P.lv || 1) >= (un[j] || 1)) ids.push([j, id]); });
+    const cdK = P.skillCdMult || 1, n1 = v => Math.round(v * 10) / 10;
+    const card = ([j, id]) => { const sk = R.SKILLS[id], ic = R.skillIconURL && R.skillIconURL(id), tag = R.skillTag ? R.skillTag(id) : '', rk = R.skillRank ? R.skillRank(id) || 0 : 0;
+      return '<div class="sv-card">' + (ic ? '<img src="' + ic + '" alt="">' : '<i></i>') + '<div><b>第 ' + (j + 1) + ' 格・' + esc(sk.name) + (rk ? ' <small>熟練度 ★' + rk + '</small>' : '') + '</b>'
+        + '<small>' + (tag ? esc(tag) + '・' : '') + '冷卻 ' + n1(sk.cd * cdK) + ' 秒' + (Math.abs(cdK - 1) > 0.01 ? '（原本 ' + sk.cd + '）' : '') + '・' + (P.cls === 'warrior' ? '不耗怒氣' : '魔力 ' + sk.mp) + '</small>'
+        + '<p>' + esc(sk.desc) + '</p></div></div>'; };
+    R.sheet('<p class="kicker">' + esc((R.CLASSES[P.cls] || {}).name || '') + ' Lv ' + (P.lv || 1) + '</p><h2>目前技能</h2>' + (ids.length ? ids.map(card).join('') : '<p class="note">還沒有裝技能。</p>')
+      + '<p class="note">遺跡裡不能換技能；換技能要回城裡的暫停選單或公會的「武器登記」旁邊。</p>', '<div class="row"><button type="button" class="btn pri" id="sv-back">回去</button></div>');
+    const b = document.getElementById('sv-back'); if (b) b.onclick = () => (R.pauseSheet ? R.pauseSheet() : R.closeSheet());
+  };
+  const svCss = document.createElement('style');
+  svCss.textContent = '.sv-card{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;margin:6px 0;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}.sv-card>img,.sv-card>i{width:40px;height:40px;flex:none;border-radius:6px;background:#221E2A;image-rendering:pixelated}.sv-card b{display:block}.sv-card b small{color:#FFE08A;font-weight:400}.sv-card>div>small{color:#A8A0B0}.sv-card p{margin:4px 0 0;line-height:1.5}';
+  document.head.appendChild(svCss);
 })(window.R);
