@@ -153,13 +153,13 @@
       const big = o.big ? 1.25 : 1, y0 = 0.9;
       const mesh = (verts, c, op) => { const g = new TH.BufferGeometry(); g.setAttribute('position', new TH.BufferAttribute(new Float32Array(verts), 3)); const m = add(new TH.Mesh(g, basic(c, op, true)), true); m.renderOrder = 2; return m; };
       if (o.width) {
-        f.life = 0.18; const sa = Math.sin(o.a), ca = Math.cos(o.a), w2 = o.width * 0.8, L0 = 0.4, L1 = o.range + 0.3;
+        f.life = 0.18; const sa = Math.sin(o.a), ca = Math.cos(o.a), w2 = o.width,   /* 2026-10-15：突刺的光照實際打得到的寬度（以前 0.8 倍） */ L0 = 0.4, L1 = o.range + 0.3;
         const tri = (w, c, op) => mesh([x + sa * L0 - ca * w, y0, z + ca * L0 + sa * w, x + sa * L0 + ca * w, y0, z + ca * L0 - sa * w, x + sa * L1, y0, z + ca * L1], c, op);
         const a1 = tri(w2, col, 0.5), a2 = tri(w2 * 0.4, '#FFFFFF', 0.95);
         f.tick = k => [a1, a2].forEach(m => { m.material.opacity = (m === a2 ? 0.95 : 0.5) * (k < 0.4 ? 1 : 1 - (k - 0.4) / 0.6); });
       } else {
         f.life = 0.2 * (o.big ? 1.2 : 1);
-        const arc = (o.arc || 1.6) * (o.arc >= 6 ? 1 : big), n = Math.max(8, Math.round(arc * 9)), dirS = o.dir === -1 ? -1 : 1, R0 = (o.range || 2) + 0.15, th = Math.min(0.95, R0 * 0.32) * big;
+        const arc = o.arc || 1.6,   /* 2026-10-15：揮砍的光照實際打得到的角度（以前大揮砍畫寬 1.25 倍；big 只加粗） */ n = Math.max(8, Math.round(arc * 9)), dirS = o.dir === -1 ? -1 : 1, R0 = (o.range || 2) + 0.15, th = Math.min(0.95, R0 * 0.32) * big;
         const crescent = (thick, c, op) => {
           const v = [];
           for (let i = 0; i < n; i++) {

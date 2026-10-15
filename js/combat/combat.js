@@ -376,7 +376,7 @@
       case 'sanctuary': R.addZone({ kind: 'sanct', x: P.x, z: P.z, r: 4, life: 6, dmg: base * 0.3 }); break;
       case 'wild': W().enemies.forEach(e => { if (!e.dead && dist(e, P) < 5) e.st.root = 2.5; }); P.buff.regen = 4; R.fx('ring', P.x, 0.1, P.z, { r: 5, color: '#6FB36A' }); break;
       case 'kekkai': P.buff.kekkai = 5; R.fx('ring', P.x, 0.1, P.z, { r: 4.2, color: '#FFFFFF' }); break;
-      case 'iai': P.stance = 0.4; R.melee(a, 8, 0, base * 4, 0.9, 0.4, 0, { crit: true, primary: false }); later(() => R.fx('slash', P.x, 1, P.z, { a, len: 8 }), 400); break;
+      case 'iai': P.stance = 0.4; R.melee(a, 8, 0, base * 4, 0.9, 0.4, 0, { crit: true, primary: false }); later(() => R.fx('slash', P.x, 1, P.z, { a, len: 8, w: 1.8 }), 400); break;
       case 'shadowstep': { const tg = R.nearestEnemy(P.x, P.z, 12); if (tg) { [P.x, P.z] = R.nearestFloor(tg.x - Math.sin(tg.yaw) * 1.4, tg.z - Math.cos(tg.yaw) * 1.4); R.collide(P, 0.42); R.fx('blink', P.x, 1, P.z); R.hurtEnemy(tg, base * 3, { primary: true }); P.invis = 2; } break; }
       case 'yotoRelease': { const k = (P.stacks || 0); R.fx('ring', P.x, 0.2, P.z, { r: 4, color: '#B83AE8' }); R.aoe(P.x, P.z, 4, base * (1.5 + k * 0.05)); P.stacks = Math.floor(k / 2); break; }
       case 'fortress': P.buff.fortress = 5; R.fx('ring', P.x, 0.1, P.z, { r: 1.8, color: '#C9A13A' }); break;

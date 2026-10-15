@@ -244,7 +244,7 @@
       const dashT = s.dash && R.bladeSkillDash ? R.bladeSkillDash(P, a, s.dash) : 0;   // dash：先往前衝（刀客的拔刀，跟普攻一樣的衝法）
       later(() => {
         const sx = P.x, sz = P.z, ca = Math.sin(a), sa = Math.cos(a);
-        R.fx('slash', sx, 1, sz, { a, len: s.len, w: s.fxW ? s.width * 2 : undefined });   // fxW：刀光畫成實際打得到的寬度
+        R.fx('slash', sx, 1, sz, { a, len: s.len, w: s.width * 2 });   // 2026-10-15：所有直線技能的刀光都畫成實際打得到的寬度（以前固定 1.2 公尺寬）
         w.enemies.forEach(e => {
           if (e.dead || e.under) return; const dx = e.x - sx, dz = e.z - sz, along = dx * ca + dz * sa, side = Math.abs(dx * sa - dz * ca), rad = e.def.size * 0.5;
           if (along < -0.3 || along > s.len + rad || side > s.width + rad) return;

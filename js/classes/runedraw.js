@@ -118,7 +118,7 @@
   const libOf = id => R.SKILL_LIB && R.SKILL_LIB[id];
   const isSelf = L => { if (!L) return true; const p = L.p || {}; if (p.self) return true; if (SELF_T[L.type]) return true; if (L.type === 'combo') return !(p.parts || []).some(x => !SELF_T[x[0]] && !(x[1] && x[1].self)); return false; };
   const aimPt = (P, max) => { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA) * 6, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA) * 6, d = Math.hypot(ax - P.x, az - P.z), k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
-  const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea) * (1 + E().pvArea); };
+  const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'arc' && q.range) || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea) * (1 + E().pvArea); };
   const skRange = () => { const P = W() && W().P; return ((P && P.ws && P.ws.range) || 12) * E().reach; };   // 所有技能：圓心在普攻射程內都能放
   const BODY_T = { guard: 1, parry: 1, orbit: 1, storm: 1 };   // 這幾型本來就是貼身的，只能在腳下
   const bodyOnly = L => { if (!L) return true; if (BODY_T[L.type]) return true; if (L.type === 'combo') return (L.p && L.p.parts || []).some(x => BODY_T[x[0]]); return false; };
