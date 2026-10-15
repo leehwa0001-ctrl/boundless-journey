@@ -9,6 +9,7 @@
 // - 生命上限：先加減（硬身、身強體壯、越戰越勇、殘疾之人 ×0.8、全屬性），玻璃大砲 ×0.15 最後才扣；最低 1。
 // - 弱法之人：不能用魔法武器、不能造成魔法攻擊（用物理武器打的普攻帶元素也照算）；殘疾之人：不能用物理武器、不能造成物理攻擊。
 //   建角色、公會改登記都擋住衝突的職業（Q03、F02）；轉職路線不擋。反傷、荊棘不算。
+//   2026-10-15 作者：弱法之人不擋附魔師，但附魔師魔力超過 20 點的技能不能用（能用的技能照常打得出傷害）。
 // - 裸體行者：不能穿頭、上衣、褲子、鞋子（舊角色選了會脫下來放進倉庫）。
 // - 開局（R.traitApplyStart）：公子 +2000 費拉；準備完善 +200 費拉＋一整套「稀有」（武器＋四件護具，護具照力量挑穿得動的最重的；裸體行者的護具放倉庫）；
 //   英雄後裔：一把 25 級的「史詩」武器（照登記的武器）。
@@ -42,7 +43,7 @@
   const ws0 = R.workSpeed; if (ws0) R.workSpeed = () => ws0() * (1 + (has('qiaoshou') ? 0.05 : 0) - (has('benzhuo') ? 0.05 : 0));
 
   // ---------- 職業、武器、護具的限制 ----------
-  const okCls = (cls, list) => { const h = id => (list ? list.indexOf(id) >= 0 : has(id)); if (h('ruofa') && MAG_CLS[cls]) return false; if (h('canji') && !(R.weaponsFor(cls) || []).some(w => R.WEAPONS[w].kind === 'magic')) return false; return true; };
+  const okCls = (cls, list) => { const h = id => (list ? list.indexOf(id) >= 0 : has(id)); if (h('ruofa') && MAG_CLS[cls] && cls !== 'enchanter') return false; if (h('canji') && !(R.weaponsFor(cls) || []).some(w => R.WEAPONS[w].kind === 'magic')) return false; return true; };
   R.traitClassOk = okCls;
   R.traitWeaponOk = (cls, w, list) => { if (!okCls(cls, list)) return false; const h = id => (list ? list.indexOf(id) >= 0 : has(id)), k = R.WEAPONS[w] && R.WEAPONS[w].kind; if (h('ruofa') && k === 'magic') return false; if (h('canji') && k !== 'magic') return false; return true; };
   const cu0 = R.canUse;
@@ -140,11 +141,18 @@
     const P = W().P;
     if (P && e && (has('ruofa') || has('canji')) && !(o && (o.reflect || o.thorns))) {
       const mag = R.isMagHit ? R.isMagHit(o) : false, physWeapon = o && o.primary && P.ws && P.ws.kind !== 'magic';
-      if (has('ruofa') && mag && !physWeapon) return;
+      if (has('ruofa') && mag && !physWeapon && P.cls !== 'enchanter') return;
       if (has('canji') && !mag) return;
     }
     return he0(e, raw, o);
   };
+
+  // 弱法之人的附魔師：魔力超過 20 點的技能不能用
+  const MP_CAP = 20, skMp = id => { const k = (R.SKILLS && R.SKILLS[id]) || (R.SKILL_LIB && R.SKILL_LIB[id]); return k ? k.mp || 0 : 0; };
+  const tooCostly = id => { const P = W().P; return !!(id && P && P.cls === 'enchanter' && has('ruofa') && skMp(id) > MP_CAP); };
+  const deny = id => { R.toast && R.toast('弱法之人：魔力超過 ' + MP_CAP + ' 點的技能用不了（' + ((R.SKILLS[id] || {}).name || '') + '）', '#F0A060'); };
+  const us0 = R.useSkill; if (us0) R.useSkill = (...a) => { const P = W().P, id = P && P.skill; if (tooCostly(id)) { deny(id); return; } return us0(...a); };
+  const cs0 = R.castSlot; if (cs0) R.castSlot = i => { const P = W().P, id = P ? (i === 0 ? P.skill : R.slotSkill ? R.slotSkill(P, i) : null) : null; if (tooCostly(id)) { deny(id); return; } return cs0(i); };
 
   // ---------- 角色總數值：特質一行 ----------
   const ch0 = R.charSheetHtml;

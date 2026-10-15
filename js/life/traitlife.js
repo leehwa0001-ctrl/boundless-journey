@@ -6,9 +6,10 @@
 // - 好感度 R.affMul（people.js 的 gain，小數照算）：巧言 +10%、受歡迎的 +15%、低情商 −8%、惡名遠洋 −60%；低情商送到不喜歡的禮物 −1（people.js）。
 // - 組隊：怕生、惡名遠洋 公會大廳的勇者全部不肯同行；怕生的重要角色要好感度 10 才肯（R.partyAffNeed）；
 //   怕生、默默無名、惡名遠洋 遺跡裡遇到的勇者不會跟你組隊（不跳出邀請）。
-// - 委託（guildtask.js 的 post）：良民 每一軌 +10、英雄後裔 每一軌 +35（每軌最高 100，先加再封頂，F14）；默默無名 成績最高 70、惡名遠洋 最高 25。
+// - 委託（guildtask.js 的 post）：「反饋率」＝五軌的第五項「反饋」（作者 2026-10-15）。良民 反饋 +10、英雄後裔 反饋 +35（最高 100，先加再封頂，F14）；
+//   默默無名 反饋最高 70、惡名遠洋 反饋最高 25；其他四項照算，成績＝五項平均。
 //   默默無名：完成 50 件 B 級以上、成績 60% 以上 → 解除（永久效果：名聲不帶來優惠——現在名聲本來就沒有優惠）；
-//   惡名遠洋：完成 100 件 A 級以上、成績 70% 以上 → 解除。解除條件看封頂之前的成績（不然惡名遠洋永遠到不了 70%）。以前的紀錄也算（Q04）。
+//   惡名遠洋：完成 100 件 A 級以上、成績 70% 以上 → 解除。以前的紀錄也算（Q04）。
 //   越戰越勇：完成一次遺跡的討伐委託、成績 70% 以上 +1 點（最多 150；以前的紀錄也算）。
 // - 犯罪：良民 不能偷、扒、搶車、對勇者動手（props.js、streetcrime.js、vehicles.js、ckmove.js、這裡）、打不到遺跡裡的勇者（燒、毒、反傷這些被動的傷害照算）、
 //   連線打不到其他玩家（pvp.js）。扒手 偷到的費拉 +35%、太靠近路人 15% 自己動手（同一個人離開畫面或進出建築前只判定一次，Q18、F12）、
@@ -50,9 +51,14 @@
   // ---------- 委託 ----------
   const LET = ['F', 'E', 'D', 'C', 'B', 'A', 'AA', 'S', 'SS', 'SSS', 'X', 'G'];
   const li = t => LET.indexOf(String(t.letter || 'F').split('～')[0]);
-  R.traitTaskAxes = (s, t) => { const b = (has('liangmin') ? 10 : 0) + (has('yingxiong') ? 35 : 0); return b ? s.map(v => (v == null ? v : Math.min(100, v + b))) : s; };
-  R.traitTaskAvg = (avg, t) => { if (has('eming')) avg = Math.min(25, avg); if (has('momo')) avg = Math.min(70, avg); return avg; };
-  const raw = t => (t.avgRaw != null ? t.avgRaw : t.avg);
+  R.traitTaskAxes = (s, t) => {
+    if (s[4] == null) return s;
+    let f = Math.min(100, s[4] + (has('liangmin') ? 10 : 0) + (has('yingxiong') ? 35 : 0));
+    if (has('eming')) f = Math.min(25, f); if (has('momo')) f = Math.min(70, f);
+    const o = s.slice(); o[4] = Math.max(1, f); return o;
+  };
+  R.traitTaskAvg = avg => avg;
+  const raw = t => t.avg;
   const tally = () => {
     const ts = (S().tasks || []).filter(t => t.avg != null && !t.failed);
     return { momo: ts.filter(t => li(t) >= li({ letter: 'B' }) && raw(t) >= 60).length, eming: ts.filter(t => li(t) >= li({ letter: 'A' }) && raw(t) >= 70).length,

@@ -179,9 +179,8 @@
       if (t.s[4] != null || t.ready > s.day) return;
       // 反饋：民眾覺得威脅變少、生態慢慢恢復——跟完成度、環境有關；公會自己調查來的遺跡委託起伏比較小
       t.s[4] = clamp(58 + 0.25 * t.s[0] + 0.15 * t.s[3] + (Math.random() - 0.5) * 12 - (t.failed ? 20 : 0));
-      t.avgRaw = Math.round(t.s.reduce((a, b) => a + b, 0) / 5);   // 特質調整前（默默無名、惡名遠洋的解除條件看這個）
-      if (R.traitTaskAxes) t.s = R.traitTaskAxes(t.s, t);   // 特質：良民 +10、英雄後裔 +35（每一軌，最高 100）
-      t.avg = Math.round(t.s.reduce((a, b) => a + b, 0) / 5); if (R.traitTaskAvg) t.avg = R.traitTaskAvg(t.avg, t); n++;   // 默默無名最高 70、惡名遠洋最高 25
+      if (R.traitTaskAxes) t.s = R.traitTaskAxes(t.s, t);   // 特質：反饋 良民 +10、英雄後裔 +35；默默無名最高 70、惡名遠洋最高 25（traitlife.js）
+      t.avg = Math.round(t.s.reduce((a, b) => a + b, 0) / 5); if (R.traitTaskAvg) t.avg = R.traitTaskAvg(t.avg, t); n++;
       if (R.onTaskPosted) R.onTaskPosted(t);
     });
     if (n) R.save();
