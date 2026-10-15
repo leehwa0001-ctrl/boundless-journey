@@ -365,11 +365,11 @@
   // ---------- 繪製畫面 ----------
   const css = document.createElement('style');
   css.textContent = '#rd-ov{position:fixed;inset:0;z-index:9000;background:rgba(6,8,14,.78);display:flex;align-items:center;justify-content:center;color:#E8E2D4;font-size:13px}'
-    + '#rd-box{display:flex;gap:16px;background:rgba(18,22,32,.96);border:1px solid #4A8AA8;border-radius:10px;padding:14px 16px;max-width:96vw;max-height:94vh;overflow:auto}'
-    + '#rd-box h3{margin:0 0 6px;color:#9AE8FF;font-size:16px}#rd-cv{background:#0C1018;border-radius:8px;cursor:crosshair;touch-action:none}'
-    + '#rd-side{width:300px;display:flex;flex-direction:column;gap:6px}#rd-side .l{display:flex;gap:6px;align-items:flex-start;line-height:1.35}#rd-side .l i{width:10px;height:10px;border-radius:50%;flex:none;margin-top:3px;border:1px solid #889}'
-    + '#rd-side .q{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:2px 0;border-bottom:1px solid rgba(255,255,255,.06)}#rd-side .q button{font-size:11px;padding:2px 7px;border-radius:5px;border:1px solid #4A8AA8;background:#132030;color:#CFE;cursor:pointer}#rd-side .q button.on{background:#4A8AA8;color:#fff}#rd-side .q button:disabled{opacity:.4;cursor:default}'
-    + '#rd-side .sm{color:#9A94A0;font-size:11.5px}#rd-btn{display:flex;gap:8px;margin-top:4px}#rd-btn button{padding:4px 12px;border-radius:6px;border:1px solid #6A8AA0;background:#1C2A38;color:#EEF;cursor:pointer}'
+    + '#rd-box{display:flex;gap:18px;background:linear-gradient(160deg,rgba(20,28,40,.97),rgba(12,16,24,.97));border:1px solid #3E7A98;border-radius:14px;padding:18px 20px;box-shadow:0 18px 60px rgba(0,0,0,.55),0 0 0 1px rgba(154,232,255,.06) inset;max-width:96vw;max-height:94vh;overflow:auto}'
+    + '#rd-box h3{margin:0 0 4px;color:#9AE8FF;font-size:16px;letter-spacing:.08em;padding-bottom:4px;border-bottom:1px solid rgba(154,232,255,.18)}#rd-cv{flex:none;align-self:flex-start;width:360px;height:360px;background:#0A0E16;border:1px solid #23384A;border-radius:12px;cursor:crosshair;touch-action:none;box-shadow:inset 0 0 40px rgba(60,140,190,.12)}@media (max-width:720px){#rd-box{flex-direction:column;align-items:center}#rd-cv{width:min(360px,86vw);height:auto;aspect-ratio:1}#rd-side{width:min(360px,86vw)!important}}'
+    + '#rd-side{width:320px;display:flex;flex-direction:column;gap:7px;line-height:1.5}#rd-side .l{display:flex;gap:6px;align-items:flex-start;line-height:1.35}#rd-side .l i{width:10px;height:10px;border-radius:50%;flex:none;margin-top:3px;border:1px solid #889}'
+    + '#rd-side .q{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}#rd-side .q>span:first-child{font-weight:600}#rd-side .q>span:last-child{display:flex;border:1px solid #3E7A98;border-radius:7px;overflow:hidden}#rd-side .q button{font-size:11px;padding:3px 9px;border:0;background:#101C28;color:#9FC4D8;cursor:pointer}#rd-side .q button.on{background:#3E8AB0;color:#fff}#rd-side .q button:disabled{opacity:.4;cursor:default}'
+    + '#rd-side .sm{color:#A8A2B0;font-size:11.5px}#rd-btn{display:flex;gap:8px;margin-top:6px}#rd-btn button{flex:1;padding:7px 12px;border-radius:8px;border:1px solid #4E7A92;background:#16222E;color:#E6F2FA;cursor:pointer;font-weight:600}#rd-btn button:hover{border-color:#9AE8FF}#rd-btn button[data-a=close]{background:#2C6A8A;border-color:#5AAED0}'
     + '#rd-hud{position:fixed;left:8px;top:34%;z-index:6;width:150px;padding:5px 6px;border-radius:8px;background:rgba(14,18,26,.82);border:1px solid #4A8AA8;color:#E8E2D4;font-size:10.5px;pointer-events:none}#rd-hud .t{color:#9AE8FF;font-weight:600;margin-bottom:2px}#rd-hud .l{display:flex;gap:4px;line-height:1.3}#rd-hud .l i{width:7px;height:7px;border-radius:50%;flex:none;margin-top:3px;border:1px solid #889}';
   document.head.appendChild(css);
   let ov = null, drag = null, wasPaused = false;
@@ -385,7 +385,10 @@
   const canAdd = (i, P) => { if (!drag) return false; const p = drag.path, o = occ(); if (p.includes(i) || o.has(i)) return false; return used(shapes()) + p.length < cap(P); };
   const canClose = i => drag && drag.path.length >= 3 && i === drag.path[0] && angOK(drag.path[0], drag.path[1], drag.path[drag.path.length - 1]);
   const paint = () => {
-    if (!ov) return; const P = W().P, cv = ov.querySelector('#rd-cv'), ctx = cv.getContext('2d'); ctx.clearRect(0, 0, SZ, SZ);
+    if (!ov) return; const P = W().P, cv = ov.querySelector('#rd-cv'), ctx = cv.getContext('2d'); ctx.setTransform(cv._dpr || 1, 0, 0, cv._dpr || 1, 0, 0); ctx.clearRect(0, 0, SZ, SZ);
+    { const g = ctx.createRadialGradient(CX, CY, 10, CX, CY, SZ * 0.6); g.addColorStop(0, 'rgba(40,90,120,.22)'); g.addColorStop(1, 'rgba(10,14,22,0)'); ctx.fillStyle = g; ctx.fillRect(0, 0, SZ, SZ);
+      ctx.strokeStyle = 'rgba(154,232,255,.10)'; ctx.lineWidth = 1; [RAD + 34, RAD + 28, RAD * 0.5].forEach(r => { ctx.beginPath(); ctx.arc(CX, CY, r, 0, 7); ctx.stroke(); });
+      ctx.setLineDash([3, 6]); ctx.beginPath(); for (let i = 0; i <= 6; i++) { const [x, y] = npos(i % 6, CX, CY, RAD); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } for (let i = 0; i < 6; i++) { const [x, y] = npos(i, CX, CY, RAD); ctx.moveTo(CX, CY); ctx.lineTo(x, y); } ctx.stroke(); ctx.setLineDash([]); }
     drawRune(ctx, CX, CY, RAD, shapes(), { nr: 0 });
     if (drag && drag.path.length) {
       const c = NODES[drag.path[0]].c; ctx.strokeStyle = c === '#1A1A1A' ? '#7A7A8A' : c; ctx.lineWidth = 4; ctx.setLineDash([6, 5]); ctx.beginPath();
@@ -395,9 +398,11 @@
     NODES.forEach((N, i) => {
       const [x, y] = npos(i, CX, CY, RAD), glow = drag && drag.moved && (canAdd(i, P) || canClose(i));
       if (glow) { ctx.fillStyle = 'rgba(255,240,170,.35)'; ctx.beginPath(); ctx.arc(x, y, 19, 0, 7); ctx.fill(); }
-      ctx.fillStyle = N.c; ctx.strokeStyle = glow ? '#FFF0A0' : o.has(i) ? '#FFFFFF' : '#8A90A0'; ctx.lineWidth = glow ? 3 : 1.5; ctx.beginPath(); ctx.arc(x, y, 10, 0, 7); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = N.k === 'C' || N.k === 'S' ? '#222' : '#FFF'; ctx.font = 'bold 11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(N.k, x, y + 0.5);
-      const [lx, ly] = N.a == null ? [x, y + 22] : npos(i, CX, CY, RAD + 26); ctx.fillStyle = '#B8C0CC'; ctx.font = '11px sans-serif'; ctx.fillText(N.n, lx, ly);
+      { const cc = N.c === '#1A1A1A' ? '#8A8AA0' : N.c; ctx.save(); ctx.shadowColor = cc; ctx.shadowBlur = o.has(i) ? 14 : 6; ctx.fillStyle = N.c; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.fill(); ctx.restore();
+        const hg = ctx.createRadialGradient(x - 4, y - 4, 1, x, y, 12); hg.addColorStop(0, 'rgba(255,255,255,.45)'); hg.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.fill();
+        ctx.strokeStyle = glow ? '#FFF0A0' : o.has(i) ? '#FFFFFF' : 'rgba(220,230,240,.55)'; ctx.lineWidth = glow ? 3 : 1.5; ctx.beginPath(); ctx.arc(x, y, 12, 0, 7); ctx.stroke(); }
+      ctx.fillStyle = N.k === 'C' || N.k === 'S' ? '#222' : '#FFF'; ctx.font = 'bold 12px "Segoe UI",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(N.k, x, y + 0.5);
+      const [lx, ly] = N.a == null ? [x, y + 25] : npos(i, CX, CY, RAD + 30); ctx.fillStyle = '#D6DEE8'; ctx.font = '600 12.5px "Microsoft JhengHei","Noto Sans TC",sans-serif'; ctx.fillText(N.n, lx, ly);
     });
   };
   const side = () => {
@@ -419,7 +424,8 @@
     ov = document.createElement('div'); ov.id = 'rd-ov';
     ov.innerHTML = '<div id="rd-box"><canvas id="rd-cv" width="' + SZ + '" height="' + SZ + '"></canvas><div id="rd-side"></div></div>';
     document.body.appendChild(ov);
-    const cv = ov.querySelector('#rd-cv'), pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * SZ / r.width, (e.clientY - r.top) * SZ / r.height]; };
+    const cv = ov.querySelector('#rd-cv'), DPR = Math.min(3, window.devicePixelRatio || 1); cv.width = cv.height = Math.round(SZ * DPR); cv._dpr = DPR;
+    const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * SZ / r.width, (e.clientY - r.top) * SZ / r.height]; };
     cv.addEventListener('contextmenu', e => { e.preventDefault(); const [x, y] = pos(e), k = shapeAt(x, y); if (k >= 0) { shapes().splice(k, 1); refresh(); } });
     cv.addEventListener('pointerdown', e => {
       if (e.button !== 0) return; const [x, y] = pos(e), i = nodeAt(x, y); if (i < 0) return;
