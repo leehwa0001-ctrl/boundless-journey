@@ -1,7 +1,9 @@
 // 2026-10-06：裝備詞綴／槍手細部平衡。放在 affixround.js 後、main.js 前。
 (function (R) {
   // 詞條：固定數字看物品等級；百分比增幅看稀有度。專注（技能冷卻）再額外降成原本 1/4。
-  const PCT = new Set(['sharp','swift','crit','vamp','fire','frost','shock','heavy','cursed','pen','evade','focus','calm','greed','reach','might','keen','haste','fleet','leech','guard','wisdom','lucky','ember','chill','spark','pen2']);
+  const PCT = new Set(['sharp','swift','crit','vamp','fire','frost','shock','heavy','cursed','pen','evade','focus','calm','greed','reach','might','keen','haste','fleet','leech','guard','wisdom','lucky','ember','chill','spark','pen2',
+    'patk','matk','wind','poison','metal',   // 2026-10-15 作者（Q51）：剛猛、奧秘、疾風、蝕毒、破甲改成照稀有度
+    'float','bowstr','phantom','deflect','overclock','conA','strA','nature']);   // 2026-10-15 新增的詞綴（affix1015.js）
   const DISCRETE = new Set(['pierce','multi']);
   const rarK = [0.25, 0.35, 0.50, 0.65, 0.80, 1.00];
   const val = (it, a) => {

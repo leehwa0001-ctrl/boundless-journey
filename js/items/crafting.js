@@ -90,7 +90,7 @@
     if (o.kind !== 'acc' && !(o.kind === 'charm' && CHARM2[o.base])) return mk0(o);
     const it = mk0(Object.assign({}, o, { kind: 'charm', base: 'charm' })), d = o.kind === 'acc' ? ACC[o.base] : CHARM2[o.base];
     it.kind = o.kind; it.base = o.base;
-    const bag = R.ACC_AFFIX.concat(R.A_AFFIX).filter(a => a.id !== d.imp), n = R.RARITY[it.rarity].affix;
+    const bag = R.ACC_AFFIX.concat(R.A_AFFIX).filter(a => a.id !== d.imp && (!R.affixAllowed || R.affixAllowed(a, it))), n = R.RARITY[it.rarity].affix;
     it.affixes = [{ id: d.imp, v: Math.round(rint(d.r[0], d.r[1]) * (1 + 0.06 * (it.ilvl - 1))) }];
     for (let i = 0; i < n && bag.length; i++) { const a = bag.splice(Math.floor(Math.random() * bag.length), 1)[0]; it.affixes.push({ id: a.id, v: rint(a.roll[0], a.roll[1]) }); }
     return it;
