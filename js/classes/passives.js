@@ -20,7 +20,7 @@
     D('pr1', 'priest', 1, '神恩', '治療效果 +25%。', { heal: 0.25 }), D('pr2', 'priest', 3, '庇護', '防禦 +3、生命 +8%。', { def: 3, hp: 0.08 }), D('pr3', 'priest', 5, '祈禱', '每秒回復生命 0.8。', { regen: 0.8 }), D('pr4', 'priest', 7, '堅信', '佩特拉的注意 −15%。', { calm: 0.15 }),
     D('pr5', 'priest', 9, '懲戒', '12% 機率把目標打暈。', { stun: 0.12 }), D('pr6', 'priest', 12, '聖光', '傷害 +10%。', { dmg: 0.1 }), D('pr7', 'priest', 15, '生命之泉', '擊倒遺跡生物回復 3% 生命。', { killHeal: 0.03 }), D('pr8', 'priest', 18, '殉道', '每一層一次：受到致命傷時留下 1 點生命。', { last: 1 }),
     D('bl1', 'blade', 1, '疾風', '移動 +8%。', { speed: 0.08 }), D('bl2', 'blade', 3, '閃步', '翻滾冷卻 −25%。', { dodge: 0.25 }), D('bl3', 'blade', 5, '一閃', '暴擊率 +10%。', { crit: 0.1 }), D('bl4', 'blade', 7, '穿心', '翻滾後的下一發普攻傷害 +50%。', { bdPierce: true }),
-    D('bl5', 'blade', 9, '連斬', '攻速 +12%。', { rate: 0.12 }), D('bl6', 'blade', 12, '斬鐵', '暴擊傷害 +35%。', { critMult: 0.35 }), D('bl7', 'blade', 15, '血祭', '擊倒遺跡生物回復 2.5% 生命，3 秒內傷害 +15%。', { killHeal: 0.025, rage: 0.15 }), D('bl8', 'blade', 18, '無我', '生命高於 50% 時傷害 +30%；生命低於 50% 時自動消耗刀意（每秒 3 點），每消耗 1 點回復 1% 最大生命。', { bdMuga: true }),
+    D('bl5', 'blade', 9, '連斬', '攻速 +12%。', { rate: 0.12 }), D('bl6', 'blade', 12, '斬鐵', '暴擊傷害 +35%。', { critMult: 0.35 }), D('bl7', 'blade', 15, '血祭', '擊倒遺跡生物回復 1% 生命，4 秒內傷害 +25%。', { killHeal: 0.01, rage: 0.25, rageT: 4 }), D('bl8', 'blade', 18, '無我', '生命高於 50% 時傷害 +30%；生命低於 50% 時自動消耗刀意（每秒 3 點），每消耗 1 點回復 1% 最大生命。', { bdMuga: true }),
     D('kn1', 'knight', 1, '堅守', '防禦 +5。', { def: 5 }), D('kn2', 'knight', 3, '重裝', '生命 +15%，移動 −4%。', { hp: 0.15, speed: -0.04 }), D('kn3', 'knight', 5, '荊棘', '被打的時候，把 20% 的傷害還給打你的生物。', { thorns: 0.2 }), D('kn4', 'knight', 7, '衝鋒號令', '技能冷卻 −15%。', { skillCd: 0.15 }),
     D('kn5', 'knight', 9, '盾擊', '10% 機率把目標打暈。', { stun: 0.1 }), D('kn6', 'knight', 12, '鋼鐵意志', '佩特拉的注意 −10%、防禦 +3。', { calm: 0.1, def: 3 }), D('kn7', 'knight', 15, '守護', '每秒回復生命 0.6、生命 +8%。', { regen: 0.6, hp: 0.08 }), D('kn8', 'knight', 18, '不倒', '每一層一次：受到致命傷時留下 1 點生命。', { last: 1 }),
     D('mo1', 'monk', 1, '馬步', '防禦 +3、生命 +6%。', { def: 3, hp: 0.06 }), D('mo2', 'monk', 3, '連打', '攻速 +12%。', { rate: 0.12 }), D('mo3', 'monk', 5, '身法', '翻滾冷卻 −25%。', { dodge: 0.25 }), D('mo4', 'monk', 7, '點穴', '10% 機率把目標打暈。', { stun: 0.1 }),
@@ -126,7 +126,7 @@
       if (f.killMp) P.mp = Math.min(P.mpMax, P.mp + f.killMp);
       if (f.killAmmo && P.ws && P.ws.mag) P.ammo = Math.max(P.ammo || 0, Math.min(P.ws.mag, (P.ammo || 0) + f.killAmmo));
       if (f.killAmmoP && P.ws && P.ws.mag) P.ammo = Math.max(P.ammo || 0, Math.min(P.ws.mag, (P.ammo || 0) + Math.max(1, Math.round(P.ws.mag * f.killAmmoP))));   // 2026-10-08：照彈匣的 %（最少 1 發）
-      if (f.rage) P.pvRage = 3;
+      if (f.rage) P.pvRage = Math.max(3, f.rageT || 0);   /* 2026-10-16 作者：血祭 4 秒 */
     }
     return r;
   };
