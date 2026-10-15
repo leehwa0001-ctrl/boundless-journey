@@ -163,7 +163,7 @@
     if (F.fogMin && w.scene && w.scene.fog && w.scene.fog.density < F.fogMin) w.scene.fog.density = F.fogMin;
     // 擺攤的勇者：點陣人物要每一格更新才畫得出來（作者 2026-10-04：擺攤勇者沒人顧攤）；看著走近的人
     (F.specs || []).forEach(s => { if (!s.h) return; const d = Math.hypot(P.x - s.h.g.position.x, P.z - s.h.g.position.z); if (d < 5) s.h.g.rotation.y = Math.atan2(P.x - s.h.g.position.x, P.z - s.h.g.position.z); R.animHero(s.h, 0, dt, false); });
-    if (F.mod === 'rockfall') { rf -= dt; if (rf <= 0) { rf = 3.5 + rnd() * 2.5; for (let i = 0; i < 2; i++) { const a = rnd() * Math.PI * 2, d = i ? 1 + rnd() * 3 : 0, [x, z] = floorAt(P.x + Math.sin(a) * d, P.z + Math.cos(a) * d); R.fx('mark', x, 0, z, { r: 1.5, t: 1.1 }); later(() => { R.fx('boom', x, 0.6, z, { r: 1.5, color: '#8A7A6A' }); R.shake && R.shake(0.2); const Q = W().P; if (Q && !Q.dead && Math.hypot(Q.x - x, Q.z - z) < 1.5 && !(Q.iframe > 0)) R.hurtPlayer(Q.hpMax * 0.1, null); }, 1100); } } }
+    if (F.mod === 'rockfall') { rf -= dt; if (rf <= 0) { rf = 10.5 + rnd() * 7.5;   /* 2026-10-16 作者：間隔改成 3 倍 */ for (let i = 0; i < 2; i++) { const a = rnd() * Math.PI * 2, d = i ? 1 + rnd() * 3 : 0, [x, z] = floorAt(P.x + Math.sin(a) * d, P.z + Math.cos(a) * d); R.fx('mark', x, 0, z, { r: 1.5, t: 1.1 }); later(() => { R.fx('boom', x, 0.6, z, { r: 1.5, color: '#8A7A6A' }); R.shake && R.shake(0.2); const Q = W().P; if (Q && !Q.dead && Math.hypot(Q.x - x, Q.z - z) < 1.5 && !(Q.iframe > 0)) R.hurtPlayer(Q.hpMax * 0.1, null); }, 1100); } } }
   };
   const css = document.createElement('style');
   css.textContent = 'body.rv-lost #r-map,body.rv-lost #r-minimap,body.rv-lost .gta-radar{visibility:hidden}#rv-mod small{display:block;opacity:.8;font-size:11px}'
