@@ -266,8 +266,9 @@
   // ---------- 包外面 ----------
   const cs0 = R.castSlot, us0 = R.useSkill, ss0 = R.slotSkill;
   const mine = (P, i) => isMS(P) && live() && boundK(P, i) >= 0;
-  R.castSlot = i => { const P = W() && W().P; if (mine(P, i | 0)) return castSpell(P, i | 0, boundK(P, i | 0)); return cs0 ? cs0(i) : undefined; };
-  R.useSkill = (...a) => { const P = W() && W().P; if (mine(P, 0)) return castSpell(P, 0, boundK(P, 0)); return us0 ? us0(...a) : undefined; };
+  const l30 = (P, i) => { const id = i === 0 ? P && P.skill : (R.slotSkill && P ? R.slotSkill(P, i) : null); return typeof id === 'string' && id.startsWith('l30_'); };   // 2026-10-15：裝了 30 級技能的格子照技能放，不被法術書蓋掉
+  R.castSlot = i => { const P = W() && W().P; if (mine(P, i | 0) && !l30(P, i | 0)) return castSpell(P, i | 0, boundK(P, i | 0)); return cs0 ? cs0(i) : undefined; };
+  R.useSkill = (...a) => { const P = W() && W().P; if (mine(P, 0) && !l30(P, 0)) return castSpell(P, 0, boundK(P, 0)); return us0 ? us0(...a) : undefined; };
   const skCache = {};
   const descOf = (sp, r) => ELS[sp.el].n + '・' + SHP[sp.sh].n + '・' + EFX[sp.fx].n + '：魔力 ' + r.mp + '、傷害 ' + r.dmgShow + (r.r ? '、範圍 ' + r.r + ' 公尺' : '') + '、冷卻 ' + r.cd + ' 秒' + (r.leaves ? '、留下地形（' + r.terr + '）' : '');
   R.slotSkill = (P, i) => {
