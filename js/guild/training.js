@@ -246,4 +246,11 @@
   css.textContent = '#tr-panel{position:fixed;top:8px;left:50%;transform:translateX(-50%);z-index:30;background:rgba(20,16,12,.86);border:1px solid #C9A13A;border-radius:10px;padding:6px 12px;color:#F1E9DA;font-size:13px;max-width:min(680px,calc(100vw - 32px));text-align:center}'
     + '#tr-panel>b{color:#E8C04A}.tr-num{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;margin:4px 0}.tr-num em{font-style:normal;font-weight:bold;color:#FFE08A;margin-left:4px}.tr-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px}';
   document.head.appendChild(css);
+  // 2026-10-15 修：訓練場自己鋪的地板在 0.21 公尺高（蓋住原本的地磚），地上的範圍特效（圈、預警、陣地）畫在 0.06～0.15，全被地板蓋住。
+  // 在訓練場裡把貼地的特效抬到地板上面。等所有檔案都包好 R.addFx、R.addZone 以後（頁面載入完）才包在最外面，每一種特效都抬得到。
+  const lift = objs => (objs || []).forEach(m => { if (m && m.position && m.position.y < 0.3) m.position.y += 0.22; });
+  window.addEventListener('load', () => {
+    const af0 = R.addFx; if (af0) R.addFx = function (...a) { if (here() && typeof a[2] === 'number' && a[2] < 0.3) a[2] += 0.22; const fx = W().fxs || [], n0 = fx.length, r = af0.apply(this, a); if (here()) for (let k = n0; k < fx.length; k++) if (fx[k] && !fx[k]._trLift) { fx[k]._trLift = 1; lift(fx[k].objs); } return r; };
+    const az0 = R.addZone; if (az0) R.addZone = function (...a) { const z = az0.apply(this, a); if (here() && z && z.mesh) lift([z.mesh]); return z; };
+  });
 })(window.R);

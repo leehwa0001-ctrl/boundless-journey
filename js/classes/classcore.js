@@ -400,7 +400,7 @@
       const go = () => {
         const p0 = P.pen, n0 = (W().fxs || []).length; P.pen = Math.min(0.95, (p0 || 0) + pen);
         if (!o.counter) { P._bdSlowT = CT + HOLD; walls.push({ x: P.x, z: P.z, a, range, arc: arc || 0.5, width, until: CT + HOLD }); }
-        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), bladeCleave: kind === 'cleave' && !o.iai, hs: 1 })); }
+        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, (P._l30BdT || 0) > CT ? { crit: true } : {}, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), bladeCleave: kind === 'cleave' && !o.iai, hs: 1 })); }
         finally { P.pen = p0; if (!o.counter) holdFx(n0); }
       };
       if (i === 0) go(); else bdLater(P, go, 120 * i);
@@ -443,7 +443,8 @@
     const a = P.aimA, shadow = adv(P) === 'shadow';
     let len = (iai ? 4 : { slash: 1, cleave: 2, thrust: 4 }[kind]) * k * (shadow ? 2 : 1);
     const reach = P.ws.range * k * (kind === 'thrust' ? 1.2 : 1) * (iai ? 1 + 0.4 * iaiK : 1) * (enso(P) ? 1 + 0.1 * ensoK(P) : 1);
-    len = dashLen(P, a, len, Math.min(2 * k, reach * 0.8));   // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
+    len = dashLen(P, a, len, Math.min(2 * k, reach * 0.8));
+    if ((P._l30BdT || 0) > CT) len = 0;   // 30 級「刀意解放」：普攻不用衝刺（lv30.js）   // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
     const sp = runSpeed(P) * (shadow ? 10 : 3), dur = len > 0.05 ? len / sp : 0;
     let rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (enso(P) ? 1 + 0.25 * ensoK(P) : 1);
     P.atkCd = 1 / rate; P.atkHold = 0.35 + dur; P._bdBusy = CT + dur; P._bdN = (P._bdN || 0) + 1;

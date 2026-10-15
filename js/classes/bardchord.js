@@ -155,6 +155,9 @@
   // 每次演奏的魔力（2026-10-11 作者：照樂譜算——八分 0.5、四分 1.5、二分 5）
   const perfCost = notes => Math.round((notes || []).reduce((a, n) => a + (n.d < 1 ? 0.5 : n.d < 2 ? 1.5 : 5), 0) * 10) / 10;
   R.bardPerfCost = () => perfCost(SV().notes);
+  // 30 級「大合奏」（lv30.js）：把樂譜裡的音符立刻照順序發出 times 輪（每個隔 0.1 秒），不耗魔、不用演奏
+  R.bardEncore = (P, times) => { const notes = SV().notes; if (!notes || !notes.length) return false; const run = W().run; let k = 0;
+    for (let r = 0; r < times; r++) notes.forEach(n => { const pid = ++ST.pid; setTimeout(() => { if (W().run === run && !P.dead) noteAtk(P, n, pid); }, (k++) * 100); }); return true; };
   // 每一拍的和弦（低音區）：照和弦的 prog（CH）
   const CHD = { C: [48, 52, 55], Em: [47, 52, 55], F: [48, 53, 57], G: [47, 50, 55], Am: [48, 52, 57],
     Cm: [48, 51, 55], Dm: [50, 53, 57], Bdim: [47, 50, 53],

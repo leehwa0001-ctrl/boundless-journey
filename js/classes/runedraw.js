@@ -141,13 +141,14 @@
     // 2026-10-13：放下去的位置不再變。走遠了（超過放下時的距離）就把施法點暫時挪到「放下時的相對位置」，落點照舊在原地
     const px = P.x, pz = P.z, remote = self && x != null && Math.hypot(x - P.x, z - P.z) > 0.5;
     if (remote) { P.x = x; P.z = z; }
-    else if (!self && x != null && off && Math.hypot(x - P.x, z - P.z) > off.d + 0.05) { P.x = x - off.dx; P.z = z - off.dz; P.aimA = Math.atan2(off.dx, off.dz); }
+    let shifted = false;   // 2026-10-15 修：以前挪過去就沒挪回來（大法陣放完人被「傳送」到放下時的位置）
+    if (!remote && !self && x != null && off && Math.hypot(x - P.x, z - P.z) > off.d + 0.05) { shifted = true; P.x = x - off.dx; P.z = z - off.dz; P.aimA = Math.atan2(off.dx, off.dz); }
     const c0 = cdOf(P, i), mp0 = P.mp, id = idOf(P, i);
     if (echo) setCd(P, i, 0);
     // 2026-10-15 修：傳送陣（blink 型）以前照技能本身的 8 公尺從腳下算，法陣畫在比較遠的地方就傳不到法陣裡——改成直接傳到法陣中心
     const Lb = libOf(id), gate = !self && x != null && Lb && Lb.type === 'blink' && !(Lb.p && (Lb.p.back || Lb.p.behind));
     if (gate) { P.x = px; P.z = pz; P._blinkTo = [x, z]; }
-    try { inCast = true; if (i === 0) us0(); else cs0(i); } finally { inCast = false; P._blinkTo = null; if (remote) { P.x = px; P.z = pz; } if (!self) { P.aimX = ax; P.aimZ = az; P.aimA = aa; } }
+    try { inCast = true; if (i === 0) us0(); else cs0(i); } finally { inCast = false; P._blinkTo = null; if (shifted && !gate) { P.x = px; P.z = pz; } if (remote) { P.x = px; P.z = pz; } if (!self) { P.aimX = ax; P.aimZ = az; P.aimA = aa; } }
     if (echo) { setCd(P, i, c0); P.mp = mp0; return; }   // 艾達諾拉的再發動：不再耗魔、不動冷卻
     const c1 = cdOf(P, i);
     if (c1 > c0 + 0.01) {
