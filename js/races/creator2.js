@@ -7,35 +7,44 @@
 (function (R) {
   const $ = id => document.getElementById(id), esc = s => R.esc(s), pick = a => a[Math.floor(Math.random() * a.length)];
   const css = document.createElement('style');
+  // 2026-10-15 作者：配色降低對比——霧金色的框、暗灰的卡片、降飽和的紅
   css.textContent = [
+    '#pick.cr2{--c2-bd:#9C8460;--c2-pan:#1E1B22;--c2-in:#2A2730;--c2-card:#37323C;--c2-card2:#433C45;--c2-tx:#E2DACB;--c2-dim:#ABA294;--c2-gd:#D6BE93;--c2-red:#9A4040;--c2-red2:#AE4C4A}',
     '#pick.cr2 .b-intro{display:none}#pick.cr2 .b-body{padding:10px 14px 14px}',
-    '.c2{display:grid;gap:14px;height:calc(100vh - 128px);min-height:520px}',
-    '.c2-a{grid-template-columns:minmax(250px,1fr) minmax(260px,1fr) minmax(280px,1.15fr)}',
+    '.c2{display:grid;gap:14px;height:calc(100vh - 128px);min-height:520px;color:var(--c2-tx)}',
+    '.c2-a{grid-template-columns:minmax(270px,1.05fr) minmax(250px,.95fr) minmax(280px,1.1fr)}',
     '.c2-b{grid-template-columns:minmax(240px,.95fr) minmax(280px,1.15fr) minmax(260px,1fr);grid-template-rows:1fr 1fr}',
-    '.c2-p{position:relative;display:flex;flex-direction:column;min-height:0;background:#141018;border:4px solid #E8961E;border-radius:18px;padding:10px;box-shadow:0 6px 18px rgba(0,0,0,.45)}',
-    '.c2-p>h3{margin:0 0 8px;font-family:var(--serif);font-size:16px;color:#F2C27A;display:flex;align-items:center;gap:8px}.c2-p>h3 small{color:var(--dim);font-size:12px;font-family:var(--sans)}',
-    '.c2-scroll{flex:1;min-height:0;overflow-y:auto;background:#22303A;border-radius:10px;padding:8px;display:grid;gap:8px;align-content:start;scrollbar-width:thin;scrollbar-color:#E8961E #120E16}',
-    '.c2-scroll::-webkit-scrollbar{width:8px}.c2-scroll::-webkit-scrollbar-thumb{background:#E8961E;border-radius:4px}.c2-scroll::-webkit-scrollbar-track{background:#120E16}',
-    '.c2-scroll .race-card{background:#DDE3E6;color:#1A1620;border-top-width:5px}.c2-scroll .race-card span{color:#3A3440}.c2-scroll .race-card small{color:#5A5460}.c2-scroll .race-card em{color:#8A5A12}.c2-scroll .race-card i{color:#8A3A3A}',
-    '.c2-scroll .race-card.sel{box-shadow:0 0 0 3px var(--c),0 0 14px var(--c);background:#FFF8EA}',
-    '.c2-foot{display:flex;gap:8px;align-items:center;margin-top:10px}',
-    '.c2-red{background:#C8102E;border:none;color:#fff;font-weight:700;border-radius:4px;padding:10px 22px;font-size:16px;cursor:pointer}.c2-red:disabled{opacity:.45;cursor:not-allowed}',
-    '.c2-next{position:absolute;right:0;bottom:-58px;min-width:200px;padding:13px 26px;font-size:17px}',
-    '.c2-port{flex:1;min-height:180px;display:flex;flex-direction:column;align-items:center;gap:6px;background:#2A3640;border:5px solid #F2F2F4;border-radius:16px;padding:10px;overflow:hidden}',
-    '.c2-port canvas{image-rendering:pixelated}#c2-big{flex:1;min-height:0;width:100%;height:100%;object-fit:contain}#c2-tri{flex:none;height:64px;width:auto;opacity:.9}',
-    '.c2-info{max-height:30%;overflow-y:auto}',
-    '.c2-info{width:100%;display:grid;gap:4px;font-size:13px;margin-top:8px}.c2-info b{font-family:var(--serif);font-size:18px}.c2-info em{font-style:normal;color:var(--gold);font-size:12.5px}.c2-info i{font-style:normal;color:#C8A0A0;font-size:12px}',
-    '.c2-name{display:flex;gap:6px;align-items:center;margin-top:8px}.c2-name input{flex:1;min-width:0;background:#0E0B12;border:1px solid var(--line);color:inherit;border-radius:6px;padding:7px 9px;font-size:15px}',
-    '.c2-opts{color:#EDE6D6}.c2-opts h4{margin:6px 0 2px;font-size:13px;color:#F2C27A}.c2-opts .note{margin:0}',
-    '.c2-empty{display:grid;place-items:center;text-align:center;color:#AFC0C8;font-size:14px;line-height:1.6;padding:20px}',
+    '.c2-p{position:relative;display:flex;flex-direction:column;min-height:0;background:var(--c2-pan);border:3px solid var(--c2-bd);border-radius:16px;padding:10px;box-shadow:0 4px 14px rgba(0,0,0,.3)}',
+    '.c2-p>h3{margin:0 0 8px;font-family:var(--serif);font-size:16px;color:var(--c2-gd);display:flex;align-items:center;gap:8px}.c2-p>h3 small{color:var(--c2-dim);font-size:12px;font-family:var(--sans)}',
+    '.c2-scroll{flex:1;min-height:0;overflow-y:auto;background:var(--c2-in);border-radius:10px;padding:8px;display:grid;gap:8px;align-content:start;scrollbar-width:thin;scrollbar-color:#7E6B52 var(--c2-pan)}',
+    '.c2-scroll::-webkit-scrollbar{width:8px}.c2-scroll::-webkit-scrollbar-thumb{background:#7E6B52;border-radius:4px}.c2-scroll::-webkit-scrollbar-track{background:var(--c2-pan)}',
+    // 種族：上面是選中的那一族，下面是四格一列的小方塊
+    '.c2-race{background:var(--c2-in);border-radius:10px;padding:8px 10px;margin-bottom:8px;max-height:36%;overflow-y:auto;display:grid;gap:3px;font-size:12.5px;border-left:4px solid var(--c,var(--c2-bd))}',
+    '.c2-race b{font-family:var(--serif);font-size:17px}.c2-race .tier{color:var(--c);font-family:"DotGothic16",var(--sans);margin-right:6px}.c2-race small{color:var(--c2-dim)}.c2-race em{font-style:normal;color:#C9B07E}.c2-race i{font-style:normal;color:#C49A92;font-size:12px}',
+    '.c2-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}',
+    '.c2-tile{display:grid;gap:1px;align-content:start;text-align:center;background:var(--c2-card);color:var(--c2-tx);border:1px solid #4A4450;border-top:3px solid var(--c);border-radius:7px;padding:6px 3px;cursor:pointer;font:inherit;min-height:52px}',
+    '.c2-tile span{font-family:"DotGothic16",var(--sans);color:var(--c);font-size:12px;opacity:.9}.c2-tile b{font-size:12px;font-weight:600;line-height:1.25;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}',
+    '.c2-tile:hover{background:var(--c2-card2)}.c2-tile.sel{background:#4A4234;border-color:var(--c2-gd);box-shadow:0 0 0 1px var(--c2-gd) inset}',
+    '.c2-tile.flip{animation:flip .5s ease}.c2-tile.shine{animation:flip .5s ease,shine 1.6s ease .5s 2}',
+    '.c2-foot{display:flex;gap:8px;align-items:center;margin-top:10px}.c2-foot small{color:var(--c2-dim)}',
+    '.c2-red{background:var(--c2-red);border:1px solid #B86A60;color:#F1E6DA;font-weight:700;border-radius:6px;padding:10px 24px;font-size:16px;cursor:pointer}.c2-red:hover{background:var(--c2-red2)}.c2-red:disabled{opacity:.4;cursor:not-allowed}',
+    '.c2-next{position:absolute;right:0;bottom:-58px;min-width:200px;padding:12px 26px;font-size:17px}',
+    '.c2-port{flex:1;min-height:180px;display:flex;flex-direction:column;align-items:center;gap:6px;background:#2E333A;border:3px solid #8C8476;border-radius:16px;padding:10px;overflow:hidden}',
+    '.c2-port canvas{image-rendering:pixelated}#c2-big{flex:1;min-height:0;width:100%;height:100%;object-fit:contain}#c2-tri{flex:none;height:64px;width:auto;opacity:.85}',
+    '.c2-name{display:flex;gap:6px;align-items:center;margin-top:10px}.c2-name input{flex:1;min-width:0;background:var(--c2-in);border:1px solid #4A4450;color:var(--c2-tx);border-radius:6px;padding:8px 10px;font-size:15px}',
+    '.c2-opts{color:var(--c2-tx)}.c2-opts h4{margin:6px 0 2px;font-size:13px;color:var(--c2-gd)}.c2-opts .note{margin:0;color:var(--c2-dim)}',
+    '#pick.cr2 .chip{background:var(--c2-card);border-color:#4A4450;color:var(--c2-tx)}#pick.cr2 .chip.on{background:#6E5D42;border-color:var(--c2-gd);color:#F4EAD8}',
+    '#pick.cr2 .btn{background:var(--c2-card);border-color:#4E4854;color:var(--c2-tx)}',
+    '.c2-empty{display:grid;place-items:center;text-align:center;color:var(--c2-dim);font-size:14px;line-height:1.6;padding:20px}',
     '.c2-w{grid-row:1/3}.c2-sel{grid-column:3;grid-row:1/3}',
-    '.c2-grp{font-size:13px;color:#F2C27A;margin:6px 2px 0;display:flex;align-items:center;gap:6px;border-bottom:2px solid var(--gc,#E8961E);padding-bottom:3px}.c2-grp .cls-emb,.c2-grp svg,.c2-grp img{width:30px;height:30px}',
-    '.c2-scroll .reg-card{background:#F4F1EA;color:#1A1620;border:2px solid #1A1620;border-radius:6px}.c2-scroll .reg-card span{color:#4A4450}.c2-scroll .reg-card.sel{outline:3px solid #E8961E;background:#FFF3DC}.c2-scroll .reg-card:disabled{opacity:.4}',
-    '.c2-scroll .tp-t{background:#F4F1EA;color:#1A1620;border:2px solid #1A1620}.c2-scroll .tp-t small{color:#3A3440}.c2-scroll .tp-t.pos i{color:#1E7A30}.c2-scroll .tp-t.neg i{color:#B02A1A}.c2-scroll .tp-t em{color:#B05A10}',
-    '.c2-left{font-size:22px;font-weight:700;color:#F2C27A}.c2-left.bad{color:#F06A6A}',
-    '.c2-sum{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:#22303A;border-radius:10px;padding:8px;margin-bottom:8px}.c2-sum canvas{image-rendering:pixelated}',
+    '.c2-grp{font-size:13px;color:var(--c2-gd);margin:6px 2px 0;display:flex;align-items:center;gap:6px;border-bottom:2px solid var(--gc,var(--c2-bd));padding-bottom:3px}.c2-grp .cls-emb,.c2-grp svg,.c2-grp img{width:30px;height:30px}',
+    '.c2-scroll .reg-card{background:var(--c2-card);color:var(--c2-tx);border:1px solid #4A4450;border-radius:7px}.c2-scroll .reg-card span{color:var(--c2-dim)}.c2-scroll .reg-card:hover{background:var(--c2-card2)}.c2-scroll .reg-card.sel{background:#4A4234;border-color:var(--c2-gd);box-shadow:0 0 0 1px var(--c2-gd) inset}.c2-scroll .reg-card:disabled{opacity:.35}',
+    '.c2-scroll .tp-t{background:var(--c2-card);color:var(--c2-tx);border:1px solid #4A4450}.c2-scroll .tp-t small{color:var(--c2-dim)}.c2-scroll .tp-t.pos i{color:#93BD8C}.c2-scroll .tp-t.neg i{color:#D29384}.c2-scroll .tp-t em{color:#D2A56C}.c2-scroll .tp-t.on{outline:1px solid var(--c2-gd);background:#4A4234}.c2-scroll .tp-t:disabled{opacity:.38}',
+    '#pick.cr2 .tp-warn{color:#CDAE7C}',
+    '.c2-left{font-size:22px;font-weight:700;color:var(--c2-gd)}.c2-left.bad{color:#D88878}.c2-left small{font-weight:400}',
+    '.c2-sum{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:var(--c2-in);border-radius:10px;padding:8px;margin-bottom:8px}.c2-sum canvas{image-rendering:pixelated}',
     '.c2-sum div{display:grid;gap:2px;font-size:13px}.c2-sum b{font-family:var(--serif);font-size:16px}',
-    '@media (max-width:900px){.c2{height:auto}.c2-a,.c2-b{grid-template-columns:1fr;grid-template-rows:none}.c2-w,.c2-sel{grid-row:auto;grid-column:auto}.c2-p{min-height:0}.c2-scroll{max-height:56vh}.c2-port{min-height:340px}.c2-next{position:static;width:100%;margin-top:8px}}'
+    '@media (max-width:900px){.c2{height:auto}.c2-a,.c2-b{grid-template-columns:1fr;grid-template-rows:none}.c2-w,.c2-sel{grid-row:auto;grid-column:auto}.c2-scroll{max-height:56vh}.c2-port{min-height:340px}.c2-next{position:static;width:100%;margin-top:8px}.c2-race{max-height:none}}'
   ].join('');
   document.head.appendChild(css);
 
@@ -60,7 +69,8 @@
   const loop = () => { clearInterval(timer); timer = setInterval(() => { const a = $('c2-big'), b = $('c2-tri'), c = $('c2-mini'); if (!a && !c) { clearInterval(timer); return; } draw(a, true); draw(b, false); draw(c, true); }, 240); };
 
   // ---------- 第一頁：種族＋外觀 ----------
-  const raceCard = (id, i) => { const r = R.RACES[id], T0 = R.TIERS[r.tier]; return '<button type="button" class="race-card' + (st.pick === i ? ' sel' : '') + '" data-pick="' + i + '" style="--c:' + T0.color + '"><span class="tier">' + T0.name + '</span><b>' + esc(r.name) + '</b><small>' + esc(r.from) + '</small><span>' + esc(r.line) + '</span><em>' + esc(R.raceBonusText(id).join('・')) + '</em></button>'; };
+  const raceCard = (id, i) => { const r = R.RACES[id], T0 = R.TIERS[r.tier]; return '<button type="button" class="c2-tile' + (st.pick === i ? ' sel' : '') + '" data-pick="' + i + '" style="--c:' + T0.color + '" title="' + esc(r.name + '：' + r.line) + '"><span>' + T0.name + '</span><b>' + esc(r.name) + '</b></button>'; };
+  const raceBox = () => { if (!st.race) return '<div class="c2-race"><b>選擇的種族</b><small>還沒選。抽完以後點下面的格子。</small></div>'; const r = R.RACES[st.race], T0 = R.TIERS[r.tier]; return '<div class="c2-race" style="--c:' + T0.color + '"><b><span class="tier">' + T0.name + '</span>' + esc(r.name) + '</b><small>' + esc(r.from) + '</small><span>' + esc(r.line) + '</span><em>' + esc(R.raceBonusText(st.race).join('・')) + '</em>' + (R.XENO_TEXT && R.XENO_TEXT[r.xeno] ? '<i>' + esc(R.XENO_TEXT[r.xeno]) + '</i>' : '') + '</div>'; };
   const sw = (key, list, cur, dis) => '<div class="swatches">' + list.map(c => '<button type="button" class="sw' + (c === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + c + '" style="--c:' + c + '" aria-label="' + c + '"' + (dis ? ' disabled' : '') + '></button>').join('') + '</div>';
   const chips = (key, list, cur) => '<div class="chips">' + list.map(([v, n]) => '<button type="button" class="chip' + (v === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + v + '">' + esc(n) + '</button>').join('') + '</div>';
   const optsHTML = () => {
@@ -79,19 +89,14 @@
       + (O && R.raceFeatureOpts ? R.raceFeatureOpts(st.race).map(f => '<h4>' + esc(f.n) + '</h4>' + (f.styles.length > 1 ? chips(f.key, f.styles, L[f.key] || f.def) : '') + sw(FCOL[f.key], O.FEAT_COL, L[FCOL[f.key]] || '')).join('') : '')
       + '<h4>配件</h4>' + chips('acc', k.ACC, L.acc) + (L.acc !== 'none' && L.acc !== 'glasses' && L.acc !== 'eyepatch' && L.acc !== 'earring' ? sw('accCol', k.ACCC, L.accCol) : '') + '</div>';
   };
-  const infoHTML = () => {
-    if (!st.race) return '<div class="c2-info"><b>？？？</b><span class="note">還沒選種族</span></div>';
-    const r = R.RACES[st.race], T0 = R.TIERS[r.tier];
-    return '<div class="c2-info"><b><span style="color:' + T0.color + '">' + T0.name + '</span>　' + esc(r.name) + '</b><span>' + esc(r.line) + '</span><em>' + esc(R.raceBonusText(st.race).join('・')) + '</em>' + (R.XENO_TEXT && R.XENO_TEXT[r.xeno] ? '<i>' + esc(R.XENO_TEXT[r.xeno]) + '</i>' : '') + '</div>';
-  };
   const setRace = id => { st.race = id; st.look = K().defaultLook(id); if (!st.nameSet) st.name = R.randomName(id); };
   const pageA = () => {
     const h = $('pick-cards');
     $('pick-h').textContent = '勇者登記・一、種族與外觀';
     h.innerHTML = '<div class="c2 c2-a">'
-      + '<section class="c2-p"><h3>種族<small>' + (st.got.length ? '抽到 ' + st.got.length + ' 個，點一個登記' : '五十連抽一次') + '</small></h3><div class="c2-scroll" id="c2-races">' + (st.got.length ? st.got.map(raceCard).join('') : '<div class="c2-empty">勇者證上要寫種族。<br>按下「抽」五十連抽一次，<br>從抽到的裡面選一個（最稀有的排前面）。</div>') + '</div>'
+      + '<section class="c2-p"><h3>種族<small>' + (st.got.length ? '抽到 ' + st.got.length + ' 個，點一個登記' : '五十連抽一次') + '</small></h3>' + raceBox() + '<div class="c2-scroll" id="c2-races">' + (st.got.length ? '<div class="c2-grid">' + st.got.map(raceCard).join('') + '</div>' : '<div class="c2-empty">勇者證上要寫種族。<br>按下「抽」五十連抽一次，<br>從抽到的裡面選一個（最稀有的排前面）。</div>') + '</div>'
       + '<div class="c2-foot"><button type="button" class="c2-red" id="c2-draw"' + (st.got.length ? ' disabled' : '') + '>抽</button>' + (st.got.length ? '<small class="note">已經抽過了</small>' : '') + '</div></section>'
-      + '<section class="c2-p"><h3>角色</h3><div class="c2-port"><canvas id="c2-big" width="240" height="300"></canvas><canvas id="c2-tri" width="216" height="90"></canvas></div>' + infoHTML()
+      + '<section class="c2-p"><h3>角色</h3><div class="c2-port"><canvas id="c2-big" width="240" height="300"></canvas><canvas id="c2-tri" width="216" height="90"></canvas></div>'
       + '<div class="c2-name"><input id="c2-nm" maxlength="12" placeholder="名字" value="' + esc(st.name || '') + '"' + (st.race ? '' : ' disabled') + '><button type="button" class="btn" id="c2-rn"' + (st.race ? '' : ' disabled') + '>換一個</button></div></section>'
       + '<section class="c2-p"><h3>外觀</h3><div class="c2-scroll" id="c2-opts">' + optsHTML() + '</div><button type="button" class="c2-red c2-next" id="c2-next"' + (st.race ? '' : ' disabled') + '>下一步</button></section></div>';
     const drawBtn = $('c2-draw');
