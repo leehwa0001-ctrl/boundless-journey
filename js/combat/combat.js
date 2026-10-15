@@ -211,7 +211,7 @@
       s.mesh.position.set(s.x, s.y, s.z); s.mesh.rotation.y = Math.atan2(s.vx, s.vz);
       if (s.grav && s.y <= 0.2) { R.explode(s); continue; }
       const blk = R.pointBlocked(s.x, s.z);
-      if (blk && !s.grav) {
+      if (blk && !s.grav && !s.ghost) {   // ghost：穿牆的子彈（30 級「無盡彈匣」）
         if (blk.tag === 'prop' && s.owner === 'p') R.hitProp(blk.ref, s.dmg, true);
         if (s.splash || s.kind === 'fire') R.explode(s); else if (s.kind === 'web') R.webZone(s.x, s.z); else R.killShot(s);
         continue;

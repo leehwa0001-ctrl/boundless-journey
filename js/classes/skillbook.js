@@ -392,7 +392,7 @@
       }).join('');
     };
     const card = (id, ok) => { const sk = R.SKILLS[id], at = lo.indexOf(id), s = info(id), ic = R.skillIconURL && R.skillIconURL(id);
-      return '<div class="recipe sb-card' + (at >= 0 ? ' on' : '') + (ok ? '' : ' lock') + '"><button type="button" class="sb-pick" data-sk="' + id + '"' + (ok ? '' : ' disabled') + '>'
+      return '<div class="recipe sb-card' + (at >= 0 ? ' on' : '') + (ok ? '' : ' lock') + '">' + (R.skillQ ? R.skillQ(id) : '') + '<button type="button" class="sb-pick" data-sk="' + id + '"' + (ok ? '' : ' disabled') + '>'
         + (ic ? '<img class="sb-ico" src="' + ic + '" alt="" draggable="false">' : '<span class="sb-ico sb-ico-empty" aria-hidden="true"></span>')
         + '<b>' + esc(sk.name) + (s.adv ? ' <small class="sb-adv">' + esc(R.ADV[cls].find(a => a.id === s.adv).name) + '</small>' : '') + (at >= 0 ? ' <small class="sb-at">裝在「' + keys[at] + '」</small>' : '') + '</b>'
         + '<small>' + (R.skillTag && R.skillTag(id) ? esc(R.skillTag(id)) + '・' : '') + '冷卻 ' + sk.cd + ' 秒・魔力 ' + sk.mp + (ok ? '' : '・' + esc(req(id))) + '</small>'

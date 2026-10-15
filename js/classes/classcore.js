@@ -144,7 +144,7 @@
       if (P._mask > 0) P._mask -= dt;
       // 大招條跟著怒氣：放大招（ult.js 把 P.ult 歸零、P.ulting）就把怒氣用掉
       if (P.ulting) { if (!P._wUlt) { P._wUlt = true; P._rage = 0; P.mp = 0; } } else P._wUlt = false;
-      P.ult = P.ulting ? 0 : P._rage;
+      if (!(R.inTraining && R.inTraining())) P.ult = P.ulting ? 0 : P._rage;   // 2026-10-16 修：訓練場裡大招條照一般的方式累積（不然打木樁怒氣漲不滿，放不了大招）
     },
     onHit(e, d, o, P, killed) {
       if (d <= 0) return;
@@ -400,7 +400,7 @@
       const go = () => {
         const p0 = P.pen, n0 = (W().fxs || []).length; P.pen = Math.min(0.95, (p0 || 0) + pen);
         if (!o.counter) { P._bdSlowT = CT + HOLD; walls.push({ x: P.x, z: P.z, a, range, arc: arc || 0.5, width, until: CT + HOLD }); }
-        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, (P._l30BdT || 0) > CT ? { crit: true } : {}, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), bladeCleave: kind === 'cleave' && !o.iai, hs: 1 })); }
+        try { R.melee(a, range, arc, dmg, width, 0, 0, Object.assign(o.counter ? noVampO({ primary: false, bdCounter: 1 }) : { bd: id, bdHits: hits }, { dir: (P._bdN + i) % 2 ? -1 : 1, big: !!(o.iai || kind !== 'slash'), bladeCleave: kind === 'cleave' && !o.iai, hs: 1 })); }
         finally { P.pen = p0; if (!o.counter) holdFx(n0); }
       };
       if (i === 0) go(); else bdLater(P, go, 120 * i);
@@ -431,6 +431,18 @@
   R.bladeWeaponReal = (base, ws) => { const w = BD.W[base], w0 = R.WEAPONS[base]; if (!w || !w0 || !ws) return null; return { rate: w.rate * (ws.rate || w0.rate) / (w0.rate || 1), dmg: (ws.dmg || 0) * w.dmg }; };
   R.bladeAttack = () => {
     const P = W().P; if (!P || P.dead) return;
+    // 30 級「刀意解放」（lv30.js 設 P._l30BdT）：刀意一直滿、拔刀狀態（刀意渾圓），每一刀都是居合；攻速 ×3；
+    //   普攻瞬移到 10 公尺內最近的敵人身前砍一刀再瞬移回原位（不衝刺）
+    if ((P._l30BdT || 0) > CT) {
+      if ((P.atkCd || 0) > 0) return; P._bdSt = 'drawn'; P._bdRead = null;
+      let tg = null, bd = 1e9; (W().enemies || []).forEach(e => { if (e.dead || e.under) return; const d = dist(e, P) - e.def.size * 0.5; if (d < 10 && d < bd) { bd = d; tg = e; } });
+      const x0 = P.x, z0 = P.z, a2 = tg ? angTo(P, tg) : P.aimA, { w } = bw(P);
+      if (tg) { const back = tg.def.size * 0.5 + 1.2, q = R.nearestFloor ? R.nearestFloor(tg.x - Math.sin(a2) * back, tg.z - Math.cos(a2) * back) : [tg.x, tg.z]; R.fx && R.fx('blink', P.x, 1, P.z); P.x = q[0]; P.z = q[1]; }
+      P.aimA = a2; strike(P, a2, 'slash', { iai: true, iaiK: iaiKOf(P) });
+      if (tg) { R.fx && R.fx('blink', P.x, 1, P.z); P.x = x0; P.z = z0; }
+      const rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (1 + 0.25 * ensoK(P)) * 3;
+      P.atkCd = 1 / rate; P.atkHold = 0.2; P._bdN = (P._bdN || 0) + 1; return;
+    }
     if ((P._bdBusy || 0) > CT) return;
     const st = bdState(P);
     if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀…' : '正在拔刀…'); return; }
@@ -444,7 +456,7 @@
     let len = (iai ? 4 : { slash: 1, cleave: 2, thrust: 4 }[kind]) * k * (shadow ? 2 : 1);
     const reach = P.ws.range * k * (kind === 'thrust' ? 1.2 : 1) * (iai ? 1 + 0.4 * iaiK : 1) * (enso(P) ? 1 + 0.1 * ensoK(P) : 1);
     len = dashLen(P, a, len, Math.min(2 * k, reach * 0.8));
-    if ((P._l30BdT || 0) > CT) len = 0;   // 30 級「刀意解放」：普攻不用衝刺（lv30.js）   // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
+   // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
     const sp = runSpeed(P) * (shadow ? 10 : 3), dur = len > 0.05 ? len / sp : 0;
     let rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (enso(P) ? 1 + 0.25 * ensoK(P) : 1);
     P.atkCd = 1 / rate; P.atkHold = 0.35 + dur; P._bdBusy = CT + dur; P._bdN = (P._bdN || 0) + 1;
