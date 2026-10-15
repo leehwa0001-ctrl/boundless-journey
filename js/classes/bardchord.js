@@ -103,7 +103,7 @@
   const COL = { a: '#FF6A5A', b: '#5AE8A0', n: '#FFE08A' };
   const noteOfSkill = id => { const s = R.SKILLS[id]; if (!s) return null; const t = R.bardNoteOf ? R.bardNoteOf(id) : '攻'; return { d: s.cd <= 13 ? 1 : 2, k: t === '攻' ? 'a' : 'b' }; };
   const midiOf = (n, i, c) => c.tones[(n.d < 1 ? 1 + i % 3 : n.k === 'a' ? 3 + i % 4 : i % 3) % c.tones.length];
-  const capOf = P => 4 + (P.pv && P.pv.bdExtend ? 2 : 0);
+  const capOf = P => 4 + (P.pv && P.pv.bdExtend ? 2 : 0) + (R.bardExtraBeats ? R.bardExtraBeats() : 0);   // 2026-10-15 作者：熟練度「技巧」每 5 級多 1 拍（prof2.js）
   // 音符效果的倍率：絕對音感 ×1.25、萬曲之琴 ×1.5、詠嘆詩人增益 ×1.5、戰鼓手攻擊 ×1.5
   const nk = (P, k) => (P.pv && P.pv.bdPitch ? 1.25 : 1) * (leg(P) === 'lg_allsong' ? 1.5 : 1) * (k === 'b' && P.adv === 'aria' ? 1.5 : 1) * (k === 'a' && P.adv === 'drummer' ? 1.5 : 1);
   const tally = notes => { const c = { e: 0, aq: 0, bq: 0, ah: 0, bh: 0 }; (notes || []).forEach(n => { if (n.d < 1) c.e++; else if (n.d < 2) c[n.k === 'a' ? 'aq' : 'bq']++; else c[n.k === 'a' ? 'ah' : 'bh']++; }); return c; };
@@ -168,8 +168,10 @@
   const ARP = [60, 67, 64, 67];
   // 戰鼓手的鼓點（2026-10-12 作者）：4/4、直拍、八分音符；位置照八分音符數（第 1 個八分＝1）；最後一拍加四下十六分的筒鼓過門
   const DRUM = { 4: { k: [3, 7], s: [1, 2, 5, 6] }, 6: { k: [3, 7, 11], s: [1, 2, 5, 6, 9, 10] } };
+  // 其他拍數（技巧多出來的拍）：照 4 拍的鼓點一直重複下去
+  const drumOf = cap => { const k = [], s = []; for (let i = 1; i <= cap * 2; i++) { const j = (i - 1) % 8 + 1; if (DRUM[4].k.includes(j)) k.push(i); if (DRUM[4].s.includes(j)) s.push(i); } return { k, s }; };
   const drums = (cap, bt) => {
-    if (!R.playDrums) return; const pat = DRUM[cap] || DRUM[4], e8 = bt / 2, n8 = cap * 2, H = [];
+    if (!R.playDrums) return; const pat = DRUM[cap] || drumOf(cap), e8 = bt / 2, n8 = cap * 2, H = [];
     for (let i = 1; i <= n8; i++) { const t = (i - 1) * e8; H.push(['h', t, i % 2 ? 0.9 : 0.6]); if (pat.k.includes(i)) H.push(['k', t, 1.1]); if (pat.s.includes(i)) H.push(['s', t, 0.85]); }
     [220, 180, 150, 120].forEach((f, j) => H.push(['t', (cap - 1) * bt + j * bt / 4, 0.8, f]));
     try { R.playDrums(H, 0.2 * 0.9); } catch (e) { }
