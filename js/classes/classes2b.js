@@ -166,7 +166,7 @@
   R.healP = (v, q) => { const P = W().P; return hl0(P && P.healMul ? v * P.healMul : v, q); };   // 詠嘆詩人：治療 +30%
   // 受到的傷害（結界師 −12%、詠嘆詩人的隊友）
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = W().P; if (P && P.adv === 'warder') raw *= 0.88; return hp0(raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { const P = W().P; if (P && P.adv === 'warder' && R.dmgRedAdd) R.dmgRedAdd(0.12); return hp0(raw, src, o); };   // 減傷係數（dmgred.js）
   if (R.hurtAlly) { const ha0 = R.hurtAlly; R.hurtAlly = (a, dmg, src) => { const P = W().P; if (P && P.adv === 'aria') dmg *= 0.85; return ha0(a, dmg, src); }; }
 
   // ---------- 大招、光的顏色 ----------

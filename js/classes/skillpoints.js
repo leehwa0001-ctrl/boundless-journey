@@ -79,7 +79,7 @@
     return P;
   };
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = W().P; return hp0(P && P.talGuard ? raw * (1 - P.talGuard) : raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { const P = W().P; if (P && P.talGuard && R.dmgRedAdd) R.dmgRedAdd(P.talGuard); return hp0(raw, src, o); };   // 減傷係數（dmgred.js）
   // 升級：提醒有點數可以用
   const gx0 = R.gainXp;
   R.gainXp = v => { const st = stOf(), p0 = R.spTotal(st); gx0(v); const n = R.spTotal(st) - p0; if (n > 0) setTimeout(() => R.toast && R.toast('技能點 +' + n + '（可用 ' + R.spFree(st) + ' 點）', '#E8C04A'), 2400); };

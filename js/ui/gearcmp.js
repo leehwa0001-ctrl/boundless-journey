@@ -18,7 +18,7 @@
       ['生命', P.hpMax, 0], ['魔力', P.mpMax, 0], ['防禦', P.def, 1], ['魔防', P.mdef, 1], ['移動速度', P.speed, 2],
       ['每一下', hit, 1], ['攻擊速度', rate, 2], ['估計每秒傷害', per * (rate || 1) * (1 + crit * (cm - 1)), 0], ['暴擊率', crit * 100, 1, '%'], ['暴擊傷害', cm, 2, '×'],
       ['攻擊範圍', ws.range, 2], ['技能急速', P.haste, 1], ['穿透', P.pen, 1], ['每秒回魔', R.mpRegenOf ? R.mpRegenOf(P) : P.mpRegen, 1],
-      ['受到的傷害減少', ((P.accGuard || 0) + (P.talGuard || 0)) * 100, 1, '%'], ['幸運', P.luck, 0], ['力量', P.str, 0]
+      ['減傷係數', (R.dmgRedStatic ? R.dmgRedStatic(P) : (P.accGuard || 0) + (P.talGuard || 0)) * 100, 1, '%'], ['幸運', P.luck, 0], ['力量', P.str, 0]
     ];
   };
   const calcWith = (k, id) => {

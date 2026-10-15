@@ -155,7 +155,7 @@
       if (P._finale && o.primary) { P._finale = false; say(P, '終幕', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3.2, color: '#FFB45A' }); R.coreAoe(P.x, P.z, 3.2, raw * 3, { kb: 2 }); return raw * 4; }
       return raw;
     },
-    onHurt(raw, src, o, P) { if ((P._rage || 0) >= 100 && raw > 0) return raw * 0.8; },   // 怒氣滿：受到的傷害 −20%
+    onHurt(raw, src, o, P) { if ((P._rage || 0) >= 100 && raw > 0 && R.dmgRedAdd) R.dmgRedAdd(0.2); },   // 怒氣滿：減傷係數 +20%（dmgred.js）
     afterHurt(took, src, P) { let n = took / P.hpMax * 100 * 0.8; if (adv(P) === 'berserker' && P.hp < P.hpMax * 0.3) n *= 2; this.add(P, n); },
     onCast(P, i, id) {
       if (adv(P) !== 'gladiator' || !id) return;
@@ -504,7 +504,7 @@
     onHurt(raw, src, o, P) {
       if ((P.iframe || 0) > 0 || (P.air || 0) > 0 || P.dead || !(raw > 0)) return;   // 無敵、跳起來的時候本來就不會受傷：不反切
       if (enso(P) && !bw(P).w.noCounter && !P._bdRead) { this.counter(P, src); return false; }
-      if (zanOn(P)) return raw * (1 - 0.2 * zanK(P));
+      if (zanOn(P) && R.dmgRedAdd) R.dmgRedAdd(0.2 * zanK(P));   // 殘心：減傷係數（dmgred.js）
     },
     onCast(P, i, id) { hpCost(P, 0.1); if ((P._iaiSkPend || 0) > CT) { const nm = iaiName(P); P._iaiSkPend = 0; P._iaiSkK = iaiKOf(P); P._iai = Math.max(0, (P._iai || 0) - (munen(P) ? 200 : 100)); P._bdSt = 'drawn'; P._iaiSkT = CT + 1.2; say(P, nm, 'crit'); bdLater(P, () => startZan(P), 1200); } },
     act(P) {

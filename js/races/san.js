@@ -68,7 +68,7 @@
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, raw, o) => { const v = get(); return he0(e, W().run && v < 40 ? raw * (v < 20 ? 0.8 : 0.9) : raw, o); };
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => hp0(W().run && get() < 20 && raw > 0 ? raw * 1.15 : raw, src, o);
+  R.hurtPlayer = (raw, src, o) => { if (W().run && get() < 20 && raw > 0 && R.dmgRedAdd) R.dmgRedAdd(-0.15); return hp0(raw, src, o); };   // 減傷係數（dmgred.js）
   // 看著佩特拉核心
   const cs0 = R.coreSheet;
   if (cs0) R.coreSheet = () => {

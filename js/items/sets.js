@@ -34,7 +34,7 @@
     return P;
   };
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = R.W.P; return hp0(P && P.setGuard && raw > 0 ? raw * (1 - P.setGuard) : raw, src, o); };   // 守墓人 4 件：受到的傷害 −10%
+  R.hurtPlayer = (raw, src, o) => { const P = R.W.P; if (P && P.setGuard && raw > 0 && R.dmgRedAdd) R.dmgRedAdd(P.setGuard); return hp0(raw, src, o); };   // 守墓人 4 件：受到的傷害 −10%
   // ---------- 名字、說明 ----------
   const nm0 = R.itemName;
   R.itemName = it => { const n = nm0(it); return isArmor(it) && it.set && SETS[it.set] ? '【' + SETS[it.set].name + '】' + n : n; };

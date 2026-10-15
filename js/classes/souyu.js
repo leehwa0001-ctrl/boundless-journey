@@ -177,7 +177,7 @@
   };
   // 壓制：裡面的敵人打你 −25%
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { if (F && !F.mage && F.c.has('yz') && src && src.def && inF(src)) raw *= 1 - 0.25 * F.eff; return hp0(raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { if (F && !F.mage && F.c.has('yz') && src && src.def && inF(src) && R.dmgRedAdd) R.dmgRedAdd(0.25 * F.eff); return hp0(raw, src, o); };
   // 協振：站在裡面放技能退回 30% 魔力
   const refund = f => (...a) => { const P = W().P, m0 = P ? P.mp : 0, r = f(...a); if (F && !F.mage && P && F.c.has('xz') && inF(P) && P.mp < m0) P.mp = Math.min(P.mpMax, P.mp + (m0 - P.mp) * 0.3 * F.eff); return r; };
   if (R.castSlot) R.castSlot = refund(R.castSlot);

@@ -67,8 +67,9 @@
   R.hurtPlayer = (raw, src, o) => {
     const P = W().P; if (src && src.def) src.tkOpen = 0.8;
     if (!P || !on(P)) return hp0(raw, src, o);
-    let k = 1 - Math.min(0.2, 0.04 * (P.tkBank || 0));
-    if (P.tkKan > 0) k *= 0.8; if (P.tkNoto > 0) k *= 0.5; if (P.tkArmor > 0) k *= 0.5;
+    // 2026-10-15 減傷係數（dmgred.js）：原本相乘，改成相加
+    const k = 1, red = R.dmgRedAdd || (() => {}); red(Math.min(0.2, 0.04 * (P.tkBank || 0)));
+    if (P.tkKan > 0) red(0.2); if (P.tkNoto > 0) red(0.5); if (P.tkArmor > 0) red(0.5);
     const h = P.hp, sh = P.shield || 0, r = hp0(raw * k, src, o), lost = (h - P.hp) + (sh - (P.shield || 0));
     if (lost > P.hpMax * 0.12 && ((P.tkSei || 0) > 0 || (P.tkBank || 0) > 0) && !(P.tkKan > 0)) {
       P.tkSei = 0; P.tkBank = Math.max(0, (P.tkBank || 0) - 1); bankFx(P); R.num && R.num(P.x, 2.6, P.z, '刀勢散了', '');

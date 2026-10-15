@@ -38,7 +38,7 @@
   const hp0 = R.hurtPlayer;
   R.hurtPlayer = (raw, src, o) => {
     const w = W(), P = w.P; if (!P || !w.run) return hp0(raw, src, o);
-    if (on(P, 'armor') && raw > 0) raw *= 1.25;
+    if (on(P, 'armor') && raw > 0 && R.dmgRedAdd) R.dmgRedAdd(-0.25);   // 減傷係數 −25%（dmgred.js）
     const h = P.hp, r = hp0(raw, src, o);
     try {
       if (P.hp < h && !P.dead && src && src.def && !src.dead && lv(w.run) >= 3) {

@@ -19,7 +19,7 @@
   R.petInit = (pet, P, s, w) => { if (pi0) pi0(pet, P, s, w); if (!isS(P)) return; pet.pK = (pet.pK || 1) * PET_DMG; if (pet.hpMax) { pet.hpMax = Math.round(pet.hpMax * PET_HP); pet.hp = pet.hpMax; } };
   // ---------- 轉職補身體 ----------
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { try { const P = W().P; if (raw > 0 && isS(P) && adv(P) === 'beastlord') raw *= 1 - Math.min(0.2, 0.02 * pets().length); } catch (e) { } return hp0(raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { try { const P = W().P; if (raw > 0 && isS(P) && adv(P) === 'beastlord' && R.dmgRedAdd) R.dmgRedAdd(Math.min(0.2, 0.02 * pets().length)); } catch (e) { } return hp0(raw, src, o); };
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, raw, o) => {
     const pet = R.petHitter, h = e && e.hp, r = he0(e, raw, o);

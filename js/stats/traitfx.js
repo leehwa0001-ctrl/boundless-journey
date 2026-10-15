@@ -128,11 +128,13 @@
   R.dodge = (...a) => { const P = W().P, cd0 = P ? P.dodgeCd : 0, r = dg0(...a); try { if (P && P.dodgeCd > cd0 && P.dashT > 0 && P.rollMul && P.rollMul !== 1) P.dashSp *= P.rollMul; } catch (e) { } return r; };
 
   // ---------- 減傷係數 ----------
+  // 2026-10-15 第 3 步：這裡開「這一下」的減傷係數合計（dmgred.js），途中各來源加進去，combat.js 的本體最後一起乘
   const hp0 = R.hurtPlayer;
   R.hurtPlayer = (raw, src, o) => {
     const P = W().P;
-    if (P && raw > 0 && !(!src && raw >= 9999) && P.dmgRed) raw *= 1 - Math.max(-1, Math.min(0.75, P.dmgRed));
-    return hp0(raw, src, o);
+    if (!R.dmgRedBegin) return hp0(raw, src, o);
+    R.dmgRedBegin(P ? P.dmgRed || 0 : 0);
+    try { return hp0(raw, src, o); } finally { R.dmgRedEnd(); }
   };
 
   // ---------- 弱法之人、殘疾之人：打不出去的傷害 ----------
@@ -163,7 +165,6 @@
       const P = opt && opt.live && W().P && W().run ? W().P : R.calcPlayer(cls || S().cls);
       const row = (a, b, c) => '<div class="cs-row"><span>' + a + '</span><b>' + b + '</b>' + (c ? '<small>' + c + '</small>' : '') + '</div>';
       return h.replace('<h4>基本</h4>', '<h4>基本</h4>' + row('特質', l.map(id => R.TRAITS[id].name).join('、'))
-        + (P.dmgRed ? row('減傷係數', (P.dmgRed > 0 ? '+' : '') + Math.round(P.dmgRed * 1000) / 10 + '%', '受到的傷害 ×' + (1 - Math.max(-1, Math.min(0.75, P.dmgRed))).toFixed(3)) : '')
         + (P.allStat ? row('全屬性', (P.allStat > 0 ? '+' : '') + Math.round(P.allStat * 100) + '%') : ''));
     } catch (e) { return h; }
   };

@@ -257,7 +257,7 @@
   const hp0 = R.hurtPlayer;
   R.hurtPlayer = (raw, src, o) => {
     const f = pvOf(), P = W().P;
-    if (f && f.guard && raw > 0) raw *= 1 - Math.min(0.5, f.guard);
+    if (f && f.guard && raw > 0 && R.dmgRedAdd) R.dmgRedAdd(Math.min(0.5, f.guard));   // 減傷係數（dmgred.js）
     const h = P ? P.hp : 0, r = hp0(raw, src, o);
     if (f && f.hurtRage && P && P.hp < h) P.a2Rage = 3;
     return r;

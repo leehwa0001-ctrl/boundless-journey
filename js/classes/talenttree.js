@@ -130,7 +130,7 @@
     return P;
   };
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = W().P; return hp0(P && P.ttGuard ? raw * (1 - Math.min(0.5, P.ttGuard)) : raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { const P = W().P; if (P && P.ttGuard && R.dmgRedAdd) R.dmgRedAdd(Math.min(0.5, P.ttGuard)); return hp0(raw, src, o); };   // 減傷係數（dmgred.js）
   // 普攻的傷害（專精：普攻 −）
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, raw, o) => { const P = W().P; return he0(e, P && (P.ttPrimary || P.ttPrimaryUp) && o && o.primary ? raw * (1 - Math.min(0.6, P.ttPrimary || 0)) * (1 + (P.ttPrimaryUp || 0)) : raw, o); };   // 千刃（2026-10-08）：普攻傷害 +

@@ -123,7 +123,7 @@
     return P;
   };
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = W().P; return hp0(P && P.accGuard ? raw * (1 - P.accGuard) : raw, src, o); };
+  R.hurtPlayer = (raw, src, o) => { const P = W().P; if (P && P.accGuard && R.dmgRedAdd) R.dmgRedAdd(P.accGuard); return hp0(raw, src, o); };   // 減傷係數（dmgred.js）
   const gx0 = R.gainXp;
   R.gainXp = v => { let k = 0; try { const eq = R.equipped(S().cls); k = R.affixSum(R.GEAR_KEYS.map(x => eq[x]), 'wisdom') / 100; } catch (e) { } return gx0(k ? Math.round(v * (1 + k)) : v); };
 
