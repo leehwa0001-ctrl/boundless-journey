@@ -92,7 +92,13 @@
       // 渡島晶：只放在這一區外圍的房間（離整區中間最遠），一條連結一顆
       const cx = rooms.reduce((a, r) => a + r.gx, 0) / n, cy = rooms.reduce((a, r) => a + r.gy, 0) / n;
       const outer = rooms.filter(r => r !== end).sort((a, b) => Math.hypot(b.gx - cx, b.gy - cy) - Math.hypot(a.gx - cx, a.gy - cy) + (a.i === 0) - (b.i === 0));
-      Z.links.forEach((to, k) => { const r = outer[k % Math.max(1, outer.length)]; if (r) (r.izTo = r.izTo || []).push(to); });
+      // 2026-10-16 作者：渡島晶放在這一區「朝向那一區」那一側最外面的房間（A、B、C 一排：A 的右邊、B 的左右、C 的左邊）
+      Z.links.forEach((to, k) => {
+        const d = Z.dirs && Z.dirs[k]; let r = null;
+        if (d) { const sc = q => (q.gx - cx) * d[0] + (q.gy - cy) * d[1] - (q.izTo ? 0.9 : 0) - (q.i === 0 ? 0.6 : 0); r = rooms.filter(q => q !== end).sort((a, b) => sc(b) - sc(a))[0] || null; }
+        if (!r) r = outer[k % Math.max(1, outer.length)];
+        if (r) { (r.izTo = r.izTo || []).push(to); (r.izDir = r.izDir || []).push(d || null); }
+      });
     }
     const deadEnds = far.filter(r => r !== end && !r.izTo && Object.keys(r.links).length === 1);
     const others = far.filter(r => r !== end && !r.izTo);

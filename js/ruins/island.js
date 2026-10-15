@@ -4,7 +4,8 @@
 // - 每層由好幾個「區」組成：基本 7～9 區 × 分級倍率（哈米莉亞 ×1、阿彌勒 ×1.35、摩爾斯 ×2.15、克森特 ×4.30、卡索 ×6，四捨五入）。
 //   每區 12～16 間房（dungeon.js 的 R.roomsPerFloor），房間比其他遺跡再大 35%，戰鬥房的遺跡生物多 65%。
 // - 區和區之間用綠色的「渡島晶」連起來（回歸水晶是藍的、回地面；渡島晶是綠的、到別的區）：一條連結兩頭各一顆；
-//   區的連結圖一定連通、不一定是一直線，一區最多連 5 區（最多 5 顆渡島晶）；渡島晶只放在這一區外圍的房間。
+//   區的連結圖一定連通、不一定是一直線，一區最多連 5 區（最多 5 顆渡島晶）。2026-10-16：每一區在海上有位置、照遠近連得更密；
+//   渡島晶放在這一區朝向那一區那一側最外面的房間、房間裡靠那一邊（A、B、C 一排：A 的右邊、B 的左右、C 的左邊）。
 // - 每次回到某一區，那一區的樣子會重新長過；但這一層的連結圖（幾區、誰連誰）整層固定（照種子算，房主、隊員算出來一樣）。
 // - 同一時間只長、只跑玩家所在的那一區（跟一層一樣），不會一次長出整層的一百多間房。
 // - 每層有一個「中心區」，裡面的「中心房間」一定是領主房：分級有領主體就是領主體，沒有就放一隻強化 ×2.15 的精英。
@@ -40,16 +41,21 @@
     const base = coop(run) ? run.coop.seed : run.iz.seed, rng = mul32((base ^ Math.imul(f + 1, 0x9E3779B1) ^ 0x51ED270B) >>> 0), ri = (a, b) => a + Math.floor(rng() * (b - a + 1));
     const n = Math.max(2, Math.round(ri(7, 9) * (ZK[run.grade.id] || 1))), adj = Array.from({ length: n }, () => new Set());
     const link = (a, b) => { adj[a].add(b); adj[b].add(a); };
-    // 先長一棵樹（連通），偏好度數低的，才不會全擠在一區
-    for (let i = 1; i < n; i++) { const c = []; for (let j = 0; j < i; j++) if (adj[j].size < 5) for (let w = 0; w < 5 - adj[j].size; w++) c.push(j); link(i, c[Math.floor(rng() * c.length)]); }
-    // 再多開幾條，形成環（不一定是一直線）
-    const extra = Math.round(n * 0.3);
-    for (let k = 0, tries = 0; k < extra && tries < n * 20; tries++) { const a = ri(0, n - 1), b = ri(0, n - 1); if (a === b || adj[a].has(b) || adj[a].size >= 5 || adj[b].size >= 5) continue; link(a, b); k++; }
+    // 2026-10-16 作者：每一區在海上有自己的位置，照遠近連起來（島和島之間連得更密），渡島晶放在朝向對方的那一側
+    // 位置：一區一區撒在 √n×1.6 見方的海面上，每次挑離已經放好的區最遠的一個點（分得開）
+    const S = Math.sqrt(n) * 1.6, pos = [];
+    for (let i = 0; i < n; i++) { let bp = null, bd = -1; for (let t = 0; t < 30; t++) { const p = [rng() * S, rng() * S], d = pos.length ? Math.min(...pos.map(q => Math.hypot(q[0] - p[0], q[1] - p[1]))) : 9; if (d > bd) { bd = d; bp = p; } } pos.push(bp); }
+    const D = (a, b) => Math.hypot(pos[a][0] - pos[b][0], pos[a][1] - pos[b][1]);
+    // 先照遠近長一棵最小生成樹（一定連通、只連近的）
+    const inT = [0]; while (inT.length < n) { let ba = -1, bb = -1, bd = 1e9; inT.forEach(a => { if (adj[a].size >= 5) return; for (let b = 0; b < n; b++) if (!inT.includes(b) && D(a, b) < bd) { bd = D(a, b); ba = a; bb = b; } }); if (bb < 0) break; link(ba, bb); inT.push(bb); }
+    // 再把最近的幾對補連起來（約 0.8 × 區數條），一區最多連 5 區
+    const pairs = []; for (let a = 0; a < n; a++) for (let b = a + 1; b < n; b++) pairs.push([D(a, b), a, b]); pairs.sort((x, y) => x[0] - y[0]);
+    let extra = Math.round(n * 0.8); for (const [, a, b] of pairs) { if (extra <= 0) break; if (adj[a].has(b) || adj[a].size >= 5 || adj[b].size >= 5) continue; link(a, b); extra--; }
     const bfs = s => { const d = Array(n).fill(-1); d[s] = 0; const q = [s]; for (let i = 0; i < q.length; i++) adj[q[i]].forEach(j => { if (d[j] < 0) { d[j] = d[q[i]] + 1; q.push(j); } }); return d; };
     let center = 0, best = 1e9; for (let i = 0; i < n; i++) { const e = Math.max(...bfs(i)); if (e < best || (e === best && adj[i].size > adj[center].size)) { best = e; center = i; } }
     const dc = bfs(center); let entry = center === 0 ? 1 : 0; for (let i = 0; i < n; i++) if (i !== center && dc[i] > dc[entry]) entry = i;
     const fi = fIdx(run, f), opts = THEMES[Math.min(3, Math.max(0, fi))], theme = opts[Math.floor(rng() * opts.length)];
-    return (run.iz.g[f] = { n, adj: adj.map(s => [...s].sort((a, b) => a - b)), center, entry, dc, theme });
+    return (run.iz.g[f] = { n, adj: adj.map(s => [...s].sort((a, b) => a - b)), center, entry, dc, theme, pos });
   };
   R.izInfo = () => { const run = W().run; return run && run.izZ ? { f: run.floor, zone: run.izZ.zone, graph: run.iz.g[run.floor] } : null; };
 
@@ -77,7 +83,9 @@
     else z = o.up ? G.center : G.entry;
     z = Math.max(0, Math.min(G.n - 1, z | 0));
     run.iz.f = f; run.iz.cur = z;
-    run.izZ = { zone: z, links: G.adj[z].slice(), center: z === G.center, entry: z === G.entry, from };
+    // dirs：這一區往每一條連結的方向（區的位置 x→房間格 gx、y→gy），渡島晶照這個方向放
+    const dirs = G.pos ? G.adj[z].map(to => { const dx = G.pos[to][0] - G.pos[z][0], dy = G.pos[to][1] - G.pos[z][1], L = Math.hypot(dx, dy) || 1; return [dx / L, dy / L]; }) : null;
+    run.izZ = { zone: z, links: G.adj[z].slice(), dirs, center: z === G.center, entry: z === G.entry, from };
     // 景色：照第幾層（biome.js 的 biomeFor 照 R.saveEvery＝1 一層一段）
     const order = []; for (let i = 0; i <= fIdx(run, run.floors - 1); i++) { const g2 = R.izGraph(run, i + (has0(run) ? 1 : 0)); order.push(g2.theme.biome || 'ruin'); }
     run.biomeOrder = has0(run) ? order : order; run.env = G.theme.env || null;
@@ -109,7 +117,12 @@
     // 渡島晶（綠色）
     F.rooms.forEach(r => {
       (r.izTo || []).forEach((to, k, arr) => {
-        const off = (k - (arr.length - 1) / 2) * 4.5, [x, z] = R.nearestFloor(r.x + off, r.z);
+        // 放在房間朝向那一區的那一邊（同一間房有好幾顆就沿著那一邊排開）；落點要是空地
+        const d = r.izDir && r.izDir[k], off = (k - (arr.length - 1) / 2) * 4.5;
+        let px = r.x + off, pz = r.z;
+        if (d) { px = r.x + d[0] * r.hx * 0.6 - d[1] * off; pz = r.z + d[1] * r.hz * 0.6 + d[0] * off; }
+        let [x, z] = R.nearestFloor(px, pz);
+        for (let t = 0; t < 8 && R.pointBlocked && (R.pointBlocked(x, z) || R.pointBlocked(x + 0.8, z) || R.pointBlocked(x - 0.8, z) || R.pointBlocked(x, z + 0.8) || R.pointBlocked(x, z - 0.8)); t++) [x, z] = R.nearestFloor(x + (r.x - x) * 0.25, z + (r.z - z) * 0.25);   // 卡到牆或擺設就往房間中間挪
         const g = new TH.Group();
         const c = new TH.Mesh(new TH.OctahedronGeometry(0.9, 0), new TH.MeshLambertMaterial({ color: '#7CFF9A', emissive: new TH.Color('#1FAF4A'), emissiveIntensity: 0.9, transparent: true, opacity: 0.9 }));
         c.scale.y = 1.8; c.position.y = 1.9; g.add(c);
