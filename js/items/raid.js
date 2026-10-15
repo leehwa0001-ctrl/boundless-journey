@@ -48,7 +48,8 @@
   };
   const dims = (it, r) => { const [w, h] = sizeOf(it); return r ? [h, w] : [w, h]; };
   const occ = (g, skip) => { const o = Array(g.w * g.h).fill(null); W().run.bag.forEach(it => { if (it === skip) return; const p = g.at.get(it); if (!p) return; const [w, h] = dims(it, p.r); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) o[(p.y + y) * g.w + p.x + x] = it; }); return o; };
-  const matCells = extra => { const m = Object.assign({}, W().run.mats); if (extra) m[extra.k] = (m[extra.k] || 0) + extra.n; return Object.keys(m).reduce((a, k) => a + Math.ceil(Math.max(0, m[k]) / ST(k)), 0); };
+  // R.bagCellBonus：特質（巧手 +2、笨拙 −2，traitfx.js）——素材本來就從空格扣，這裡多扣（−）或少扣（＋）幾格
+  const matCells = extra => { const m = Object.assign({}, W().run.mats); if (extra) m[extra.k] = (m[extra.k] || 0) + extra.n; return Object.keys(m).reduce((a, k) => a + Math.ceil(Math.max(0, m[k]) / ST(k)), 0) - (R.bagCellBonus ? R.bagCellBonus() : 0); };
   const freeRect = (g, o, x, y, w, h) => { if (x < 0 || y < 0 || x + w > g.w || y + h > g.h) return false; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (o[(y + j) * g.w + x + i]) return false; return true; };
   const freeCount = o => o.reduce((a, c) => a + (c ? 0 : 1), 0);
   const fitsAt = (it, x, y, r, skip) => { const g = G(), o = occ(g, skip), [w, h] = dims(it, r); return freeRect(g, o, x, y, w, h) && freeCount(o) - w * h >= matCells(); };

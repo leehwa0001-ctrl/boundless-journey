@@ -5,7 +5,8 @@
 // 效果：數值的在 R.calcPlayer 套上；擊倒、命中、受傷、翻滾、治療的在各自的函式包一層。
 (function (R) {
   const W = () => R.W, $ = id => document.getElementById(id), esc = s => R.esc(s);
-  const SLOT_LV = [1, 4, 8, 12, 16, 20];   // 2026-10-04 作者：被動格子多一點（原本 1、5、10、16 四格）
+  const SLOT_LV0 = [1, 4, 8, 12, 16, 20];   // 2026-10-04 作者：被動格子多一點（原本 1、5、10、16 四格）
+  const LVS = () => (R.pvSlotLv ? R.pvSlotLv(SLOT_LV0.slice()) : SLOT_LV0);   // 2026-10-15 特質：聚沙成塔 +2 格、先天不足 −2 格（traitfx.js）
   const D = (id, cls, lv, name, desc, fx, cost) => ({ id, cls, lv, name, desc, fx, cost });
   const LIST = [
     D('gu1', 'gunner', 1, '快速裝填', '換彈快 25%。', { reload: 0.25 }), D('gu2', 'gunner', 3, '擴充彈匣', '彈匣多 30%。', { mag: 0.3 }), D('gu3', 'gunner', 5, '穩定射擊', '暴擊率 +8%。', { crit: 0.08 }), D('gu4', 'gunner', 7, '連射', '攻速 +12%。', { rate: 0.12 }),
@@ -68,7 +69,7 @@
 
   // ---------- 學會、裝上 ----------
   const st = cls => R.S.classes[cls];
-  const slots = cls => SLOT_LV.filter(l => (st(cls) ? st(cls).lv : 1) >= l).length;
+  const slots = cls => LVS().filter(l => (st(cls) ? st(cls).lv : 1) >= l).length;
   const learned = (cls, id) => { const p = BY[id], S = R.S; if (!p) return false; if (p.cls === '*') return (S.pvBought || []).includes(id); return p.cls === cls && (st(cls) ? st(cls).lv : 1) >= p.lv && (!p.adv2 || !!(st(cls) && st(cls).adv2 === p.adv2 && (!p.adv || p.adv === st(cls).adv))); };
   R.passivesOf = cls => {
     const S = R.S; S.pvEquip = S.pvEquip || {};
@@ -152,7 +153,7 @@
   R.gainXp = v => {
     const S = R.S, cls = S.cls, s = st(cls), lv0 = s.lv; gx(v);
     if (s.lv === lv0) return;
-    const got = LIST.filter(p => p.cls === cls && p.lv > lv0 && p.lv <= s.lv && learned(cls, p.id)), slot = SLOT_LV.some(l => l > lv0 && l <= s.lv);
+    const got = LIST.filter(p => p.cls === cls && p.lv > lv0 && p.lv <= s.lv && learned(cls, p.id)), slot = LVS().some(l => l > lv0 && l <= s.lv);
     if (got.length || slot) setTimeout(() => R.banner(got.length ? '學會新的被動：' + got.map(p => p.name).join('、') : '被動欄多了一格', '回到城裡，在暫停選單或公會的「被動技能」換上去'), 5200);
   };
 
@@ -166,8 +167,8 @@
         : p.cls === '*' ? '<button type="button" class="btn" data-learn="' + p.id + '"' + (!atGuild || S.gold < p.cost ? ' disabled' : '') + '>學（' + p.cost + ' 費拉）</button>' : '<span class="note">' + esc(p.need || '職業等級 ' + p.lv + ' 學會') + '</span>';
       return '<div class="recipe pv-card' + (on ? ' on' : '') + (ok ? '' : ' lock') + '"><b>' + esc(p.name) + '</b><small>' + esc(p.desc) + '</small>' + btn + '</div>';
     };
-    host.innerHTML = '<h2>被動技能・' + esc(R.clsName(cls)) + ' Lv ' + s.lv + '</h2><p class="note">被動欄 ' + eq.length + '／' + n + '（職業等級 ' + SLOT_LV.join('、') + ' 各開一格）。職業的被動照等級自動學會；共通的被動要在公會的訓練場花錢學，學一次每個職業都能用。進了遺跡就不能換。</p>'
-      + '<div class="row pv-slots">' + SLOT_LV.map((l, i) => '<span class="chip' + (eq[i] ? ' on' : '') + '">' + (i < n ? (eq[i] ? esc(BY[eq[i]].name) : '（空）') : 'Lv ' + l) + '</span>').join('') + '</div>'
+    host.innerHTML = '<h2>被動技能・' + esc(R.clsName(cls)) + ' Lv ' + s.lv + '</h2><p class="note">被動欄 ' + eq.length + '／' + n + '（職業等級 ' + LVS().join('、') + ' 各開一格）。職業的被動照等級自動學會；共通的被動要在公會的訓練場花錢學，學一次每個職業都能用。進了遺跡就不能換。</p>'
+      + '<div class="row pv-slots">' + LVS().map((l, i) => '<span class="chip' + (eq[i] ? ' on' : '') + '">' + (i < n ? (eq[i] ? esc(BY[eq[i]].name) : '（空）') : 'Lv ' + l) + '</span>').join('') + '</div>'
       + '<h3>' + esc(R.CLASSES[cls].name) + '的被動</h3><div class="recipes">' + mine.map(card).join('') + '</div>'
       + '<h3>共通的被動' + (atGuild ? '（公會的訓練場）' : '（到公會的訓練場學）') + '</h3><div class="recipes">' + common.map(card).join('') + '</div>'
       + '<div class="row"><button type="button" class="btn pri" data-close="1">好了</button></div>';
