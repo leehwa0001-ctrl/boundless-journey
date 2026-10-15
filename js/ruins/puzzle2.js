@@ -20,6 +20,7 @@
   // 解開：和 puzzle.js 的 solve 一樣（寶箱放進 F.chests、封印消失、掉魔力水晶）
   const solve = pz => {
     if (pz.solved) return; pz.solved = true;
+    R.onPuzzleSolved && R.onPuzzleSolved(pz);   // 熟練度「智力」（prof2.js）
     const F = W.F, run = W.run, ch = pz.chest;
     if (ch && !F.chests.includes(ch)) F.chests.push(ch);
     if (pz.seal) pz.seal.visible = false; if (pz.mark) pz.mark.visible = false;

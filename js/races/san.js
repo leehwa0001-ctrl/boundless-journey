@@ -15,8 +15,10 @@
 // 放在 run.js、calendar.js、charsheet.js、dmgtype.js 後面。
 (function (R) {
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), rnd = Math.random;
+  // 2026-10-15 熟練度「精神」（prof2.js）：理智上限每級 +5（R.sanMax）、扣的量每級 −0.5%（R.sanLossMul）、累積扣 40 點練精神（R.onSanLoss）
+  const MAXV = () => (R.sanMax ? R.sanMax() : 100);
   const get = () => { const s = S(); return s ? (s.san == null ? 100 : s.san) : 100; };
-  const set = v => { const s = S(); if (!s) return; s.san = Math.max(0, Math.min(100, v)); };   // 不在這裡四捨五入：每一格扣的量很小
+  const set = v => { const s = S(); if (!s) return; const cur = get(); if (v < cur) { if (R.sanLossMul) v = cur - (cur - v) * R.sanLossMul(); if (R.onSanLoss) R.onSanLoss(cur - v); } s.san = Math.max(0, Math.min(MAXV(), v)); };   // 不在這裡四捨五入：每一格扣的量很小
   const TIER = [[70, '清醒', '#9AE0B0'], [40, '不安', '#E8D07A'], [20, '動搖', '#F0A060'], [0, '崩潰邊緣', '#F06A6A']];
   const tier = v => TIER.find(t => v >= t[0]);
   R.sanValue = get; R.sanAdd = d => { set(get() + d); };
@@ -57,7 +59,7 @@
     fx().style.opacity = inRun ? (v >= 70 ? 0 : v >= 40 ? 0.25 : v >= 20 ? 0.45 : 0.65) : 0;
     let el = $('r-san');
     if (!el) { const tl = $('r-tl'); if (!tl) return; el = document.createElement('div'); el.id = 'r-san'; el.className = 'glass r-misc'; el.style.cursor = 'pointer'; el.onclick = () => R.toast && R.toast('理智（San）：靠近佩特拉核心會掉；睡覺、玩遊戲、賭博會回來。現在 ' + Math.round(get()) + '（' + R.sanTier() + '）。', '#B8A0D8'); tl.appendChild(el); }
-    const scr = $('run'), show = inRun || (!!S() && v < 100 && !!scr && !scr.hidden);   // 城裡（含室內）：不是滿的才顯示
+    const scr = $('run'), show = inRun || (!!S() && v < MAXV() && !!scr && !scr.hidden);   // 城裡（含室內）：不是滿的才顯示
     el.hidden = !show; if (!show) return;
     const txt = '理智 <b style="color:' + t[2] + '">' + Math.round(v) + '</b>・' + t[1];
     if (txt !== lastShown) { el.innerHTML = txt; lastShown = txt; }
@@ -81,7 +83,7 @@
   const ad0 = R.advanceDays;
   R.advanceDays = n => {
     const before = get(), r = ad0(n);
-    if (!inEndRun && n > 0 && before < 100) { set(before + 45 * n); setTimeout(() => R.toast && R.toast('睡了一覺，腦袋清楚多了。理智 ' + Math.round(before) + ' → ' + Math.round(get()), '#B8A0D8'), 1800); R.save && R.save(); }
+    if (!inEndRun && n > 0 && before < MAXV()) { set(before + 45 * n); setTimeout(() => R.toast && R.toast('睡了一覺，腦袋清楚多了。理智 ' + Math.round(before) + ' → ' + Math.round(get()), '#B8A0D8'), 1800); R.save && R.save(); }
     return r;
   };
   // ---------- 回復：玩遊戲、賭博（看哪個遊戲的畫面開著） ----------
@@ -89,12 +91,12 @@
   const acc = {}; let saveT = 0;
   setInterval(() => {
     const s = S(); if (!s) return; if (!W().run) hud();   // 城裡不跑 R.step，顯示在這裡更新
-    if (get() >= 100) return;
+    if (get() >= MAXV()) return;
     const g = GAMES.find(x => { const c = $(x[0]); return c && c.isConnected && c.getClientRects().length > 0; }); if (!g) return;
     acc[g[0]] = (acc[g[0]] || 0) + 1;
     if (acc[g[0]] >= g[1]) { acc[g[0]] = 0; const was = get(); set(was + 1); if (Math.floor(get() / 10) > Math.floor(was / 10)) R.toast && R.toast(g[2] + '讓心情放鬆了。理智 ' + Math.round(get()), '#B8A0D8'); if (++saveT >= 10) { saveT = 0; R.save && R.save(); } }
   }, 1000);
   // ---------- 角色總數值 ----------
   const ch0 = R.charSheetHtml;
-  if (ch0) R.charSheetHtml = (cls, opt) => { const h = ch0(cls, opt), v = get(), t = tier(v); return h.replace('<h4>基本</h4>', '<h4>基本</h4><div class="cs-row"><span>理智（San）</span><b style="color:' + t[2] + '">' + Math.round(v) + '／100</b><small>' + t[1] + (v < 40 ? (v < 20 ? '：遺跡裡傷害 −20%、受到的傷害 +15%' : '：遺跡裡傷害 −10%') : '') + '</small></div>'); };
+  if (ch0) R.charSheetHtml = (cls, opt) => { const h = ch0(cls, opt), v = get(), t = tier(v); return h.replace('<h4>基本</h4>', '<h4>基本</h4><div class="cs-row"><span>理智（San）</span><b style="color:' + t[2] + '">' + Math.round(v) + '／' + MAXV() + '</b><small>' + t[1] + (v < 40 ? (v < 20 ? '：遺跡裡傷害 −20%、受到的傷害 +15%' : '：遺跡裡傷害 −10%') : '') + '</small></div>'); };
 })(window.R);

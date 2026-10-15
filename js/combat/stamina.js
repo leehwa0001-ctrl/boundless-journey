@@ -25,8 +25,9 @@
   R.guardPerfect = P => { const w = W(); return !!(P && P.guard && w.run && P.guardT0 != null && w.run.t - P.guardT0 <= ((R.legOf ? R.legOf(P) : null) === 'lg_vow' ? 0.5 : 0.3)); };
   const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   const live = () => { const w = W(); return !!(w && w.run && !w.town && w.P && !w.run.done); };
-  const trained = () => (R.profLv && R.profLv.stam ? R.profLv.stam() : 0), maxOf = () => MAX + 5 * trained();
-  const init = P => { if (P.stam == null || !P.stamMax) { P.stamMax = maxOf(); P.stamRegen = REGEN * (1 + 0.04 * trained()) * (1 + (P.ttStam || 0)); P.stam = P.stamMax; } };
+  // 2026-10-15 熟練度改版：體力的鍛鍊 → 體質（R.conOf，prof.js）；體質每點體力上限 +5、體力回復 +0.2%（體質可以是負的，上限最低 1）
+  const trained = () => (R.conOf ? R.conOf() : R.profLv && R.profLv.stam ? R.profLv.stam() : 0), maxOf = () => Math.max(1, MAX + 5 * trained());
+  const init = P => { if (P.stam == null || !P.stamMax) { P.stamMax = maxOf(); P.stamRegen = REGEN * Math.max(0.1, 1 + 0.002 * trained()) * (1 + (P.ttStam || 0)); P.stam = P.stamMax; } };
   let spent = 0;
   const use = (P, v) => { const d = Math.min(P.stam, v); P.stam = Math.max(0, P.stam - v); P.stamT = DELAY; if (P.stam <= 0) P.stamOut = true; spent += d; if (spent >= 15 && R.profGain) { const n = Math.floor(spent / 15); spent -= n * 15; R.profGain('stam', null, n); } };
   let warnT = 0;
