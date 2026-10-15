@@ -70,6 +70,7 @@
   // ---------- 解開 ----------
   const solve = pz => {
     if (pz.solved) return; pz.solved = true;
+    R.onPuzzleSolved && R.onPuzzleSolved(pz);   // 熟練度「智力」（prof2.js）
     const F = W.F, run = W.run, ch = pz.chest;
     if (ch && !F.chests.includes(ch)) F.chests.push(ch);
     if (pz.seal) { pz.seal.visible = false; } if (pz.mark) pz.mark.visible = false;

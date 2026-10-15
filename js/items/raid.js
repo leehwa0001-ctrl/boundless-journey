@@ -276,7 +276,7 @@
     if (!run || run.done || !P || P.dead) return stopSearch();
     if (Math.hypot(P.x - search.x, P.z - search.z) > 0.6) return stopSearch('走開了：搜到一半中斷。');
     if (P.hp < search.hp - 0.5 && (!R.hitInterrupts || R.hitInterrupts(search.hp - P.hp))) return stopSearch('被打斷了！');   // 場地的小傷害不打斷（kesentfx.js）
-    search.hp = P.hp; search.t += dt;
+    search.hp = P.hp; search.t += dt * (R.workSpeed ? R.workSpeed() : 1);   // 熟練度「技巧」：開寶箱速度（prof2.js）
     const el = bar(); el.querySelector('b').style.width = Math.min(100, search.t / search.need * 100) + '%';
     if (search.t >= search.need) { const f = search.done; stopSearch(); f(); }
   };

@@ -29,7 +29,7 @@
     if (Math.hypot(P.x - d.x, P.z - d.z) > 0.3) { stop('掘礦中斷了（礦還在，可以再挖）'); return; }
     if (P.hp < d.hp - 0.5 && (!R.hitInterrupts || R.hitInterrupts(d.hp - P.hp))) { stop('被打斷了，礦還沒挖下來'); return; }   // 場地的小傷害不打斷（kesentfx.js）
     if (P.h.atk && d.atk && P.h.atk !== d.atk) { stop(); return; }   // 自己出手攻擊
-    d.hp = P.hp; d.t += dt;
+    d.hp = P.hp; d.t += dt * (R.workSpeed ? R.workSpeed() : 1);   // 熟練度「技巧」：挖礦速度（prof2.js）
     // 一下一下敲：舉起 → 敲下去 → 收回
     if (d.sw < HITS && d.t >= d.sw * STRIKE) { R.swingAnim(P.h, WIND, STRIKE); d.atk = P.h.atk; d.sw++; }
     if (d.hits < d.sw && d.t >= (d.sw - 1) * STRIKE + WIND + 0.05) {
@@ -39,6 +39,6 @@
     }
     // 面向礦（瞄準的方向在 st0 裡已經套上去了，這裡蓋過去，再用新的方向重排一次這一格）
     P.h.g.rotation.y = Math.atan2(o.x - P.x, o.z - P.z); R.animHero(P.h, 0, 0, false);
-    if (d.t >= HITS * STRIKE) { restore(); R.fx('poof', o.x, 0.4, o.z, { color: '#A3ACB6', n: 8 }); mine0(o); }
+    if (d.t >= HITS * STRIKE) { restore(); R.fx('poof', o.x, 0.4, o.z, { color: '#A3ACB6', n: 8 }); mine0(o); R.onWorkDone && R.onWorkDone('mine'); }
   };
 })(window.R);

@@ -32,7 +32,7 @@
     if (P.adv === 'ranger') t *= 0.5; else if (P.adv === 'hama') t *= 2;
     return t;
   };
-  const speedOf = P => 1 + atkPct(P) * (P.adv === 'ranger' ? 1 : 0.75) / 100;
+  const speedOf = P => (1 + atkPct(P) * (P.adv === 'ranger' ? 1 : 0.75) / 100) * (P.drawSpd || 1);   // P.drawSpd：熟練度「技巧」（prof2.js）
   R.archerInfo = P => ({ type: wtype(P), cap: capOf(P), time: timeOf(P), speed: speedOf(P), atkPct: atkPct(P), hitAt100: (P.ws.dmg || 0) * defRate(P) * 2 });
 
   // ---------- 哪些技能算「箭矢」（傷害型） ----------
@@ -155,7 +155,7 @@
       if (!ok) { toast(nameOf(id) + ' 放不出來', '#FFB45A'); return; }
       S.load = null;
     } else shootNormal(P, { dmg: m.k * 2 * defRate(P), area: m.k, spd, reps: m.reps, pen });
-    R.archerLast = { k: m.k, reps: m.reps, t: performance.now() };
+    R.archerLast = { k: m.k, reps: m.reps, t: performance.now(), full: pen > 0 };   // full：拉滿弓（熟練度 prof2.js 看這個）
     S.p = 0; S.n = 0; S.cued = 0;
   };
   R.archerFire = () => { const P = W().P; if (isA(P)) fire(P); };
