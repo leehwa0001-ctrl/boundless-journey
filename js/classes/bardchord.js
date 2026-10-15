@@ -40,6 +40,8 @@
 //   每次演奏只在開頭彈一次主和弦（C、Am、Cmaj7、Fmaj9、Dm11），延音整個小節、音量比原本的和弦大 10%；拿掉每一拍換一個的和弦進行。
 //   小三和弦改 Am、九和弦改 Fmaj9。攻速每 +1% 演奏只快 0.5%。
 //   演奏中按普攻、技能會記下一個（技能可以蓋掉普攻、普攻蓋不掉技能），演奏完、技能放出去馬上接著做。
+//   2026-10-15 作者：普攻要不要接著演奏，改成看「演奏期間有沒有再按一次左鍵（放開再按）」或「最後一拍時左鍵還按著」——
+//   以前按住左鍵每一格都在叫普攻，點一下的那幾格落在演奏裡就被記成下一次，所以點一下會演奏兩次。技能照舊優先。
 //   寫樂譜的時候放不下的音符略過（不會中斷寫譜）。同一個音符（普攻）、同一招技能打到同一隻敵人：第二下起只剩 20%（三下＝1.4 倍）。
 //   增益二分音符的護盾自己一格（half），下一段演奏不會把它換掉；兩段演奏的二分護盾還是不疊（新的換掉舊的）。
 //   技能傷害的魔力倍率改成 (200＋最大魔力)÷300（原本 最大魔力÷100）。
@@ -169,6 +171,10 @@
     [220, 180, 150, 120].forEach((f, j) => H.push(['t', (cap - 1) * bt + j * bt / 4, 0.8, f]));
     try { R.playDrums(H, 0.2 * 0.9); } catch (e) { }
   };
+  // 普攻鍵現在有沒有按著（滑鼠左鍵、F、手機右搖桿）
+  const atkHeld = () => { const I = R.input; return !!(I && (I.fire || (I.keys && I.keys.f))); };
+  // 演奏中又按了一次普攻（放開再按）：記下來，演奏完接著演奏（蓋不掉記著的技能）
+  const atkAgain = () => { if (ST.perf && !ST.rec && !ST.buf) ST.buf = { kind: 'atk' }; };
   const startPerf = (P, what) => {
     const notes = SV().notes; if (!notes || !notes.length || ST.rec || ST.perf) return false;
     const cost = perfCost(notes);
@@ -177,7 +183,7 @@
     const dur = perfDur(P), cap = Math.max(capOf(P), notes.reduce((a, n) => a + n.d, 0)), bt = dur / cap, c = chordOf(P), dv = pickShift();
     let at = 0; const times = notes.map(n => { const t = at; at += n.d * bt; return t; });
     const mid = notes.map((n, i) => vary(midiOf(n, i, c), c, dv));
-    ST.perf = Object.assign({ t: 0, dur, notes: notes.slice(), times, mid, shown: 0, pid: ++ST.pid }, what);
+    ST.perf = Object.assign({ t: 0, dur, notes: notes.slice(), times, mid, shown: 0, pid: ++ST.pid, held: atkHeld() }, what);   // held：上一格普攻鍵有沒有按著（看「放開再按」用）
     // 2026-10-12 作者：只在開頭彈一次主和弦（照選的和弦），延音整個小節；音量比原本每拍的和弦大 10%。奏域師用管風琴。
     // 最後一拍再彈一次和弦收尾（2026-10-13 改回大調）。戰鼓手：加一小節鼓。
     const len = i => Math.max(0.08, notes[i].d * bt * 0.9), bar = cap * bt;
@@ -407,16 +413,17 @@
   R.castSlot = i => { const P = W().P; if (!IS(P) || !(i >= 1) || !W().run) return cs0(i); return slotCast(P, i); };
   // 普攻：寫樂譜的時候照常射一發（記成八分音符）；有樂譜就先演奏（演奏的時候不能普攻）、演奏完一個一個射出樂譜的音；樂譜是空的就不射
   const at0 = R.attack;
+  window.addEventListener('mousedown', e => { if (e.button === 0 && e.target && e.target.id === 'gl' && IS(W().P) && W().run && !W().paused) atkAgain(); }, true);
+  window.addEventListener('keydown', e => { if ((e.key === 'f' || e.key === 'F') && !e.repeat && IS(W().P) && W().run && !W().paused && !(e.target && /INPUT|TEXTAREA/.test(e.target.tagName))) atkAgain(); }, true);
   // 普攻不耗魔力（2026-10-11 作者：魔力改成每次演奏照樂譜花）：借原本的普攻之前把魔力補到夠扣，扣完還原
   const freeMp = (P, f) => { const mp0 = P.mp, need = (P.ws && P.ws.mp) || 0; if (P.mp < need) P.mp = need; try { return f(); } finally { P.mp = mp0; } };
   R.attack = (...a) => {
     const P = W().P; if (!IS(P) || !W().run || ST.release) return at0(...a);
     // 寫樂譜的時候（2026-10-11 作者）：普攻只記一個八分音符、不發出攻擊（照攻速算下一下）
     if (ST.rec) { if (P.atkCd > 0 || P.dead || P.knockT > 0 || P.stance > 0) return; P.atkCd = 1 / Math.max(0.2, (P.ws && P.ws.rate) || 1); if (P.h) P.h.recoil = 1; addNote(P, { d: 0.5, k: 'n' }); return; }
-    if (ST.perf && !P.dead) { if (!ST.buf) ST.buf = { kind: 'atk' }; return; }
+    if (ST.perf && !P.dead) return;   // 2026-10-15：演奏中不靠這裡記下一次（按住左鍵每一格都會叫到），改看 atkAgain（放開再按）和最後一拍還按著
     if (P.atkCd > 0 || P.dead || P.knockT > 0 || P.stance > 0) return;
     if (!SV().notes || !SV().notes.length) { const t = now(); if (t - ST.hintT > 4) { ST.hintT = t; toast('樂譜是空的，普攻不會發出攻擊——按住 X 寫一段樂譜（寫的時候普攻只記音符）'); } P.atkCd = 0.3; return; }
-    if (ST.perf) { if (!ST.buf) ST.buf = { kind: 'atk' }; return; }   // 演奏中按的普攻記下來（蓋不掉記著的技能）
     if (!startPerf(P, { kind: 'atk' })) P.atkCd = 0.3;
   };
   const perfDone = P => {
@@ -490,8 +497,9 @@
     if (ST.rec) { ST.rec.t += dt; if (ST.rec.t >= REC_T) endRec(P); }
     if (ST.perf) {
       const p = ST.perf; p.t += dt;
+      { const h = atkHeld(); if (h && !p.held) atkAgain(); p.held = h; }   // 演奏中放開再按（手機的右搖桿也算）
       while (p.shown < p.notes.length && p.t >= p.times[p.shown]) { const k = p.shown++, n = p.notes[k]; if (R.num) R.num(P.x + (Math.random() - 0.5) * 0.8, 2.2, P.z, n.d < 1 ? '♪' : n.d < 2 ? '♩' : '♫', n.k === 'a' ? 'crit' : 'heal'); noteAtk(P, n, p.pid); }
-      if (p.t >= p.dur) { perfDone(P); ST.bufGo = true; }
+      if (p.t >= p.dur) { const go = p.kind === 'atk' && atkHeld() && !ST.buf; perfDone(P); if (go) ST.buf = { kind: 'atk' }; ST.bufGo = true; }   // 最後一拍左鍵還按著＝接著演奏
     }
     // 演奏中記下的那一下：演奏完（技能放出去）馬上接著做
     if (ST.bufGo && !ST.perf) { ST.bufGo = false; const b = ST.buf; ST.buf = null; if (b) { try { if (b.kind === 'skill') { if (b.i === 0) R.useSkill(); else R.castSlot(b.i); } else R.attack(); } catch (e) { } } }
@@ -512,7 +520,7 @@
   if (C) Object.assign(C, {
     name: '和弦', col: '#FFB8E0',   // 職業條的顏色跟著和弦（gauge 回傳的 col）
     help: P => '和弦與樂譜：X 點一下換和弦（C 大三＝傷害、Am 小三＝恢復與護盾、20 級 Cmaj7 七和弦＝範圍、30 級 Fmaj9 九和弦＝技能急速、40 級 Dm11 十一和弦＝演奏回魔）；技能數值照最大魔力（治療、護盾＝最大魔力的 %，強化的 +% 每 100 點最大魔力算一次，技能傷害 ×（200＋最大魔力）÷ 300）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
-      + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速每 +1% 演奏快 0.5%；演奏中按的普攻或技能會記一個、演奏完馬上接著放（技能優先）；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。普攻音符的護盾每段演奏刷新；技能給的護盾另外算、可以跟普攻護盾疊在一起（各自時間到才消失）。'
+      + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速每 +1% 演奏快 0.5%；演奏中按的技能，或放開再按一次普攻，會記一個、演奏完馬上接著放（技能優先）；最後一拍左鍵還按著也會接著演奏；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。普攻音符的護盾每段演奏刷新；技能給的護盾另外算、可以跟普攻護盾疊在一起（各自時間到才消失）。'
       + ({ aria: '詠嘆詩人：增益音符效果 ×1.5。', drummer: '戰鼓手：攻擊音符效果 ×1.5；每次演奏打一小節鼓。', serane: '奏域師：八分音符的攻速維持兩倍久；開頭的和弦用管風琴。' }[P && P.adv] || ''),
     step() { }, onCast() { }, play() { },
     act() { },
