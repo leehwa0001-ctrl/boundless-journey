@@ -208,7 +208,7 @@
       const fill = new TH.Mesh(geo('disc', () => new TH.CircleGeometry(1, 28)), basic('#FF2A3A', 0.35)); fill.position.z = 0.002; fill.scale.set(0.05, 0.05, 1); m.add(fill); f.tick = k => fill.scale.set(Math.max(0.05, k), Math.max(0.05, k), 1);
     } else if (kind === 'aim' || kind === 'beam' || kind === 'slash') {
       f.life = kind === 'aim' ? (o.t || 1) : 0.25;
-      const m = add(new TH.Mesh(new TH.PlaneGeometry(kind === 'aim' ? 0.3 : kind === 'slash' ? 1.2 : 1.8, o.len), basic(kind === 'aim' ? '#FF3A4A' : kind === 'slash' ? '#FFFFFF' : '#FF8A9A', kind === 'aim' ? 0.45 : 0.8, true)), true);
+      const m = add(new TH.Mesh(new TH.PlaneGeometry(kind === 'aim' ? 0.3 : kind === 'slash' ? (o.w || 1.2) : 1.8, o.len), basic(kind === 'aim' ? '#FF3A4A' : kind === 'slash' ? '#FFFFFF' : '#FF8A9A', kind === 'aim' ? 0.45 : 0.8, true)), true);
       m.geometry.translate(0, o.len / 2, 0); m.rotation.set(-Math.PI / 2, 0, o.a + Math.PI); m.position.set(x, 0.3, z);
     } else if (kind === 'bolt') {
       f.life = 0.15; const e = o.to, mid = new TH.Vector3((x + e.x) / 2, 1.2, (z + e.z) / 2), len = Math.hypot(e.x - x, e.z - z);
