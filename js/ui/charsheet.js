@@ -76,7 +76,7 @@
     const $ = id => document.getElementById(id);
     $('ps-x').onclick = R.closeSheet;
     $('ps-mute').onclick = () => { R.toggleMute(); R.pauseSheet(); };
-    $('ps-quit').onclick = safe ? () => { R.closeSheet(); if (train && R.trainLeave) R.trainLeave(); else R.extract('exit'); } : () => { R.closeSheet(); R.W.P.hp = 0; R.onPlayerDown(); };
+    $('ps-quit').onclick = safe ? () => { R.closeSheet(); if (train && R.trainLeave) R.trainLeave(); else R.extract('exit'); } : () => { R.closeSheet(); if (R.W.run) R.W.run.gaveUp = true; R.W.P.hp = 0; R.onPlayerDown();   /* gaveUp：放棄（不死不休不會拉你起來，traitdeath.js） */ };
     if ($('ps-hood')) $('ps-hood').onclick = () => { R.toggleHood(); R.pauseSheet(); };
   };
   const css = document.createElement('style');
