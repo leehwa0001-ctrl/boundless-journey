@@ -144,7 +144,7 @@
       if (P._mask > 0) P._mask -= dt;
       // 大招條跟著怒氣：放大招（ult.js 把 P.ult 歸零、P.ulting）就把怒氣用掉
       if (P.ulting) { if (!P._wUlt) { P._wUlt = true; P._rage = 0; P.mp = 0; } } else P._wUlt = false;
-      P.ult = P.ulting ? 0 : P._rage;
+      if (!(R.inTraining && R.inTraining())) P.ult = P.ulting ? 0 : P._rage;   // 2026-10-16 修：訓練場裡大招條照一般的方式累積（不然打木樁怒氣漲不滿，放不了大招）
     },
     onHit(e, d, o, P, killed) {
       if (d <= 0) return;
