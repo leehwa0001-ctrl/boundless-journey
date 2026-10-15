@@ -1,33 +1,25 @@
-// 2026-10-14 召喚物：繞牆追敵、卡住偵測、離太遠自動傳回身邊、IS
+// 2026-10-14 召喚物：繞牆追敵、卡住偵測、離太遠自動傳回身邊（IS 在 2026-10-15 拿掉了）
 // - 遺跡的地圖是方格（dungeon.js 的 F.tile）。遺跡生物本身沒有尋路（只會偏一點方向繞，ruinis.js 的 steer），
 //   召喚物改用方格上的 BFS（8 方向、不切牆角）找路：跟目標之間有牆擋住就照路走，路上挑「看得到的最遠一個路點」（classes2b.js 的 hk.via）。
 // - 卡住偵測：一直在走、但 1 秒內離目標沒有近 0.3 公尺 → 重新找路；連續 2 秒 → 換一隻打（這隻 3 秒內不追）；4 秒 → 傳回召喚師身邊。
 // - 離召喚師超過 TELEPORT_M（20 公尺）→ 傳回身邊（兩邊各一團小煙）。
-// - IS（跟遺跡生物一樣的「單體生存能力」）：召喚物 IS ＝ floor(召喚師等級 ÷ 4)（等級 1→0、20→5、50→12、100→25）。
-//   跟 ruinis.js 一樣：每一級 IS +45 生命、每一下 +2 傷害（召喚師本來的 ×1.4 傷害、×1.3 血量照舊，IS 的加值另外加在上面）。
-//   技能格上方的召喚物標籤、召喚物頭上的名牌顯示 [IS：N]（0 也顯示）。
+// - 2026-10-15 作者《特質與熟練度》第五節：召喚物不再套 IS（原本 floor(等級÷4) 級，每級 +45 生命、+2 傷害），召喚物的等級之後另外做（Q44）。
 // 放在 summoncarry.js、classes2b.js、summoncraft.js 後面。
 (function (R) {
-  const W = () => R.W, $ = id => document.getElementById(id);
+  const W = () => R.W;
   const isS = P => !!(P && P.cls === 'summoner');
-  const TELEPORT_M = 20, STUCK_T = 1, DROP_T = 2, TP_T = 4, IS_DIV = 4;
-  const RIS = R.RUIN_IS || { HP_PER: 45, DMG_PER: 2 };
-  R.SUMMON_AI = { TELEPORT_M, STUCK_T, DROP_T, TP_T, IS_DIV };
-  const lvOf = P => (P && P.lv) || (R.S && R.S.classes && R.S.classes.summoner && R.S.classes.summoner.lv) || 1;
-  R.summonIS = P => Math.max(0, Math.floor(lvOf(P) / IS_DIV));
-  // ---------- IS ----------
+  const TELEPORT_M = 20, STUCK_T = 1, DROP_T = 2, TP_T = 4;
+  R.SUMMON_AI = { TELEPORT_M, STUCK_T, DROP_T, TP_T };
+  // ---------- 土犬、鴉群、蟲群 ----------
   const pi0 = R.petInit;
   R.petInit = (pet, P, s, w) => {
     if (pi0) pi0(pet, P, s, w);
     if (!isS(P)) return;
-    const is = R.summonIS(P); pet.is = is;
     const id = s && s._id;
     if (id === 'sn_dog') { pet.upkeep = (pet.upkeep || 0) * 2; if (pet.hpMax) pet.hpMax *= 2; }   // 土犬：維持魔力 ×2、血量 ×2（攻擊速度 ×2 在 rate）
     if (s && s.ghost) { pet.ghost = 1; pet.hpMax = 0; pet.hp = 0; }   // 鴉群、蟲群：敵人打不到、沒有血條
-    if (pet.hpMax) { pet.hpMax = Math.round(pet.hpMax + RIS.HP_PER * is); pet.hp = pet.hpMax; }
+    if (pet.hpMax) { pet.hpMax = Math.round(pet.hpMax); pet.hp = pet.hpMax; }
   };
-  const he0 = R.hurtEnemy;
-  R.hurtEnemy = (e, raw, o) => { const p = R.petHitter; if (p && p.is > 0 && raw > 0) raw += RIS.DMG_PER * p.is; return he0(e, raw, o); };
   // ---------- 方格尋路 ----------
   const TL = () => W() && W().F && W().F.tile;
   const FLOOR = (R.TILE && R.TILE.FLOOR);
@@ -65,7 +57,7 @@
     if (!t || t.dead || Math.hypot(t.x - pet.x, t.z - pet.z) > reach || !clear(pet.x, pet.z, t.x, t.z)) return null;
     if (pet.cd <= 0) {
       pet.cd = s.rate || 0.9;
-      const a = Math.atan2(t.x - pet.x, t.z - pet.z), dmg = (pet.pw || 10) * (s.k || 0.5) * (pet.mul || 1) * (pet.dK || 1) + RIS.DMG_PER * (pet.is || 0);
+      const a = Math.atan2(t.x - pet.x, t.z - pet.z), dmg = (pet.pw || 10) * (s.k || 0.5) * (pet.mul || 1) * (pet.dK || 1);
       R.fire && R.fire({ kind: 'spirit', owner: 'p', x: pet.x, z: pet.z, a, speed: 18, dmg, life: (reach + 3) / 18, pierce: 99, vSk: 'summon' });
       pet._shots = (pet._shots || 0) + 1;
     }
@@ -125,24 +117,4 @@
     };
   }
   R.SUMMON_ULT = { K: ULT_K, T: ULT_T, SHIELD: ULT_SHIELD };
-  // ---------- 名牌 [IS：N] ----------
-  const tags = new Map();
-  const drawTags = () => {
-    const w = W(), P = w && w.P, cam = w && w.camera, TH = window.THREE, on = isS(P) && w.run && !w.run.done && cam && TH;
-    const live = on ? (R.PETS || []).filter(p => !p.gone && p.left > 0 && p.is != null) : [];
-    tags.forEach((el, p) => { if (!live.includes(p)) { el.remove(); tags.delete(p); } });
-    if (!on) return;
-    const cv = $('gl'), rc = cv ? cv.getBoundingClientRect() : { left: 0, top: 0, width: innerWidth, height: innerHeight };
-    live.forEach(p => {
-      let el = tags.get(p); if (!el) { el = document.createElement('div'); el.className = 'sm-is'; el.textContent = '[IS：' + p.is + ']'; document.body.appendChild(el); tags.set(p, el); }
-      const v = new TH.Vector3(p.x, 1.6, p.z).project(cam); if (v.z > 1) { el.style.display = 'none'; return; }
-      el.style.display = 'block'; el.style.left = (rc.left + (v.x + 1) / 2 * rc.width) + 'px'; el.style.top = (rc.top + (1 - v.y) / 2 * rc.height) + 'px';
-    });
-  };
-  try {
-    const css = document.createElement('style');
-    css.textContent = '.sm-is{position:fixed;z-index:39;pointer-events:none;transform:translate(-50%,-100%);font:bold 10px/1.2 sans-serif;color:#cfe8b0;background:rgba(10,14,8,.7);border:1px solid #4a5a3a;border-radius:3px;padding:0 3px;white-space:nowrap;display:none}';
-    document.head.appendChild(css);
-    const loop = () => { try { drawTags(); } catch (e) { } requestAnimationFrame(loop); }; requestAnimationFrame(loop);
-  } catch (e) { }
 })(window.R);
