@@ -1,6 +1,13 @@
 // 補齊召喚、毒附魔與法術編排的簡潔色塊圖示。
 (function (R) {
   const map = R.SKILL_ART_MAP;
+  // 30 級技能各自使用專屬主圖，與原有奧義分開。
+  map.sheets['lv30-v1'] = { file: 'skills-lv30-v1.webp', cols: 4, rows: 4 };
+  ['gunner', 'archer', 'warrior', 'mage', 'priest', 'blade', 'knight',
+    'monk', 'bard', 'summoner', 'arraymage', 'enchanter', 'scroll'].forEach((cls, tile) => {
+    const id = 'l30_' + cls;
+    map.icons[id] = { sheet: 'lv30-v1', tile, family: id };
+  });
   map.sheets['utility-v1'] = { file: 'utility-v1.webp', cols: 3, rows: 1 };
   ['bag', 'order', 'dodge'].forEach((id, tile) => { map.icons['ui:' + id] = {sheet:'utility-v1',tile,family:'ui:' + id}; });
   const ids = ['bl_alpha', 'bl_pack', 'en_burst', 'element:wood', 'element:wind',
