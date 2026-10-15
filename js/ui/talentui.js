@@ -143,7 +143,8 @@
     const n = BY[sel && sel.id] || T.ROOT[0], s = stateOf(n), o = layout(T).nodes.find(q => q.n === n), col = o ? o.col : '#E8C04A', cost = R.talentCost ? R.talentCost(n.id) : 1;
     return '<div class="tu-dt' + (o && o.cap ? ' cap' : '') + '" style="--tc:' + col + '"><div class="tu-big"><img src="' + tIcon(n.id) + '" alt=""></div><h4>' + esc(n.n) + '</h4><div class="tu-lv">' + s.v + (n.mx > 99 ? ' 級' : ' ／ ' + n.mx) + '</div><hr>'
       + (n.tr ? '<p>每級：<span class="tu-pos">' + esc(n.d.split('｜')[0]) + '</span><br><span class="tu-neg">代價：' + esc(n.d.split('｜')[1] || '') + '</span></p>' : '<p>每級：' + esc(n.d) + '</p>') + '<p class="tu-meta">' + esc(o ? o.where : '歷練') + (o && o.cap ? '・奧義只能學一個' : '') + '</p>'
-      + (s.full ? '<p class="tu-ok">滿級</p>' : s.w ? '<p class="tu-why">' + esc(s.w) + '</p>' : '<button type="button" class="btn pri" data-tuadd="' + n.id + '"' + (free >= cost ? '' : ' disabled') + '>+1（' + cost + ' 點）' + (free >= cost ? '' : '・點數不足') + '</button>')
+      + (s.full ? '<p class="tu-ok">滿級</p>' : s.w ? '<p class="tu-why">' + esc(s.w) + '</p>' : '<button type="button" class="btn pri" data-tuadd="' + n.id + '"' + (free >= cost ? '' : ' disabled') + '>+1（' + cost + ' 點）' + (free >= cost ? '' : '・點數不足') + '</button>'
+        + ' <button type="button" class="btn" data-tumax="' + n.id + '"' + (free >= cost ? '' : ' disabled') + ' title="一直加到滿級或點數用完">點滿</button>')   // 2026-10-15 作者：不用一下一下點到 5
       + '</div>';
   };
   const build = (where, host) => {
@@ -161,6 +162,7 @@
     host.querySelectorAll('[data-tun]').forEach(b => { b.onclick = () => { sel = { k: 'tal', id: b.dataset.tun }; again(); }; });
     host.querySelectorAll('[data-tus]').forEach(b => { b.onclick = () => { sel = { k: 'skill', id: b.dataset.tus }; again(); }; });
     host.querySelectorAll('[data-tuslot]').forEach(b => { b.onclick = () => { if (R.talentBuySlot && R.talentBuySlot()) { R.sfx && R.sfx('levelup'); R.toast && R.toast('奧義多開了一格：可以再學一個奧義。', '#E8C04A'); again(); } }; });
+    host.querySelectorAll('[data-tumax]').forEach(b => { b.onclick = () => { let n = 0; while (n < 50 && R.talentAdd(b.dataset.tumax)) n++; if (n) { R.sfx && R.sfx('pick'); again(); } }; });
     host.querySelectorAll('[data-tuadd]').forEach(b => { b.onclick = () => { if (R.talentAdd(b.dataset.tuadd)) { R.sfx && R.sfx('pick'); again(); } }; });
   };
   const scrolls = () => [$('hub-sheet'), $('r-sheet'), document.scrollingElement].filter(Boolean).map(el => [el, el.scrollTop]);
