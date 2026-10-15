@@ -1,7 +1,7 @@
 // 30 級技能（2026-10-15 作者：各職業 30 等學一個類似大招的小技能，冷卻 60～90 秒、收益很高）
 // - 職業等級 30 自動學會，按 B（手機：右下角的「奧」鈕）放；冷卻每一趟遺跡重新算，暫停不算。
-// - 槍手 全彈發射、弓箭手 千矢、戰士 不屈、術士 天墜（大隕石，代價：佩特拉的注意直接滿 100）、牧師 神蹟、刀客 刀意解放、騎士 聖壁、
-//   武術家 百裂拳、吟遊詩人 大合奏、召喚師 百鬼集結、術陣師 陣界展開、附魔師 刻印共鳴、符卷師 千符陣。
+// - 2026-10-15 作者：盡量以傷害型為主——槍手 全彈發射、弓箭手 千矢、戰士 斷岳、術士 天墜（大隕石，代價：佩特拉的注意直接滿 100）、牧師 審判之光、
+//   刀客 刀意解放、騎士 聖槍衝鋒、武術家 百裂拳、吟遊詩人 大合奏、召喚師 百鬼夜襲、術陣師 陣界崩落、附魔師 刻印爆裂、符卷師 千符陣。
 // - 傷害的基準用大招的基準（ult.js 的 R.ultBase）。
 // 放在 classcore.js、classcore2.js、bardchord.js、ult.js 後面。
 (function (R) {
@@ -21,32 +21,42 @@
       const [x, z] = aimPt(P, 14), dmg = base(P) * 0.35; R.fx && R.fx('mark', x, 0, z, { r: 4, t: 4 });
       for (let i = 0; i < 16; i++) later(() => { R.fx && R.fx('rain', x, 0, z, { r: 4 }); R.aoe(x, z, 4, dmg); }, i * 250);
       P._hawk = Math.max(P._hawk || 0, (R.legOf ? R.legOf(P) : null) === 'lg_hawkking' ? 8 : 5); } },
-    warrior: { n: '不屈', cd: 90, d: '8 秒內不會被打死（最少留 1 點生命），受到的傷害一半轉成怒氣；結束時回 30% 生命。', go(P) {
-      T.undying = CT() + 8; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3, color: '#E8503A' }); later(() => { if (W().P === P) R.healP(P.hpMax * 0.3); }, 8000); } },
+    warrior: { n: '斷岳', cd: 75, d: '往準心跳過去（最遠 8 公尺）重重砸下：落點半徑 4.5 公尺大範圍傷害、暈眩 1.5 秒，打中的每一隻多 6 怒氣。', go(P) {
+      const [x, z] = aimPt(P, 8), dmg = base(P) * 3.2; P.jump = { t: 0, dur: 0.6, x0: P.x, z0: P.z, x1: x, z1: z }; P.air = 0.6; R.fx && R.fx('mark', x, 0, z, { r: 4.5, t: 0.6 });
+      later(() => { R.fx && R.fx('boom', x, 0.4, z, { r: 4.5, color: '#E8503A' }); R.fx && R.fx('ring', x, 0.1, z, { r: 4.5, color: '#FFB45A' }); R.shake && R.shake(0.5);
+        const n = (W().enemies || []).filter(e => !e.dead && Math.hypot(e.x - x, e.z - z) < 4.5 + e.def.size * 0.5).length; R.aoe(x, z, 4.5, dmg, { stun: 1.5, kb: 2 });
+        const C = R.CORE && R.CORE.warrior; if (C && n) C.add(P, 6 * n); }, 620); } },
     mage: { n: '天墜', cd: 80, d: '1.5 秒後在準心處砸下一顆大隕石（半徑 7 公尺、非常痛、燃燒）。代價：佩特拉的注意直接滿 100。', go(P) {
       const [x, z] = aimPt(P, 16), dmg = base(P) * 4; R.fx && R.fx('mark', x, 0, z, { r: 7, t: 1.5 });
       later(() => { R.fx && R.fx('boom', x, 0.6, z, { r: 7, color: '#FF7A3A' }); R.fx && R.fx('ring', x, 0.1, z, { r: 7, color: '#FFB45A' }); R.aoe(x, z, 7, dmg, { burn: true, kb: 3 }); R.shake && R.shake(0.6);
         const run = W().run; if (run && R.addAware) R.addAware(1000, 'boom'); else if (run) run.aware = 100; }, 1500); } },
-    priest: { n: '神蹟', cd: 90, d: '自己和 8 公尺內的隊友回滿生命、清掉負面狀態、無敵 3 秒。', go(P) {
-      const w = W(); P.hp = P.hpMax; P.slowT = 0; P.knockT = 0; if (P.st) Object.keys(P.st).forEach(k => { if (typeof P.st[k] === 'number') P.st[k] = 0; }); P.iframe = Math.max(P.iframe || 0, 3);
-      (w.allies || []).concat(w.run && w.run.party || []).forEach(a => { if (a && a.hp != null && a.hpMax && !a.dead && Math.hypot((a.x || 0) - P.x, (a.z || 0) - P.z) < 8) a.hp = a.hpMax; });
-      R.fx && R.fx('pillar', P.x, 0, P.z, { r: 2, color: '#FFE8A0' }); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 8, color: '#FFE8A0' }); } },
-    blade: { n: '刀意解放', cd: 60, d: '刀意直接集滿，5 秒內普攻不用衝刺、刀刀必定暴擊。', go(P) {
-      P._iai = Math.max(P._iai || 0, P.pv && P.pv.bdMunen ? 200 : 100); P._l30BdT = CT() + 5; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3, color: '#FFFFFF' }); } },
-    knight: { n: '聖壁', cd: 75, d: '面前 2 公尺立一道 6 公尺寬的光牆 6 秒：擋下所有子彈、遺跡生物過不去，牆後的你和隊友受到的傷害 −50%。', go(P) {
-      const a = P.aimA, cx = P.x + Math.sin(a) * 2, cz = P.z + Math.cos(a) * 2; T.wall = { cx, cz, a, half: 3, end: CT() + 6 };
-      for (let i = -3; i <= 3; i++) R.fx && R.fx('pillar', cx + Math.cos(a) * i, 0, cz - Math.sin(a) * i, { r: 0.6, color: '#FFE8A0' }); } },
+    priest: { n: '審判之光', cd: 80, d: '準心處落下三道審判光柱（半徑 5 公尺，每 0.4 秒一道），最後一道讓敵人暈眩；光柱照到的隊友各回 15% 生命。', go(P) {
+      const [x, z] = aimPt(P, 13), dmg = base(P) * 1.3; R.fx && R.fx('mark', x, 0, z, { r: 5, t: 1.4 });
+      for (let i = 0; i < 3; i++) later(() => { R.fx && R.fx('pillar', x, 0, z, { r: 3, color: '#FFE8A0' }); R.fx && R.fx('ring', x, 0.1, z, { r: 5, color: '#FFE8A0' }); R.aoe(x, z, 5, dmg, i === 2 ? { stun: 1.2 } : {}); R.shake && R.shake(0.25);
+        if (Math.hypot(P.x - x, P.z - z) < 5) R.healP(P.hpMax * 0.15); (W().allies || []).forEach(a => { if (a && !a.dead && a.hp != null && a.hpMax && Math.hypot(a.x - x, a.z - z) < 5) a.hp = Math.min(a.hpMax, a.hp + a.hpMax * 0.15); }); }, 400 + i * 400); } },
+    blade: { n: '刀意解放', cd: 60, d: '原地一圈拔刀斬（半徑 4.5 公尺、大傷害），刀意直接集滿；之後 5 秒內普攻不用衝刺、刀刀必定暴擊。', go(P) {
+      R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 4.5, color: '#FFFFFF' }); R.melee(P.aimA, 4.5, Math.PI * 2, base(P) * 2.4, 0, 0, 0, { crit: true, primary: false, hs: 1, big: true }); R.shake && R.shake(0.35);
+      P._iai = Math.max(P._iai || 0, P.pv && P.pv.bdMunen ? 200 : 100); P._l30BdT = CT() + 5; } },
+    knight: { n: '聖槍衝鋒', cd: 75, d: '舉槍往前衝 10 公尺（衝的時候無敵），撞到的敵人大傷害、擊退；衝到底再爆開一圈（半徑 3.5 公尺）。', go(P) {
+      const a = P.aimA, dmg = base(P) * 2.2; R.dash(a, 10, 0.35, { iframe: true, hit: dmg, stun: 0.8, kb: 3 });
+      later(() => { R.fx && R.fx('boom', P.x, 0.4, P.z, { r: 3.5, color: '#FFE8A0' }); R.aoe(P.x, P.z, 3.5, dmg * 0.8, { kb: 2 }); R.shake && R.shake(0.35); }, 380); } },
     monk: { n: '百裂拳', cd: 60, d: '2 秒內往前連打 20 拳（每拳 0.6 倍普攻），連段直接 +20。', go(P) {
       const dmg = ((P.ws && P.ws.dmg) || 10) * 0.6; for (let i = 0; i < 20; i++) later(() => { R.swingAnim && R.swingAnim(P.h, 0.02, 0.08); R.melee(P.aimA + (rnd() - 0.5) * 0.5, 3, 1.2, dmg, 0, 0, 0, { dir: i % 2 ? -1 : 1, hs: 1, primary: false }); }, i * 100);
       const C = R.CORE && R.CORE.monk; P._combo = Math.min(C && C.max ? C.max(P) : 100, (P._combo || 0) + 20); P._comboT = CT(); } },
     bard: { n: '大合奏', cd: 75, d: '把目前的樂譜立刻演奏兩次（音符一個一個射出去），不耗魔、不用等演奏時間。', go(P) {
       if (!R.bardEncore || !R.bardEncore(P, 2)) { R.toast && R.toast('樂譜是空的：先按住 X 寫一段樂譜'); return false; } } },
-    summoner: { n: '百鬼集結', cd: 90, d: '所有技能的冷卻歸零（馬上能把召喚物全部叫出來），10 秒內召喚物的傷害 ×2。', go(P) {
-      P.skillCd = 0; if (P.skCd) P.skCd = P.skCd.map(() => 0); T.pets = CT() + 10; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 4, color: '#B8E07A' }); } },
-    arraymage: { n: '陣界展開', cd: 80, d: '腳下展開 8 公尺的大法陣 8 秒：站在裡面時技能冷卻轉快 3 倍、造成的傷害 +50%。', go(P) {
-      T.field = { x: P.x, z: P.z, r: 8, end: CT() + 8 }; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 8, color: '#7AC8E8' }); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 6, color: '#BFF0FF' }); } },
-    enchanter: { n: '刻印共鳴', cd: 75, d: '6 秒內所有刻印一起共鳴：傷害 +25%、打中的敵人燃燒又變慢、攻速 +20%、技能冷卻轉快 2 倍。', go(P) {
-      const ws = P.ws; if (ws) { T.ench = { ws, r0: ws.rate, end: CT() + 6 }; ws.rate *= 1.2; } R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3, color: '#FF9A6A' }); } },
+    summoner: { n: '百鬼夜襲', cd: 80, d: '叫出 10 道鬼影，從四面八方撲向準心附近 6 公尺內的敵人（每道小範圍傷害），召喚物 10 秒內傷害 ×2。', go(P) {
+      const [x, z] = aimPt(P, 13), dmg = base(P) * 0.55; T.pets = CT() + 10; R.fx && R.fx('mark', x, 0, z, { r: 6, t: 1.6 });
+      for (let i = 0; i < 10; i++) later(() => { const es = (W().enemies || []).filter(e => !e.dead && Math.hypot(e.x - x, e.z - z) < 6), tg = es[Math.floor(rnd() * es.length)], a = rnd() * 6.28, tx = tg ? tg.x : x + Math.sin(a) * rnd() * 5, tz = tg ? tg.z : z + Math.cos(a) * rnd() * 5;
+        R.fx && R.fx('poof', tx, 1, tz, { color: '#B8E07A', n: 14 }); R.fx && R.fx('ring', tx, 0.1, tz, { r: 1.6, color: '#B8E07A' }); R.aoe(tx, tz, 1.6, dmg); }, 150 + i * 150); } },
+    arraymage: { n: '陣界崩落', cd: 80, d: '準心處畫一個 8 公尺的巨大法陣，1.5 秒後整片崩落（大傷害），接著外圈再爆一次。', go(P) {
+      const [x, z] = aimPt(P, 14), dmg = base(P) * 3.2; R.fx && R.fx('mark', x, 0, z, { r: 8, t: 1.5 }); R.fx && R.fx('ring', x, 0.1, z, { r: 8, color: '#7AC8E8' });
+      later(() => { R.fx && R.fx('boom', x, 0.5, z, { r: 8, color: '#7AC8E8' }); R.aoe(x, z, 8, dmg, { kb: 1 }); R.shake && R.shake(0.5); }, 1500);
+      later(() => { R.fx && R.fx('ring', x, 0.1, z, { r: 10, color: '#BFF0FF' }); R.aoe(x, z, 10, dmg * 0.4); }, 1900); } },
+    enchanter: { n: '刻印爆裂', cd: 75, d: '五種刻印依序在準心處爆開（半徑 3.5 公尺，每 0.3 秒一下）：焰燃燒、霜變慢、雷暈眩、風擊退、金讓敵人 5 秒受到的傷害 +20%。', go(P) {
+      const [x, z] = aimPt(P, 12), dmg = base(P) * 0.8, RU = [['#FF6A2A', { burn: true }], ['#9AD8FF', {}], ['#FFE070', { stun: 0.8 }], ['#BFF0E0', { kb: 3 }], ['#D8C890', {}]];
+      RU.forEach(([c, o], i) => later(() => { R.fx && R.fx('boom', x, 0.4, z, { r: 3.5, color: c }); R.aoe(x, z, 3.5, dmg, o);
+        (W().enemies || []).forEach(e => { if (e.dead || Math.hypot(e.x - x, e.z - z) > 3.5 + e.def.size * 0.5) return; if (i === 1 && e.st) e.st.slow = Math.max(e.st.slow || 0, 3); if (i === 4) e._sunder = CT() + 5; }); }, i * 300)); } },
     scroll: { n: '千符陣', cd: 70, d: '6 秒內每 0.5 秒在身邊 6 公尺內自動落一張攻擊符（半徑 1.8 公尺）。', go(P) {
       const dmg = base(P) * 0.45;
       for (let i = 0; i < 12; i++) later(() => { const es = (W().enemies || []).filter(e => !e.dead && Math.hypot(e.x - P.x, e.z - P.z) < 6), tg = es[Math.floor(rnd() * es.length)], a = rnd() * 6.28, d = rnd() * 5, x = tg ? tg.x : P.x + Math.sin(a) * d, z = tg ? tg.z : P.z + Math.cos(a) * d;
