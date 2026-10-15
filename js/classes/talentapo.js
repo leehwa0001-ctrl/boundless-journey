@@ -1,7 +1,8 @@
 // 奧義・天啟點滿：天啟狀態（2026-10-08 作者：重製天啟點滿後的效果）
 // - 魔力填滿（100%）的那一刻進入「天啟」（增益，畫面下方的狀態格看得到），一直留著到放出下一招技能。
 // - 天啟狀態放出去的下一招：額外消耗最大魔力的 50%；如果「這一招的魔力＋50%」超過手上的魔力，就只扣放完之後剩下的。
-//   每額外消耗 1 點魔力，那一招的傷害、持續時間、攻擊範圍、效果各 +1%（例：最大魔力 200 → 多扣 100 → 全部 +100%）。
+//   每額外消耗 1 點魔力，那一招的傷害、持續時間、攻擊範圍、效果各 +1%；2026-10-16 作者：超過 100 點的部分改成只再加 √（消耗的魔力）%
+//   （例：多扣 100 → +100%；多扣 400 → +100% + √400 = +120%）。
 //   · 範圍、持續時間、效果：照那一招的參數放大（技能書的招式、連段的每一段都算）。
 //   · 傷害：放出去之後 2.5 秒（加上衝刺、旋轉這類動作的時間）內，技能打出去的傷害都乘上去；這段時間又放了別的招就提早結束。
 // - 點滿的另一個效果：每秒額外回復 3% 最大魔力。
@@ -46,13 +47,13 @@
     const i = slotOf(a), c0 = cdOf(P, i);
     if (!P.apo) { const r0 = f(...a); if (cdOf(P, i) > c0 + 0.01) P._apoDmg = null; return r0; }   // 放了別的招：上一招的天啟傷害結束
     const prevWin = P._apoDmg, id = slotId(P, i), sk = id && R.SKILLS && R.SKILLS[id];
-    const extra = extraOf(P, sk ? sk.mp : 0), K = 1 + extra / 100;
+    const extra = extraOf(P, sk ? sk.mp : 0), bonus = extra <= 100 ? extra : 100 + Math.sqrt(extra), K = 1 + bonus / 100;
     P._apoDmg = { k: K, until: now() + 3 }; cur = K;
     let ret; try { ret = f(...a); } finally { cur = 1; }
     if (cdOf(P, i) > c0 + 0.01) {
       P.apo = false; P.mp = Math.max(0, (P.mp || 0) - extra);
       P._apoDmg = { k: K, until: now() + 2.5 + castTime(P) };
-      R.num && R.num(P.x, 3, P.z, '天啟 +' + Math.round(extra) + '%', 'crit');
+      R.num && R.num(P.x, 3, P.z, '天啟 +' + Math.round(bonus) + '%', 'crit');
       R.fx && R.fx('pillar', P.x, 0, P.z, { r: 1.2, color: '#FFE08A' });
     } else P._apoDmg = prevWin && prevWin.until > now() ? prevWin : null;   // 沒放出去：照舊
     return ret;
@@ -86,7 +87,7 @@
   // ---------- 狀態格 ----------
   (R.STATUS_EXTRA = R.STATUS_EXTRA || []).push((P, run, add) => {
     if (!P || !on(P)) return;
-    if (P.apo) { const x = Math.round(extraOf(P, 0)); add('apo', '天啟', 'spark', '#FFE08A', ['下一招額外消耗最大魔力的 50%（現在最多 ' + x + ' 點，扣掉那一招的魔力之後算）', '每多消耗 1 點魔力：那一招的傷害、持續時間、範圍、效果 +1%'], null, null, false); }
+    if (P.apo) { const x = Math.round(extraOf(P, 0)); add('apo', '天啟', 'spark', '#FFE08A', ['下一招額外消耗最大魔力的 50%（現在最多 ' + x + ' 點，扣掉那一招的魔力之後算）', '每多消耗 1 點魔力：那一招的傷害、持續時間、範圍、效果 +1%（超過 100 點的部分改成 +√消耗的魔力 %）'], null, null, false); }
     const d = P._apoDmg, t = d ? d.until - now() : 0;
     if (d && t > 0) add('apo-on', '天啟・發動中', 'spark', '#FFC84A', ['技能的傷害 ×' + d.k.toFixed(2)], t, 2.5, false);
   });
