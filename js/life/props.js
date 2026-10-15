@@ -50,6 +50,7 @@
   const bt = R.buildTown;
   R.buildTown = scene => { steals = []; bt(scene); };
   const startSteal = st => {
+    if (R.hasTrait && R.hasTrait('liangmin')) { R.toast('你是良民：別人的東西不碰。'); return; }   // 特質「良民」
     if (st.left <= 0) { R.toast('裡面已經空了。'); return; }
     if (C.ch) return;
     C.ch = { st, t: 0, x: W.P.x, z: W.P.z };
@@ -129,7 +130,7 @@
   R.crimeHide = dt => { if (C.heat <= 0) return; C.lostT += dt; if (C.lostT > (6 + C.heat * 3) * K().lost) { C.heat--; C.lostT = 0; if (!C.heat) R.toast('外面的衛兵好像走了。'); } };
   const done = st => {
     C.ch = null; st.left--;
-    const l = st.loot(); let what = '';
+    const l = st.loot(); let what = ''; if (l.gold && R.stealGold) l.gold = R.stealGold(l.gold);   // 特質「扒手」+35%（traitlife.js）
     if (l.mat) { S().mats[l.mat] = (S().mats[l.mat] || 0) + l.n; what = R.MATS[l.mat].name + ' ×' + l.n; }
     else if (l.gift) { addGift(l.gift, l.n); what = R.GIFTS[l.gift].name + ' ×' + l.n; }
     else if (l.potion) { S().potions[l.potion] = (S().potions[l.potion] || 0) + 1; what = l.potion === 'hp' ? '回復藥' : '魔力藥'; }
@@ -182,7 +183,7 @@
   R.vendingBuy = () => {
     const p = price(6, 'dex'); if (p == null) { refuse('自動販賣機旁的店員'); return; }
     const s = S(); if (s.gold < p) { R.toast('錢不夠。'); return; }
-    s.gold -= p; s.buff = { kind: 'drink', b: { regen: 0.4 }, until: s.day }; R.save();
+    s.gold -= p; s.buff = { kind: 'drink', b: { regen: 0.4 }, until: s.day }; R.ateFood && R.ateFood(s.buff); R.save();
     R.toast('喀啦一聲掉下來一罐熱的。（今天下遺跡：慢慢回復生命）');
   };
   R.searchTrash = sx => {
@@ -201,7 +202,7 @@
       '<div class="row"><button type="button" class="btn" id="cf-x">走了</button></div>');
     $('cf-x').onclick = R.closeSheet;
     const B = { coffee: { skillCd: 0.1 }, cocoa: { hp: 0.06 }, tea: { mp: 0.12 } };
-    document.querySelectorAll('[data-cafe]').forEach(b => { b.onclick = () => { const s = S(); if (s.gold < p) return; s.gold -= p; s.buff = { kind: 'cafe', b: B[b.dataset.cafe], until: s.day }; R.save(); R.closeSheet(); R.toast('暖和多了。（今天下遺跡有效）'); }; });
+    document.querySelectorAll('[data-cafe]').forEach(b => { b.onclick = () => { const s = S(); if (s.gold < p) return; s.gold -= p; s.buff = { kind: 'cafe', b: B[b.dataset.cafe], until: s.day }; R.ateFood && R.ateFood(s.buff); R.save(); R.closeSheet(); R.toast('暖和多了。（今天下遺跡有效）'); }; });
   };
   // 零件行、德克斯凡商行：禮物用的東西
   R.dexShop = k => {

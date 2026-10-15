@@ -86,7 +86,7 @@
       tw.inter.push({ x, z: z + 1.4, r: 2, label: name, when: () => g.visible, act: () => menu() });
       L.carts.push({ g, b, v });
     };
-    const eat = (who, food, price, buff, lines) => () => { if (R.S.gold < price) { R.toast('錢不夠。'); return; } R.S.gold -= price; R.S.buff = { kind: 'yatai', b: buff, until: R.S.day }; R.save(); say(who, lines.concat(['（下一趟遺跡：' + Object.keys(buff).map(k => ({ hp: '生命', mp: '魔力', regen: '回復' })[k] + ' 稍微提高').join('、') + '）'])); };
+    const eat = (who, food, price, buff, lines) => () => { if (R.S.gold < price) { R.toast('錢不夠。'); return; } R.S.gold -= price; R.S.buff = { kind: 'yatai', b: buff, until: R.S.day }; R.ateFood && R.ateFood(R.S.buff); R.save(); say(who, lines.concat(['（下一趟遺跡：' + Object.keys(buff).map(k => ({ hp: '生命', mp: '魔力', regen: '回復' })[k] + ' 稍微提高').join('、') + '）'])); };
     cart(566, 312, '屋台拉麵（一碗 8 費拉）', '#C83A3A', eat('拉麵屋台的老闆', '拉麵', 8, { hp: 0.05 }, ['「醬油拉麵一碗——來了！」', '你喝了幾口湯，老闆把裝白蘿蔔的小碟推過來，叫你小心燙。']));
     cart(674, 312, '屋台關東煮（一份 6 費拉）', '#E8C04A', eat('關東煮屋台的阿婆', '關東煮', 6, { mp: 0.06 }, ['「白蘿蔔、蛋、竹輪，再來一塊豆腐？」', '湯頭是昆布熬的，很清甜。']));
   };

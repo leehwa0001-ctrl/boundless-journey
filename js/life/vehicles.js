@@ -148,7 +148,7 @@
     const s = S(), has = s.bikeDay === s.day;
     R.sheet('<p class="kicker">站前廣場</p><h2>租腳踏車</h2><p>「一天 8 費拉。晚上不用特地送回來，我們會收車。」</p>', '<div class="row"><button type="button" class="btn pri" id="rt-go"' + (has ? ' disabled' : '') + '>' + (has ? '今天已經租了' : '租一台（8 費拉）') + '</button><button type="button" class="btn" id="rt-x">不用了</button></div>');
     document.getElementById('rt-x').onclick = R.closeSheet;
-    const go = document.getElementById('rt-go'); if (go) go.onclick = () => { if (s.gold < 8) { R.toast('錢不夠。'); return; } s.gold -= 8; s.bikeDay = s.day; R.save(); R.closeSheet(); const Pl = P(), bk = park('bike', 'bike', Pl.x + 1.2, Pl.z, 0, { rent: true, col: '#C8B040' }); if (bk) mount(bk); };
+    const go = document.getElementById('rt-go'); if (go) go.onclick = () => { const fee = R.cost ? R.cost(8, 'service') : 8; if (s.gold < fee) { R.toast('錢不夠。'); return; } s.gold -= fee; s.bikeDay = s.day; R.save(); R.closeSheet(); const Pl = P(), bk = park('bike', 'bike', Pl.x + 1.2, Pl.z, 0, { rent: true, col: '#C8B040' }); if (bk) mount(bk); };
   };
   const spawnOwnCar = () => {
     const s = S(); if (!s || !s.car) return; const F = C.FAC.dexTrade, home = R.homeParking ? R.homeParking() : null;
@@ -166,7 +166,7 @@
     // 中古車行（德克斯凡商行的前庭）
     { const F = C.FAC.dexTrade; if (F) { const p = freeNear(toW(F[0] + 12), toW(F[1] + 12), 1.0); if (p) { t.inter.push({ x: p[0], z: p[1], r: 2.2, label: '德克斯凡中古車行（看車）', act: shopSheet }); const demo = carMesh('sport'); demo.position.set(p[0] + 3.5, 0, p[1]); demo.rotation.y = Math.PI / 2; t.group.add(demo); R.addBox(p[0] + 1.5, p[0] + 5.5, p[1] - 1, p[1] + 1, 'veh'); } } }
     // 路上的貨車：停下來的時候可以搶
-    (t.cars || []).forEach(c => { t.inter.push({ get x() { return c.x; }, get z() { return c.z; }, r: 3, label: '把司機拉下來搶車（犯罪）', when: () => !V.cur && (c.v || 0) < 1.5 && (t.cars || []).includes(c), act: () => carjack(c) }); });
+    (t.cars || []).forEach(c => { t.inter.push({ get x() { return c.x; }, get z() { return c.z; }, r: 3, label: '把司機拉下來搶車（犯罪）', when: () => !(R.hasTrait && R.hasTrait('liangmin')) && !V.cur && (c.v || 0) < 1.5 && (t.cars || []).includes(c), act: () => carjack(c) }); });
   };
   const carjack = c => {
     const t = tw(); t.cars = t.cars.filter(o => o !== c);

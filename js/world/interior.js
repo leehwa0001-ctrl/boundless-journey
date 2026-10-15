@@ -536,7 +536,7 @@
     $('tv-x').onclick = R.closeSheet;
     if ($('tv-talk')) $('tv-talk').onclick = () => rumor('赤提燈的老闆娘', ['「這裡的客人什麼都聊。」']);
     $('tv-sleep').onclick = () => { if (S.gold < room) return; S.gold -= room; R.closeSheet(); R.sleepInn(); };
-    document.querySelectorAll('[data-eat]').forEach(b => { b.onclick = () => { const m = menu.find(v => v[0] === b.dataset.eat), p = pr(m[2]); if (S.gold < p) return; S.gold -= p; S.buff = { kind: 'food', b: m[4], until: S.day }; R.save(); R.closeSheet(); R.toast(m[1] + '：暖和多了。（今天下遺跡有效）'); }; });
+    document.querySelectorAll('[data-eat]').forEach(b => { b.onclick = () => { const m = menu.find(v => v[0] === b.dataset.eat), p = pr(m[2]); if (S.gold < p) return; S.gold -= p; S.buff = { kind: 'food', b: m[4], until: S.day }; R.ateFood && R.ateFood(S.buff); R.save(); R.closeSheet(); R.toast(m[1] + '：暖和多了。（今天下遺跡有效）'); }; });
   };
   // 睡一晚：日子往前一天，城會重蓋（今天在城裡的人不一樣了），醒來在樓梯口
   R.sleepInn = () => {

@@ -360,10 +360,10 @@
   const eatMenu = (title, say, menu) => {
     const s = S();
     R.sheet('<p class="kicker">吉山</p><h2>' + R.esc(title) + '</h2><p>' + R.esc(say) + '</p><p class="note">吃了之後，今天下遺跡有加成（一天算最後吃的那一餐）。費拉 ' + s.gold + '</p><div class="dn-menu">'
-      + menu.map((m, i) => '<button type="button" class="btn" data-jsf="' + i + '"' + (s.gold < m[1] ? ' disabled' : '') + '><b>' + R.esc(m[0]) + '</b>　' + m[1] + ' 費拉<br><small>' + R.esc(m[2]) + '</small></button>').join('') + '</div>',
+      + menu.map((m, i) => '<button type="button" class="btn" data-jsf="' + i + '"' + (s.gold < R.cost(m[1]) ? ' disabled' : '') + '><b>' + R.esc(m[0]) + '</b>　' + R.cost(m[1]) + ' 費拉<br><small>' + R.esc(m[2]) + '</small></button>').join('') + '</div>',
       '<div class="row"><button type="button" class="btn pri" id="jsf-x">不吃了</button></div>');
     document.getElementById('jsf-x').onclick = R.closeSheet;
-    document.querySelectorAll('[data-jsf]').forEach(b => { b.onclick = () => { const m = menu[+b.dataset.jsf]; if (s.gold < m[1]) return; s.gold -= m[1]; s.buff = { kind: 'food', b: m[3], until: s.day }; R.save(); R.sfx && R.sfx('coin'); R.closeSheet(); R.toast('吃了' + m[0] + '。今天下遺跡有加成。', '#E8C04A'); }; });
+    document.querySelectorAll('[data-jsf]').forEach(b => { b.onclick = () => { const m = menu[+b.dataset.jsf]; if (s.gold < R.cost(m[1])) return; s.gold -= R.cost(m[1]); s.buff = { kind: 'food', b: m[3], until: s.day }; R.ateFood && R.ateFood(s.buff); R.save(); R.sfx && R.sfx('coin'); R.closeSheet(); R.toast('吃了' + m[0] + '。今天下遺跡有加成。', '#E8C04A'); }; });
   };
   // 公會吉山分館
   CK.defineRoom({ id: 'js_guild', name: '公會吉山分館', hint: '委託板上一半是工廠區、礦場的委託', w: 16, d: 12, h: 4.4, floor: 'gran', wall: 'plaster', wain: 'woodD', build(B, K) {

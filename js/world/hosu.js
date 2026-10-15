@@ -84,10 +84,10 @@
   const eat = id => {
     const f = FOOD[id], s = S();
     R.sheet('<p class="kicker">奉主的小吃</p><h2>' + esc(f.name) + '</h2><p>' + esc(f.say) + '</p><p class="note">吃了之後，今天下遺跡有加成（和東鶴的餐廳一樣，一天算最後吃的那一餐）。費拉 ' + s.gold + '</p><div class="dn-menu">'
-      + f.menu.map((m, i) => '<button type="button" class="btn" data-hf="' + i + '"' + (s.gold < m[1] ? ' disabled' : '') + '><b>' + esc(m[0]) + '</b>　' + m[1] + ' 費拉<br><small>' + esc(m[2]) + '</small></button>').join('') + '</div>',
+      + f.menu.map((m, i) => '<button type="button" class="btn" data-hf="' + i + '"' + (s.gold < R.cost(m[1]) ? ' disabled' : '') + '><b>' + esc(m[0]) + '</b>　' + R.cost(m[1]) + ' 費拉<br><small>' + esc(m[2]) + '</small></button>').join('') + '</div>',
       '<div class="row"><button type="button" class="btn pri" id="hf-x">不吃了</button></div>');
     $('hf-x').onclick = R.closeSheet;
-    document.querySelectorAll('[data-hf]').forEach(b => { b.onclick = () => { const m = f.menu[+b.dataset.hf]; if (s.gold < m[1]) return; s.gold -= m[1]; s.buff = { kind: 'food', b: m[3], until: s.day }; R.save(); R.sfx && R.sfx('coin'); R.closeSheet(); R.toast('吃了' + m[0] + '。今天下遺跡有加成。', '#E8C04A'); }; });
+    document.querySelectorAll('[data-hf]').forEach(b => { b.onclick = () => { const m = f.menu[+b.dataset.hf]; if (s.gold < R.cost(m[1])) return; s.gold -= R.cost(m[1]); s.buff = { kind: 'food', b: m[3], until: s.day }; R.ateFood && R.ateFood(s.buff); R.save(); R.sfx && R.sfx('coin'); R.closeSheet(); R.toast('吃了' + m[0] + '。今天下遺跡有加成。', '#E8C04A'); }; });
   };
 
   // ---------- 材質、貼圖 ----------

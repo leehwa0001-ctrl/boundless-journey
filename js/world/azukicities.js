@@ -276,8 +276,8 @@
   R.addTitle && R.addTitle(['railhand', '鐵道手', '搭城際電車／渡輪造訪 8 座城市', '移動相關小費拉 −10%（旅費顯示已含）', { }]);
 
   // ---------- 工具 ----------
-  const pay = (n, why) => { const s = S(); if (!s || s.gold < n) { R.toast('錢不夠（要 ' + n + ' 費拉）' + (why ? '：' + why : ''), '#FF9A6A'); return false; } s.gold -= n; return true; };
-  const buff = (b) => { const s = S(); s.buff = { kind: 'food', b, until: s.day }; R.save(); };
+  const pay = (n, why) => { n = R.cost ? R.cost(n) : n; const s = S(); if (!s || s.gold < n) { R.toast('錢不夠（要 ' + n + ' 費拉）' + (why ? '：' + why : ''), '#FF9A6A'); return false; } s.gold -= n; return true; };
+  const buff = (b) => { const s = S(); s.buff = { kind: 'food', b, until: s.day }; R.ateFood && R.ateFood(s.buff); R.save(); };
   const toastOk = (t, c) => { R.sfx && R.sfx('pick'); R.toast(t, c || '#E8C04A'); };
 
   // ---------- 觀光章 ----------
