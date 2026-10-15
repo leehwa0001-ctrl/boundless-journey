@@ -256,3 +256,50 @@
     }
   } catch (e) { console.warn('[archerdraw] desc', e); }
 })(window.R);
+
+// 弓箭手換上技能箭的時候，地上畫出這支技能射出去會打到哪裡、多大（2026-10-15 作者）
+// - 淡淡的外框＝蓄滿 100% 的範圍；裡面填色的＝現在蓄到的範圍（範圍照續力 % 變大，跟真的射出去一樣）。
+// - 落點型（箭雨、投網、陷阱、標記）：準心處（照技能距離收進來）的圓；連射型：每一支箭飛出去的路線；自己身邊的：腳下的圓；直線、旋風：一條帶子。
+(function (R) {
+  const W = () => R.W, MAXL = 18;
+  const BI = { volley: { type: 'at', p: { range: 12, r: 2.8 } }, trap: { type: 'at', p: { range: 8, r: 1.2 } }, homing: { type: 'shots', p: { n: 8, spread: 0.63, sp: 20, life: 1.6 } }, hamaya: { type: 'line', p: { len: 27, width: 0.5 } }, l30_archer: { type: 'at', p: { range: 14, r: 4 } } };
+  let G = null, cFill, cRing, lines = [], lineFill = [];
+  const mk = () => {
+    const TH = window.THREE, w = W(); if (!TH || !w.scene) return false; if (G && G.parent === w.scene) return true;
+    G = new TH.Group(); G.renderOrder = 3;
+    const mat = (op) => new TH.MeshBasicMaterial({ color: '#9AE07A', transparent: true, opacity: op, depthWrite: false, side: TH.DoubleSide });
+    cFill = new TH.Mesh(new TH.CircleGeometry(1, 40), mat(0.22)); cRing = new TH.Mesh(new TH.RingGeometry(0.95, 1, 48), mat(0.55));
+    [cFill, cRing].forEach(m => { m.rotation.x = -Math.PI / 2; G.add(m); });
+    const pg = new TH.PlaneGeometry(1, 1); pg.translate(0, 0.5, 0);
+    lines = []; lineFill = [];
+    for (let i = 0; i < MAXL; i++) { const o = new TH.Mesh(pg, mat(0.18)), f = new TH.Mesh(pg, mat(0.4)); [o, f].forEach(m => { m.rotation.x = -Math.PI / 2; G.add(m); }); lines.push(o); lineFill.push(f); }
+    w.scene.add(G); return true;
+  };
+  const hideAll = () => { if (G) G.visible = false; };
+  const specOf = id => { if (BI[id]) return BI[id]; const L = R.SKILL_LIB && R.SKILL_LIB[id]; if (L) return L.type === 'combo' ? ((L.p.parts || []).map(x => ({ type: x[0], p: x[1] || {} })).find(x => x.type !== 'buff') || null) : { type: L.type, p: L.p || {} }; return BI[id] || null; };
+  const step0 = R.step;
+  R.step = dt => {
+    const r = step0(dt);
+    try {
+      const w = W(), P = w.P, S = R.archerDraw;
+      if (!w.run || !P || P.dead || P.cls !== 'archer' || !S || S.load == null) { hideAll(); return r; }
+      const id = P.cls === 'archer' ? (S.load === 0 ? P.skill : R.slotSkill ? R.slotSkill(P, S.load) : null) : null, sp = id && specOf(id);
+      if (!sp || !mk()) { hideAll(); return r; }
+      G.visible = true; const y = R.inTraining && R.inTraining() ? 0.27 : 0.07, k = Math.max(0.05, S.p || 0), p = sp.p, a = P.aimA;
+      cFill.visible = cRing.visible = false; lines.forEach(m => { m.visible = false; }); lineFill.forEach(m => { m.visible = false; });
+      const circle = (x, z, rr) => { cRing.visible = cFill.visible = true; cRing.position.set(x, y, z); cRing.scale.set(rr, rr, 1); cFill.position.set(x, y + 0.005, z); cFill.scale.set(rr * k, rr * k, 1); };
+      const strip = (i, x, z, ang, len, wid) => { if (i >= MAXL) return; const o = lines[i], f = lineFill[i]; [o, f].forEach(m => { m.visible = true; m.position.set(x, y, z); m.rotation.z = ang + Math.PI; }); o.scale.set(wid, len, 1); f.scale.set(wid, len * k, 1); f.position.y = y + 0.005; };
+      const aim = range => { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(a) * range, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(a) * range, d = Math.hypot(ax - P.x, az - P.z), q = d > range ? range / d : 1; return [P.x + (ax - P.x) * q, P.z + (az - P.z) * q]; };
+      const t = sp.type;
+      if (t === 'at' || t === 'mark' || t === 'zone' || t === 'hook') { const [x, z] = aim(p.range || 10); circle(x, z, (p.r || 1.5) + (p.scatter || 0)); }
+      else if (t === 'nova' || t === 'aura' || t === 'storm') circle(P.x, P.z, p.r || 3);
+      else if (t === 'chainx') circle(P.x, P.z, p.range || 10);
+      else if (t === 'shots' || t === 'shotx') { const n = Math.min(MAXL, p.n || 1), spr = p.spread || 0.3, len = (p.sp || (t === 'shotx' ? 26 : 28)) * (p.life || 0.9); for (let i = 0; i < n; i++) { const aa = a + (n > 1 ? (spr >= 6 ? i / n * Math.PI * 2 : (i - (n - 1) / 2) * spr / (n - 1) * 2) : 0); strip(i, P.x, P.z, aa, len, 0.35); } }
+      else if (t === 'line') strip(0, P.x, P.z, a, p.len || 6, (p.width || 0.6) * 2);
+      else if (t === 'wave') strip(0, P.x, P.z, a, (p.n || 4) * (p.step || 1.5), (p.r || 1.2) * 2);
+      else if (t === 'dash') strip(0, P.x, P.z, p.side ? a + Math.PI / 2 : a, p.len || 4, 0.8);
+      else hideAll();
+    } catch (e) { hideAll(); }
+    return r;
+  };
+})(window.R);

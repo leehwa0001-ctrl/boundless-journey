@@ -1,5 +1,5 @@
 // 30 級技能（2026-10-15 作者：各職業 30 等學一個類似大招的小技能，冷卻 60～90 秒、收益很高）
-// - 職業等級 30 自動學會，按 B（手機：右下角的「奧」鈕）放；冷卻每一趟遺跡重新算，暫停不算。
+// - 職業等級 30 在技能書學會，跟一般技能一樣裝在技能格放（2026-10-15 作者：不要另外一顆 B 鍵）。
 // - 2026-10-15 作者：盡量以傷害型為主——槍手 全彈發射、弓箭手 千矢、戰士 斷岳、術士 天墜（大隕石，代價：佩特拉的注意直接滿 100）、牧師 審判之光、
 //   刀客 刀意解放、騎士 聖槍衝鋒、武術家 百裂拳、吟遊詩人 大合奏、召喚師 百鬼夜襲、術陣師 陣界崩落、附魔師 刻印爆裂、符卷師 千符陣。
 // - 傷害的基準用大招的基準（ult.js 的 R.ultBase）。
@@ -40,8 +40,11 @@
     knight: { n: '聖槍衝鋒', cd: 75, d: '舉槍往前衝 10 公尺（衝的時候無敵），撞到的敵人大傷害、擊退；衝到底再爆開一圈（半徑 3.5 公尺）。', go(P) {
       const a = P.aimA, dmg = base(P) * 2.2; R.dash(a, 10, 0.35, { iframe: true, hit: dmg, stun: 0.8, kb: 3 });
       later(() => { R.fx && R.fx('boom', P.x, 0.4, P.z, { r: 3.5, color: '#FFE8A0' }); R.aoe(P.x, P.z, 3.5, dmg * 0.8, { kb: 2 }); R.shake && R.shake(0.35); }, 380); } },
-    monk: { n: '百裂拳', cd: 60, d: '2 秒內往前連打 20 拳（每拳 0.6 倍普攻），連段直接 +20。', go(P) {
-      const dmg = ((P.ws && P.ws.dmg) || 10) * 0.6; for (let i = 0; i < 20; i++) later(() => { R.swingAnim && R.swingAnim(P.h, 0.02, 0.08); R.melee(P.aimA + (rnd() - 0.5) * 0.5, 3, 1.2, dmg, 0, 0, 0, { dir: i % 2 ? -1 : 1, hs: 1, primary: false }); }, i * 100);
+    monk: { n: '百裂拳', cd: 60, d: '2 秒內往前連打 19 拳（每拳 0.6 倍普攻），最後一下是重拳（5 倍、擊飛；生命 30% 以下的敵人吃 3 倍——斬殺），連段直接 +20。', go(P) {
+      const dmg = ((P.ws && P.ws.dmg) || 10) * 0.6; for (let i = 0; i < 19; i++) later(() => { R.swingAnim && R.swingAnim(P.h, 0.02, 0.08); R.melee(P.aimA + (rnd() - 0.5) * 0.5, 3, 1.2, dmg, 0, 0, 0, { dir: i % 2 ? -1 : 1, hs: 1, primary: false }); }, i * 100);
+      later(() => { const a = P.aimA; R.swingAnim && R.swingAnim(P.h, 0.05, 0.3); R.fx && R.fx('boom', P.x + Math.sin(a) * 2, 0.8, P.z + Math.cos(a) * 2, { r: 2.2, color: '#FFB45A' }); R.shake && R.shake(0.45);
+        (W().enemies || []).forEach(e => { if (e.dead) return; const dx = e.x - P.x, dz = e.z - P.z, d = Math.hypot(dx, dz), r = (e.def.size || 1) * 0.5; if (d > 3.6 + r) return; const da = Math.atan2(Math.sin(Math.atan2(dx, dz) - a), Math.cos(Math.atan2(dx, dz) - a)); if (Math.abs(da) > 0.9 && d > r + 0.8) return;
+          const exe = e.hp < e.hpMax * 0.3; R.hurtEnemy(e, dmg * 5 * (exe ? 3 : 1), { kb: 4, stun: 0.6, crit: exe, primary: false }); if (exe) R.num && R.num(e.x, 1.8 * (e.def.size || 1) + 1, e.z, '斬殺', 'crit'); }); }, 19 * 100 + 150);
       const C = R.CORE && R.CORE.monk; P._combo = Math.min(C && C.max ? C.max(P) : 100, (P._combo || 0) + 20); P._comboT = CT(); } },
     bard: { n: '大合奏', cd: 75, d: '把目前的樂譜立刻演奏兩次（音符一個一個射出去），不耗魔、不用等演奏時間。', go(P) {
       if (!R.bardEncore || !R.bardEncore(P, 2)) { R.toast && R.toast('樂譜是空的：先按住 X 寫一段樂譜'); return false; } } },
@@ -64,16 +67,12 @@
   };
   R.LV30 = SK;
   const LV = 30, ok = P => !!P && SK[P.cls] && (P.lv || 1) >= LV;
-  let cdEnd = 0, cdRun = null;
-  const cdLeft = () => (cdRun === W().run ? Math.max(0, cdEnd - CT()) : 0);
-  R.castLv30 = () => {
-    const P = W().P; if (!live() || (R.sheetOpen && R.sheetOpen())) return;
-    if (!SK[P.cls]) return; if ((P.lv || 1) < LV) { R.toast && R.toast('職業等級 30 才會學會「' + SK[P.cls].n + '」'); return; }
-    const left = cdLeft(); if (left > 0) { R.toast && R.toast(SK[P.cls].n + '：冷卻還有 ' + Math.ceil(left) + ' 秒'); return; }
-    const s = SK[P.cls]; if (s.go(P) === false) return;
-    cdRun = W().run; cdEnd = CT() + s.cd; say(P, s.n); R.sfx && R.sfx('skill'); R.shake && R.shake(0.2);
-  };
-
+  // 2026-10-15 作者：不要另外一顆鍵——放進原本的技能表：技能書裡職業等級 30 學會，跟一般技能一樣裝在技能格放（冷卻吃冷卻縮減、耗 20 魔力）
+  const MP = 20;
+  if (R.SKILL_TYPES && R.SKILL_LIB) {
+    R.SKILL_TYPES.lv30 = (p, P) => { const sk = SK[p.k]; if (!sk || P.cls !== p.k) return false; const r = sk.go(P); if (r !== false) { say(P, sk.n); R.shake && R.shake(0.2); } return r; };
+    Object.keys(SK).forEach(cls => { const sk = SK[cls], id = 'l30_' + cls; R.SKILL_LIB[id] = { id, name: sk.n, cls, lv: LV, cd: sk.cd, mp: MP, type: 'lv30', p: { k: cls }, desc: '【30 級】' + sk.d }; R.SKILLS[id] = { name: sk.n, cd: sk.cd, mp: MP, desc: '【30 級】' + sk.d }; });
+  }
   // ---------- 持續效果 ----------
   const st0 = R.step;
   R.step = dt => {
@@ -117,23 +116,6 @@
     return hp0(raw, src, o);
   };
   // 新的一趟：冷卻、效果歸零
-  const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { cdEnd = 0; cdRun = null; Object.keys(T).forEach(k => { T[k] = null; }); return sr0(...a); };
+  const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { Object.keys(T).forEach(k => { T[k] = null; }); return sr0(...a); };
 
-  // ---------- 按鍵、按鈕 ----------
-  window.addEventListener('keydown', e => { if ((e.key === 'b' || e.key === 'B') && !e.repeat && !(e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName))) { const w = W(); if (w && w.run && w.P) R.castLv30(); } });
-  let btn = null;
-  const ht0 = R.hudTick;
-  R.hudTick = (...a) => {
-    const r = ht0 ? ht0(...a) : undefined; const w = W(), P = w && w.P;
-    try {
-      const show = !!(w && w.run && ok(P));
-      if (show && (!btn || !btn.isConnected)) { const host = document.getElementById('run'); if (host) { btn = document.createElement('button'); btn.type = 'button'; btn.id = 'lv30-btn'; btn.className = 'dungeon-only'; btn.addEventListener('pointerdown', ev => { ev.preventDefault(); ev.stopPropagation(); R.castLv30(); }); host.appendChild(btn); } }
-      if (btn) { btn.hidden = !show; if (show) { const s = SK[P.cls], left = cdLeft(), txt = left > 0 ? Math.ceil(left) + '' : '奧'; if (btn.textContent !== txt) btn.textContent = txt; btn.classList.toggle('cd', left > 0); const tip = s.n + '（B）：' + s.d + ' 冷卻 ' + s.cd + ' 秒'; if (btn.title !== tip) btn.title = tip; } }
-    } catch (e) { }
-    return r;
-  };
-  const css = document.createElement('style');
-  css.textContent = '#lv30-btn{position:fixed;right:18px;bottom:200px;z-index:7;width:46px;height:46px;border-radius:50%;border:2px solid #FFE08A;background:radial-gradient(circle at 35% 30%,#5A4A2A,#1A1410);color:#FFE08A;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 0 12px rgba(255,224,138,.45)}'
-    + '#lv30-btn.cd{border-color:#6A6050;color:#B8B0A0;box-shadow:none;background:#1A1814}#lv30-btn[hidden]{display:none}';
-  document.head.appendChild(css);
 })(window.R);
