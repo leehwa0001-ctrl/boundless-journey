@@ -62,10 +62,10 @@
         foes().forEach(e => { const dx = e.x - P.x, dz = e.z - P.z, d = Math.hypot(dx, dz), r = (e.def.size || 1) * 0.5; if (d > 3.6 + r) return; const da = Math.atan2(Math.sin(Math.atan2(dx, dz) - a), Math.cos(Math.atan2(dx, dz) - a)); if (Math.abs(da) > 0.9 && d > r + 0.8) return;
           const exe = e.hp < e.hpMax * 0.3; R.hurtEnemy(e, dmg * 5 * (exe ? 3 : 1), { kb: 4, stun: 0.6, crit: exe, primary: false }); if (exe) R.num && R.num(e.x, 1.8 * (e.def.size || 1) + 1, e.z, '斬殺', 'crit'); }); });
       const C = R.CORE && R.CORE.monk; P._combo = Math.min(C && C.max ? C.max(P) : 100, (P._combo || 0) + 20); P._comboT = CT(); } },
-    bard: { n: '大合奏', cd: 75, d: '把樂譜立刻演奏兩次；演奏期間一直把滑鼠處半徑 7 公尺內的敵人聚到滑鼠的位置，演奏完在那裡爆開：200% 最大魔力 ×（200＋最大魔力）÷ 3 的傷害。', go(P) {
+    bard: { n: '大合奏', cd: 75, d: '把樂譜立刻演奏兩次；演奏期間滑鼠處出現一圈 7 公尺、往中間收的音波，範圍內的敵人一直被聚到滑鼠的位置，演奏完在那裡爆開：200% 最大魔力 ×（200＋最大魔力）÷ 3 的傷害。', go(P) {
       const notes = R.bardChord && R.bardChord.SV().notes; if (!R.bardEncore || !notes || !notes.length || !R.bardEncore(P, 2)) { R.toast && R.toast('樂譜是空的：先按住 X 寫一段樂譜'); return false; }
-      const dur = Math.max(1.5, notes.length * 2 * 0.1 + 0.3); T.bard = { end: CT() + dur };
-      sched(dur, () => { T.bard = null; const [x, z] = mouse(P), v = 2 * P.mpMax * (200 + P.mpMax) / 3; R.fx && R.fx('boom', x, 0.5, z, { r: 7, color: '#E8A0FF' }); R.fx && R.fx('ring', x, 0.1, z, { r: 7, color: '#FFE08A' }); R.shake && R.shake(0.5);
+      const dur = Math.max(1.5, notes.length * 2 * 0.1 + 0.3); T.bard = { end: CT() + dur, fx: waves() };
+      sched(dur, () => { if (T.bard && T.bard.fx) T.bard.fx.rm(); T.bard = null; const [x, z] = mouse(P), v = 2 * P.mpMax * (200 + P.mpMax) / 3; R.fx && R.fx('boom', x, 0.5, z, { r: 7, color: '#E8A0FF' }); R.fx && R.fx('ring', x, 0.1, z, { r: 7, color: '#FFE08A' }); R.shake && R.shake(0.5);
         within(x, z, 7).forEach(e => R.hurtEnemy(e, v, { primary: false })); }); } },
     summoner: { n: '召喚山神', cd: 90, d: '花 20% 最大魔力，召喚一頭巨大的熊（大約領主一半大）：生命 5000、攻擊 500；牠在的時候你受到的所有傷害都由牠承受。每秒消耗（50＋6% 最大魔力）的魔力，魔力見底或牠倒下就消失。', go(P) {
       const need = P.mpMax * 0.2; if (P.mp < need) { R.toast && R.toast('魔力不夠（要 ' + Math.ceil(need) + '）'); return false; }
@@ -98,6 +98,17 @@
     const m = new TH.Mesh(new TH.CircleGeometry(r, 40), new TH.MeshBasicMaterial({ color: '#10121C', transparent: true, opacity: 0, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.set(x, (R.inTraining && R.inTraining()) ? 0.28 : 0.08, z); w.scene.add(m);
     return { m, set: k => { m.material.opacity = 0.55 * k; m.scale.setScalar(0.4 + 0.6 * k); }, rm: () => { if (m.parent) m.parent.remove(m); m.geometry.dispose(); m.material.dispose(); } };
   }
+  // 大合奏：滑鼠處畫出拉人的範圍（7 公尺外框）和一圈一圈往中間縮的音波
+  function waves() {
+    const TH = window.THREE, w = W(); if (!TH || !w.scene) return null;
+    const g = new TH.Group(), y = (R.inTraining && R.inTraining()) ? 0.05 : 0.08, mat = (c, op) => new TH.MeshBasicMaterial({ color: c, transparent: true, opacity: op, depthWrite: false, side: TH.DoubleSide });
+    const edge = new TH.Mesh(new TH.RingGeometry(6.85, 7, 64), mat('#E8A0FF', 0.6)); edge.rotation.x = -Math.PI / 2; g.add(edge);
+    const fill = new TH.Mesh(new TH.CircleGeometry(7, 48), mat('#B070E0', 0.08)); fill.rotation.x = -Math.PI / 2; g.add(fill);
+    const rings = []; for (let i = 0; i < 4; i++) { const m = new TH.Mesh(new TH.RingGeometry(0.88, 1, 48), mat(i % 2 ? '#FFE08A' : '#E8A0FF', 0.7)); m.rotation.x = -Math.PI / 2; g.add(m); rings.push(m); }
+    g.position.y = y; w.scene.add(g); let t = 0;
+    return { set: (x, z, dt) => { t += dt; g.position.set(x, y, z); rings.forEach((m, i) => { const k = 1 - ((t * 0.9 + i / rings.length) % 1), r = 0.3 + 6.7 * k; m.scale.set(r, r, 1); m.material.opacity = 0.75 * Math.min(1, (1 - k) * 4) * Math.min(1, k * 3); }); if (Math.random() < dt * 12) R.fx && R.fx('spark', x + (Math.random() - 0.5) * 10, 0.5, z + (Math.random() - 0.5) * 10, { color: '#E8A0FF' }); },
+      rm: () => { if (g.parent) g.parent.remove(g); g.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); }); } };
+  }
   function bearGone() { const b = T.bear; if (!b) return; T.bear = null; if (b.g && b.g.parent) b.g.parent.remove(b.g); R.fx && R.fx('poof', b.x, 1, b.z, { color: '#B8E07A', n: 24 }); }
   // 千符陣：挑目標、貼符、引爆
   const talDmg = (P, e, n) => (base(P) * 0.3 + e.hpMax * (isBoss(e) ? 0.02 : 0.4)) * (n ? 0.3 : 1);
@@ -125,7 +136,7 @@
       // 刀意解放：刀意一直滿
       if ((P._l30BdT || 0) > t) P._iai = Math.max(P._iai || 0, P.pv && P.pv.bdMunen ? 200 : 100);
       // 大合奏：把滑鼠處 7 公尺內的敵人聚過來
-      if (T.bard) { const [x, z] = mouse(P); within(x, z, 7).forEach(e => { const dx = x - e.x, dz = z - e.z, d = Math.hypot(dx, dz); if (d > 0.4) { const v = Math.min(d, 9 * dt); e.x += dx / d * v; e.z += dz / d * v; } }); }
+      if (T.bard) { const [x, z] = mouse(P); if (T.bard.fx) T.bard.fx.set(x, z, dt); within(x, z, 7).forEach(e => { const dx = x - e.x, dz = z - e.z, d = Math.hypot(dx, dz); if (d > 0.4) { const v = Math.min(d, 9 * dt); e.x += dx / d * v; e.z += dz / d * v; } }); }
       // 雷魔陣：雲聚起來、範圍內移動 −90%（每一格把牠走的距離拉回九成）
       if (T.thunder) { const th = T.thunder, k = 1 - Math.max(0, th.end - t) / 3; if (th.shade) th.shade.set(k);
         within(th.x, th.z, th.r).forEach(e => { const p = th.pos.get(e); if (p) { e.x = p[0] + (e.x - p[0]) * 0.1; e.z = p[1] + (e.z - p[1]) * 0.1; } th.pos.set(e, [e.x, e.z]); }); }
@@ -171,5 +182,5 @@
   const EC = R.CORE && R.CORE.enchanter;
   if (EC) ['mod', 'onHit', 'act'].forEach(k => { const f0 = EC[k]; if (typeof f0 !== 'function') return; EC[k] = function (...a) { if ((T.enchOff || 0) > CT()) { if (k === 'act') R.toast && R.toast('刻印暫時失去力量'); return k === 'mod' ? a[1] : undefined; } return f0.apply(this, a); }; });
   // 新的一趟：效果歸零
-  const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { if (T.bear) bearGone(); if (T.thunder && T.thunder.shade) T.thunder.shade.rm(); Object.keys(T).forEach(k => { T[k] = null; }); Q = []; return sr0(...a); };
+  const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { if (T.bear) bearGone(); if (T.thunder && T.thunder.shade) T.thunder.shade.rm(); if (T.bard && T.bard.fx) T.bard.fx.rm(); Object.keys(T).forEach(k => { T[k] = null; }); Q = []; return sr0(...a); };
 })(window.R);
