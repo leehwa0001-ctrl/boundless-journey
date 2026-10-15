@@ -66,7 +66,7 @@
       if (A.blink) { e.bk = (e.bk == null ? 4 + rnd() * 2 : e.bk) - dt; if (e.bk <= 0 && d < 14) { e.bk = 5 + rnd() * 2; const a = rnd() * Math.PI * 2, [x, z] = floorAt(P.x + Math.sin(a) * 2.6, P.z + Math.cos(a) * 2.6); R.fx('blink', e.x, 1, e.z); e.x = x; e.z = z; R.fx('blink', x, 1, z); e.cd = Math.min(e.cd, 0.3); } }
       if (A.shield) { e.sh = (e.sh == null ? 3 : e.sh) - dt; if (e.sh <= 0) { e.sh = 7; e.shieldT = 2; R.fx('ring', e.x, 1, e.z, { r: 1.2 * (e.def.size || 1), color: '#F0F4FF' }); } if (e.shieldT > 0) { e.shieldT -= dt; if (rnd() < 0.2) R.fx('poof', e.x, 1, e.z, { color: '#F0F4FF', n: 1 }); } }
       if (A.summoner) { e.sm = (e.sm == null ? 4 : e.sm) - dt; if (e.sm <= 0 && d < 12) { e.sm = 9; const pool = (run.grade.pool || []).filter(k => R.ENEMIES[k] && (R.ENEMIES[k].hp || 99) < 60); const id = pool.length ? pick(pool) : 'kodama'; for (let i = 0; i < 2; i++) { const [x, z] = floorAt(e.x + rnd() * 3 - 1.5, e.z + rnd() * 3 - 1.5); const m = R.spawnEnemy(id, x, z, e.room, { aggro: true, hpMul: 0.4, noAffix: true }); if (m) R.fx('spawn', x, 0.1, z, { color: '#8AE0B0' }); } R.num && R.num(e.x, 2.2, e.z, '喚群', ''); } }
-      if (A.toxic) { e.tx = (e.tx || 0) - dt; if (e.tx <= 0) { e.tx = 0.7; const zn = R.addZone({ kind: 'caltrop', x: e.x, z: e.z, r: 0.9, life: 4, dmg: e.dmg * 0.18 }); if (zn && zn.mesh) zn.mesh.material.color.set('#7AC83A'); } }
+      if (A.toxic) { e.tx = (e.tx || 0) - dt; if (e.tx <= 0) { e.tx = 0.7; const zn = R.addZone({ kind: 'caltrop', x: e.x, z: e.z, r: 0.9, life: 4, dmg: e.dmg * 0.09 /* 2026-10-15 作者：毒霧傷害砍半（原本 0.18） */ }); if (zn && zn.mesh) zn.mesh.material.color.set('#7AC83A'); } }
     });
   };
   // ---------- 受到傷害：堅甲、護盾、荊棘 ----------

@@ -283,8 +283,15 @@
     R.sheet('<h2>回到地面？</h2><p>用回歸水晶回到東鶴。背包裡的東西和素材都會帶回去。</p>'
       + '<p class="note">背包 ' + run.bag.length + ' 件・素材 ' + Object.values(run.mats).reduce((a, b) => a + b, 0) + ' 個。回去後公會會付委託報酬。</p>'
       + (run.floor < run.floors - 1 ? '<p class="note">還有 ' + (run.floors - 1 - run.floor) + ' 層沒走。越深，寶箱越好。</p>' : '')
-      + '<div class="row"><button type="button" class="btn pri" id="ex-yes">回去</button><button type="button" class="btn" id="ex-no">再逛逛</button></div>');
-    $('ex-yes').onclick = () => { R.closeSheet(); R.extract(); }; $('ex-no').onclick = R.closeSheet;
+      + '<div class="row"><button type="button" class="btn pri" id="ex-yes">確定回程</button><button type="button" class="btn" id="ex-no">再逛逛</button></div>');
+    // 2026-10-15 作者：右上角的 ✕ 跟「再逛逛」一樣（原本 ✕ 會對到「回去」直接回程）；按「確定回程」才選要回到東鶴（遺跡門口）還是直接回公會
+    $('ex-no').onclick = R.closeSheet;
+    $('ex-yes').onclick = () => {
+      const yes = $('ex-yes'), row = yes && yes.parentNode, h = $('r-sheet') && $('r-sheet').querySelector('h2'); if (!row) return;
+      if (h) h.textContent = '回到哪裡？';
+      const mk = (id, txt, pri, dest) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (pri ? ' pri' : ''); b.id = id; b.textContent = txt; b.onclick = () => { R.closeSheet(); if (R.setReturnDest) R.setReturnDest(dest); R.extract(); }; return b; };
+      row.insertBefore(mk('ex-town', '回到東鶴', true, 'town'), yes); row.insertBefore(mk('ex-guild', '直接回公會', false, 'guild'), yes); yes.remove();
+    };
   };
   // 帶著東西回來
   R.extract = how => {

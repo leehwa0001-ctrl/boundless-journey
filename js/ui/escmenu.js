@@ -68,7 +68,7 @@
       }
       const vol = sh.querySelector('.vol-row'); if (vol && !vol.closest('.em-wrap')) { const s = w.querySelector('.em-s-sound'); s.insertBefore(vol, s.querySelector('.em-btns')); }
       [...sh.querySelectorAll('button')].forEach(b => {
-        if (b.closest('.em-wrap') || b.closest('.cs-box') || b.closest('.vol-row') || b.closest('details')) return;
+        if (b.classList.contains('cx-x') || b.closest('.em-wrap') || b.closest('.cs-box') || b.closest('.vol-row') || b.closest('details')) return;   // 2026-10-15 修：右上角的 ✕（closex.js）不要搬——搬走了 closex 又補一顆、再被搬，越長越多
         if (b.closest('.keys,.keyrow')) return;
         let k = kindOf(b); if (b === cont) k = 'game';
         const d = slot(w, k); if (b === cont) d.prepend(b); else d.appendChild(b);

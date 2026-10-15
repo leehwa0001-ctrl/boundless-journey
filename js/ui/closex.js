@@ -13,7 +13,7 @@
   const fallback = sh => { if (sh.id === 'hub-sheet') { R.hubSheetClose ? R.hubSheetClose() : (document.getElementById('hub-modal').hidden = true); } else if (R.closeSheet) R.closeSheet(); };
   const fix = sh => {
     if (!sh) return;
-    let x = sh.querySelector(':scope > .cx-x');
+    let x = sh.querySelector(':scope > .cx-x, :scope > .ps-m > .cx-x');   // 2026-10-15：暫停選單三欄排版（pauselayout.js）會把 ✕ 收進中間那欄，那顆也算——不然每開一次多一顆
     const tgt = findClose(sh);
     sh.querySelectorAll('.cx-hid').forEach(b => { if (b !== tgt) b.classList.remove('cx-hid'); });
     if (!x) { x = document.createElement('button'); x.type = 'button'; x.className = 'cx-x'; x.textContent = '✕'; x.setAttribute('aria-label', '關閉'); sh.prepend(x);

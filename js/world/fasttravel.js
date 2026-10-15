@@ -49,10 +49,13 @@
   const tm = R.townMenu;
   if (tm) R.townMenu = (...a) => { const r = tm(...a), row = $('r-sheet') && $('r-sheet').querySelector('.row'); if (row && !row.querySelector('#ft-open') && W.town && !W.town.hosu) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ft-open'; b.textContent = '快速移動（T）'; b.onclick = () => { R.closeSheet(); setTimeout(R.fastTravel, 50); }; row.insertBefore(b, row.children[1] || null); } return r; };
   // 遺跡回來：直接回公會
-  let toGuild = false;
+  // 2026-10-15：回歸水晶先選好「回到東鶴」或「直接回公會」（run.js 的 R.askExtract）——結算畫面就只留那一個
+  let toGuild = false, pre = null;
+  R.setReturnDest = d => { pre = d; };
   const rs0 = R.results;
   R.results = (...a) => {
-    const r = rs0(...a), row = $('r-sheet') && $('r-sheet').querySelector('.row'), ok = $('rs-ok');
+    const r = rs0(...a), row = $('r-sheet') && $('r-sheet').querySelector('.row'), ok = $('rs-ok'), d = pre; pre = null;
+    if (ok && d) { if (d === 'guild') { toGuild = true; ok.textContent = '回公會'; } return r; }
     if (row && ok && !row.querySelector('#rs-guild')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'rs-guild'; b.textContent = '搭接駁馬車回公會'; b.onclick = () => { toGuild = true; ok.click(); }; row.appendChild(b); }
     return r;
   };
