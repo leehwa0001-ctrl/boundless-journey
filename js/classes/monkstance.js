@@ -165,7 +165,7 @@
         else { P._fistB = { until: CT() + FIST_T }; P._faEn = 0; if (P._stepB) P._stepB.held = false; }
       }
       apply(P);
-      if (burst && !same && pv(P, 'mkQixue') && R.healP) R.healP(P.hpMax * 0.01, true);   // 氣血活絡：真的換了法才回血
+      if (burst && !same && pv(P, 'mkQixue') && R.healP) R.healP(P.hpMax * 0.02, true);   // 氣血活絡（2026-10-17 作者：1% → 2%）：真的換了法才回血
       if (burst) { say(P, burstNm(P, next), 'crit'); R.fx && R.fx('ring', P.x, 0.2, P.z, { r: 2.2, color: COL[next] }); R.fx && R.fx('pillar', P.x, 0, P.z, { r: 0.9, color: COL[next] }); }
       else say(P, nm(P, next), 'heal');
     },
