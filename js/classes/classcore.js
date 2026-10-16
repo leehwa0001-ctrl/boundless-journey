@@ -422,7 +422,7 @@
       };
       if (i === 0) go(); else bdLater(P, go, 120 * i);
     }
-    if (o.iai || kind === 'thrust') { const n0 = (W().fxs || []).length; R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range }); if (!o.counter) holdFx(n0); }
+    if (kind === 'thrust') { const n0 = (W().fxs || []).length; R.fx && R.fx('slash', P.x, 1, P.z, { a, len: range }); if (!o.counter) holdFx(n0); }   // 2026-10-17 作者：居合只有一發橫斬（不再多一道直線斬光）
     R.sfx && R.sfx('swing');
   };
   const pickForm = (P, k) => {
