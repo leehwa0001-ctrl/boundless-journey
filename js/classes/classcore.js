@@ -429,6 +429,15 @@
   R.bladeSkillDash = (P, a, len) => { const d = dashLen(P, a, len, 2), dur = d > 0.05 ? d / (runSpeed(P) * (adv(P) === 'shadow' ? 10 : 3)) : 0; if (dur > 0 && R.dash) { R.dash(a, d, dur, {}); P._bdBusy = CT + dur; } return dur; };
   // 刀客武器實際的攻速（普攻是 classcore 自己算的：刀 1 秒一刀、雙刀和野太刀 1.5 秒一次，再照詞綴、天賦的攻速比例）、實際的一刀傷害；給說明、角色數值用
   R.bladeWeaponReal = (base, ws) => { const w = BD.W[base], w0 = R.WEAPONS[base]; if (!w || !w0 || !ws) return null; return { rate: w.rate * (ws.rate || w0.rate) / (w0.rate || 1), dmg: (ws.dmg || 0) * w.dmg }; };
+  // 2026-10-16 作者：刀意解放的瞬移斬在敵人身前留一道殘影（50% 透明，停 0.25 秒、再 0.15 秒淡掉）
+  const afterimage = P => {
+    const w = W(), h = P.h; if (!h || !h.g || !w.scene || !w.dyn) return;
+    const g = h.g.clone(true), mats = [];
+    g.traverse(o => { if (!o.material || Array.isArray(o.material)) return; const m = o.material.clone(); if (m.map) { m.map = m.map.clone(); m.map.needsUpdate = true; } m.transparent = true; m.opacity = 0.5; m.depthWrite = false; m.alphaTest = 0.02; o.material = m; mats.push(m); });
+    w.scene.add(g); let t = 0; const run = w.run;
+    w.dyn.push(dt => { t += dt; const a = t < 0.25 ? 0.5 : 0.5 * Math.max(0, 1 - (t - 0.25) / 0.15); mats.forEach(m => { m.opacity = a; });
+      if (t >= 0.4 || W().run !== run) { g.parent && g.parent.remove(g); mats.forEach(m => { m.map && m.map.dispose(); m.dispose(); }); return false; } });
+  };
   R.bladeAttack = () => {
     const P = W().P; if (!P || P.dead) return;
     // 30 級「刀意解放」（lv30.js 設 P._l30BdT）：刀意一直滿、拔刀狀態（刀意渾圓），每一刀都是居合；攻速 ×3；
@@ -439,7 +448,7 @@
       const x0 = P.x, z0 = P.z, a2 = tg ? angTo(P, tg) : P.aimA, { w } = bw(P);
       if (tg) { const back = tg.def.size * 0.5 + 1.2, q = R.nearestFloor ? R.nearestFloor(tg.x - Math.sin(a2) * back, tg.z - Math.cos(a2) * back) : [tg.x, tg.z]; R.fx && R.fx('blink', P.x, 1, P.z); P.x = q[0]; P.z = q[1]; }
       P.aimA = a2; strike(P, a2, 'slash', { iai: true, iaiK: iaiKOf(P) });
-      if (tg) { R.fx && R.fx('blink', P.x, 1, P.z); P.x = x0; P.z = z0; }
+      if (tg) { afterimage(P); R.fx && R.fx('blink', P.x, 1, P.z); P.x = x0; P.z = z0; }
       const rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (1 + 0.25 * ensoK(P)) * 3;
       P.atkCd = 1 / rate; P.atkHold = 0.2; P._bdN = (P._bdN || 0) + 1; return;
     }

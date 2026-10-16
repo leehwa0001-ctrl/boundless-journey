@@ -417,7 +417,8 @@
     if (crushed && P.iframe <= 0) { R.hurtPlayer(P.hpMax * 0.12, null); P.iframe = 0.5; }   // 被擠壓的牆夾住：很痛，快逃
     P.yaw = sprint && P.moveA != null ? P.moveA : P.aimA;
     P.h.g.position.set(P.x, P.y || 0, P.z); P.h.g.rotation.y = P.yaw;
-    P.h.g.visible = !(P.invis > 0 && Math.floor(run.t * 10) % 2 === 0);
+    // 2026-10-16 作者：隱身不再一閃一閃（看久了眼睛不舒服）——人物變半透明，身邊飄白霧
+    P.h.g.visible = true; R.heroInvisFx && R.heroInvisFx(P, dt);
     R.animHero(P.h, P.dashT > 0 ? 8 : ml * sp, dt, !sprint);
     // 攻擊、蓄力
     if (!P.dead) {

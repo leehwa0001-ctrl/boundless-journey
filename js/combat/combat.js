@@ -621,6 +621,14 @@
     if (m.isSprite) { R.fadeSprite(m, a); return; }
     m.g.traverse(o => { if (o.isMesh && o.material) { o.material.transparent = a < 1; o.material.opacity = a; } });
   };
+  // 玩家隱身（2026-10-16 作者）：半透明＋周身白霧，取代原本的閃爍
+  R.heroInvisFx = (P, dt) => {
+    const h = P.h, on = P.invis > 0 && !P.dead; if (!h || !h.sp || !R.fadeSprite) return;
+    const a = on ? 0.35 : 1; if (h._invA !== a) { h._invA = a; R.fadeSprite(h, a); }
+    if (!on) return; P._mistT = (P._mistT || 0) - dt; if (P._mistT > 0) return; P._mistT = 0.07;
+    const F = R.fx1010; if (!F || !F.ensure()) return; const N = F.sys()[1];
+    for (let i = 0; i < 2; i++) { const an = Math.random() * 6.28, r = 0.3 + Math.random() * 0.4; F.emit(N, P.x + Math.sin(an) * r, (P.y || 0) + 0.2 + Math.random() * 1.4, P.z + Math.cos(an) * r, Math.sin(an) * 0.4, 0.3 + Math.random() * 0.3, Math.cos(an) * 0.4, 0.9, '#F2F4F8', { size: 5, size1: 11, a: 0.32, drag: 1.5 }); }
+  };
   // 群瞳：彈幕環、凝視光線、瞬移
   R.aiEye = (e, d, a, sp, dt) => {
     const P = e.tgt || W().P; e.yaw = a;

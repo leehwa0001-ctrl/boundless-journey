@@ -187,6 +187,27 @@
         R.hurtEnemy(tg, pw * s.k, { crit: s.crit >= 1 || (s.crit && rnd() < s.crit), primary: false }); R.fx('spark', tg.x, 1.2, tg.z, { a: P.aimA, crit: true }); R.sfx && R.sfx('swing');
       }, i * gap);
     },
+    // 暗殺（2026-10-16 作者）：隱身蓄力 → 瞬移到 range 內最近的敵人身後砍（k 倍、必定暴擊、首領 ×boss）；砍死就再隱身蓄力 re 秒找下一隻，最多連殺 n 隻，最後瞬移回原位
+    assassin(s, P, w, pw) {
+      const RG = s.range || 8, near = () => alive().filter(e => dist(e, P) < RG + e.def.size * 0.5).sort((a, b) => dist(a, P) - dist(b, P))[0];
+      if (!near()) { R.toast('附近沒有敵人'); return false; }
+      const x0 = P.x, z0 = P.z, run = w.run, max = s.n || 9, isBoss = e => !!(e.def && (e.def.boss || e.lord || e.def.lord)); let kills = 0;
+      const hold = t => { P.invis = Math.max(P.invis || 0, t + 0.3); P.iframe = Math.max(P.iframe || 0, t + 0.3); P.stance = Math.max(P.stance || 0, t + 0.3); };
+      const home = () => { if (W().run !== run || P.dead) return; R.fx('blink', P.x, 1, P.z); P.x = x0; P.z = z0; R.collide(P, 0.42); R.fx('blink', P.x, 1, P.z); P.stance = 0; };
+      const step = wait => {
+        hold(wait); R.fx('poof', P.x, 1, P.z, { color: '#3A2A4A', n: 8 });
+        later(() => {
+          if (W().run !== run || P.dead) return; const tg = near(); if (!tg) return home();
+          const back = tg.def.size * 0.5 + 1.1, ya = tg.yaw != null ? tg.yaw : Math.atan2(tg.x - P.x, tg.z - P.z), [x, z] = R.nearestFloor(tg.x - Math.sin(ya) * back, tg.z - Math.cos(ya) * back);
+          R.fx('blink', P.x, 1, P.z); P.x = x; P.z = z; R.collide(P, 0.42); R.fx('blink', P.x, 1, P.z);
+          P.aimA = Math.atan2(tg.x - P.x, tg.z - P.z); R.swingAnim(P.h, 0.02, 0.12);
+          R.hurtEnemy(tg, pw * s.k * (isBoss(tg) ? (s.boss || 3) : 1), { crit: true, primary: false }); R.fx('spark', tg.x, 1.2, tg.z, { a: P.aimA, crit: true }); R.sfx && R.sfx('swing');
+          if ((tg.dead || tg.hp <= 0) && ++kills < max) return step(s.re || 0.25);
+          hold(0.25); later(home, 250);
+        }, wait * 1000);
+      };
+      step(s.wait || 0.6);
+    },
     // 光環：t 秒內跟著你走，每 gap 秒影響身邊 r 公尺（傷害、變慢、詛咒、回復、吸血）
     aura(s, P, w, pw) {
       const run = w.run; let left = s.t || 6, tick = 0;
@@ -270,7 +291,7 @@
     // 刀客
     ['b_step', '縮地斬', 'blade', 3, 6, 8, 'combo', { parts: [['dash', { len: 4, dur: 0.15 }], ['arc', { range: 2.6, arc: 3.0, k: 1.1 }, 170]] }, '一步踏進敵人懷裡，順勢橫斬。'],
     ['b_cross', '十字斬', 'blade', 7, 7, 10, 'xslash', { n: 2, spread: 1.57, len: 3.5, width: 0.6, k: 1.3, color: C.white }, '交叉斬出兩刀，形成一個十字。'],
-    ['b_dance', '亂舞', 'blade', 9, 12, 14, 'dance', { n: 4, range: 8, k: 1.0, crit: 0.3, gap: 140 }, '在附近的敵人之間連閃四次，一閃一刀（閃的時候不會受傷）。'],
+    ['b_dance', '亂舞', 'blade', 9, 24, 14, 'dance', { n: 6, range: 8, k: 1.6, crit: 0.3, gap: 140 }, '在附近的敵人之間連閃六次，一閃一刀（閃的時候不會受傷）。'],
     ['b_wave', '刀氣浪', 'blade', 11, 9, 12, 'wave', { n: 5, step: 1.8, r: 1.2, k: 1.0, gap: 50, fx: 'ring', color: C.white }, '橫刀一揮，刀氣貼著地面往前推出 9 公尺。'],
     ['b_mist', '霧隱', 'blade', 14, 16, 10, 'buff', { t: 3, invis: 3, speed: 1.2, color: '#C8C8D0' }, '化進霧裡：隱身 3 秒、移動 +20%。'],
     ['b_hundred', '百裂', 'blade', 17, 10, 14, 'arc', { range: 2.4, arc: 1.6, k: 0.35, hits: 12, gap: 50 }, '0.6 秒內往前刺出十二刀。'],
@@ -336,7 +357,7 @@
     ['ks_mushin', '無想', 'blade', 24, 22, 24, 'line', { len: 14, width: 1.6, k: 6, crit: 1, delay: 900, color: C.white }, '凝神蓄勢 0.9 秒，斬出長達 14 公尺的一刀，必定暴擊。', 'kensei'],
     ['sd_smoke', '煙玉', 'blade', 11, 12, 10, 'at', { range: 6, r: 3.5, k: 0.2, slow: 3, invis: 3, fx: 'poof', color: '#5A4A6A' }, '丟出煙玉：範圍內的敵人變慢，你隱身 3 秒。', 'shadow'],
     ['sd_knives', '飛刀扇', 'blade', 18, 8, 12, 'shotx', { n: 7, spread: 0.9, k: 0.9, pierce: 1, kind: 'feather', sp: 30, look: 'blade' }, '一揮手扇形擲出七把飛刀。', 'shadow'],
-    ['sd_assassinate', '暗殺', 'blade', 24, 20, 20, 'dance', { n: 3, range: 12, k: 2.6, crit: 1, gap: 200 }, '從影子裡出現在三隻敵人身邊，一刀一隻，必定暴擊。', 'shadow'],
+    ['sd_assassinate', '暗殺', 'blade', 24, 45, 20, 'assassin', { n: 9, range: 8, k: 10, crit: 1, boss: 3, wait: 0.6, re: 0.25 }, '立刻隱身、蓄力 0.6 秒，瞬移到 8 公尺內最近的敵人身後砍一刀（10 倍技能威力、必定暴擊，首領吃 3 倍）。砍死的話再隱身蓄力 0.25 秒，瞬移到下一隻身後，最多連殺 9 隻；結束後瞬移回發動的位置。', 'shadow'],
     ['yt_hunger', '飢渴', 'blade', 11, 14, 12, 'aura', { t: 5, r: 3, gap: 0.5, k: 0.5, vamp: 0.15, color: '#B83AE8' }, '妖刀持續吸取生命 5 秒：身邊的敵人持續受傷，傷害的 15% 變成你的生命。', 'yoto'],
     ['yt_four', '妖斬・四方', 'blade', 18, 10, 14, 'xslash', { n: 4, around: 1, len: 4, width: 0.7, k: 1.5, color: '#B83AE8' }, '妖刀往前後左右同時斬出四刀。', 'yoto'],
     ['yt_eclipse', '蝕月', 'blade', 24, 24, 20, 'combo', { parts: [['buff', { t: 6, dmg: 1.3, vamp: 0.05, color: '#B83AE8' }], ['nova', { r: 4.5, k: 2.4, curse: 4, color: '#B83AE8' }]] }, '妖刀的魔力質吞掉四周的光：周圍的敵人重傷並被詛咒；6 秒內傷害 +30%、吸血 5%。', 'yoto'],
