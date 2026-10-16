@@ -57,4 +57,13 @@
   const css = document.createElement('style');
   css.textContent = '.hs-own h4{margin:8px 0 4px;font-size:13px;opacity:.85}.hs-chips{display:flex;flex-wrap:wrap;gap:4px;max-height:220px;overflow:auto}.hs-smith{grid-template-columns:minmax(240px,28%) 1fr}.hs-smith .st-right>section{margin-top:0}@media (max-width:860px){.hs-smith{grid-template-columns:1fr}}';
   document.head.appendChild(css);
+  // 2026-10-16 作者：鍛造頁三欄（角色數值｜裝備種類｜品階・材質）；其他顯示裝備的頁面一排 4 件，鐵匠鋪那一欄不再限寬（大螢幕右邊不會空一大塊）
+  const css2 = document.createElement('style');
+  css2.textContent = '#hub.hs-smith section.panel-doc{max-width:none}'
+    + '.cf-cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}.cf-right{position:sticky;top:8px}.cf-right .recipes{grid-template-columns:1fr}'
+    + '.cf-tri{margin-left:8px;padding:0 7px;border-radius:5px;border:1px solid var(--line);background:var(--bg2);color:var(--gold);font:inherit;font-size:11px;line-height:18px;cursor:pointer;transition:transform .15s}.cf-tri.open{transform:rotate(180deg)}.cf-h small{margin-left:8px;font-size:11px;opacity:.7}'
+    + '#hub.hs-smith .items,.st-right .items{grid-template-columns:repeat(4,minmax(0,1fr))!important}'
+    + '@media (max-width:1180px){#hub.hs-smith .items,.st-right .items{grid-template-columns:repeat(2,minmax(0,1fr))!important}}'
+    + '@media (max-width:760px){.cf-cols{grid-template-columns:1fr}.cf-right{position:static}#hub.hs-smith .items,.st-right .items{grid-template-columns:1fr!important}}';
+  document.head.appendChild(css2);
 })(window.R);
