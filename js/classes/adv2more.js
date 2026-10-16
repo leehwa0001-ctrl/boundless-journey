@@ -10,6 +10,8 @@
 // 放在 promote2.js、skillbook.js、deathcause.js、guildtask.js、run.js 後面（R.onPlayerDown 要包在最外面）。
 (function (R) {
   const W = () => R.W, S = () => R.S, LIB = R.SKILL_LIB || {}, T = R.SKILL_TYPES || {};
+  // ---------- 技能的型：萬刃（刀魔，2026-10-16 作者）：t 秒內普攻速度 ×1.5、多揮 1 刀、移動 +20%（classcore.js 刀客那段看 P._bdMyrT）----------
+  T.bdMyriad = (s, P) => { if (P.cls !== 'blade') return false; P._bdMyrT = (R.coreTime ? R.coreTime() : 0) + (s.t || 5); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2.5, color: s.color || '#DDEEFF' }); R.num && R.num(P.x, 2.4, P.z, '萬刃', 'crit'); };
   // ---------- 技能的型：復活 ----------
   T.revive = (s, P, w, pw) => {
     let n = 0;
@@ -48,9 +50,10 @@
       ['聖光普照', 'combo', { parts: [['nova', { r: 7, k: 2.6, stun: 0.8, color: '#FFE8A0' }], ['heal', { pct: 0.2, allies: 0.2, color: '#FFE8A0' }, 150]] }, 30, 35, '放出一大圈聖光：周圍 7 公尺的敵人重傷、暈眩 0.8 秒；你和隊友回 20% 生命。'],   // 2026-10-08 作者：復活太多重複（原本是群體復活），復活只留主教
       ['神蹟', 'heal', { pct: 0.5, allies: 0.5, shield: 0.3, allyShield: 0.3, color: '#FFE8A0' }, 30, 35, '你和隊友回 50% 生命，再多一層厚護盾。'],
       ['天罰', 'at', { range: 12, r: 4, k: 3.2, stun: 1, delay: 300, fx: 'boom', color: '#FFE8A0' }, 16, 28, '準心處落下一道天光：重傷、暈眩。']]],
-    blade: ['劍聖', { crit: 0.06, critMult: 0.25 }, '暴擊率 +6%、暴擊傷害 +25%', [
+    // 2026-10-16 作者：劍聖改名刀魔；常駐效果「刀魂」寫在 classcore.js 刀客那段
+    blade: ['刀魔', {}, '常駐「刀魂」：收刀／拔刀時間 ×0.5；刀意滿的時候每再得到 5 點刀意化成 1 層刀魂（每層攻速 +1%、傷害 +0.5%、範圍 +0.5%，2 秒，疊加時刷新，最多 50 層）', [
       ['一閃・極', 'dash', { len: 9, dur: 0.18, k: 4 }, 12, 20, '一步踏出九公尺，路上的敵人全部被斬。'],
-      ['萬刃', 'xslash', { n: 4, spread: 0.8, len: 6, width: 0.8, k: 2.2, color: '#DDEEFF' }, 16, 26, '四道交錯的斬擊。'],
+      ['萬刃', 'bdMyriad', { t: 5, color: '#DDEEFF' }, 16, 26, '5 秒內普攻速度 ×1.5、每下普攻多揮 1 刀、移動 +20%。'],   // 2026-10-16 作者
       ['明鏡止水', 'buff', { t: 8, crit: 0.4, dmg: 1.2, color: '#DDEEFF' }, 35, 20, '心靜下來：8 秒內暴擊率 +40%、傷害 +20%。']]],
     knight: ['騎士團長', { def: 8, hp: 0.12 }, '物防 +8、生命 +12%', [
       ['號令', 'buff', { t: 12, dmg: 1.2, def: 0.2, color: '#FFD27A' }, 35, 24, '12 秒內傷害 +20%、受到的傷害 −20%。'],

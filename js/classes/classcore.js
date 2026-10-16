@@ -323,7 +323,11 @@
   //   收刀中→下一次普攻或技能＝居合（消耗全部刀意、直接拔刀；普攻必定橫斬、範圍 +40%、傷害 ×2、穿透 +40%、衝 4 公尺；技能傷害 +40%）→之後進入殘心；
   //   拔刀中→刀意渾圓（攻速 +25%、範圍 +10%、傷害 +10%）；渾圓時被打＝反切：免疫這一下、無敵 0.4 秒、原地橫斬，用掉 100 刀意（2026-10-14 前是歸零）。
   // 殘心（5 秒）：收刀／拔刀時間 ×0.5、刀意獲得 +40%、受到傷害 −20%。
-  // 劍豪：居合加成 ×1.5、殘心效果 ×2（時間 ×0.25、刀意 +80%、減傷 40%）且 10 秒、收刀時間 ×0.5。
+  // 武士（原劍豪）：居合加成 ×1.5、殘心效果 ×2（時間 ×0.25、刀意 +80%、減傷 40%）且 10 秒、收刀時間 ×0.5。
+  // 2026-10-16 作者：二轉刀魔（原劍聖）常駐「刀魂」：收刀／拔刀時間 ×0.5；刀意滿的時候每再得到 5 點刀意化成 1 層刀魂
+  //   （每層攻速 +1%、傷害 +0.5%、範圍 +0.5%；2 秒，疊加時刷新；最多 50 層）。
+  //   被動「刀魔」（原劍聖之道，P.pv.bdMa）：每點刀意暴擊率 +0.25%、暴擊傷害 +1%、普攻傷害 +0.25%、受到的傷害 +0.1%；每下普攻多揮 1 刀；技能冷卻 +50%（passives.js 的 skillCd −0.5）。
+  //   技能「萬刃」（P._bdMyrT）：5 秒內普攻速度 ×1.5、每下普攻多揮 1 刀、移動 +20%。
   // 2026-10-14 作者重做被動（passives.js 的 bl4／bl8／bl11／bl9，效果寫在這裡）：
   //   穿心（原殘心）：翻滾後的下一發普攻傷害 +50%（沒有時間限制）。
   //   刀意：攻擊與收刀得到的刀意 +50%，每秒自動 +5 刀意。
@@ -352,11 +356,22 @@
   const ensoK = P => (adv(P) === 'yoto' ? 2 : 1) * (munen(P) ? 2 : 1);
   const iaiKOf = P => (adv(P) === 'kensei' ? 1.5 : 1) * (munen(P) ? 2 : 1);
   const iaiName = P => (munen(P) ? '無念．居合' : '居合'), ensoName = P => (munen(P) ? '無念．刀意渾圓' : '刀意渾圓');
-  const rangeK = P => { const { w0 } = bw(P); return Math.max(0.5, (P.ws.range || w0.range) / (w0.range || 2.6)); };
-  const readT = P => { let t = BD.READ * (bw(P).w.sheath || 1); if (adv(P) === 'kensei') t *= 0.5; if (zanOn(P)) t *= Math.pow(0.5, zanK(P)); return t; };
+  const isDaoma = P => (P.adv2 || (R.S && R.S.classes && R.S.classes[P.cls] && R.S.classes[P.cls].adv2)) === 'sp';   // 二轉刀魔
+  const soulN = P => ((P._bdSoulT || 0) > CT ? P._bdSoul || 0 : 0);   // 刀魂層數
+  const myrOn = P => (P._bdMyrT || 0) > CT;   // 萬刃
+  const atkRateK = P => (1 + 0.01 * soulN(P)) * (myrOn(P) ? 1.5 : 1);
+  const extraCuts = P => (pvB(P, 'bdMa') ? 1 : 0) + (myrOn(P) ? 1 : 0);
+  const rangeK = P => { const { w0 } = bw(P); return Math.max(0.5, (P.ws.range || w0.range) / (w0.range || 2.6)) * (1 + 0.005 * soulN(P)); };
+  const readT = P => { let t = BD.READ * (bw(P).w.sheath || 1); if (adv(P) === 'kensei') t *= 0.5; if (isDaoma(P)) t *= 0.5; if (zanOn(P)) t *= Math.pow(0.5, zanK(P)); return t; };
   const gainK = P => (zanOn(P) ? 1 + 0.4 * zanK(P) : 1) * (legOf(P) === 'lg_sheathless' ? 2 : 1) * (pvB(P, 'bdIntent') ? 1.5 : 1);   // 被動「刀意」：攻擊、收刀得到的 +50%
   const addIaiRaw = (P, n) => {
-    const was = full(P), wasM = munen(P); P._iai = Math.min(cap(P), (P._iai || 0) + n);
+    const was = full(P), wasM = munen(P);
+    if (isDaoma(P) && n > 0) {   // 刀魂：刀意滿了以後多出來的，每 5 點化成 1 層
+      const over = (P._iai || 0) + n - cap(P);
+      if (over > 0) { P._bdSoulAcc = (P._bdSoulAcc || 0) + Math.min(n, over); const k = Math.floor(P._bdSoulAcc / 5);
+        if (k > 0) { P._bdSoulAcc -= k * 5; const before = soulN(P); P._bdSoul = Math.min(50, before + k); P._bdSoulT = CT + 2; if (before === 0) say(P, '刀魂', 'crit'); } }
+    }
+    P._iai = Math.min(cap(P), (P._iai || 0) + n);
     if (!was && full(P)) { say(P, bdState(P) === 'drawn' ? '刀意渾圓' : '居合', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.6, color: '#DDEEFF' }); }
     if (!wasM && munen(P)) { say(P, bdState(P) === 'drawn' ? '無念．刀意渾圓' : '無念．居合', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2.2, color: '#FFE08A' }); }
   };
@@ -371,6 +386,8 @@
     if (iaiReady(P)) add('bd:iai', iaiName(P), 'swords', munen(P) ? '#FFE08A' : '#FFFFFF', ['下一次普攻或技能是' + iaiName(P) + '（用掉 ' + (munen(P) ? 200 : 100) + ' 刀意）', '普攻：必定橫斬、範圍 +' + pc(40 * ik) + '%、傷害 ×' + pc(1 + ik) + '、穿透 +' + pc(40 * ik) + '%；技能：傷害 +' + pc(40 * ik) + '%'], null, null, false, munen(P) ? '刀意 200、收刀中' : '刀意滿、收刀中');
     if ((P._iaiSkT || 0) > CT) add('bd:iaisk', (P._iaiSkK > (adv(P) === 'kensei' ? 1.5 : 1) ? '無念．居合' : '居合') + '（技能）', 'swords', '#FFFFFF', ['技能傷害 +' + pc(40 * (P._iaiSkK || 1)) + '%'], P._iaiSkT - CT, 1.2);
     if (zanOn(P)) add('bd:zan', '殘心', 'barrier', '#BFE8FF', ['收刀／拔刀時間 ×' + Math.pow(0.5, zanK(P)), '刀意獲得 +' + 40 * zanK(P) + '%、受到的傷害 −' + 20 * zanK(P) + '%'], P._zanT - CT, 5 * zanK(P));
+    if (soulN(P)) { const n = soulN(P); add('bd:soul', '刀魂 ' + n + ' 層', 'swords', '#C8A0FF', ['攻速 +' + n + '%、傷害 +' + n * 0.5 + '%、範圍 +' + n * 0.5 + '%', '刀意滿的時候每再得到 5 點刀意 +1 層（最多 50）'], P._bdSoulT - CT, 2); }   // 2026-10-16 刀魂
+    if (myrOn(P)) add('bd:myr', '萬刃', 'swords', '#DDEEFF', ['普攻速度 ×1.5、每下普攻多揮 1 刀、移動 +20%'], P._bdMyrT - CT, 5);
   });
   R.STATUS_EXTRA.push((P, run, add) => { if (P && P.tkKan > 0) add('tk:kan', '貫勢', 'spark', '#BFE8FF', ['傷害 +30%、受到的傷害 −20%'], P.tkKan, 5); });
   const nowMs = () => performance.now();
@@ -394,7 +411,7 @@
     let dmg = P.ws.dmg * w.dmg * (kind === 'cleave' ? 1.4 : 1) * (o.iai ? 1 + 1 * o.iaiK : 1) * (enso(P) && !o.counter ? 1 + 0.1 * ensoK(P) : 1) * (o.pierceK || 1);   // pierceK：被動「穿心」
     const pen = (kind === 'thrust' ? 0.4 : 0) + (o.iai ? 0.4 * o.iaiK : 0);
     const range = P.ws.range * (kind === 'thrust' ? 1.2 : 1) * (kind === 'slash' ? k : k), arc = kind === 'slash' ? Math.min(Math.PI * 2, (2 * Math.PI / 3) * k) : 0, width = kind === 'slash' ? 0 : (kind === 'cleave' ? 0.4 : 0.2) * k;   // 半寬：直劈 0.8 公尺（2026-10-13）、突刺 0.4
-    const hits = o.counter ? 1 : (w.hits || 1), id = (P._bdId = (P._bdId || 0) + 1);
+    const hits = o.counter ? 1 : (w.hits || 1) + extraCuts(P), id = (P._bdId = (P._bdId || 0) + 1);
     R.swingAnim && R.swingAnim(P.h, 0.04, 0.3);
     for (let i = 0; i < hits; i++) {
       const go = () => {
@@ -449,7 +466,7 @@
       if (tg) { const back = tg.def.size * 0.5 + 1.2, q = R.nearestFloor ? R.nearestFloor(tg.x - Math.sin(a2) * back, tg.z - Math.cos(a2) * back) : [tg.x, tg.z]; R.fx && R.fx('blink', P.x, 1, P.z); P.x = q[0]; P.z = q[1]; }
       P.aimA = a2; strike(P, a2, 'slash', { iai: true, iaiK: iaiKOf(P) });
       if (tg) { afterimage(P); R.fx && R.fx('blink', P.x, 1, P.z); P.x = x0; P.z = z0; }
-      const rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (1 + 0.25 * ensoK(P)) * 3;
+      const rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (1 + 0.25 * ensoK(P)) * 3 * atkRateK(P);
       P.atkCd = 1 / rate; P.atkHold = 0.2; P._bdN = (P._bdN || 0) + 1; return;
     }
     if ((P._bdBusy || 0) > CT) return;
@@ -467,7 +484,7 @@
     len = dashLen(P, a, len, Math.min(2 * k, reach * 0.8));
    // 停在敵人前 2 公尺；武器比 2 公尺短（雙刀）就停在砍得到的地方
     const sp = runSpeed(P) * (shadow ? 10 : 3), dur = len > 0.05 ? len / sp : 0;
-    let rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (enso(P) ? 1 + 0.25 * ensoK(P) : 1);
+    let rate = w.rate * (P.ws.rate / ((R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate)) * (enso(P) ? 1 + 0.25 * ensoK(P) : 1) * atkRateK(P);
     P.atkCd = 1 / rate; P.atkHold = 0.35 + dur; P._bdBusy = CT + dur; P._bdN = (P._bdN || 0) + 1;
     if (dur > 0 && R.dash) R.dash(a, len, dur, {});
     hpCost(P, 0.01);
@@ -481,7 +498,7 @@
       + '拔刀中→刀意渾圓（攻速 +25%、範圍 +10%、傷害 +10%），這時被打就反切：免疫這一下、無敵 0.4 秒、原地橫斬，用掉 100 刀意（無敵、跳起來時不會反切）。'
       + (pvB(P, 'bdMunen') ? '無念：刀意上限 200，集滿 200 時是「無念．居合」（雙倍居合加成、用掉 200）或「無念．刀意渾圓」（雙倍渾圓效果）；200 刀意可以反切兩次。' : '')
       + '普攻會先往前衝再出手：橫斬（120 度）、直劈（+40% 傷害）、突刺（長 1.2 倍、穿透 +40%），照周圍敵人數自動選（附近沒有敵人時橫斬）；翻滾後下一刀是突刺。出刀時移動 −80%，刀光留在場上 0.25 秒，擋下碰到的所有子彈。'
-      + ({ kensei: '劍豪：居合加成 ×1.5、殘心效果 ×2 且 10 秒、收刀時間 ×0.5。', shadow: '影刃：反切砍 2 刀、無敵 1 秒、反切後也進殘心；普攻衝刺快 10 倍、距離 ×2。', yoto: '妖刀使：刀意渾圓效果 ×2、渾圓時吸血系數 +75；每次普攻扣 1% 目前生命、放技能扣 10%（不會扣到死）。' }[adv(P)] || '')
+      + ({ kensei: '武士：居合加成 ×1.5、殘心效果 ×2 且 10 秒、收刀時間 ×0.5。', shadow: '影刃：反切砍 2 刀、無敵 1 秒、反切後也進殘心；普攻衝刺快 10 倍、距離 ×2。', yoto: '妖刀使：刀意渾圓效果 ×2、渾圓時吸血系數 +75；每次普攻扣 1% 目前生命、放技能扣 10%（不會扣到死）。' }[adv(P)] || '')
       + ({ dualblades: '雙刀：一次砍兩下，收刀時間 ×1.5，不能反切。' }[P.item && P.item.base] || ''),
     max: P => cap(P),
     floor(P) { if (P._bdWant && P._bdSpSet === P.speed) P.speed /= P._bdWant; P._bdWant = 1; P._bdSpBase = P.speed; P._bdSpSet = P.speed; P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; P._bdSlowT = 0; walls.length = 0; },
@@ -495,7 +512,7 @@
       if (rd) { rd.t += dt; if (rd.t >= rd.dur) { P._bdSt = rd.to; P._bdRead = null; say(P, rd.to === 'sheathed' ? '收刀' : '拔刀', 'heal'); } }
       if (bdState(P) === 'sheathed') addIai(P, 100 / BD.FULL_T * dt / 1);
       // 移動：讀條 −50%、刀意滿 +25%（記住自己乘上去的倍率；別人重算過 P.speed 就重來）
-      const want = (P._bdRead ? 0.5 : 1) * (full(P) ? 1.25 : 1) * ((P._bdSlowT || 0) > CT ? 0.2 : 1);   // 2026-10-15：出刀時 −80%
+      const want = (P._bdRead ? 0.5 : 1) * (full(P) ? 1.25 : 1) * ((P._bdSlowT || 0) > CT ? 0.2 : 1) * (myrOn(P) ? 1.2 : 1);   // 萬刃：移動 +20%   // 2026-10-15：出刀時 −80%
       blockShots();
       // 2026-10-13 修：以前別人改過 P.speed（技能增益、刀勢的 ×1.03 等都是「乘上去／除回來」）就把「已經乘過 want 的速度」當新的底，再乘一次 want → 一直疊。
       // 改成先除掉自己上次乘的倍率，再乘這次的。
@@ -511,6 +528,14 @@
       if (!o.primary && enso(P)) k *= 1 + 0.1 * ensoK(P);   // 渾圓：所有傷害 +10%（普攻在 strike 裡算過）
       if ((P._seamT || 0) > CT) k *= 1.5;   // 影縫（buildfx.js 的傳說雙刀）
       if (pvB(P, 'bdMuga') && P.hp > P.hpMax * 0.5) k *= 1.3;   // 被動「無我」：生命高於一半傷害 +30%
+      k *= 1 + 0.005 * soulN(P);   // 刀魂：每層傷害 +0.5%
+      const ma = pvB(P, 'bdMa') ? (P._iai || 0) : 0;   // 被動「刀魔」：每點刀意暴擊率 +0.25%、暴擊傷害 +1%、普攻傷害 +0.25%
+      if (ma > 0 && !o.thorns && !o.noVamp) {
+        if (o.primary) k *= 1 + 0.0025 * ma;
+        let cr = !!o.crit; if (!cr) { cr = Math.random() < (o.critChance != null ? o.critChance : (P.ws.crit || 0)) + 0.0025 * ma || (P.crits > 0 && o.primary); if (P.crits > 0 && o.primary) P.crits--; }
+        if (cr) k *= (P.critMult + 0.01 * ma) / P.critMult;
+        return { raw: raw * k, o: Object.assign({}, o, cr ? { crit: true } : { critChance: 0 }) };
+      }
       return raw * k;
     },
     onHit(e, d, o, P) { if (!o.primary || o.bdCounter || !o.bd || d <= 0) return; P._bdHitIds = P._bdHitIds || {}; const key = o.bd + ':' + (o.dir || 0); if (P._bdHitIds.last === key) return; P._bdHitIds.last = key; addIai(P, BD.GAIN / (o.bdHits || 1)); },
@@ -526,6 +551,7 @@
       if ((P.iframe || 0) > 0 || (P.air || 0) > 0 || P.dead || !(raw > 0)) return;   // 無敵、跳起來的時候本來就不會受傷：不反切
       if (enso(P) && !bw(P).w.noCounter && !P._bdRead) { this.counter(P, src); return false; }
       if (zanOn(P) && R.dmgRedAdd) R.dmgRedAdd(0.2 * zanK(P));   // 殘心：減傷係數（dmgred.js）
+      if (pvB(P, 'bdMa') && (P._iai || 0) > 0 && R.dmgRedAdd) R.dmgRedAdd(-0.001 * P._iai);   // 被動「刀魔」：每點刀意受到的傷害 +0.1%
     },
     onCast(P, i, id) { hpCost(P, 0.1); if ((P._iaiSkPend || 0) > CT) { const nm = iaiName(P); P._iaiSkPend = 0; P._iaiSkK = iaiKOf(P); P._iai = Math.max(0, (P._iai || 0) - (munen(P) ? 200 : 100)); P._bdSt = 'drawn'; P._iaiSkT = CT + 1.2; say(P, nm, 'crit'); bdLater(P, () => startZan(P), 1200); } },
     act(P) {
