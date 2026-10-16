@@ -27,8 +27,39 @@
     for (let k = 0; k < t.nx * t.nz; k++) { if (t.T[k] === 1) continue; const tx = k % t.nx, tz = (k - tx) / t.nx; let near = false; for (let dz = -1; dz <= 1 && !near; dz++) for (let dx = -1; dx <= 1 && !near; dx++) { const m = (tz + dz) * t.nx + tx + dx; if (m >= 0 && m < vis.length && vis[m]) near = true; } if (near) { x.fillStyle = t.T[k] === 3 ? '#0A080E' : '#3A3444'; x.fillRect(tx * PX, tz * PX, PX, PX); } }
     return c;
   };
+  // ---------- 浮島型的大地圖（2026-10-17 作者）：各區之間的相對位置、渡島晶的連結，只畫探索過的區 ----------
+  const izMode = run => (run && run.izZ && run.iz && run._rmMode === 'zones' ? 'zones' : 'rooms');
+  const drawZones = () => {
+    const run = W.run, g = cv.getContext('2d'), cw = cv.width, ch = cv.height, G = run.iz.g[run.floor], seen = (run.iz.seen && run.iz.seen[run.floor]) || {}, cur = run.izZ.zone;
+    g.fillStyle = '#0E0B12'; g.fillRect(0, 0, cw, ch);
+    const pos = G.pos || Array.from({ length: G.n }, (_, i) => [Math.cos(i / G.n * 6.283), Math.sin(i / G.n * 6.283)]);
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; pos.forEach(([a, b]) => { x0 = Math.min(x0, a); x1 = Math.max(x1, a); y0 = Math.min(y0, b); y1 = Math.max(y1, b); });
+    const M = 56, k = Math.min((cw - M * 2) / Math.max(0.01, x1 - x0), (ch - M * 2) / Math.max(0.01, y1 - y0)), ox = (cw - (x1 - x0) * k) / 2, oy = (ch - (y1 - y0) * k) / 2;
+    const pt = i => [ox + (pos[i][0] - x0) * k, oy + (pos[i][1] - y0) * k], R0 = Math.max(16, Math.min(26, k * 0.32));
+    // 連結：兩邊都探索過＝實線，兩端各一顆渡島晶；只探索過一邊＝往外的虛線（還沒去過）
+    G.adj.forEach((L, a) => L.forEach(b => {
+      if (!seen[a] && !seen[b]) return; if (seen[a] && seen[b] && b < a) return;
+      const [ax, ay] = pt(a), [bx, by] = pt(b), dx = bx - ax, dy = by - ay, d = Math.hypot(dx, dy) || 1, ux = dx / d, uy = dy / d;
+      if (seen[a] && seen[b]) { g.strokeStyle = '#4FB873'; g.lineWidth = 3; g.setLineDash([]); g.beginPath(); g.moveTo(ax + ux * R0, ay + uy * R0); g.lineTo(bx - ux * R0, by - uy * R0); g.stroke();
+        [[ax + ux * (R0 + 7), ay + uy * (R0 + 7)], [bx - ux * (R0 + 7), by - uy * (R0 + 7)]].forEach(([px, py]) => { g.beginPath(); g.arc(px, py, 5, 0, 7); g.fillStyle = '#5CFF84'; g.fill(); g.lineWidth = 1.5; g.strokeStyle = '#0E0B12'; g.stroke(); }); return; }
+      const [sx, sy] = seen[a] ? [ax, ay] : [bx, by], vx = seen[a] ? ux : -ux, vy = seen[a] ? uy : -uy, L2 = Math.min(d * 0.45, 70);
+      g.strokeStyle = 'rgba(92,255,132,.55)'; g.lineWidth = 2; g.setLineDash([5, 5]); g.beginPath(); g.moveTo(sx + vx * R0, sy + vy * R0); g.lineTo(sx + vx * (R0 + L2), sy + vy * (R0 + L2)); g.stroke(); g.setLineDash([]);
+      g.beginPath(); g.arc(sx + vx * (R0 + 7), sy + vy * (R0 + 7), 5, 0, 7); g.fillStyle = '#5CFF84'; g.fill();
+      g.fillStyle = 'rgba(244,233,205,.6)'; g.font = 'bold 13px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('?', sx + vx * (R0 + L2 + 9), sy + vy * (R0 + L2 + 9));
+    }));
+    // 區：只畫探索過的
+    g.textAlign = 'center'; g.textBaseline = 'middle';
+    for (let i = 0; i < G.n; i++) { if (!seen[i]) continue; const [px, py] = pt(i), here = i === cur;
+      g.beginPath(); g.arc(px, py, R0, 0, 7); g.fillStyle = here ? '#2E2616' : '#1C1822'; g.fill(); g.lineWidth = here ? 4 : 2; g.strokeStyle = here ? '#FFE08A' : i === G.center ? '#FFC94A' : '#8A7E9A'; g.stroke();
+      g.fillStyle = '#F4E9CD'; g.font = 'bold ' + Math.round(R0 * 0.62) + 'px sans-serif'; g.fillText(String(i + 1), px, py + 1);
+      const tag = (t, col, dy) => { g.font = 'bold 12px sans-serif'; const w = g.measureText(t).width + 10; g.fillStyle = 'rgba(14,11,18,.85)'; g.fillRect(px - w / 2, py + dy - 9, w, 18); g.fillStyle = col; g.fillText(t, px, py + dy); };
+      let dy = R0 + 14; if (i === G.center) { tag('▼ 中心區・樓層通道', '#FFE08A', dy); dy += 19; } if (i === G.entry) { tag('晶 入口・回歸水晶', '#7FE8FF', dy); dy += 19; } if (here) tag('你在這裡', '#FFE08A', -R0 - 13);
+    }
+    const n = Object.keys(seen).length; g.font = '12px sans-serif'; g.textAlign = 'left'; g.fillStyle = 'rgba(244,233,205,.75)'; g.fillText('探索了 ' + n + '／' + G.n + ' 區・綠點是渡島晶、虛線是還沒去過的區', 12, ch - 14);
+  };
   const draw = () => {
     if (!cv || !cv.isConnected) return; const F = W.F, run = W.run, P = W.P; if (!F || !run || !P) return;
+    if (izMode(run) === 'zones') { drawZones(); return; }
     run._rmView = { f: run.floor, cx: view.cx, cz: view.cz, k: view.k };
     const g = cv.getContext('2d'), cw = cv.width, ch = cv.height, t = F.tile;
     g.fillStyle = '#0E0B12'; g.fillRect(0, 0, cw, ch);
@@ -65,12 +96,15 @@
     const info = '<p><b>' + esc(run.site.name) + '</b><br><small>' + esc(run.grade.name) + '・' + esc(R.TYPES[run.type] ? R.TYPES[run.type].name : '') + (run.env ? '・' + esc(R.ENVS[run.env].name) : '') + '</small></p>'
       + '<p class="note">第 ' + (run.floor + 1) + '／' + run.floors + ' 層・探索了 ' + vis + '／' + F.rooms.length + ' 間<br>佩特拉的注意 ' + aw + '%' + (F.puzzles && F.puzzles.length ? '<br>這一層有 ' + F.puzzles.length + ' 間謎題房（支線）' : '') + '</p>';
     const lg = [['入', '#F4E9CD', '入口'], ['▼', '#FFE08A', '樓層通道'], ['出', '#FFF1D0', '出口'], ['▣', '#D8B060', '寶箱（灰色：開過了）'], ['晶', '#7FE8FF', '回歸水晶'], ['礦', '#9AE0FF', '礦'], ['?', '#B8E07A', '謎題房'], ['領', '#FF8A6A', '領主區'], ['◉', '#FF6A7A', '核心'], ['◆', '#C8A0FF', '最深處'], ['！', '#FF8A3A', '陷阱區']];
-    R.sheet('<h2>遺跡地圖</h2><div class="gmap"><canvas id="rm-cv" width="' + cw + '" height="' + ch + '"></canvas><div class="gmap-side">' + info
+    const izTabs = run.izZ && run.iz ? '<div class="rm-tabs"><button type="button" class="tab' + (izMode(run) === 'rooms' ? ' on' : '') + '" data-rmmode="rooms">小地圖（這一區的房間）</button><button type="button" class="tab' + (izMode(run) === 'zones' ? ' on' : '') + '" data-rmmode="zones">大地圖（各區的關係）</button></div>' : '';
+    R.sheet('<h2>遺跡地圖</h2>' + izTabs + '<div class="gmap"><canvas id="rm-cv" width="' + cw + '" height="' + ch + '"></canvas><div class="gmap-side">' + info
       + '<h3>圖例</h3><div class="glegend">' + lg.map(([g2, c, n]) => '<span class="gl"><b style="background:#141018;color:' + c + ';border-color:' + c + '">' + g2 + '</b>' + n + '</span>').join('') + '<span class="gl"><b style="background:#E0584A"> </b>遺跡生物</span><span class="gl"><b style="background:#6FE08A"> </b>隊友</span></div>'
       + '<p class="note">拖曳移動、滾輪縮放（手機兩指）、＋／− 按鈕；雙擊回到自己的位置。只畫走過、看過的地方；紅色的房間是鎖住的。</p></div></div>',
       '<div class="row"><button type="button" class="btn pri" id="rm-x">關上（Tab）</button><button type="button" class="btn" id="rm-in">＋ 放大</button><button type="button" class="btn" id="rm-out">− 縮小</button><button type="button" class="btn" id="rm-me">回到自己的位置</button><button type="button" class="btn" id="rm-all">整層</button></div>');
     $('r-sheet').classList.add('wide');
     cv = $('rm-cv'); cv.style.touchAction = 'none'; cv.style.cursor = 'grab';
+    document.querySelectorAll('[data-rmmode]').forEach(b => { b.onclick = () => { run._rmMode = b.dataset.rmmode; document.querySelectorAll('[data-rmmode]').forEach(x => x.classList.toggle('on', x === b)); draw(); }; });
+    if (!document.getElementById('rm-tabs-css')) { const st = document.createElement('style'); st.id = 'rm-tabs-css'; st.textContent = '.rm-tabs{display:flex;gap:6px;margin:0 0 8px;flex-wrap:wrap}'; document.head.appendChild(st); }
     const zc = f => { view.k = Math.max(1, Math.min(14, view.k * f)); draw(); };
     $('rm-in').onclick = () => zc(1.4); $('rm-out').onclick = () => zc(1 / 1.4);
     cv.addEventListener('dblclick', e => { e.preventDefault(); view.cx = P.x; view.cz = P.z; draw(); });

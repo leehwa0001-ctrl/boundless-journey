@@ -86,6 +86,7 @@
     // dirs：這一區往每一條連結的方向（區的位置 x→房間格 gx、y→gy），渡島晶照這個方向放
     const dirs = G.pos ? G.adj[z].map(to => { const dx = G.pos[to][0] - G.pos[z][0], dy = G.pos[to][1] - G.pos[z][1], L = Math.hypot(dx, dy) || 1; return [dx / L, dy / L]; }) : null;
     run.izZ = { zone: z, links: G.adj[z].slice(), dirs, center: z === G.center, entry: z === G.entry, from };
+    run.iz.seen = run.iz.seen || {}; (run.iz.seen[f] = run.iz.seen[f] || {})[z] = 1;   // 2026-10-17：探索過的區（ruinmap.js 的大地圖只畫這些）
     // 景色：照第幾層（biome.js 的 biomeFor 照 R.saveEvery＝1 一層一段）
     const order = []; for (let i = 0; i <= fIdx(run, run.floors - 1); i++) { const g2 = R.izGraph(run, i + (has0(run) ? 1 : 0)); order.push(g2.theme.biome || 'ruin'); }
     run.biomeOrder = has0(run) ? order : order; run.env = G.theme.env || null;
