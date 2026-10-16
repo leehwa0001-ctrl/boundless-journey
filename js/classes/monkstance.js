@@ -83,7 +83,15 @@
       if (tgt) P.aimA = angTo(P, tgt);
     } else if (R.dash) R.dash(a, len, 0.14, {});
   };
-  const baseTxt = (P, s) => ({ fist: '攻速 +' + Math.round(30 * BO(P) * 10) / 10 + '%', palm: '擊退 +' + Math.round(100 * BO(P)) + '%', step: '每次揮拳往前跨一步、技能急速 +' + Math.round(STEP_HASTE * BO(P) * 10) / 10, leg: '攻速 −60%、傷害 +' + Math.round(LEG_DMG * 100 * BO(P)) + '%、範圍 +' + Math.round(LEG_RANGE * 100 * BO(P) * 10) / 10 + '%' })[s];
+  // 2026-10-17 作者：左側框的法加成照被動、路線算（連斷、寸勁、飛燕、奔雷、拳聖、棍僧、外修者、四象輪轉）
+  const pc = v => Math.round(v * 1000) / 10;
+  const baseTxt = (P, s) => {
+    if (s === 'fist') return '攻速 +' + pc((fistUp(P) + (adv(P) === 'fistsaint' ? 0.15 : 0)) * BO(P) * (pv(P, 'mkLian') && P._fistB && CT() < P._fistB.until ? 4 / 3 : 1)) + '%';
+    if (s === 'palm') return '擊退 +' + pc(BO(P) + (adv(P) === 'staffmonk' ? 0.5 : 0)) + '%' + (pv(P, 'mkCun') ? '、傷害 +20%、範圍 +20%' : '');
+    if (s === 'step') return (adv(P) === 'waixiu' ? '' : '攻速 −25%、') + '每次揮拳往前跨一步（' + Math.round(2 * BO(P) * (pv(P, 'mkFei') ? 1.5 : 1) * 10) / 10 + ' 公尺）、技能急速 +' + Math.round(stepHaste(P) * BO(P) * 10) / 10;
+    const slow = leg(P) === 'lg_immovable' ? 0 : pv(P, 'mkBen') ? 70 : 60;
+    return (slow ? '攻速 −' + slow + '%、' : '') + '傷害 +' + pc(legDmg(P) * BO(P)) + '%、範圍 +' + pc((legRange(P) + (adv(P) === 'staffmonk' ? 0.3 : 0)) * BO(P)) + '%';
+  };
   CORE.monk = {
     name: '四法', col: '#FFB45A',
     help: P => {
@@ -163,7 +171,7 @@
     },
     gauge(P) {
       const s = P._fa || 'fist', en = Math.round(P._faEn || 0), next = ORDER[(ORDER.indexOf(s) + 1) % ORDER.length];
-      const on = [P._fistB && burstNm(P, 'fist'), P._palmB && burstNm(P, 'palm'), P._stepB && burstNm(P, 'step') + '（' + P._stepB.n + ' 下）', P._legB && burstNm(P, 'leg') + '（' + P._legB.n + ' 下）'].filter(Boolean);
+      const on = [P._fistB && burstNm(P, 'fist'), P._palmB && burstNm(P, 'palm'), P._stepB && burstNm(P, 'step'), P._legB && burstNm(P, 'leg')].filter(Boolean);
       return { name: nm(P, s), col: COL[s], v: en, max: CAP(P), full: en >= CAP(P), text: '勢 ' + en + '／' + CAP(P), sub: baseTxt(P, s) + (on.length ? '・' + on.join('、') : ''), x: en >= CAP(P) ? '換法（' + burstNm(P, next) + '）' : '換法' };
     }
   };
@@ -245,10 +253,10 @@
   // ---------- 狀態格（畫面下方的小方格） ----------
   (R.STATUS_EXTRA = R.STATUS_EXTRA || []).push((P, run, add) => {
     if (!P || P.cls !== 'monk') return;
-    if (P._fistB) { const t = P._fistB.until - CT(); if (t > 0) add('mk-fist', burstNm(P, 'fist'), 'flame', COL.fist, ['每一下普攻多揮一下（換別的法也有）'], t, FIST_T, false); }
-    if (P._palmB && P._fa === 'palm') add('mk-palm', burstNm(P, 'palm'), 'swirl', COL.palm, ['下一次普攻：範圍 +100%、擊退 +800%', '打中的敵人 6 秒內受到的傷害 +20%', '撞到牆：暈眩 1.5 秒、勢馬上回滿', '揮出去才用掉勢；換別的法就取消'], null, null, false);
-    if (P._stepB) add('mk-step', burstNm(P, 'step'), 'speed', COL.step, ['剩 ' + P._stepB.n + ' 下：普攻傷害 +25%'].concat(P._fa === 'step' ? ['揮拳時瞬間閃 3 倍距離：準心 45 度內有敵人就到牠面前，沒有就閃到最遠'] : ['（換成別的法：閃的效果沒了，傷害照算）']), null, null, false);
-    if (P._legB && P._fa === 'leg') add('mk-leg', burstNm(P, 'leg'), 'spark', COL.leg, ['剩 ' + P._legB.n + ' 下：傷害再 ×2、範圍 +50%、攻速 +25%、暈眩 1 秒（每一下畫面都會震）', '打倒敵人回 50 勢', '換成' + nm(P, 'fist') + '就消失'], null, null, false);
+    if (P._fistB) { const t = P._fistB.until - CT(); if (t > 0) add('mk-fist', burstNm(P, 'fist'), 'flame', COL.fist, ['每一下普攻多揮一下（換別的法也有）'].concat(pv(P, 'mkLian') ? ['連斷：拳法的攻速加成再 +33.3%'] : []), t, FIST_T, false); }
+    if (P._palmB && P._fa === 'palm') add('mk-palm', burstNm(P, 'palm'), 'swirl', COL.palm, (pv(P, 'mkCun') ? ['寸勁：下一次普攻範圍 +100%，把打中的敵人拍到正中間', '0.3 秒後第二掌：掌氣推著敵人往前，撞牆暈眩 ' + (pv(P, 'mkDian') ? 2.5 : 1.5) + ' 秒、受到的傷害 +25%', '掌氣碰到一隻回 35 勢，撞牆勢回滿'] : ['下一次普攻：範圍 +100%、擊退 +800%', '打中的敵人 6 秒內受到的傷害 +20%', '撞到牆：暈眩 ' + (pv(P, 'mkDian') ? 2.5 : 1.5) + ' 秒、勢馬上回滿']).concat(['揮出去才用掉勢；換別的法就取消']), null, null, false);
+    if (P._stepB) add('mk-step', burstNm(P, 'step'), 'speed', COL.step, ['普攻傷害 +' + (pv(P, 'mkFei') ? (P._fa === 'step' ? 30 : 15) : 25) + '%' + (pv(P, 'mkFei') ? '、每一下技能冷卻 −' + (P._fa === 'step' ? 1 : 0.5) + ' 秒' : '')].concat(P._fa === 'step' ? ['揮拳時瞬間閃 3 倍距離：準心 45 度內有敵人就到牠面前，沒有就閃到最遠'] : ['（換成別的法：閃的效果沒了，傷害照算）']), null, null, false);
+    if (P._legB && P._fa === 'leg') add('mk-leg', burstNm(P, 'leg'), 'spark', COL.leg, ['傷害再 ×2、範圍 +50%、攻速 +25%、暈眩 ' + (pv(P, 'mkDian') ? 2 : 1) + ' 秒' + (pv(P, 'mkBen') ? '、必定暴擊（暴擊率每 1% 傷害 +0.5%，最多 25%）' : '') + '（每一下畫面都會震）', '打倒敵人回 50 勢', '換成' + nm(P, 'fist') + '就消失'], null, null, false);
   });
   // 傳說武器的說明
   (R.LEGENDS || []).forEach(l => { if (l.id === 'lg_thousand') l.desc = '「四法」的勢累積快一倍。'; if (l.id === 'lg_immovable') l.desc = '腿法（怒棍）不減攻速。'; });
