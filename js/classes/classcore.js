@@ -360,6 +360,8 @@
   const soulN = P => ((P._bdSoulT || 0) > CT ? P._bdSoul || 0 : 0);   // 刀魂層數
   const myrOn = P => (P._bdMyrT || 0) > CT;   // 萬刃
   const atkRateK = P => (1 + 0.01 * soulN(P)) * (myrOn(P) ? 1.5 : 1);
+  // 攻速加成（相對武器原本的攻速：詞綴、天賦、渾圓、刀魂、萬刃…；30 級刀意解放的 ×3 不算）
+  const atkUp = P => { const b0 = (R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate || 1; return Math.max(0, (P.ws.rate || b0) / b0 * (enso(P) ? 1 + 0.25 * ensoK(P) : 1) * atkRateK(P) - 1); };
   const extraCuts = P => (pvB(P, 'bdMa') ? 1 : 0) + (myrOn(P) ? 1 : 0);
   const rangeK = P => { const { w0 } = bw(P); return Math.max(0.5, (P.ws.range || w0.range) / (w0.range || 2.6)) * (1 + 0.005 * soulN(P)); };
   const readT = P => { let t = BD.READ * (bw(P).w.sheath || 1); if (adv(P) === 'kensei') t *= 0.5; if (isDaoma(P)) t *= 0.5; if (zanOn(P)) t *= Math.pow(0.5, zanK(P)); return t; };
@@ -538,7 +540,7 @@
       }
       return raw * k;
     },
-    onHit(e, d, o, P) { if (!o.primary || o.bdCounter || !o.bd || d <= 0) return; P._bdHitIds = P._bdHitIds || {}; const key = o.bd + ':' + (o.dir || 0); if (P._bdHitIds.last === key) return; P._bdHitIds.last = key; addIai(P, BD.GAIN / (o.bdHits || 1)); },
+    onHit(e, d, o, P) { if (!o.primary || o.bdCounter || !o.bd || d <= 0) return; P._bdHitIds = P._bdHitIds || {}; const key = o.bd + ':' + (o.dir || 0); if (P._bdHitIds.last === key) return; P._bdHitIds.last = key; addIai(P, BD.GAIN / (o.bdHits || 1) / (1 + atkUp(P) / 2)); },   // 2026-10-17 作者：普攻得到的刀意 ÷ (1＋攻速加成÷2)，攻速堆高不會集太快
     counter(P, src) {
       const shadow = adv(P) === 'shadow';
       P._iai = Math.max(0, (P._iai || 0) - 100); if (shadow) P.iframe = Math.max(P.iframe || 0, 1);   /* 2026-10-16 作者：反切不再無敵 0.4 秒（影刃的 1 秒照舊） */   // 2026-10-14：用掉 100（無念集滿 200 可以反切兩次）
