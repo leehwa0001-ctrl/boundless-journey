@@ -42,7 +42,8 @@
       + '<button type="button" class="mini" id="tr-n"></button><button type="button" class="mini" id="tr-mv"></button><button type="button" class="mini" id="tr-cd"></button><button type="button" class="mini" id="tr-hp"></button><button type="button" class="mini" id="tr-reset">重置數字</button><button type="button" class="mini gold" id="tr-out">離開訓練場</button></div>';
     document.body.appendChild(panel);
     $('tr-n').onclick = () => { T.n = T.n === 1 ? 5 : 1; place(); reset(); label(); };
-    $('tr-mv').onclick = () => { T.move = !T.move; if (!T.move) dummies.forEach(e => { if (e.home) { e.x = e.home[0]; e.z = e.home[1]; } }); label(); };   // 2026-10-13 作者：木樁可以切成會移動的
+    // 2026-10-17 作者：木樁多一個【自由】——可以被擊退、推動（不會自己回原位）；固定 → 移動 → 自由 → 固定
+    $('tr-mv').onclick = () => { T.mode = { fixed: 'move', move: 'free', free: 'fixed' }[T.mode || 'fixed']; T.move = T.mode === 'move'; if (T.mode !== 'free') dummies.forEach(e => { e.kx = e.kz = 0; if (e.home) { e.x = e.home[0]; e.z = e.home[1]; } }); label(); };   // 2026-10-13 作者：木樁可以切成會移動的
     $('tr-cd').onclick = () => { T.nocd = !T.nocd; label(); };
     $('tr-hp').onclick = () => { const opts = [100, 75, 50, 25, 10, 1]; T.hpPct = opts[(opts.indexOf(T.hpPct) + 1) % opts.length]; applyHp(); label(); };
     $('tr-reset').onclick = () => { reset(); };
@@ -51,7 +52,7 @@
     return panel;
   };
   const applyHp = () => { const P = W().P; if (!P || !here()) return; P.hp = Math.max(1, Math.round(P.hpMax * T.hpPct / 100)); };
-  const label = () => { if (!panel) return; $('tr-n').textContent = '木樁：' + (T.n === 1 ? '1 隻' : '5 隻一群'); $('tr-mv').textContent = '木樁：' + (T.move ? '移動' : '固定'); $('tr-cd').textContent = '技能冷卻：' + (T.nocd ? '不冷卻' : '照常'); $('tr-hp').textContent = '自身生命：' + T.hpPct + '%'; };
+  const label = () => { if (!panel) return; $('tr-n').textContent = '木樁：' + (T.n === 1 ? '1 隻' : '5 隻一群'); $('tr-mv').textContent = '木樁：' + ({ fixed: '固定', move: '移動', free: '自由' }[T.mode || 'fixed']); $('tr-cd').textContent = '技能冷卻：' + (T.nocd ? '不冷卻' : '照常'); $('tr-hp').textContent = '自身生命：' + T.hpPct + '%'; };
   const reset = () => { T.log = []; T.total = 0; T.max = 0; T.hits = 0; T.last = null; show(); };
   const fmt = v => Math.round(v).toLocaleString('en-US');
   const show = () => {
@@ -89,9 +90,9 @@
     });
   };
   const keep = () => dummies.forEach(e => {
-    e.dead = false; e.dormant = true; e.aggro = false; e.dmg = 0; e.kx = 0; e.kz = 0;
+    e.dead = false; e.dormant = true; e.aggro = false; e.dmg = 0; if (T.mode !== 'free') { e.kx = 0; e.kz = 0; }   // 自由：擊退照算
     // 移動模式：在原本的位置附近慢慢左右、前後晃（約 2 公尺內，每根錯開），走不過去的地方就停在原地；dormant 照舊＝不會醒、不會打人
-    if (e.home) { if (T.move) { const i = dummies.indexOf(e), t = T.t, nx = e.home[0] + Math.sin(t * 0.55 + i * 1.3) * 2.2, nz = e.home[1] + Math.sin(t * 0.37 + i * 2.1) * 1.4, ok = !R.nearestFloor || (() => { const f = R.nearestFloor(nx, nz); return Math.hypot(f[0] - nx, f[1] - nz) < 0.05; })(); if (ok) { const dx = nx - e.x, dz = nz - e.z; if (dx || dz) e.yaw = Math.atan2(dx, dz); e.x = nx; e.z = nz; } } else { e.x = e.home[0]; e.z = e.home[1]; } }
+    if (e.home && T.mode !== 'free') { if (T.move) { const i = dummies.indexOf(e), t = T.t, nx = e.home[0] + Math.sin(t * 0.55 + i * 1.3) * 2.2, nz = e.home[1] + Math.sin(t * 0.37 + i * 2.1) * 1.4, ok = !R.nearestFloor || (() => { const f = R.nearestFloor(nx, nz); return Math.hypot(f[0] - nx, f[1] - nz) < 0.05; })(); if (ok) { const dx = nx - e.x, dz = nz - e.z; if (dx || dz) e.yaw = Math.atan2(dx, dz); e.x = nx; e.z = nz; } } else { e.x = e.home[0]; e.z = e.home[1]; } }
     if (e.hp < e.hpMax) { add(e.hpMax - e.hp); e.hp = e.hpMax; }   // 沒經過 R.hurtEnemy 直接扣的血也算
   });
   const add = d => { if (!(d > 0)) return; T.log.push([T.t, d]); T.total += d; T.hits++; if (d > T.max) T.max = d; if (T.last) T.last.dmg += d; };
