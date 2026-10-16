@@ -324,7 +324,7 @@
   //   拔刀中→刀意渾圓（攻速 +25%、範圍 +10%、傷害 +10%）；渾圓時被打＝反切：這一下受到的傷害 −90%、原地橫斬，用掉 100 刀意（2026-10-14 前是歸零）。
   // 殘心（5 秒）：收刀／拔刀時間 ×0.5、刀意獲得 +40%、受到傷害 −20%。
   // 武士（原劍豪）：居合加成 ×1.5、殘心效果 ×2（時間 ×0.25、刀意 +80%、減傷 40%）且 10 秒、收刀時間 ×0.5。
-  // 2026-10-17 作者：被動「刀魂」（原被動劍聖，passives.js 的 bl10）：收刀／拔刀時間 ×0.5；刀意滿的時候每再得到 5 點刀意化成 1 層刀魂
+  // 2026-10-17 作者：被動「刀魂」（原被動劍聖，passives.js 的 bl10）：收刀／拔刀時間 ×0.5；刀意滿的時候每再得到 25 點刀意化成 1 層刀魂
   //   （每層攻速 +1%、傷害 +0.5%、範圍 +0.5%；2 秒，疊加時刷新；最多 50 層）。
   //   被動「刀魔」（原劍聖之道，P.pv.bdMa）：每點刀意暴擊率 +0.25%、暴擊傷害 +1%、普攻傷害 +0.25%、受到的傷害 +0.1%；每下普攻多揮 1 刀；技能冷卻 +50%（passives.js 的 skillCd −0.5）。
   //   技能「萬刃」（P._bdMyrT）：5 秒內普攻速度 ×1.5、每下普攻多揮 1 刀、移動 +20%。
@@ -366,10 +366,10 @@
   const gainK = P => (zanOn(P) ? 1 + 0.4 * zanK(P) : 1) * (legOf(P) === 'lg_sheathless' ? 2 : 1) * (pvB(P, 'bdIntent') ? 1.5 : 1);   // 被動「刀意」：攻擊、收刀得到的 +50%
   const addIaiRaw = (P, n) => {
     const was = full(P), wasM = munen(P);
-    if (isDaoma(P) && n > 0) {   // 刀魂：刀意滿了以後多出來的，每 5 點化成 1 層
+    if (isDaoma(P) && n > 0) {   // 刀魂：刀意滿了以後多出來的，每 25 點化成 1 層
       const over = (P._iai || 0) + n - cap(P);
-      if (over > 0) { P._bdSoulAcc = (P._bdSoulAcc || 0) + Math.min(n, over); const k = Math.floor(P._bdSoulAcc / 5);
-        if (k > 0) { P._bdSoulAcc -= k * 5; const before = soulN(P); P._bdSoul = Math.min(50, before + k); P._bdSoulT = CT + 2; if (before === 0) say(P, '刀魂', 'crit'); } }
+      if (over > 0) { P._bdSoulAcc = (P._bdSoulAcc || 0) + Math.min(n, over); const k = Math.floor(P._bdSoulAcc / 25);   /* 2026-10-17 作者：太強，改成每 25 點一層 */
+        if (k > 0) { P._bdSoulAcc -= k * 25; const before = soulN(P); P._bdSoul = Math.min(50, before + k); P._bdSoulT = CT + 2; if (before === 0) say(P, '刀魂', 'crit'); } }
     }
     P._iai = Math.min(cap(P), (P._iai || 0) + n);
     if (!was && full(P)) { say(P, bdState(P) === 'drawn' ? '刀意渾圓' : '居合', 'crit'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.6, color: '#DDEEFF' }); }
@@ -386,7 +386,7 @@
     if (iaiReady(P)) add('bd:iai', iaiName(P), 'swords', munen(P) ? '#FFE08A' : '#FFFFFF', ['下一次普攻或技能是' + iaiName(P) + '（用掉 ' + (munen(P) ? 200 : 100) + ' 刀意）', '普攻：必定橫斬、範圍 +' + pc(40 * ik) + '%、傷害 ×' + pc(1 + ik) + '、穿透 +' + pc(40 * ik) + '%；技能：傷害 +' + pc(40 * ik) + '%'], null, null, false, munen(P) ? '刀意 200、收刀中' : '刀意滿、收刀中');
     if ((P._iaiSkT || 0) > CT) add('bd:iaisk', (P._iaiSkK > (adv(P) === 'kensei' ? 1.5 : 1) ? '無念．居合' : '居合') + '（技能）', 'swords', '#FFFFFF', ['技能傷害 +' + pc(40 * (P._iaiSkK || 1)) + '%'], P._iaiSkT - CT, 1.2);
     if (zanOn(P)) add('bd:zan', '殘心', 'barrier', '#BFE8FF', ['收刀／拔刀時間 ×' + Math.pow(0.5, zanK(P)), '刀意獲得 +' + 40 * zanK(P) + '%、受到的傷害 −' + 20 * zanK(P) + '%'], P._zanT - CT, 5 * zanK(P));
-    if (soulN(P)) { const n = soulN(P); add('bd:soul', '刀魂 ' + n + ' 層', 'swords', '#C8A0FF', ['攻速 +' + n + '%、傷害 +' + n * 0.5 + '%、範圍 +' + n * 0.5 + '%', '刀意滿的時候每再得到 5 點刀意 +1 層（最多 50）'], P._bdSoulT - CT, 2); }   // 2026-10-16 刀魂
+    if (soulN(P)) { const n = soulN(P); add('bd:soul', '刀魂 ' + n + ' 層', 'swords', '#C8A0FF', ['攻速 +' + n + '%、傷害 +' + n * 0.5 + '%、範圍 +' + n * 0.5 + '%', '刀意滿的時候每再得到 25 點刀意 +1 層（最多 50）'], P._bdSoulT - CT, 2); }   // 2026-10-16 刀魂
     if (myrOn(P)) add('bd:myr', '萬刃', 'swords', '#DDEEFF', ['普攻速度 ×1.5、每下普攻多揮 1 刀、移動 +20%'], P._bdMyrT - CT, 5);
   });
   R.STATUS_EXTRA.push((P, run, add) => { if (P && P.tkKan > 0) add('tk:kan', '貫勢', 'spark', '#BFE8FF', ['傷害 +30%、受到的傷害 −20%'], P.tkKan, 5); });
