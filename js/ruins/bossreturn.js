@@ -11,7 +11,15 @@
       const w = W(), F = w.F, P = w.P;
       if (o && o.up && F && P && F.rooms) {
         const trap = F.rooms.find(r => (r.type === 'boss' || r.type === 'lord') && inRoom(r, P.x, P.z));
-        if (trap) {
+        // 2026-10-18 作者：打倒領主體 → 下樓 → 再回上一層，會被關在房間裡。這一層的領主體打倒過：不再出現、通道不封，直接傳到營火旁
+        const run = w.run, killed = run && run._lordKilled && run._lordKilled[f];
+        if (killed) {
+          if (F.lordGate) F.lordGate.down = true;
+          F.rooms.forEach(r => { if (r.type === 'lord') r.cleared = true; });
+          (w.enemies || []).forEach(e => { if (!e.dead && e.def && /^領主體/.test(e.def.name || '')) { e.dead = true; if (e.m && e.m.g && w.scene) w.scene.remove(e.m.g); } });
+          R.lockRoom && w.F.rooms.forEach(r => { if (r.type === 'lord' && r.locked) R.lockRoom(r, false); });
+        }
+        if (trap || killed) {
           const C = F.camp, r0 = F.rooms[0];
           let x = C ? C.x + 1.6 : r0.x, z = C ? C.z + 1.6 : r0.z;
           if (R.pointBlocked && R.pointBlocked(x, z) && r0) { x = r0.x; z = r0.z; }
@@ -23,6 +31,9 @@
     } catch (e) { console.warn('[bossreturn]', e); }
     return res;
   };
+  // 記下哪幾層的領主體打倒過
+  const bd0 = R.onBossDown;
+  R.onBossDown = e => { const r = bd0 ? bd0(e) : undefined; try { const run = W().run; if (run && e && e.def && /^領主體/.test(e.def.name || '')) { run._lordKilled = run._lordKilled || {}; run._lordKilled[run.floor] = 1; } } catch (err) { } return r; };
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (e, dmg, o) => {
     if (o && o.thorns && e && dmg > 0) {

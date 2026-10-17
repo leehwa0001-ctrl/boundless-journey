@@ -25,7 +25,7 @@
       const it = R.itemById(c.dataset.iid), b = document.createElement('button'); b.type = 'button'; b.className = 'fg-tile'; b.dataset.iid = c.dataset.iid;
       if (!it) { b.textContent = '？'; return b; }
       b.style.setProperty('--c', R.rarityColor(it)); b.title = R.itemName(it);
-      b.innerHTML = (R.itemIconTag ? R.itemIconTag(it) : '') + (it.plus ? '<i class="fg-plus">+' + it.plus + '</i>' : '') + (eq.has(it.id) ? '<i class="fg-eq">裝</i>' : '') + (it.set ? '<i class="fg-set"></i>' : '');
+      b.innerHTML = (R.itemIconTag ? R.itemIconTag(it) : '') + (it.plus ? '<i class="fg-plus">+' + it.plus + '</i>' : '') + (eq.has(it.id) ? (R.equipOwner(it.id) === R.S.cls ? '<i class="fg-eq">裝</i>' : '<i class="fg-eq fg-eq2" title="' + ((R.CLASSES[R.equipOwner(it.id)] || {}).name || '') + '裝備中">' + ((R.CLASSES[R.equipOwner(it.id)] || {}).name || '他').slice(0, 1) + '</i>') : '') + (it.set ? '<i class="fg-set"></i>' : '');
       b.onclick = () => { sel = b.dataset.iid; show(); };
       return b;
     };
@@ -34,7 +34,9 @@
       [...detail.children].forEach(c => keep.appendChild(c));
       const c = cards.find(x => x.dataset.iid === sel); if (c) detail.appendChild(c);
     };
-    sec('裝備中', cards.filter(c => eq.has(c.dataset.iid)));
+    const mine = c => R.equipOwner(c.dataset.iid) === R.S.cls;   // 2026-10-18 作者：目前職業的排最前面
+    sec('裝備中・目前職業（' + ((R.CLASSES[R.S.cls] || {}).name || '') + '）', cards.filter(c => eq.has(c.dataset.iid) && mine(c)));
+    sec('裝備中・其他職業', cards.filter(c => eq.has(c.dataset.iid) && !mine(c)));
     sec('倉庫', cards.filter(c => !eq.has(c.dataset.iid)));
     cards.forEach(c => keep.appendChild(c));
     wrap.append(list, detail); box.replaceChildren(wrap, keep); box.classList.add('fg-box');
@@ -56,7 +58,7 @@
     '.fg-tile .gicon{width:44px;height:44px}',
     '.fg-tile i{position:absolute;font-style:normal;font-weight:800;font-size:10px;line-height:1;padding:2px 3px;border-radius:4px;pointer-events:none}',
     '.fg-plus{right:1px;bottom:1px;background:rgba(10,8,14,.85);color:#FFE08A}',
-    '.fg-eq{left:1px;top:1px;background:var(--gold);color:#1A1408}',
+    '.fg-eq{left:1px;top:1px;background:var(--gold);color:#1A1408}', '.fg-eq.fg-eq2{background:#7A8494;color:#10141A}',
     '.fg-set{right:3px;top:3px;width:7px;height:7px;padding:0!important;border-radius:50%!important;background:#7FE8C8;box-shadow:0 0 4px #7FE8C8}',
     '.fg-detail{min-width:0}.fg-detail .item-card{border-left-width:6px;padding:14px 16px}',
     '.fg-detail .item-card>.gicon{width:64px;height:64px;margin-bottom:4px}.fg-detail .item-card>.gicon img{width:58px;height:58px}',

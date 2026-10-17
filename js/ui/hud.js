@@ -39,7 +39,7 @@
     $('r-blind').style.opacity = P.blindT > 0 ? Math.min(0.85, P.blindT / 2) : 0;
     slow += dt; if (slow < 0.15) return; slow = 0;
     const ws = P.ws;
-    $('r-weapon').innerHTML = '<b style="color:' + R.rarityColor(P.item) + '">' + R.esc(R.itemName(P.item)) + '</b><small>' + (ws.kind === 'gun' ? (P.reloadT > 0 ? '換彈中……' : '彈匣 ' + P.ammo + '／' + ws.mag) : ws.kind === 'magic' ? '每發 ' + ws.mp + ' 魔力' : ws.charge ? (P.charging ? '蓄力 ' + Math.round(Math.min(1, P.charge / 1.1) * 100) + '%' : '按住蓄力') : '') + (P.adv === 'yoto' ? '　魔力質 ' + (P.stacks || 0) : '') + (P.elemShots > 0 ? '　元素彈 ' + P.elemShots : '') + '</small>';
+    $('r-weapon').innerHTML = '<b style="color:' + R.rarityColor(P.item) + '">' + R.esc(R.itemName(P.item)) + '</b><small>' + (ws.kind === 'gun' ? (ws.mpShot ? '每發 ' + ws.mpShot * ((R.gunAmmo && R.gunAmmo(P).cost) || 1) + ' 魔力' : P.reloadT > 0 ? '換彈中……' : '彈匣 ' + P.ammo + '／' + ws.mag) : ws.kind === 'magic' ? '每發 ' + ws.mp + ' 魔力' : ws.charge ? (P.charging ? '蓄力 ' + Math.round(Math.min(1, P.charge / 1.1) * 100) + '%' : '按住蓄力') : '') + (P.adv === 'yoto' ? '　魔力質 ' + (P.stacks || 0) : '') + (P.elemShots > 0 ? '　元素彈 ' + P.elemShots : '') + '</small>';
     $('r-gold').textContent = run.mats.crystal || 0; $('r-bag').textContent = run.bag.length + '／' + R.BAG_MAX;
     $('r-pot').textContent = '回復藥 ' + (R.S.potions.hp || 0) + '・魔力藥 ' + (R.S.potions.mp || 0);
     R.partyHud();

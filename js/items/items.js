@@ -118,6 +118,8 @@
   };
   R.itemById = id => R.S.stash.find(x => x.id === id) || null;
   R.equipped = cls => { const e = R.S.equip[cls] || {}, out = {}; R.GEAR_KEYS.forEach(k => { out[k] = R.itemById(e[k]); }); return out; };
+  // 2026-10-18 作者：裝備中分「目前職業」和「其他職業」——R.equipOwner(id) 回傳穿著它的職業（目前職業優先）
+  R.equipOwner = id => { const S = R.S; if (!S || !id) return null; const has = c => R.GEAR_KEYS.some(k => (S.equip[c] || {})[k] === id); if (S.cls && has(S.cls)) return S.cls; return Object.keys(S.equip).find(has) || null; };
   R.equippedIds = () => new Set(Object.values(R.S.equip).flatMap(e => R.GEAR_KEYS.map(k => e[k])).filter(Boolean));
 
   // 物品說明（給介面用）

@@ -235,15 +235,23 @@
   };
 
   // ======================= 槍手：彈種＋完美換彈 =======================
-  const AMMO = { normal: ['一般彈', '#C8C0B0'], pierce: ['穿甲彈', '#C8D0DC'], fire: ['燃燒彈', '#FF7A3A'], frost: ['冰凍彈', '#9AD8FF'] }, AM = ['normal', 'pierce', 'fire', 'frost'];
+  // 2026-10-18 作者：彈種改成按住 X 換——一般彈；暈眩彈（暈 2 秒、射程 −50%）；穿甲彈（貫穿 +1、護甲穿透 +50%、一發用 2 顆）；螺旋彈（傷害 ×2、暴擊率 +50%、一發用 3 顆）
+  const AMMO = { normal: ['一般彈', '#C8C0B0'], stun: ['暈眩彈', '#FFE08A'], ap: ['穿甲彈', '#C8D0DC'], spiral: ['螺旋彈', '#FF9A6A'] }, AM = ['normal', 'stun', 'ap', 'spiral'];
+  const AMK = { normal: { cost: 1 }, stun: { cost: 1, lifeK: 0.5, stun: 2 }, ap: { cost: 2, pierce: 1, xPen: 0.5 }, spiral: { cost: 3, dmgK: 2, critP: 0.5 } };
+  const amT = P => (AMMO[P._ammoT] ? P._ammoT : 'normal');
+  R.gunAmmo = P => AMK[amT(P)];   // combat.js 射擊時用
+  const GHOLD = 0.4;   // 按住 X 多久算「換彈種」
   const ZONE = [0.45, 0.65];
   CORE.gunner = {
     name: '彈藥', col: '#C8A86A',
-    help: P => '彈種＋完美換彈：換彈的時候再按一次 X，按在中間金色那一格＝完美換彈（馬上換好、這一匣傷害 +25%），按錯會卡彈（多 0.5 秒）。彈匣滿的時候按 X 換彈種：一般→穿甲（對有甲的 +30%）→燃燒（18% 燃燒）→冰凍（25% 減速）。'
-      + ({ sniper: '狙擊手：打背後、暈住的 ×1.5。', magigun: '魔導槍手：彈種的效果兩倍。', bomber: '爆破手：燃燒彈打倒的會炸開。' }[adv(P)] || ''),
-    floor: P => { P._ammoT = P._ammoT || 'normal'; P._tried = false; },
+    help: P => (adv(P) === 'magigun' ? '魔導槍手沒有彈匣：每一發普攻用魔力（手槍 3、步槍 1、霰彈槍 12、狙擊槍 20，乘上彈種的消耗）。' : '完美換彈：按 X 換彈，換彈的時候再按一次 X，按在中間金色那一格＝完美換彈（馬上換好、這一匣傷害 +25%），按錯會卡彈（多 0.5 秒）。')
+      + '按住 X 換彈種：一般彈→暈眩彈（暈 2 秒、射程 −50%）→穿甲彈（貫穿 +1、護甲穿透 +50%、一發用 2 顆）→螺旋彈（傷害 ×2、暴擊率 +50%、一發用 3 顆）。'
+      + ({ sniper: '狙擊手：攻擊範圍 +100%、攻速 −30%、普攻傷害 +100%。', magigun: '', bomber: '爆破手：普攻不貫穿，打中時炸開（半徑 1 公尺，每 1 點貫穿 +1 公尺，最多 7 公尺）。' }[adv(P)] || ''),
+    floor: P => { P._ammoT = amT(P); P._tried = false; P._xPress = 0; },
     act(P, orig) {
       const ws = P.ws; if (!ws || ws.kind !== 'gun') return orig();
+      const held = R.input && R.input.keys && R.input.keys.x;
+      if (held && !(P.reloadT > 0)) { P._xPress = CT || 1e-6; P._xOrig = orig; return; }   // 按住＝換彈種、放開＝換彈（step 裡判斷）
       if (P.reloadT > 0) {
         if (P._tried) return; P._tried = true;
         const p = 1 - P.reloadT / (ws.reload || 1);
@@ -251,24 +259,29 @@
         else { P.reloadT += 0.5; say(P, '卡彈', 'hurt'); }
         return;
       }
-      if (P.ammo >= (ws.mag || 0)) { const i = AM.indexOf(P._ammoT || 'normal'); P._ammoT = AM[(i + 1) % AM.length]; say(P, AMMO[P._ammoT][0], 'heal'); return; }
+      if (ws.mpShot || P.ammo >= (ws.mag || 0)) { const i = AM.indexOf(amT(P)); P._ammoT = AM[(i + 1) % AM.length]; say(P, AMMO[P._ammoT][0], 'heal'); return; }   // 手機（沒有按住）：彈匣滿的時候點一下換彈種；魔導槍手沒有彈匣，點一下就換
       P._tried = false; P._perfect = false; return orig();
     },
-    step(dt, P) { if (P.reloadT > 0 && P._reloading !== true) { P._reloading = true; P._tried = false; P._perfect = false; } if (!(P.reloadT > 0)) P._reloading = false; },
+    step(dt, P) {
+      if (P.reloadT > 0 && P._reloading !== true) { P._reloading = true; P._tried = false; P._perfect = false; } if (!(P.reloadT > 0)) P._reloading = false;
+      if (P._xPress) {
+        const held = R.input && R.input.keys && R.input.keys.x;
+        if (held && CT - P._xPress >= GHOLD) { P._xPress = 0; const i = AM.indexOf(amT(P)); P._ammoT = AM[(i + 1) % AM.length]; say(P, AMMO[P._ammoT][0], 'heal'); R.sfx && R.sfx('pick'); }
+        else if (!held) { P._xPress = 0; const ws = P.ws; if (ws && ws.kind === 'gun' && !ws.mpShot && P.ammo < (ws.mag || 0) && P._xOrig) { P._tried = false; P._perfect = false; P._xOrig(); } }
+      }
+    },
     mod(e, raw, o, P) {
       if (!o.primary) return raw;
-      let k = P._perfect ? 1.25 : 1; const t = P._ammoT || 'normal', dbl = adv(P) === 'magigun' ? 2 : 1;
-      if (t === 'pierce' && e.def.armor) k *= 1 + 0.3 * dbl;
-      if (t === 'fire' && rnd() < 0.18 * dbl) e.st.burn = 3;
-      if (t === 'frost' && rnd() < 0.25 * dbl) e.st.slow = Math.max(e.st.slow || 0, 2);
-      if (adv(P) === 'sniper' && ((e.st.stun || 0) > 0 || Math.abs(wrap(angTo(e, P) - (e.yaw || 0))) > 2.1)) { k *= 1.5; if (rnd() < 0.3) say(P, '弱點', 'crit'); }
+      let k = P._perfect && !(P.ws && P.ws.mpShot) ? 1.25 : 1;
+      if (adv(P) === 'sniper') k *= 2;   // 狙擊手：普攻傷害 +100%
       return raw * k;
     },
-    onHit(e, d, o, P, killed) { if (killed && o.primary && adv(P) === 'bomber' && (P._ammoT === 'fire')) { R.fx && R.fx('boom', e.x, 0.3, e.z, { r: 2, color: '#FF8A3A' }); R.coreAoe(e.x, e.z, 2, pw(P) * 0.6, {}); } },
+
     gauge(P) {
-      const ws = P.ws || {}, t = P._ammoT || 'normal';
+      const ws = P.ws || {}, t = amT(P);
+      if (ws.mpShot) return { name: AMMO[t][0], col: AMMO[t][1], text: '每發 ' + ws.mpShot * AMK[t].cost + ' 魔力', sub: '', x: '按住：換彈種' };
       if (P.reloadT > 0) return { name: '換彈中', col: '#FFE08A', v: 1 - P.reloadT / (ws.reload || 1), max: 1, text: P._tried ? '' : '抓金色那一格', zone: (R.legOf ? R.legOf(P) : null) === 'lg_receiver' ? [0.35, 0.75] : ZONE, x: P._tried ? '' : '完美換彈' };
-      return { name: AMMO[t][0], col: AMMO[t][1], text: (P.ammo || 0) + '／' + (ws.mag || 0) + (P._perfect ? '・完美 +25%' : ''), sub: '', x: P.ammo >= (ws.mag || 0) ? '換彈種' : '換彈' };
+      return { name: AMMO[t][0], col: AMMO[t][1], text: (P.ammo || 0) + '／' + (ws.mag || 0) + (P._perfect ? '・完美 +25%' : ''), sub: '', x: '按住：換彈種・按：換彈' };
     }
   };
 

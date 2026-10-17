@@ -267,7 +267,7 @@
         if (it.rarity > 0) { const c = R.reforgePrice(it); b.push('<button type="button" class="btn" data-reforge="' + it.id + '"' + (can(c) ? '' : ' disabled') + '>重鑄（' + c.gold + ' 費拉・' + matsTxt(c.mats) + '）</button>'); }
         const ep = R.cost ? R.cost(100, 'smith') : 100;   // 2026-10-16 修正：附魔的價錢照特質（惡名遠洋、歡迎……）算，按鈕寫的、檢查的跟實際扣的一樣
         if (it.kind === 'weapon') Object.keys(ENCH).forEach(k => b.push('<button type="button" class="mini" data-ench="' + it.id + ':' + k + '"' + (can({ gold: ep, mats: { [k]: 3 } }) ? '' : ' disabled') + '>附魔：' + esc(R.MATS[k].name) + '（' + (s.mats[k] || 0) + '／3・' + ep + ' 費拉）</button>'));
-        return card(it, (eqIds.has(it.id) ? '<span class="tag">裝備中</span>' : '') + b.join(''));
+        return card(it, (eqIds.has(it.id) ? '<span class="tag">' + (R.equipOwner(it.id) === R.S.cls ? '裝備中・目前職業' : '裝備中・' + ((R.CLASSES[R.equipOwner(it.id)] || {}).name || '其他職業')) + '</span>' : '') + b.join(''));
       }).join('') : '<p class="note">倉庫裡沒有鑑定好的裝備。</p>') + '</div>';
   };
   const buyTab = () => {

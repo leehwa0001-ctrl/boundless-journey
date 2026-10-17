@@ -29,7 +29,8 @@
     P.calm = sum('calm') / 100 + (st.adv === 'shinkan' ? 0.4 : 0);
     P.greed = sum('greed') / 100;
     P.item = eq.weapon; P.ws = R.weaponStats(eq.weapon);
-    if (st.adv === 'sniper') { P.ws.crit += 0.05; if (P.ws.range) P.ws.range *= 1.3; }   // 2026-10-08 作者：原本暴擊率 +15%
+    if (st.adv === 'sniper') { if (P.ws.range) P.ws.range *= 2; if (P.ws.rate) P.ws.rate *= 0.7; }   // 2026-10-18 作者：狙擊手 攻擊範圍 +100%、攻速 −30%（普攻傷害 +100% 在 classcore.js）
+    if (st.adv === 'magigun' && P.ws.kind === 'gun') P.ws.mpShot = { pistol: 3, rifle: 1, shotgun: 12, sniperrifle: 20 }[P.item && P.item.base] || 3;   // 2026-10-18 作者：魔導槍手 沒有彈匣，普攻用魔力
     if (st.adv === 'gladiator') P.ws.rate *= 1.2;
     if (st.adv === 'dragoon' && P.ws.kind === 'thrust') P.ws.range *= 1.25;
     if (st.adv === 'fistsaint') { P.ws.rate *= 1.2; P.ws.crit += 0.05; }   // 拳聖
@@ -71,7 +72,7 @@
     // 附加效果
     const ws = P.ws;
     if (!isRef) {
-      const elem = o.elem || (P.elemShots > 0 && o.primary ? ['fire', 'frost', 'shock'][P.elemShots % 3] : null) || (P.adv === 'magigun' && o.primary && Math.random() < 0.25 ? ['fire', 'frost', 'shock'][Math.floor(Math.random() * 3)] : null);
+      const elem = o.elem || (P.elemShots > 0 && o.primary ? ['fire', 'frost', 'shock'][P.elemShots % 3] : null);   // 2026-10-18：魔導槍手的「25% 隨機元素」拿掉（改成用魔力射擊）
       if (o.primary && P.elemShots > 0) P.elemShots--;
       if (elem === 'fire' || (o.primary && Math.random() < ws.fire) || (P.adv === 'elementalist' && Math.random() < 0.1)) e.st.burn = 3;
       if (elem === 'frost' || (o.primary && Math.random() < ws.frost) || (P.adv === 'elementalist' && Math.random() < 0.1)) e.st.slow = 2;
@@ -241,16 +242,16 @@
   R.killShot = s => { s.dead = true; W().scene.remove(s.mesh); };
   R.explode = s => {
     R.killShot(s);
-    const r = s.radius || (s.kind === 'grenade' ? 3.6 : s.kind === 'fire' ? 3 : 1.4), mult = s.kind === 'grenade' && R.hasAdv('bomber') ? 1.4 : 1;
+    const r = s.radius || (s.kind === 'grenade' ? 3.6 : s.kind === 'fire' ? 3 : 1.4), mult = 1;   // 2026-10-18：爆破手的「爆炸傷害 +40%」換成新的被動
     R.fx('boom', s.x, 0.6, s.z, { r, color: s.kind === 'grenade' ? '#FFB45A' : s.kind === 'fire' ? '#FF7A3A' : '#B89AFF' });
-    R.aoe(s.x, s.z, r, s.dmg * mult, { burn: s.kind === 'fire', props: true, primary: s.primary });
+    R.aoe(s.x, s.z, r, s.dmg * mult, { burn: s.kind === 'fire', props: true, primary: s.primary, stun: s.stun, crit: s.crit, xPen: s.xPen });
     if (s.kind === 'grenade') R.addAware(R.hasAdv('bomber') ? 4 : 6, 'boom');
   };
   // 範圍傷害
   R.aoe = (x, z, r, dmg, o) => {
     o = o || {}; let n = 0;
     // 反擊／荊棘旗標要帶下去，不然 R.coreAoe／範圍反傷會被剝掉、又觸發吸血
-    W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < r + e.def.size * 0.5) { R.hurtEnemy(e, dmg, { primary: o.primary, stun: o.stun, root: o.root, curse: o.curse, kb: o.kb, crit: o.crit, reflect: o.reflect, thorns: o.thorns, noVamp: o.noVamp, fromBehind: o.fromBehind, vSk: o.vSk, xPen: o.xPen }); if (o.burn) e.st.burn = 3; n++; } });
+    W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < r + e.def.size * 0.5) { R.hurtEnemy(e, dmg, { primary: o.primary, xPen: o.xPen, stun: o.stun, root: o.root, curse: o.curse, kb: o.kb, crit: o.crit, reflect: o.reflect, thorns: o.thorns, noVamp: o.noVamp, fromBehind: o.fromBehind, vSk: o.vSk, xPen: o.xPen }); if (o.burn) e.st.burn = 3; n++; } });
     if (o.props !== false) W().F.props.forEach(p => { if (p.alive && Math.hypot(p.x - x, p.z - z) < r + 0.4) R.hitProp(p, dmg, !o.noAware); });
     return n;
   };
@@ -276,13 +277,15 @@
     if (P.cls === 'blade' && ws.kind === 'melee' && R.bladeAttack) return R.bladeAttack();   // 2026-10-13 刀客重製：先衝再砍（classcore.js）
     const aim = P.aimA;
     if (ws.kind === 'gun') {
-      if (P.reloadT > 0) return;
-      if (P.ammo <= 0) { R.reload(); return; }
-      P.ammo--; P.atkCd = 1 / ws.rate; P.h.recoil = 1;
-      for (let i = 0; i < ws.pellets; i++) R.fire({ kind: 'bullet', owner: 'p', x: P.x + Math.sin(aim) * 0.8, z: P.z + Math.cos(aim) * 0.8, a: aim + (Math.random() - 0.5) * ws.spread * (ws.pellets > 1 ? 1 : 1) + (ws.pellets > 1 ? (i - (ws.pellets - 1) / 2) * ws.spread / ws.pellets : 0), speed: ws.speed, dmg: ws.dmg, life: ws.range / ws.speed, pierce: ws.pierce, primary: true, homing: ws.legend === 'petra' ? 3 : 0 });
+      const am = (R.gunAmmo && R.gunAmmo(P)) || { cost: 1 };   // 彈種（classcore.js）
+      if (ws.mpShot) { const need = ws.mpShot * am.cost; if (P.mp < need) { R.toast('魔力不夠'); P.atkCd = 0.4; return; } P.mp -= need; }   // 魔導槍手：用魔力
+      else { if (P.reloadT > 0) return; if (P.ammo <= 0) { R.reload(); return; } P.ammo -= Math.min(P.ammo, am.cost); }
+      P.atkCd = 1 / ws.rate; P.h.recoil = 1;
+      const pierce0 = (ws.pierce || 0) + (am.pierce || 0), boom = P.adv === 'bomber';   // 爆破手：不貫穿，打中炸開（半徑 1 公尺＋每 1 點貫穿 1 公尺，最多 7）
+      for (let i = 0; i < ws.pellets; i++) R.fire({ kind: 'bullet', owner: 'p', x: P.x + Math.sin(aim) * 0.8, z: P.z + Math.cos(aim) * 0.8, a: aim + (Math.random() - 0.5) * ws.spread * (ws.pellets > 1 ? 1 : 1) + (ws.pellets > 1 ? (i - (ws.pellets - 1) / 2) * ws.spread / ws.pellets : 0), speed: ws.speed, dmg: ws.dmg * (am.dmgK || 1), life: ws.range / ws.speed * (am.lifeK || 1), pierce: boom ? 0 : pierce0, splash: boom ? 1 : 0, radius: boom ? Math.min(7, 1 + pierce0) : 0, stun: am.stun || 0, xPen: am.xPen || 0, crit: am.critP && Math.random() < am.critP ? true : undefined, primary: true, homing: ws.legend === 'petra' ? 3 : 0 });
       R.fx('muzzle', P.x + Math.sin(aim) * 0.9, 1.15, P.z + Math.cos(aim) * 0.9, {});
       R.sfx && R.sfx('gun');
-      if (P.ammo <= 0) R.reload();
+      if (!ws.mpShot && P.ammo <= 0) R.reload();
     } else if (ws.kind === 'bow') {
       if (ws.charge) { P.charging = true; return; }
       P.atkCd = 1 / ws.rate; P.h.recoil = 1;

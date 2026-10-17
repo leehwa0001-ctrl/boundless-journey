@@ -133,8 +133,9 @@ D('mo8', 'monk', 25, '連斷', '拳法的攻速加成提高為 45%；拳勢爆�
         R.healP(P.hpMax * f.killHealUp * (1 + Math.min(1, 0.01 * (P._kuN || 0))), true); P._kuN = (P._kuN || 0) + 1;
       }
       if (f.killMp) P.mp = Math.min(P.mpMax, P.mp + f.killMp);
-      if (f.killAmmo && P.ws && P.ws.mag) P.ammo = Math.max(P.ammo || 0, Math.min(P.ws.mag, (P.ammo || 0) + f.killAmmo));
-      if (f.killAmmoP && P.ws && P.ws.mag) P.ammo = Math.max(P.ammo || 0, Math.min(P.ws.mag, (P.ammo || 0) + Math.max(1, Math.round(P.ws.mag * f.killAmmoP))));   // 2026-10-08：照彈匣的 %（最少 1 發）
+      if ((f.killAmmo || f.killAmmoP) && P.ws && P.ws.mpShot) P.mp = Math.min(P.mpMax, P.mp + (f.killAmmoP ? P.mpMax * f.killAmmoP : f.killAmmo * P.ws.mpShot) / 5);   // 2026-10-18 魔導槍手：補彈匣改成補魔力（效果 1/5）
+      else if (f.killAmmo && P.ws && P.ws.mag) P.ammo = Math.max(P.ammo || 0, Math.min(P.ws.mag, (P.ammo || 0) + f.killAmmo));
+      if (f.killAmmoP && P.ws && P.ws.mag && !P.ws.mpShot) P.ammo = Math.max(P.ammo || 0, Math.min(P.ws.mag, (P.ammo || 0) + Math.max(1, Math.round(P.ws.mag * f.killAmmoP))));   // 2026-10-08：照彈匣的 %（最少 1 發）
       if (f.rage) P.pvRage = Math.max(3, f.rageT || 0);   /* 2026-10-16 作者：血祭 4 秒 */
     }
     return r;
