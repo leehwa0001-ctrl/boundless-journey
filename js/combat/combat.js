@@ -30,7 +30,7 @@
     P.greed = sum('greed') / 100;
     P.item = eq.weapon; P.ws = R.weaponStats(eq.weapon);
     if (st.adv === 'sniper') { if (P.ws.range) P.ws.range *= 2; if (P.ws.rate) P.ws.rate *= 0.7; }   // 2026-10-18 作者：狙擊手 攻擊範圍 +100%、攻速 −30%（普攻傷害 +100% 在 classcore.js）
-    if (st.adv === 'magigun' && P.ws.kind === 'gun') P.ws.mpShot = { pistol: 3, rifle: 1, shotgun: 12, sniperrifle: 20 }[P.item && P.item.base] || 3;   // 2026-10-18 作者：魔導槍手 沒有彈匣，普攻用魔力
+    if (st.adv === 'magigun' && P.ws.kind === 'gun') P.ws.mpShot = { pistol: 1.5, rifle: 0.5, shotgun: 6, sniperrifle: 10 }[P.item && P.item.base] || 1.5;   // 2026-10-18 作者：減半（原本 3／1／12／20）   // 2026-10-18 作者：魔導槍手 沒有彈匣，普攻用魔力
     if (st.adv === 'gladiator') P.ws.rate *= 1.2;
     if (st.adv === 'dragoon' && P.ws.kind === 'thrust') P.ws.range *= 1.25;
     if (st.adv === 'fistsaint') { P.ws.rate *= 1.2; P.ws.crit += 0.05; }   // 拳聖
@@ -339,6 +339,8 @@
     };
     if (delay) later(go, delay * 1000); else go();
   };
+  // 2026-10-18 作者：魔導槍手沒有彈匣——技能「補彈匣 X%」改成「補 X%÷5 的最大魔力」（翻滾射擊 30% → 6%、裝滿 → 20%）
+  R.magRefill = (P, frac) => { if (!P || !P.ws || !P.ws.mpShot) return false; P.mp = Math.min(P.mpMax, (P.mp || 0) + P.mpMax * frac / 5); return true; };
   R.reload = () => { const P = W().P; if (P.ws.kind !== 'gun' || P.reloadT > 0 || P.ammo >= P.ws.mag) return; P.reloadT = P.ws.reload; };
 
   // ---------- 翻滾 ----------
@@ -362,7 +364,7 @@
     const aimIn = max => { const d = Math.hypot(ax - P.x, az - P.z); const k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
     R.sfx && R.sfx('skill');
     switch (P.skill) {
-      case 'roll': R.dash(a + Math.PI, 5, 0.25, { iframe: true }); if (ws.mag) { const add = Math.ceil(ws.mag * 0.3); if (P.reloadT > 0) P._ammoBonus = Math.max(P._ammoBonus || 0, add); else P.ammo = Math.max(P.ammo || 0, Math.min(ws.mag, (P.ammo || 0) + add)); } if (R.skillVarOf && R.skillVarOf('roll') === 'rollcrit') P.crits = 3; break;   // 2026-10-08：補 30%（換彈中翻滾不打斷換彈，下一匣 ×1.3）、★3「要害」才必定暴擊（guns1008.js）。2026-10-14：原本註解夾在中間，把 break 也註解掉了，會接著放「箭雨」在準心炸開
+      case 'roll': R.dash(a + Math.PI, 5, 0.25, { iframe: true }); if (R.magRefill && R.magRefill(P, 0.3)) { } else if (ws.mag) { const add = Math.ceil(ws.mag * 0.3); if (P.reloadT > 0) P._ammoBonus = Math.max(P._ammoBonus || 0, add); else P.ammo = Math.max(P.ammo || 0, Math.min(ws.mag, (P.ammo || 0) + add)); } if (R.skillVarOf && R.skillVarOf('roll') === 'rollcrit') P.crits = 3; break;   // 2026-10-08：補 30%（換彈中翻滾不打斷換彈，下一匣 ×1.3）、★3「要害」才必定暴擊（guns1008.js）。2026-10-14：原本註解夾在中間，把 break 也註解掉了，會接著放「箭雨」在準心炸開
       case 'volley': { const [x, z] = aimIn(12); [0, 0.35, 0.7].forEach(t => later(() => { R.fx('rain', x, 0, z, { r: 2.8 }); R.aoe(x, z, 2.8, base * 0.9); }, t * 1000)); R.fx('mark', x, 0, z, { r: 2.8, t: 1 }); break; }
       case 'whirl': P.buff.whirl = 1.2; break;
       case 'fireball': R.fire({ kind: 'fire', owner: 'p', x: P.x, z: P.z, a, speed: 14, dmg: base * 2.4, life: 1.4, radius: 3, primary: false }); break;
@@ -370,7 +372,7 @@
       case 'flash': R.dash(a, 6.5, 0.18, { iframe: true, hit: base * 2 }); break;
       case 'charge': R.dash(a, 7, 0.3, { iframe: true, hit: base * 1.5, stun: 1.2, kb: 3 }); break;
       case 'snipe': P.stance = 0.5; later(() => { R.fire({ kind: 'bullet', owner: 'p', x: P.x, z: P.z, a: P.aimA, speed: 60, dmg: base * 5, life: 0.6, pierce: 99, primary: false, crit: true }); R.shake(0.3); }, 500); break;
-      case 'element': P.elemShots = 12; P.ammo = ws.mag || P.ammo; P.reloadT = 0; break;
+      case 'element': P.elemShots = 12; if (!(R.magRefill && R.magRefill(P, 1))) { P.ammo = ws.mag || P.ammo; P.reloadT = 0; } break;
       case 'grenade': { const [x, z] = aimIn(11), d = Math.hypot(x - P.x, z - P.z), t = 0.6; const s = R.fire({ kind: 'grenade', owner: 'p', x: P.x, z: P.z, a: Math.atan2(x - P.x, z - P.z), speed: d / t, dmg: base * 3, life: 3, primary: false }); s.grav = true; s.y = 1.4; s.vy = 20 * t / 2; break; }
       case 'homing': for (let i = 0; i < 8; i++) R.fire({ kind: 'arrow', owner: 'p', x: P.x, z: P.z, a: a + (i - 3.5) * 0.18, speed: 20, dmg: base * 0.9, life: 1.6, homing: 5, primary: true }); break;
       case 'trap': { const [x, z] = aimIn(8); R.addZone({ kind: 'trap', x, z, r: 1.2, life: 20, dmg: base * 2 }); break; }

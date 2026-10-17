@@ -225,7 +225,7 @@
     // 無敵：t 秒內不會受傷；cleanse 解除變慢和看不清楚；dodge 翻滾馬上可以再用
     guard(s, P) { P.iframe = Math.max(P.iframe || 0, s.t || 1); if (s.cleanse) { P.slowT = 0; P.blindT = 0; } if (s.dodge) P.dodgeCd = 0; R.fx('ring', P.x, 0.1, P.z, { r: 1.8, color: s.color || '#FFFFFF' }); R.fx('blink', P.x, 1, P.z); },
     // 換彈：彈匣馬上裝滿；rate：一段時間提高射速（同名重放只刷新時間，不疊倍率）
-    reload(s, P) { if (!s.noReload && P.ws.mag) { P.ammo = P.ws.mag; P.reloadT = 0; } if (s.crits) P.crits = (P.crits || 0) + s.crits; if (s.rate && R.SKILL_TYPES && R.SKILL_TYPES.buff) R.SKILL_TYPES.buff({ _id: s._id + ':rate', t: s.rateT || 5, rate: s.rate }, P); R.fx('ring', P.x, 0.1, P.z, { r: 1.2, color: '#FFE08A' }); },
+    reload(s, P) { if (!s.noReload && R.magRefill && R.magRefill(P, 1)) { } else if (!s.noReload && P.ws.mag) { P.ammo = P.ws.mag; P.reloadT = 0; } if (s.crits) P.crits = (P.crits || 0) + s.crits; if (s.rate && R.SKILL_TYPES && R.SKILL_TYPES.buff) R.SKILL_TYPES.buff({ _id: s._id + ':rate', t: s.rateT || 5, rate: s.rate }, P); R.fx('ring', P.x, 0.1, P.z, { r: 1.2, color: '#FFE08A' }); },
     // 躍擊：跳起來落在準心處（在空中不會受傷），落地再炸一圈
     jumpx(s, P, w, pw) { const [x, z] = R.nearestFloor(...aimIn(P, s.range || 9)), dur = s.dur || 0.6; P.jump = { t: 0, dur, x0: P.x, z0: P.z, x1: x, z1: z }; P.air = dur; if (s.end) later(() => nova(P, w, s.end, pw, x, z), dur * 1000 + 20); },
     // 多段斬：幾道直線斬擊（spread：張開的角度；around：平均分布在四周）
