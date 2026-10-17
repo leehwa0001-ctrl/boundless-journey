@@ -68,7 +68,7 @@
     DIRMAP.forEach((d, row) => COLMAP.forEach(([act0, i], col) => {
       const act = act0 === 'swing' ? sw : act0, bf = KB.body[act] || KB.body.stand, b = bf[Math.min(i, bf.length - 1)];
       const pickF = by => { const f = layerFrame(by, act, i); return f ? f[d] : null; };
-      drawCell(g, col * CW, row * CH, [[b[d], P.body], [pickF(LY.pants), P.pants], [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass]].concat(KK && KK.extra ? KK.extra(act, i, d, layerFrame) : []));
+      drawCell(g, col * CW, row * CH, [[b[d], P.body]].concat(KK && KK.under ? KK.under(act, i, d, layerFrame) : [], [[pickF(LY.pants), P.pants]]).concat([ [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass]]).concat(KK && KK.extra ? KK.extra(act, i, d, layerFrame) : []));
     }));
     if (CACHE.size > 300) CACHE.clear(); CACHE.set(key, c);
     return c;

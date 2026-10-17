@@ -48,14 +48,20 @@
       const skin = o.skin || '#E8C2A0', cloak = o.cloak || '#3A3440';
       const eq = o.eq || {}, armor = ARMOR_SLOTS.map(([layer, slot]) => { const it = eq[slot], A = it && R.ARMOR && R.ARMOR[it.base]; return A && FULL.layers[layer] && FULL.layers[layer][A.name] ? [layer, A.name, A.w] : null; }).filter(Boolean);
       const wp = o.weapon && FULL.weapons[o.weapon] ? o.weapon : null;
-      const order = FULL.order.filter(n => parts[n]);
+      const order = FULL.order.filter(n => parts[n]), cut = FULL.order.indexOf('褲子');
+      const under = order.filter(n => cut >= 0 && FULL.order.indexOf(n) < cut), over = order.filter(n => !under.includes(n));   // 素材的圖層順序：在褲子前面的（皮紋、翅膀……）畫在衣服底下
       return {
         body: base.body, layers: base.layers, noHair: !!parts['獸頭'], noFace: !!parts['獸頭'],
         key: [rc.body, order.map(n => n + ':' + parts[n]).join('/'), armor.map(a => a[1]).join('/'), wp || ''].join('|'),
+        under: (act, i, d, layerFrame) => {
+          const out = [];
+          under.forEach(n => { const f = layerFrame(base.layers[n] && base.layers[n][parts[n]], act, i); if (f && f[d]) out.push([f[d], P(RACE_COL[n] ? RACE_COL[n](Object.assign({ skin }, o)) : skin, cloak)]); });
+          return out;
+        },
         extra: (act, i, d, layerFrame) => {
           const out = [];
           const add = (by, pal) => { const f = layerFrame(by, act, i); if (f && f[d]) out.push([f[d], pal]); };
-          order.forEach(n => add(base.layers[n] && base.layers[n][parts[n]], P(RACE_COL[n] ? RACE_COL[n](Object.assign({ skin }, o)) : skin, cloak)));
+          over.forEach(n => add(base.layers[n] && base.layers[n][parts[n]], P(RACE_COL[n] ? RACE_COL[n](Object.assign({ skin }, o)) : skin, cloak)));
           armor.forEach(([layer, name, w]) => add(base.layers[layer][name], P(ARMOR_COL[w] || o.top || '#6A5A48', cloak)));
           if (wp) add(FULL.weapons[wp], P('#C4CAD4', WEAPON_ALT[wp] || '#7A5636'));
           return out;
