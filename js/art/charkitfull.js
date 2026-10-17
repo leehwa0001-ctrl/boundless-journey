@@ -39,6 +39,32 @@
   const WEAPON_ALT = { longbow: '#C4A068', shortbow: '#C4A068', crossbow: '#8A6A44', repeater: '#8A6A44', rifle: '#6A4A30', shotgun: '#6A4A30', sniperrifle: '#5A4A3A',
     tome: '#6A2A34', scrollb: '#B08850', talisman: '#B02A2A', parchment: '#C49A64', harp: '#B08A40', lute: '#9A6A3C', totem: '#8A5A3A' };
   const ARMOR_SLOTS = [['頭盔', 'head'], ['胸甲', 'body'], ['板腿', 'legs'], ['足甲', 'feet']];
+  // ---------- 素材沒有畫的配件（圍巾、頭帶、耳環）：照這一格身體的頭、脖子位置畫上去（2026-10-18） ----------
+  const G = 45;
+  const decRLE = str => { const a = new Uint8Array(G * G); let i = 0, p = 0; while (p < str.length) { const v = str.charCodeAt(p++) - 97; let n = 0; while (p < str.length && str[p] >= '0' && str[p] <= '9') n = n * 10 + (str.charCodeAt(p++) - 48); n = n || 1; a.fill(v, i, i + n); i += n; } return a; };
+  const encRLE = a => { let s = '', i = 0; while (i < a.length) { const v = a[i]; let n = 1; while (i + n < a.length && a[i + n] === v) n++; s += String.fromCharCode(97 + v) + (n > 1 ? n : ''); i += n; } return s; };
+  const ACC_CACHE = new Map();
+  const accFrame = (bodyStr, kind, d) => {
+    const ck = kind + d + bodyStr; let r = ACC_CACHE.get(ck); if (r !== undefined) return r;
+    const b = decRLE(bodyStr), g = new Uint8Array(G * G), rows = [];
+    // 只看中間那一段（頭頂正中間往下連著的那一塊）：旁邊多出來的手、翅膀不算
+    let top = -1; for (let y = 0; y < G && top < 0; y++) for (let x = 0; x < G; x++) if (b[y * G + x]) { top = y; break; }
+    if (top < 0) { ACC_CACHE.set(ck, ''); return ''; }
+    let cx = 0, cn = 0; for (let x = 0; x < G; x++) if (b[top * G + x]) { cx += x; cn++; } cx = Math.round(cx / cn);
+    for (let y = 0; y < G; y++) { if (!b[y * G + cx]) { rows.push(null); continue; } let x0 = cx, x1 = cx; while (x0 > 0 && b[y * G + x0 - 1]) x0--; while (x1 < G - 1 && b[y * G + x1 + 1]) x1++; rows.push([x0, x1]); }
+    const w = y => (rows[y] ? rows[y][1] - rows[y][0] + 1 : 0), maxW = Math.max(...rows.slice(top, top + 14).map((_, k) => w(top + k)));
+    let bot = top; while (w(bot) < maxW) bot++; while (bot + 1 < G && w(bot + 1) >= maxW * 0.7) bot++;   // 頭的最下面一列（從頭最寬的那一列往下找）
+    const set = (x, y, c) => { if (x >= 0 && x < G && y >= 0 && y < G) g[y * G + x] = c; };
+    if (kind === 'headband') { for (const [y, c] of [[top + 6, 2], [top + 7, 3]]) { if (!rows[y]) continue; for (let x = rows[y][0]; x <= rows[y][1]; x++) if (b[y * G + x]) set(x, y, b[y * G + x] === 1 ? 1 : c); } }
+    if (kind === 'scarf') {
+      for (const [y, c] of [[bot + 1, 2], [bot + 2, 3]]) { if (!rows[y]) continue; for (let x = rows[y][0] - 1; x <= rows[y][1] + 1; x++) set(x, y, c); }
+      if (d === 'left' || d === 'right') { const x = d === 'left' ? (rows[bot + 1] || [0, 0])[1] : (rows[bot + 1] || [0, 0])[0]; for (let y = bot + 3; y <= bot + 5; y++) set(x, y, 2); }   // 側面：垂下來的一截在背後
+    }
+    if (kind === 'earring' && rows[bot]) { const y = bot + 1, [x0, x1] = rows[bot]; if (d !== 'right') set(d === 'left' ? x1 - 1 : x0 + 1, y, 9); if (d !== 'left') set(d === 'right' ? x0 + 1 : x1 - 1, y, 9); }
+    const out = g.slice(); for (let k = 0; k < g.length; k++) { if (!g[k] || g[k] === 1) continue; const x = k % G, y = (k - x) / G; [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([dx, dy]) => { const q = (y + dy) * G + x + dx; if (x + dx >= 0 && x + dx < G && y + dy >= 0 && y + dy < G && !g[q] && !b[q]) out[q] = 1; }); }
+    r = encRLE(out); ACC_CACHE.set(ck, r); return r;
+  };
+  const DRAWN_ACC = { scarf: 1, headband: 1, earring: 1 };
   // ---------- 給 charkit.js 的 ----------
   R.charkitKitFor = o => {
     if (!R.charkitOn || !R.charkitOn()) return null;
@@ -52,7 +78,7 @@
       const under = order.filter(n => cut >= 0 && FULL.order.indexOf(n) < cut), over = order.filter(n => !under.includes(n));   // 素材的圖層順序：在褲子前面的（皮紋、翅膀……）畫在衣服底下
       return {
         body: base.body, layers: base.layers, noHair: !!parts['獸頭'], noFace: !!parts['獸頭'],
-        key: [rc.body, order.map(n => n + ':' + parts[n]).join('/'), armor.map(a => a[1]).join('/'), wp || ''].join('|'),
+        key: [rc.body, order.map(n => n + ':' + parts[n]).join('/'), armor.map(a => a[1]).join('/'), wp || '', DRAWN_ACC[o.acc] ? o.acc + (o.accCol || '') : ''].join('|'),
         under: (act, i, d, layerFrame) => {
           const out = [];
           under.forEach(n => { const f = layerFrame(base.layers[n] && base.layers[n][parts[n]], act, i); if (f && f[d]) out.push([f[d], P(RACE_COL[n] ? RACE_COL[n](Object.assign({ skin }, o)) : skin, cloak)]); });
@@ -63,6 +89,7 @@
           const add = (by, pal) => { const f = layerFrame(by, act, i); if (f && f[d]) out.push([f[d], pal]); };
           over.forEach(n => add(base.layers[n] && base.layers[n][parts[n]], P(RACE_COL[n] ? RACE_COL[n](Object.assign({ skin }, o)) : skin, cloak)));
           armor.forEach(([layer, name, w]) => add(base.layers[layer][name], P(ARMOR_COL[w] || o.top || '#6A5A48', cloak)));
+          if (DRAWN_ACC[o.acc]) { const bf = base.body[act] || base.body.stand, bd = bf && bf[Math.min(i, bf.length - 1)]; const f = bd && accFrame(bd[d], o.acc, d); if (f) out.push([f, P(o.acc === 'earring' ? '#E8C04A' : o.accCol || '#C8323A', cloak)]); }   // 圍巾、頭帶、耳環
           if (wp) add(FULL.weapons[wp], P('#C4CAD4', WEAPON_ALT[wp] || '#7A5636'));
           return out;
         }
