@@ -46,8 +46,9 @@
     return Number.isFinite(x) ? Math.max(0, x) : 0;
   };
   const wMult = P => { const wd = P.item && R.WEAPONS[P.item.base], rate = (wd && wd.rate) || REF_RATE, base = P.item && P.item.base; let m = LONG * REF_RATE / rate; if (base === 'gauntlet' || base === 'claws') m *= 0.75 / (base === 'gauntlet' ? 2 : 3);   /* 2026-10-09 作者：改成一下只揮一次、普攻吸血倍率 ×3（每一揮是原本的三倍：原本 0.25 再除以兩拳／三爪） */ const hits = Math.max(1, (P.ws && (P.ws.pellets || P.ws.hits)) || (wd && (wd.pellets || wd.hits)) || 1); m /= hits; if (wd && wd.kind === 'magic') m *= 0.5; return Math.max(0.25, Math.min(15, m)); };   // 作者：拳套／鐵爪攻速太快，武器吸血乘數改成原本的 1/4
+  const wMultC = P => wMult(P) * (P && P.cls === 'blade' ? 3 : 1);   // 2026-10-17 作者：刀客所有武器的吸血回復量 ×3
   const amp = P => Math.max(0, 1 + (R.recovAmpOf ? R.recovAmpOf(P) : num(P.recovAmp)));   // 含滴血重生的恢復量%（實際乘在 healP；這裡給顯示用）
-  const baseHeal = (P, x, n) => Math.max(1, Math.round(Math.ceil(wMult(P) * (1 + x / HEAL_PER)) * (1 + Math.sqrt(Math.max(1, n))) / 2));
+  const baseHeal = (P, x, n) => Math.max(1, Math.round(Math.ceil(wMultC(P) * (1 + x / HEAL_PER)) * (1 + Math.sqrt(Math.max(1, n))) / 2));
   const healOf = (P, x, n) => Math.max(1, Math.round(baseHeal(P, x, n) * amp(P)));   // 顯示＝實際（healP 會再乘 amp）
   const chanceOf = x => { x = Math.max(0, num(x)); return x > 0 ? x / (x + CH_K) : 0; };   // 回血機率＝系數÷(系數＋250)
   // ---------- 技能、大招（2026-10-08 作者）----------
@@ -76,7 +77,7 @@
   R.vampInfo = (P, extra) => {
     P = P || W.P; if (!P) return null; const x = coef(P, extra);
     let sks = []; try { sks = slotIds(P).map(id => ({ id, name: R.SKILLS[id].name, mul: vkOf(id), heal: x > 0 ? skHealOf(P, x, 1, id) : 0 })); } catch (e) { }
-    return { x, chance: chanceOf(x), heal: healOf(P, x, 1), mult: wMult(P), skBase: skBase(x), sks, ultHeal: x > 0 ? skHealOf(P, x, 1, 'ult') : 0 };
+    return { x, chance: chanceOf(x), heal: healOf(P, x, 1), mult: wMultC(P), skBase: skBase(x), sks, ultHeal: x > 0 ? skHealOf(P, x, 1, 'ult') : 0 };
   };
   R.vampLine = P => { const i = R.vampInfo(P); return i && i.x > 0 ? '系數 ' + i.x + '（普攻每次 ' + (Math.round(i.chance * 1000) / 10) + '% 機率回 ' + i.heal + ' 生命；技能每 0.2 秒結算一次必定回：' + (i.sks.map(s => s.name + ' ' + s.heal).join('、') || '—') + '；武器乘數 ' + (Math.round(i.mult * 10) / 10) + '）' : ''; };
 
