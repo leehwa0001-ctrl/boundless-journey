@@ -72,7 +72,7 @@
   let openBox = null, drag = null, popId = null;
   const cs = () => (window.innerWidth < 600 ? 30 : 42);
   const where = () => { const W = R.W || {}; const inApt = !!(W.inside && W.inside.kind === 'home'); return { inApt, hasHome: !!(S() && S().home), full: inApt || !(S() && S().home) }; };
-  R.stashLocked = () => { const W = R.W || {}; return !!(W.town && !W.run && !where().full); };   // 2026-10-16：有家的人不在家時，不能從倉庫換裝（gearcmp.js、loadout.js 也照這個擋）
+  R.stashLocked = () => false;   // 2026-10-18 作者：不在家也能從倉庫頁面直接換上裝備（原本：有家的人不在家時不能換）   // 2026-10-16：有家的人不在家時，不能從倉庫換裝（gearcmp.js、loadout.js 也照這個擋）
 
   const tileHtml = (it, p, c) => { const [a, b] = dims(...sizeOf(it), p.r); return '<div class="tk-it' + (p.r ? ' rot' : '') + '" data-tk="' + it.id + '" style="left:' + p.x * c + 'px;top:' + p.y * c + 'px;width:' + a * c + 'px;height:' + b * c + 'px;--c:' + R.rarityColor(it) + '">' + (R.itemIconTag ? R.itemIconTag(it, 'tk-ic') : '') + '<i>' + esc(R.itemName(it)) + '</i>' + (it.locked ? '<em>🔒</em>' : '') + (it.identified ? '' : '<em class="q">？</em>') + '</div>'; };
   const gridHtml = (key, c) => {
@@ -192,17 +192,17 @@
       if (!wh.full) {
         if (bar) bar.hidden = true;
         sec.querySelectorAll('.sx-empty,.sx-bar').forEach(x => { x.hidden = true; });
-        const n = document.createElement('p'); n.className = 'hand tk-away'; n.textContent = '倉庫搬到家裡了：回公團住宅 1 號棟 302 室，打開收納櫃才能整理倉庫、換上倉庫裡的裝備。這裡可以先看倉庫裡的武器，也能脫下身上的東西。';
+        const n = document.createElement('p'); n.className = 'hand tk-away'; n.textContent = '倉庫搬到家裡了：回公團住宅 1 號棟 302 室，打開收納櫃才能整理倉庫（賣掉、上鎖、搬位置）。換上倉庫裡的裝備在這裡就可以，也能脫下身上的東西。';
         h3.before(n);
-        // 不在家也能直接看倉庫裡的武器（唯讀：拿掉換上／賣掉等按鈕）
+        // 不在家：列出倉庫裡的裝備，可以直接換上（2026-10-18 作者）；賣掉、上鎖等整理的按鈕拿掉
         const byId = new Map((S().stash || []).map(it => [String(it.id), it])); let nw = 0;
         items.querySelectorAll('.item-card').forEach(cd => {
           const b = cd.querySelector('[data-lock],[data-equip],[data-sell]'), it = b && byId.get(String(b.dataset.lock || b.dataset.equip || b.dataset.sell));
-          if (!it || it.kind !== 'weapon') { cd.hidden = true; return; }
-          nw++; cd.classList.add('tk-ro'); cd.querySelectorAll('button').forEach(x => x.remove());
+          if (!it || !cd.querySelector('[data-equip]')) { cd.hidden = true; return; }
+          nw++; cd.querySelectorAll('button').forEach(x => { if (!x.matches('[data-equip],[data-cmp],[data-gc]')) x.remove(); });
         });
-        h3.textContent = '倉庫裡的武器（' + nw + ' 把・回家才能換上）'; h3.hidden = false; items.hidden = !nw;
-        if (!nw) { const e = document.createElement('p'); e.className = 'note'; e.textContent = '倉庫裡沒有武器。'; h3.after(e); }
+        h3.textContent = '倉庫裡的裝備（' + nw + ' 件・點「換上」直接換）'; h3.hidden = false; items.hidden = !nw;
+        if (!nw) { const e = document.createElement('p'); e.className = 'note'; e.textContent = '倉庫裡沒有能換上的裝備。'; h3.after(e); }
         return r;
       }
       h3.hidden = true; items.hidden = true;

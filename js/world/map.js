@@ -165,7 +165,7 @@
   R.panZoom = (svg, onPick) => {
     const vb0 = svg.viewBox.baseVal, W0 = vb0.width, H0 = vb0.height;
     const v = { x: 0, y: 0, w: W0, h: H0 };
-    const apply = () => { v.w = Math.min(W0, Math.max(W0 / 5, v.w)); v.h = v.w * H0 / W0; v.x = Math.max(-W0 * 0.1, Math.min(W0 * 1.1 - v.w, v.x)); v.y = Math.max(-H0 * 0.1, Math.min(H0 * 1.1 - v.h, v.y)); svg.setAttribute('viewBox', v.x.toFixed(1) + ' ' + v.y.toFixed(1) + ' ' + v.w.toFixed(1) + ' ' + v.h.toFixed(1)); svg.style.setProperty('--map-k', (v.w / W0).toFixed(4)); svg.style.setProperty('--map-detail-scale', '0.58'); const rr = svg.getBoundingClientRect(), px = rr.width > 0 ? Math.min(rr.width / v.w, rr.height / v.h) : 0; if (px > 0) svg.style.setProperty('--map-site', (SITE_PX / px).toFixed(4)); };
+    const apply = () => { v.w = Math.min(W0, Math.max(W0 / 5, v.w)); v.h = v.w * H0 / W0; v.x = Math.max(-W0 * 0.1, Math.min(W0 * 1.1 - v.w, v.x)); v.y = Math.max(-H0 * 0.1, Math.min(H0 * 1.1 - v.h, v.y)); svg.setAttribute('viewBox', v.x.toFixed(1) + ' ' + v.y.toFixed(1) + ' ' + v.w.toFixed(1) + ' ' + v.h.toFixed(1)); const tk = 1 + (W0 / v.w - 1) / 3; svg.style.setProperty('--map-k', (v.w / W0 * tk).toFixed(4));   /* 2026-10-18 作者：文字跟著畫面放大 1/3（畫面 400% → 文字 200%） */ svg.style.setProperty('--map-detail-scale', '0.58'); const rr = svg.getBoundingClientRect(), px = rr.width > 0 ? Math.min(rr.width / v.w, rr.height / v.h) : 0; if (px > 0) svg.style.setProperty('--map-site', (SITE_PX * tk / px).toFixed(4)); };
     // 2026-10-09 作者：地圖放大縮小，文字、圖示在畫面上的大小不變（只有地點之間的距離變）：
     // 地點（圖示＋名字）固定成畫面上的大小（名字約 12 像素）；島名、地區名維持全圖時的大小（乘上 1÷放大倍率）
     requestAnimationFrame(() => apply());

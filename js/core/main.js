@@ -26,7 +26,7 @@
     if (sel && R.SITES.find(s => s.id === sel && s.map === which)) mark(sel);
   };
   const mark = id => { document.querySelectorAll('#map-host .site').forEach(g => g.classList.toggle('sel', g.dataset.site === id)); };
-  const openMap = (w, focus) => { which = w; R.syncStatus(); show('map'); $('m-back').textContent = R.base === 'hub' || R.base === 'town' ? '東鶴' : '標題'; drawMap(); if (focus) pick(focus); else if (!sel) intro(); else pick(sel); };
+  const openMap = (w, focus) => { which = w; R.syncStatus(); show('map'); $('m-back').textContent = '✕'; $('m-back').title = R.base === 'hub' || R.base === 'town' ? '關掉地圖（回東鶴）' : '關掉地圖（回標題）'; $('m-back').setAttribute('aria-label', '關掉地圖');   /* 2026-10-18 作者：右上角是【X】 */ drawMap(); if (focus) pick(focus); else if (!sel) intro(); else pick(sel); };
   R.openMap = openMap;
   // 在建築物裡面打開地圖、圖鑑：先暫停，回來時回到原來的地方
   R.openMapPaused = (w, focus) => { if (R.W) R.W.paused = true; openMap(w, focus); };
