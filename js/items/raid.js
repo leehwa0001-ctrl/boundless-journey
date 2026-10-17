@@ -191,11 +191,13 @@
     box.querySelectorAll('[data-mdrop]').forEach(el => { el.onclick = () => { const k = sel && sel.mat, n = Math.min(el.dataset.mdrop === 'all' ? 1e9 : (k ? ST(k) : 10), (k && run.mats[k]) || 0); if (!n) return; run.mats[k] -= n; if (run.mats[k] <= 0) { delete run.mats[k]; sel = null; } const P = W().P; if (R.addDrop && P) { const [x, z] = dropAt(P), d = R.addDrop({ type: 'mat', mat: k, n, x, z, from: [P.x, P.z] }); if (d) d.noPick = true; } R.bagSheet(); }; });
     box.querySelectorAll('[data-dm]').forEach(el => { el.onclick = () => { const k = el.dataset.dm, n = Math.min(ST(k), run.mats[k] || 0); if (!n) return; run.mats[k] -= n; if (run.mats[k] <= 0) delete run.mats[k]; const P = W().P; if (R.addDrop && P) { const [x, z] = dropAt(P), d = R.addDrop({ type: 'mat', mat: k, n, x, z, from: [P.x, P.z] }); if (d) d.noPick = true; } R.bagSheet(); }; });
     box.querySelectorAll('[data-loose]').forEach(el => { el.onclick = () => { const it = run.bag[+el.dataset.loose], sp = it && findSpot(it); if (sp) { g.at.set(it, sp); R.bagSheet(); } else R.toast('還是放不下。'); }; });
+    R.bagEquip = (it, k) => { const err = equip(it, k); if (err) R.toast(err, '#FF9A6A'); else sel = { slot: slotOf(it) }; R.bagSheet(); };   // 2026-10-16：比較飾品二再換上，要換到飾品二（gearcmp.js）
     box.querySelectorAll('[data-act]').forEach(el => { el.onclick = () => {
       const a = el.dataset.act, it = sel && sel.it; let err = null;
       if (a === 'eq' && it) { err = equip(it); if (!err) sel = { slot: slotOf(it) }; }
       else if (a === 'uneq' && sel.slot) { const was = R.equipped(s.cls)[sel.slot]; err = unequip(sel.slot); if (!err) sel = { it: was }; }
       else if (a === 'rot' && it) { const p = g.at.get(it); if (p && fitsAt(it, p.x, p.y, 1 - p.r, it)) p.r = 1 - p.r; else { const sp = findSpot(it, it); if (sp && sp.r !== (p && p.r)) g.at.set(it, sp); else err = '轉不過來（旁邊沒有空間）。'; } }
+      else if (a === 'drop' && it && it.bound) err = '這把刀綁在你身上，丟不掉。';   // 寺川參狹（kuzeshadow.js）
       else if (a === 'drop' && it) { run.bag = run.bag.filter(x => x !== it); g.at.delete(it); const P = W().P; if (R.addDrop && P) { const [x, z] = dropAt(P), d = R.addDrop({ type: 'item', item: it, x, z, from: [P.x, P.z] }); if (d) { d.warned = true; d.noPick = true; } } sel = null; }
       if (err) R.toast(err, '#FF9A6A'); R.bagSheet();
     }; });

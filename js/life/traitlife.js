@@ -40,7 +40,7 @@
   R.partyAffNeed = () => (has('pasheng') ? 10 : 3);
   const noHeroes = () => has('pasheng') || has('eming');
   const NO_LINE = () => (has('eming') ? '「你就是那個……抱歉，我不想跟你扯上關係。」' : '（你張了張嘴，最後什麼也沒說出口。）');
-  const fixRoster = () => { const s = S(); if (!s) return; (s.roster || []).forEach(m => { m.fee = R.cost(40 + (m.lv || 1) * 25, 'hire'); if (noHeroes()) { m.refuse = true; m.line = NO_LINE(); } }); };
+  const fixRoster = () => { const s = S(); if (!s) return; (s.roster || []).forEach(m => { m.fee = R.cost((40 + (m.lv || 1) * 25) * (m.feeMul || 1), 'hire'); if (noHeroes()) { m.refuse = true; m.line = NO_LINE(); } }); };
   const mr0 = R.makeRecruit; if (mr0) R.makeRecruit = (...a) => { const m = mr0(...a); try { m.fee = R.cost(m.fee, 'hire'); if (noHeroes()) { m.refuse = true; m.line = NO_LINE(); } } catch (e) { } return m; };
   const sr0 = R.syncRecruitLv; if (sr0) R.syncRecruitLv = (...a) => { const r = sr0(...a); try { fixRoster(); } catch (e) { } return r; };
   const er0 = R.ensureRoster; if (er0) R.ensureRoster = (...a) => { const r = er0(...a); try { fixRoster(); } catch (e) { } return r; };
@@ -96,7 +96,7 @@
   R.hurtEnemy = (e, raw, o) => { if (e && e.def && e.def.human && has('liangmin') && !e.questTarget && !(o && (o.dot || o.burn || o.reflect || o.thorns || o.poison))) return; return he0(e, raw, o); };
   // 扒手：太靠近路人時 15% 自己動手（每個人只判定一次；離開 25 公尺或換地圖才重算）
   const autoPick = () => {
-    const w = W(), tw = w.town, P = w.P; if (!tw || !P || w.run || !has('pashou') || !R.pickForce) return;
+    const w = W(), tw = w.town, P = w.P; if (!tw || !P || w.run || w.inside || !has('pashou') || !R.pickForce) return;
     [].concat(tw.npcs || [], tw.walkers || []).forEach(n => {
       if (!n || n.x == null) return; const d = Math.hypot(n.x - P.x, n.z - P.z);
       if (d > 25) { n._ppRoll = false; return; }

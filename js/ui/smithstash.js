@@ -34,7 +34,7 @@
   const upPreview = body => body.querySelectorAll('[data-up]').forEach(b => {
     const it = R.itemById(b.dataset.up); if (!it || b.parentElement.querySelector('.hs-pre')) return;
     const p = it.plus || 0, e = document.createElement('div'); e.className = 'hs-pre';
-    e.innerHTML = '<b>+' + p + '</b> → <b class="up">+' + (p + 1) + '</b>　' + (it.kind === 'weapon' ? '武器傷害 ×' + (1 + 0.08 * p).toFixed(2) + ' → <b class="up">×' + (1 + 0.08 * (p + 1)).toFixed(2) + '</b>' : '防禦 +' + (1.5 * p).toFixed(1) + ' → <b class="up">+' + (1.5 * (p + 1)).toFixed(1) + '</b>');
+    e.innerHTML = '<b>+' + p + '</b> → <b class="up">+' + (p + 1) + '</b>　' + (it.kind === 'weapon' ? '武器傷害 ×' + (1 + 0.08 * p).toFixed(2) + ' → <b class="up">×' + (1 + 0.08 * (p + 1)).toFixed(2) + '</b>' : it.kind === 'acc' || it.kind === 'charm' ? '詞綴效果 ×' + (1 + 0.08 * p).toFixed(2) + ' → <b class="up">×' + (1 + 0.08 * (p + 1)).toFixed(2) + '</b>' : '防禦 +' + (1.5 * p).toFixed(1) + ' → <b class="up">+' + (1.5 * (p + 1)).toFixed(1) + '</b>');
     b.parentElement.before(e);
   });
   const RAR = () => (R.RARITY || []).map((r, i) => [String(i), r.name]);

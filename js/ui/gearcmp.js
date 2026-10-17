@@ -62,7 +62,7 @@
   const btn = (txt, f, cls) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls || 'btn'; b.textContent = txt; b.onclick = ev => { ev.preventDefault(); ev.stopPropagation(); f(); }; return b; };
   const cmpBtns = (it, wear) => slotsFor(it).map(k => btn(it.kind === 'acc' ? '比較' + NAME(k) : '比較', () => R.gearCompare(it, k, { wear: () => wear(k) }), 'btn gc-btn'));
   // 裝備總覽的「選一件」：倉庫裡能放這一格的東西
-  const pick = k => {
+  const pick = k => { if (R.stashLocked && R.stashLocked()) { R.toast && R.toast('倉庫搬到家裡了：回家打開收納櫃才能換上倉庫裡的裝備。'); return; }
     const s = S(), eqIds = R.equippedIds ? R.equippedIds() : new Set();
     const L = s.stash.filter(it => !eqIds.has(it.id) && (it.kind === 'weapon' || it.kind === 'armor' || it.kind === 'charm' || it.kind === 'acc') && usable(it) && slotsFor(it).includes(k))
       .sort((a, b) => (b.identified ? b.rarity : -1) - (a.identified ? a.rarity : -1) || (b.ilvl || 0) - (a.ilvl || 0));
@@ -97,7 +97,7 @@
     try {
       const run = R.W && R.W.run, eqb = document.querySelector('#r-sheet [data-act="eq"]'), selEl = document.querySelector('#r-sheet .tk-item.sel');
       const it = run && selEl ? run.bag[+selEl.dataset.bi] : null;
-      if (eqb && it && usable(it)) { let at = eqb; cmpBtns(it, () => eqb.click()).forEach(x => { at.after(x); at = x; }); }
+      if (eqb && it && usable(it)) { let at = eqb; cmpBtns(it, k => (R.bagEquip ? R.bagEquip(it, k) : eqb.click())).forEach(x => { at.after(x); at = x; }); }
     } catch (e) { console.warn('[gearcmp]', e); }
     return r;
   };

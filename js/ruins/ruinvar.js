@@ -51,7 +51,9 @@
   const altar = (F, r) => { const TH = THREE, g = new TH.Group(); const st = new TH.Mesh(new TH.BoxGeometry(1.6, 0.9, 1.0), new TH.MeshLambertMaterial({ color: '#6A6458' })); st.position.y = 0.45; g.add(st); const orb = new TH.Mesh(new TH.SphereGeometry(0.32, 12, 10), new TH.MeshBasicMaterial({ color: '#E8C04A' })); orb.position.y = 1.25; g.add(orb); const L = new TH.PointLight('#FFE08A', 1.0, 9, 1.6); L.position.y = 1.6; g.add(L); g.position.set(r.x, 0, r.z); F.group.add(g); R.addBox(r.x - 0.8, r.x + 0.8, r.z - 0.5, r.z + 0.5, 'deco'); return { g, orb, L }; };
   const fountain = (F, r) => { const TH = THREE, g = new TH.Group(); const b = new TH.Mesh(new TH.CylinderGeometry(1.3, 1.5, 0.5, 16), new TH.MeshLambertMaterial({ color: '#8A8C92' })); b.position.y = 0.25; g.add(b); const w = new TH.Mesh(new TH.CylinderGeometry(1.1, 1.1, 0.06, 16), new TH.MeshBasicMaterial({ color: '#7AC8FF', transparent: true, opacity: 0.8 })); w.position.y = 0.48; g.add(w); const L = new TH.PointLight('#7AC8FF', 0.9, 8, 1.6); L.position.y = 1.2; g.add(L); g.position.set(r.x, 0, r.z); F.group.add(g); R.addBox(r.x - 1.4, r.x + 1.4, r.z - 1.4, r.z + 1.4, 'deco'); return { g, w, L }; };
   const build = () => {
-    const w = W(), run = w.run, F = w.F; if (!ok(run) || !F || !F.group) return;
+    const w = W(), run = w.run, F = w.F;
+    document.body.classList.toggle('rv-lost', !!(ok(run) && F && F.mod === 'lost'));   // 2026-10-16 修正：不是迷途樓層（狩獵場、觀光）也要把雷達還原
+    if (!ok(run) || !F || !F.group) return;
     F.specs = [];
     F.rooms.forEach(r => {
       if (!r.spec) return;
@@ -66,14 +68,17 @@
       if (m === 'crystal' && R.addOre) { const rooms = F.rooms.filter(r => r.type !== 'start'); for (let i = 0; i < 8; i++) { const r = pick(rooms), [x, z] = R.roomPoint ? R.roomPoint(r, {}) : [r.x, r.z]; R.addOre(x, z); } }
       if (m === 'fog') F.fogMin = 0.07;
     }
-    document.body.classList.toggle('rv-lost', m === 'lost');
     // 偽箱
     if (!passive(run) && run.floor >= 2) (F.chests || []).forEach(c => { if (rnd() < 0.1) c.mimic = true; });
     chip();
   };
   const chip = () => { const tl = $('r-tl'); if (!tl) return; let el = $('rv-mod'); const m = W().F && W().F.mod; if (!m) { if (el) el.hidden = true; return; } if (!el) { el = document.createElement('div'); el.id = 'rv-mod'; el.className = 'glass dungeon-only r-misc'; tl.appendChild(el); } el.hidden = false; el.innerHTML = '<span>樓層：<b>' + esc(MODS[m].n) + '</b></span><small>' + esc(MODS[m].d) + '</small>'; };
   const lf0 = R.loadFloor;
-  R.loadFloor = (f, o) => { const r = lf0(f, o); try { build(); } catch (e) { console.warn('[ruinvar]', e); } return r; };
+  // 2026-10-16 修正：魔力潮的冷卻 −30%——角色在換樓層時不會重算，改成進這一層時乘上、離開時還原（P._manaCd 記著有沒有乘）
+  const end0 = R.endRun; if (end0) R.endRun = (...a) => { document.body.classList.remove('rv-lost'); try { manaOff(); } catch (e) { } return end0(...a); };   // 迷途樓層回城：城裡的雷達要看得到
+  const manaOff = () => { const P = W().P; if (P && P._manaCd) { R.cdMul(P, 1 / 0.7); P._manaCd = false; } };
+  const manaOn = () => { const P = W().P, F = W().F; if (P && F && F.mod === 'mana' && !P._manaCd) { R.cdMul(P, 0.7); P._manaCd = true; } };
+  R.loadFloor = (f, o) => { try { manaOff(); } catch (e) { } const r = lf0(f, o); try { build(); manaOn(); } catch (e) { console.warn('[ruinvar]', e); } return r; };
 
   // ---------- 生成遺跡生物：巢穴多、寂靜少而且都帶特性、魔力潮更痛 ----------
   const se0 = R.spawnEnemy;
@@ -94,7 +99,10 @@
   R.gainXp = v => gx0(W().F && W().F.mod === 'nest' && W().run ? v * 1.3 : v);
   // 魔力潮：技能冷卻
   const cp0 = R.calcPlayer;
-  R.calcPlayer = cls => { const P = cp0(cls); if (W().run && W().F && W().F.mod === 'mana') R.cdMul(P, 0.7); return P; };   // 場地效果：照舊乘，不算技能急速（haste.js）
+  R.calcPlayer = cls => { const P = cp0(cls); const run = W().run; if (run && W().F && W().F.mod === 'mana') { R.cdMul(P, 0.7); P._manaCd = true; }   // 場地效果：照舊乘，不算技能急速（haste.js）
+    // 2026-10-16 修正：祭壇的祝福「這一趟有效」——升級、換裝備重算角色的時候也要再套一次（原本一重算就沒了）
+    if (run && run.bless) run.bless.forEach(n => { const b = BLESS.find(x => x[0] === n); if (b) b[2](P); });
+    return P; };
   // 試煉之間：清完一波再來一波
   const lr0 = R.lockRoom;
   R.lockRoom = (r, on) => {

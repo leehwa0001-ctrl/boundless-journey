@@ -289,6 +289,7 @@
   // 鏡頭：四倍大的領主體醒著、在附近的時候自動拉遠（打完回到自己設定的遠近；不寫進設定）
   const BOSS_ZOOM = 1.9;
   let held = false;
+  const endZ0 = R.endRun; if (endZ0) R.endRun = (...a) => { const r = endZ0(...a); if (held) { held = false; const c = W().cam; if (c) c.zoomT = Math.max(R.CAM ? R.CAM.zMin : 0.65, Math.min(R.CAM ? R.CAM.zMax : 1.45, (R.S && R.S.opts && R.S.opts.zoom) || 1)); } return r; };   // 2026-10-16 修正：城裡不跑 R.step，回城時直接還原鏡頭
   const st1 = R.step;
   R.step = dt => {
     const r = st1(dt), w = W(), c = w.cam;
@@ -297,7 +298,7 @@
         const P = w.P, near = P && (w.enemies || []).some(e => !e.dead && e.lordK && e.aggro && !e.dormant && dist(e, P) < 34);
         const user = Math.max(R.CAM ? R.CAM.zMin : 0.65, Math.min(R.CAM ? R.CAM.zMax : 1.45, (R.S && R.S.opts && R.S.opts.zoom) || 1));
         if (near) { held = true; c.zoomT = Math.max(user, BOSS_ZOOM); } else if (held) { held = false; c.zoomT = user; }
-      } else held = false;
+      } else if (held) { held = false; if (c) c.zoomT = Math.max(R.CAM ? R.CAM.zMin : 0.65, Math.min(R.CAM ? R.CAM.zMax : 1.45, (R.S && R.S.opts && R.S.opts.zoom) || 1)); }   // 2026-10-16 修正：在領主旁邊倒下、回城後鏡頭一直拉遠
     } catch (er) { }
     return r;
   };

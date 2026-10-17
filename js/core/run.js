@@ -300,6 +300,7 @@
     const S = R.S;
     run.bag.forEach(it => S.stash.push(it));
     Object.keys(run.mats).forEach(k => { S.mats[k] = (S.mats[k] || 0) + run.mats[k]; });
+    S.gold += Math.round(run.gold || 0);   // 2026-10-16 修正：遺跡裡撿到的費拉（木箱、勇者、聚落）原本只記在 run.gold，帶回來沒有加進錢包
     // 走完：到了最後一層，而且打倒了核心（保留區：走到最深處、看到核心；摩爾斯級還要清掉送犬的巢）
     const full = run.floor === run.floors - 1 && (run.grade.boss ? !!run.bossDown : W.F.rooms.some(r => r.type === 'deep' && r.visited && r.cleared));
     // 公會的委託報酬：看分級、走到第幾層、擊倒幾隻、有沒有走完
@@ -325,7 +326,7 @@
     const mats = Object.keys(run.mats).map(k => (R.matIconTag ? R.matIconTag(k, 'chip') : '') + R.MATS[k].name + ' ×' + run.mats[k]).join('、') || '沒有';
     R.sheet(ok
       ? '<p class="kicker">' + (run.how === 'exit' ? '遺跡入口' : '回歸水晶') + '</p><h2>' + (full ? '走完了這座遺跡' : '回到地面') + '</h2><p>' + R.esc(run.site.name) + '・走到第 ' + (run.floor + 1) + ' 層・擊倒 ' + run.kills + ' 隻</p>'
-        + '<h3>帶回來的東西</h3><ul class="loot">' + items + '</ul><p>素材：' + mats + '<br>公會的委託報酬：' + run.reward + ' 費拉' + (run.share ? '（隊友分走 ' + run.share + '）' : '') + '</p>'
+        + '<h3>帶回來的東西</h3><ul class="loot">' + items + '</ul><p>素材：' + mats + (run.gold ? '<br>撿到的費拉：' + Math.round(run.gold) : '') + '<br>公會的委託報酬：' + run.reward + ' 費拉' + (run.share ? '（隊友分走 ' + run.share + '）' : '') + '</p>'
         + (run.bag.some(it => !it.identified) ? '<p class="hand">未鑑定的東西，拿去老岩的鐵匠鋪看看。</p>' : '')
         + (full && run.grade.id === 'amile' && S.cleared.amile === 1 ? '<p class="hand">公會發來新的委託：摩爾斯級遺跡。</p>' : '')
         + '<p class="note">' + R.esc(R.clsName(cls)) + ' Lv ' + st.lv + (st.lv > run.startLv ? '（升了 ' + (st.lv - run.startLv) + ' 級）' : '') + '</p>'
@@ -365,7 +366,7 @@
     // 計時：待越久，佩特拉越注意你
     // 佩特拉的注意隨時間慢慢降（作者 2026-10-04；原本是每 5 秒升 1）：每 4 秒 −1，反應進行中不降
     run.awareT = (run.awareT || 0) + dt; if (run.awareT > 4) { run.awareT = 0; if (!run.reacting && run.aware > 0) run.aware = Math.max(0, run.aware - 1); }
-    if (run.collapseT != null) { run.collapseT -= dt; if (run.collapseT <= 0 && !run.done) { run.collapseT = null; R.hurtPlayer(9999, null); } }
+    if (run.collapseT != null) { run.collapseT -= dt; if (run.collapseT <= 0 && !run.done) { if (!P.dead) R.hurtPlayer(9999, null); } }   // 2026-10-16 修正：剛好在無敵、跳起來、有護盾時那一下會落空，之後就再也不崩塌——改成每一格都再壓一次，直到這一趟結束
     // 冷卻
     ['atkCd', 'skillCd', 'dodgeCd', 'iframe', 'stumble', 'slowT', 'blindT', 'knockT', 'stance', 'atkHold', 'invis', 'hurtT'].forEach(k => { if (P[k] > 0) P[k] = Math.max(0, P[k] - dt); });
     Object.keys(P.buff).forEach(k => { P.buff[k] = Math.max(0, P.buff[k] - dt); });

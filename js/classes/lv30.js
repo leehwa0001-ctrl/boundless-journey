@@ -53,7 +53,7 @@
       const es = within(P.x, P.z, 10); es.forEach((e, i) => { const a = i / Math.max(1, es.length) * Math.PI * 2, rr = 1.4 + (e.def.size || 1) * 0.5, q = R.nearestFloor ? R.nearestFloor(P.x + Math.sin(a) * rr, P.z + Math.cos(a) * rr) : [P.x, P.z]; e.x = q[0]; e.z = q[1]; e.aggro = true; e.provoked = true; e.taunt = 2.5; });
       P.taunt = Math.max(P.taunt || 0, 2.5); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 10, color: '#C9A13A' }); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2, color: '#FFE8A0' });
       T.guard = { end: CT() + 2.5, rec: 0, sp: P.speed }; P.speed *= 0.2;
-      sched(2.5, () => { const g = T.guard; if (!g) return; T.guard = null; if (P.speed === g.sp * 0.2) P.speed = g.sp;
+      sched(2.5, () => { const g = T.guard; if (!g) return; T.guard = null; if (P.speed < g.sp * 0.5) P.speed /= 0.2;   /* 2026-10-16 修正：這 2.5 秒內速度被別的效果改過（例如加速到期）時，原本的「等於才還原」會一直卡在 20%；還在減速中就把 ×0.2 拿掉 */
         const v = (g.rec + P.hpMax * 0.01) * 100; R.fx && R.fx('boom', P.x, 0.4, P.z, { r: 5, color: '#FFE8A0' }); R.shake && R.shake(0.5);
         within(P.x, P.z, 5).forEach(e => R.hurtEnemy(e, v, { kb: 3, primary: false })); P.shield = (P.shield || 0) + P.hpMax * 0.4; P.buff = P.buff || {}; P.buff.shieldT = Math.max(P.buff.shieldT || 0, 10); say(P, '反擊 ' + Math.round(v)); }); } },
     monk: { n: '百裂拳', cd: 60, d: '2 秒內往前連打 19 拳（每拳 0.6 倍普攻），最後一下是重拳（5 倍、擊飛；生命 30% 以下的敵人吃 3 倍——斬殺），連段直接 +20。', go(P) {
@@ -199,5 +199,7 @@
   const EC = R.CORE && R.CORE.enchanter;
   if (EC) ['mod', 'onHit', 'act'].forEach(k => { const f0 = EC[k]; if (typeof f0 !== 'function') return; EC[k] = function (...a) { if ((T.enchOff || 0) > CT()) { if (k === 'act') R.toast && R.toast('刻印暫時失去力量'); return k === 'mod' ? a[1] : undefined; } return f0.apply(this, a); }; });
   // 新的一趟：效果歸零
+  // 2026-10-16 修正：換樓層時舊的場景整個丟掉——山神、雷神的影子、大合奏的特效也要收掉（不然山神看不見卻還在幫你擋傷害、扣魔力）
+  const lf0 = R.loadFloor; if (lf0) R.loadFloor = (...a) => { if (T.bear) bearGone(); if (T.thunder && T.thunder.shade) T.thunder.shade.rm(); T.thunder = null; if (T.bard && T.bard.fx) T.bard.fx.rm(); T.bard = null; return lf0(...a); };
   const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { if (T.bear) bearGone(); if (T.thunder && T.thunder.shade) T.thunder.shade.rm(); if (T.bard && T.bard.fx) T.bard.fx.rm(); Object.keys(T).forEach(k => { T[k] = null; }); Q = []; return sr0(...a); };
 })(window.R);

@@ -44,7 +44,11 @@
     '.c2-left{font-size:22px;font-weight:700;color:var(--c2-gd)}.c2-left.bad{color:#D88878}.c2-left small{font-weight:400}',
     '.c2-sum{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;background:var(--c2-in);border-radius:10px;padding:8px;margin-bottom:8px}.c2-sum canvas{image-rendering:pixelated}',
     '.c2-sum div{display:grid;gap:2px;font-size:13px}.c2-sum b{font-family:var(--serif);font-size:16px}',
-    '@media (max-width:900px){.c2{height:auto}.c2-a,.c2-b{grid-template-columns:1fr;grid-template-rows:none}.c2-w,.c2-sel{grid-row:auto;grid-column:auto}.c2-scroll{max-height:56vh}.c2-port{min-height:340px}.c2-next{position:static;width:100%;margin-top:8px}.c2-race{max-height:none}}'
+    // 2026-10-16 出身：角色圖旁邊兩個按鈕（origin.js）
+    '.c2-sum.org{grid-template-columns:auto 1fr minmax(128px,auto)}.c2-sum .c2-org{display:grid;gap:6px;align-self:stretch;align-content:center}',
+    '.c2-ob{display:grid;gap:1px;text-align:left;background:var(--c2-card);color:var(--c2-tx);border:1px solid #4A4450;border-radius:7px;padding:6px 8px;cursor:pointer;font:inherit}.c2-ob b{font-size:13px}.c2-ob small{color:var(--c2-dim);font-size:11px}.c2-ob:hover{background:var(--c2-card2)}.c2-ob.sel{background:#4A4234;border-color:var(--c2-gd);box-shadow:0 0 0 1px var(--c2-gd) inset}',
+    '.c2-od{margin:-2px 0 8px;font-size:12px;color:var(--c2-dim);line-height:1.5}.c2-od b{color:var(--c2-gd)}',
+    '@media (max-width:900px){.c2-sum.org{grid-template-columns:auto 1fr}.c2-sum .c2-org{grid-column:1/-1;grid-template-columns:1fr 1fr}.c2{height:auto}.c2-a,.c2-b{grid-template-columns:1fr;grid-template-rows:none}.c2-w,.c2-sel{grid-row:auto;grid-column:auto}.c2-scroll{max-height:56vh}.c2-port{min-height:340px}.c2-next{position:static;width:100%;margin-top:8px}.c2-race{max-height:none}}'
   ].join('');
   document.head.appendChild(css);
 
@@ -134,7 +138,7 @@
   };
   const tList = sign => { const free = R.TRAIT_LIST.filter(t => st.traits.indexOf(t.id) < 0 && (sign < 0 ? t.cost < 0 : t.cost > 0)); return [1, 2, 5, 8].map(c => { const g = free.filter(t => Math.abs(t.cost) === c); return g.length ? '<div class="c2-grp">' + (sign < 0 ? '用掉 ' : '多 ') + c + ' 點</div>' + g.map(t => tCard(t, false)).join('') : ''; }).join(''); };
   const pageB = () => {
-    const h = $('pick-cards'), left = R.traitLeft(st.traits), g0 = R.regGroup(st.cls), d0 = R.CLASSES[st.cls];
+    const h = $('pick-cards'), left = R.traitLeft(st.traits), g0 = R.regGroup(st.cls), d0 = R.CLASSES[st.cls], OR = R.ORIGINS;
     $('pick-h').textContent = '勇者登記・二、特質與武器';
     if (!okW(st.cls, st.weapon)) { const g = R.REG.find(x => x.list.some(([w]) => okW(x.cls, w))); if (g) { st.cls = g.cls; st.weapon = g.list.find(([w]) => okW(g.cls, w))[0]; } }
     const sc = ['c2-wl', 'c2-pos', 'c2-neg', 'c2-chosen'].map(id => ($(id) ? $(id).scrollTop : 0));
@@ -145,7 +149,9 @@
       + '<section class="c2-p"><h3>優點特質<small>用掉點數</small></h3><div class="c2-scroll" id="c2-pos">' + tList(-1) + '</div></section>'
       + '<section class="c2-p"><h3>缺點特質<small>多給點數</small></h3><div class="c2-scroll" id="c2-neg">' + tList(1) + '</div></section>'
       + '<section class="c2-p c2-sel"><h3>已選擇的特質</h3>'
-      + '<div class="c2-sum"><canvas id="c2-mini" width="72" height="90"></canvas><div><b>' + esc(st.name) + '</b><span>' + esc(R.RACES[st.race].name) + '</span><span>' + esc(R.regName(st.cls, st.weapon)) + '・' + esc(g0.group) + '（' + esc(d0.name) + '）</span><small class="note">生命 ' + d0.hp + '・魔力 ' + d0.mp + '</small></div></div>'
+      + '<div class="c2-sum' + (OR ? ' org' : '') + '"><canvas id="c2-mini" width="72" height="90"></canvas><div><b>' + esc(st.name) + '</b><span>' + esc(R.RACES[st.race].name) + '</span><span>' + esc(R.regName(st.cls, st.weapon)) + '・' + esc(g0.group) + '（' + esc(d0.name) + '）</span><small class="note">生命 ' + d0.hp + '・魔力 ' + d0.mp + '</small></div>'
+      + (OR ? '<div class="c2-org">' + Object.keys(OR).map(k => '<button type="button" class="c2-ob' + (st.origin === k ? ' sel' : '') + '" data-org="' + k + '" title="' + esc(OR[k].lines.join('、')) + '"><b>' + esc(OR[k].name) + '</b><small>' + esc(OR[k].short) + '</small></button>').join('') + '</div>' : '') + '</div>'
+      + (OR && OR[st.origin] ? '<p class="c2-od"><b>' + esc(OR[st.origin].name) + '</b>：' + esc(OR[st.origin].lines.join('、')) + '。</p>' : '')
       + '<div class="c2-left' + (left < 0 ? ' bad' : '') + '">剩下 ' + left + ' 點<small class="note">（一開始 ' + R.TRAIT_POINTS + ' 點）</small></div>'
       + '<p class="tp-warn">特質選了就不能再改，請對自己的角色負責。可以不選，點數也可以不用完。</p>'
       + '<div class="c2-scroll" id="c2-chosen">' + (st.traits.length ? st.traits.map(id => tCard(R.TRAITS[id], true)).join('') : '<div class="c2-empty">還沒選。<br>點中間的特質加進來，<br>點這裡的拿掉。</div>') + '</div>'
@@ -158,6 +164,7 @@
       else if (R.traitCanAdd(id, st.traits)) st.traits = st.traits.concat([id]); else return;
       pageB();
     }; });
+    h.querySelectorAll('[data-org]').forEach(b => { b.onclick = () => { st.origin = b.dataset.org; pageB(); }; });
     $('c2-back').onclick = () => { st.page = 'a'; pageA(); };
     $('c2-go').onclick = finish;
     loop();
@@ -168,6 +175,7 @@
     const w = R.makeItem({ kind: 'weapon', base: st.weapon, ilvl: 1, rarity: 0, identified: true }); R.S.stash.push(w); R.S.equip[st.cls].weapon = w.id;
     R.ensureKit(st.cls); if (R.ensureWorld) R.ensureWorld();
     R.S.traits = { list: st.traits.slice(), asked: true, v: 1 }; if (R.traitApplyStart) R.traitApplyStart(st.cls, st.weapon);
+    if (R.applyOrigin) R.applyOrigin(st.origin);
     if (st.race === 'demon') { R.S.watched = true; R.addDeed && R.addDeed('公會東鶴分館登記了一名純魔族勇者，列為受監視對象。'); }
     R.save(); $('pick').classList.remove('cr2'); R.enterTown();
   };
@@ -175,7 +183,7 @@
   // ---------- 接上 ----------
   R.createChar = slot => {
     if (slot) R.slot = slot;
-    st = { page: 'a', race: null, look: null, name: '', nameSet: false, cls: 'gunner', weapon: 'pistol', traits: [], got: [], pick: null };
+    st = { page: 'a', race: null, look: null, name: '', nameSet: false, cls: 'gunner', weapon: 'pistol', traits: [], got: [], pick: null, origin: 'zhaoxu' };
     sheetKey = ''; R.showScreen('pick'); $('pick').classList.add('cr2'); pageA();
   };
   // 重新捏角、重新登記種族用的是舊畫面：把新版的樣式拿掉

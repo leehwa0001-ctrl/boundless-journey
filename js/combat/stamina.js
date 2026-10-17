@@ -141,7 +141,7 @@
   };
   // 換樓層：盾重新放進新的場景；體力回滿
   const lf0 = R.loadFloor;
-  R.loadFloor = (f, o) => { const r = lf0(f, o), P = W().P; if (shield && shield.parent) shield.parent.remove(shield); if (P) { P.stamMax = maxOf(); P.stamRegen = REGEN * (1 + 0.04 * trained()) * (1 + (P.ttStam || 0)); P.stam = P.stamMax; P.stamOut = false; P.guard = false; } return r; };
+  R.loadFloor = (f, o) => { const r = lf0(f, o), P = W().P; if (shield && shield.parent) shield.parent.remove(shield); if (P) { P.stamMax = maxOf(); P.stamRegen = REGEN * Math.max(0.1, 1 + 0.002 * trained()) * (1 + (P.ttStam || 0)); P.stam = P.stamMax; P.stamOut = false; P.guard = false; } return r; };
 
   const css = document.createElement('style');
   css.textContent = [

@@ -61,7 +61,7 @@
   };
   const pawnHtml = () => {
     const s = S(), eq = R.equippedIds ? R.equippedIds() : new Set(), list = pawns();
-    const cand = s.stash.filter(it => !eq.has(it.id) && it.identified !== false).sort((a, b) => R.sellPrice(b) - R.sellPrice(a)).slice(0, 8);
+    const cand = s.stash.filter(it => !eq.has(it.id) && it.identified !== false && !it.bound).sort((a, b) => R.sellPrice(b) - R.sellPrice(a)).slice(0, 8);
     const mine = list.map((p, i) => '<li><span style="color:' + R.rarityColor(p.it) + '">' + esc(R.itemName(p.it)) + '</span>・借了 ' + fmt(p.loan) + '・還 <b>' + fmt(repayOf(p)) + '</b> 費拉・' + (p.due - (s.day || 0) <= 0 ? '<b class="dn">今天到期</b>' : '還有 ' + (p.due - (s.day || 0)) + ' 天')
       + ' <button type="button" class="mini" data-pwr="' + i + '"' + (s.gold < repayOf(p) ? ' disabled' : '') + '>還錢拿回來</button></li>').join('');
     const opts = cand.map(it => '<li><span style="color:' + R.rarityColor(it) + '">' + esc(R.itemName(it)) + '</span>・可以借 <b>' + fmt(loanOf(it)) + '</b> 費拉 <button type="button" class="mini" data-pwb="' + it.id + '"' + (list.length >= MAXP ? ' disabled' : '') + '>押這件</button></li>').join('');

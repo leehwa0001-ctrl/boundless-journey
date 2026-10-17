@@ -25,7 +25,7 @@
       look: { top: pick(TOPS), cloak: pick(TOPS), hair: rc && rc.hairs ? pick(rc.hairs) : pick(['#2A2420', '#6A4A2E', '#1A1714', '#8A5A2E', '#C99B55', '#D8D2C4']), skin: rc ? pick(rc.skins) : undefined, race, hs: pick(['short', 'long', 'ponytail', 'bun', 'spiky', 'bob', 'braid', 'crop']), acc: Math.random() < 0.3 ? pick(['scarf', 'glasses', 'headband', 'earring']) : null, accCol: pick(['#C8323A', '#2E5A8A', '#3E7A48', '#C9A13A']) } };
     // 東鶴排外：魔族不太有人肯同行；其他種族偶爾也有人只跟同族的走
     const x = R.xenoLevel ? R.xenoLevel() : 0;
-    if (x >= 3) { if (Math.random() < 0.75) { m.refuse = true; m.line = pick(['「……抱歉。我不跟魔族一起下遺跡。」', '（對方看了你的角一眼，轉身走了。）', '「公會說你是受監視對象。……我不想惹麻煩。」']); } else { m.fee *= 2; m.line = '「我不在乎你是什麼。錢給夠就好。」'; } }
+    if (x >= 3) { if (Math.random() < 0.75) { m.refuse = true; m.line = pick(['「……抱歉。我不跟魔族一起下遺跡。」', '（對方看了你的角一眼，轉身走了。）', '「公會說你是受監視對象。……我不想惹麻煩。」']); } else { m.feeMul = 2; m.fee *= 2; m.line = '「我不在乎你是什麼。錢給夠就好。」'; } }
     else if (x === 2 && Math.random() < 0.15) { m.refuse = true; m.line = '「……我習慣跟同鄉的人一起。」'; }
     return m;
   };
@@ -37,7 +37,7 @@
       if (!m || m.story) return;
       if (m.lvOff == null) m.lvOff = Math.max(-2, Math.min(2, (m.lv || 1) - mine));
       m.lv = Math.max(1, Math.min(cap, mine + m.lvOff));
-      m.fee = 40 + m.lv * 25;
+      m.fee = (40 + m.lv * 25) * (m.feeMul || 1);   // 2026-10-16 修正：對魔族要價加倍的那位，升級重算時也照樣加倍
     };
     (S.party || []).forEach(bump);
     (S.roster || []).forEach(bump);

@@ -88,7 +88,8 @@
 
   // ---------- 交件 ----------
   const finish = (j, msg) => {
-    const s = S(); s.jobs = s.jobs.filter(v => v !== j);
+    const s = S(); if (!(s.jobs || []).includes(j)) return;   // 2026-10-16 修正：交件的互動點不會消失，已經交過的再按一次不能再拿一次報酬
+    s.jobs = s.jobs.filter(v => v !== j);
     if (j.scam === 'fakegold') { s.fake = (s.fake || 0) + 1; R.townTalk(j.client, [msg, '「辛苦了。」委託人把一枚赤金放進你手裡，很快地走了。', '（拿到一枚「赤金」。）']); }
     else if (j.scam === 'baddate' || j.scam === 'deposit') { R.townTalk(j.client, ['……委託人沒有出現。', '問了附近的人，沒有人認識這個人。']); }
     else if (j.scam === 'contraband') {
@@ -105,8 +106,8 @@
     const s = S(); if (!s || kind !== 'town') return;
     (s.jobs || []).forEach(j => {
       if (j.vanish) return;
-      if (j.kind === 'deliver') { const t = TARGET[j.to]; const [x, z] = api.spot(t[0], t[1]); const n = api.npc(x, z, { top: '#5A4A3A', hair: '#2A2420', cloak: '#3A3A30' }, '收貨的人', 0); n.near = 1; api.inter(x, z + 1, 2, '把包裹交給收貨的人', () => finish(j, '你把包裹交了出去。'), { follow: n }); }
-      if (j.kind === 'gather') { const [x, z] = api.spot(...(R.CITY ? R.CITY.gatherSpot : [465, 566])); const n = api.npc(x, z, { top: '#3A4A5A', hair: '#6A4A2E', cloak: '#2E3A48' }, j.client, Math.PI); n.near = 1; api.inter(x, z, 2, '把' + R.MATS[j.mat].name + '交給委託人（' + j.n + ' 個）', () => { if ((s.mats[j.mat] || 0) < j.n) { R.toast(R.MATS[j.mat].name + '不夠。'); return; } s.mats[j.mat] -= j.n; finish(j, '委託人點了點數量。'); }, { follow: n }); }
+      if (j.kind === 'deliver') { const t = TARGET[j.to]; const [x, z] = api.spot(t[0], t[1]); const n = api.npc(x, z, { top: '#5A4A3A', hair: '#2A2420', cloak: '#3A3A30' }, '收貨的人', 0); n.near = 1; api.inter(x, z + 1, 2, '把包裹交給收貨的人', () => finish(j, '你把包裹交了出去。'), { follow: n, job: 1 }); }
+      if (j.kind === 'gather') { const [x, z] = api.spot(...(R.CITY ? R.CITY.gatherSpot : [465, 566])); const n = api.npc(x, z, { top: '#3A4A5A', hair: '#6A4A2E', cloak: '#2E3A48' }, j.client, Math.PI); n.near = 1; api.inter(x, z, 2, '把' + R.MATS[j.mat].name + '交給委託人（' + j.n + ' 個）', () => { if (!(s.jobs || []).includes(j)) { R.toast('這件委託已經交過了。'); return; } if ((s.mats[j.mat] || 0) < j.n) { R.toast(R.MATS[j.mat].name + '不夠。'); return; } s.mats[j.mat] -= j.n; finish(j, '委託人點了點數量。'); }, { follow: n, job: 1 }); }
     });
   };
   R.refreshJobs = () => { };

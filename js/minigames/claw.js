@@ -93,7 +93,8 @@
       }
     };
     const fall = []; let msgWin = false;
-    const release = msg => { const p = claw.hold; claw.hold = null; p.vy = 0; fall.push(p); if (msg) info(msg); };
+    const release = msg => { const p = claw.hold; claw.hold = null; p.vy = 0; delete p.jerked; fall.push(p);   // 2026-10-16 修正：掉下去過的娃娃，下次夾到一樣會晃
+     if (msg) info(msg); };
     const win = p => { msgWin = true; won.push(p.d.name); if (R.addGift) R.addGift(p.d.k, 1); R.save(); R.sfx && R.sfx('chest'); info('掉進出口了！夾到「' + p.d.name + '」。'); refill(); upd(); };
     const draw = () => {
       x.fillStyle = '#1A2238'; x.fillRect(0, 0, FW, FH);

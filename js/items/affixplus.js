@@ -12,8 +12,8 @@
   const rint = (a, b) => a + Math.floor(rnd() * (b - a + 1));
   const poolOf = it => (it.kind === 'weapon' ? R.W_AFFIX : R.A_AFFIX).filter(a => !a.enchOnly && !(a.ranged && !['gun', 'bow', 'magic'].includes(R.WEAPONS[it.base] && R.WEAPONS[it.base].kind)) && !(a.melee && !['melee', 'thrust'].includes(R.WEAPONS[it.base] && R.WEAPONS[it.base].kind)) && !a.curse && (!R.affixAllowed || R.affixAllowed(a, it)));
   const newAffix = it => { const have = new Set(it.affixes.map(a => a.id)), c = poolOf(it).filter(a => !have.has(a.id)); if (!c.length) return null; const a = c[Math.floor(rnd() * c.length)]; return { id: a.id, v: rint(a.roll[0], a.roll[1]) }; };
-  const locked = (it, i) => (i === 0 && it.legend) || (it.enchant && it.affixes[i] && it.affixes[i].id === it.enchant);
-  const maxOf = it => ((R.RARITY[it.rarity] && R.RARITY[it.rarity].affix) || 0) + 2;
+  const locked = (it, i) => (i === 0 && (it.legend || it.kind === 'acc' || (it.kind === 'charm' && R.CHARM2 && R.CHARM2[it.base]))) ||   /* 2026-10-16 修正：飾品、御守、根付的第一條是本身的效果，不能洗 */ (it.enchant && it.affixes[i] && it.affixes[i].id === it.enchant);
+  const maxOf = it => it.affixMax || ((R.RARITY[it.rarity] && R.RARITY[it.rarity].affix) || 0) + 2;   // affixMax：自己的上限（寺川參狹 8 條，kuzeshadow.js）
   // 舊的傳說、神話：補到新的條數
   const topUp = () => { const s = S(); if (!s || !s.stash) return; let n = 0; s.stash.concat(Object.values(s.equip || {}).flatMap(e => Object.values(e || {})).map(id => R.itemById ? R.itemById(id) : null)).forEach(it => { if (!it || it.topped || !(it.kind === 'weapon' || it.kind === 'armor') || it.rarity < 4) return; it.topped = 1; while (it.affixes.length < R.RARITY[it.rarity].affix) { const a = newAffix(it); if (!a) break; it.affixes.push(a); n++; } }); if (n) R.save(); };
   // 價錢

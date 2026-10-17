@@ -176,6 +176,7 @@
 
   // ======================= 術士：元素反應 =======================
   const EL = { fire: ['火', '#FF6A2A'], frost: ['冰', '#9AD8FF'], shock: ['雷', '#FFE070'], wood: ['木', '#7ACF5A'], wind: ['風', '#BFF0E0'], metal: ['金', '#D8C890'] }, ELS = ['fire', 'frost', 'shock', 'wood'], AUX = ['wind', 'metal'];
+  const nextEl = el => { const i = ELS.indexOf(el || 'fire'); return i < 0 ? ELS[0] : ELS[(i + 1) % ELS.length]; };   // 2026-10-16 修正：X 換到的元素（條上原本寫 % 3，但有四種；選了表上的風、金以後回到第一種）
   const REACT = { 'fire+frost': '蒸發', 'frost+shock': '碎冰', 'fire+shock': '過載', 'shock+wood': '激化', 'fire+wood': '燃燒', 'frost+wood': '凍藤' };
   CORE.mage = {
     name: '元素', col: '#B88AFF',
@@ -229,8 +230,8 @@
         e._px = e.x; e._pz = e.z;
       });
     },
-    act(P) { const i = Math.max(0, ELS.indexOf(P._el || 'fire')); P._el = ELS[(i + 1) % ELS.length]; say(P, EL[P._el][0], 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: EL[P._el][1] }); },
-    gauge(P) { const el = P._el || 'fire'; return { name: '元素：' + EL[el][0], col: EL[el][1], text: '火＋冰 蒸發・冰＋雷 碎冰・雷＋火 過載', x: '換成' + EL[ELS[(ELS.indexOf(el) + 1) % 3]][0] }; }
+    act(P) { P._el = nextEl(P._el); say(P, EL[P._el][0], 'heal'); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.4, color: EL[P._el][1] }); },
+    gauge(P) { const el = P._el || 'fire'; return { name: '元素：' + EL[el][0], col: EL[el][1], text: '火＋冰 蒸發・冰＋雷 碎冰・雷＋火 過載', x: '換成' + EL[nextEl(el)][0] }; }
   };
 
   // ======================= 槍手：彈種＋完美換彈 =======================

@@ -234,7 +234,7 @@
         R.killShot(s);
       } else if (w.allies && w.allies.some(a => !a.downed && Math.hypot(a.x - s.x, a.z - s.z) < s.rad + 0.45 && (R.hurtAlly(a, s.dmg, s.src), true))) R.killShot(s);
       else if (P.buff.kekkai > 0 && Math.hypot(P.x - s.x, P.z - s.z) < 4.2) R.killShot(s);
-      if (s.life <= 0) { if (s.splash || s.kind === 'fire') R.explode(s); else R.killShot(s); }
+      if (!s.dead && s.life <= 0) { if (s.splash || s.kind === 'fire') R.explode(s); else R.killShot(s); }   // 2026-10-16 修正：同一格打中又到時間，不要炸兩次
     }
     w.shots = w.shots.filter(s => !s.dead);
   };

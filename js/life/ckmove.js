@@ -134,7 +134,7 @@
   CK.enterRoom = (id, door) => { if (R.inVehicle && R.inVehicle()) { const v = R.inVehicle(); if (v.type === 'car' && Math.abs(v.v || 0) > 2.5) { R.toast('先停下來。'); return; } R.dismountVehicle(); } return er0(id, door); };
   // ---------- 每一格 ----------
   const step = dt => {
-    const tw = W.town, P = W.P; if (!tw || !tw.ck || tw.room || !P || W.paused) return;
+    const tw = W.town, P = W.P; if (!tw || !tw.ck || tw.room || !P || W.paused || W.inside) return;   // 2026-10-16 修正：在店裡（W.inside）街上的追捕、打工計時不跑
     if (R.sheetOpen && R.sheetOpen()) return;
     const V = R.VEH;
     if (V && V.cur && V.cur.type === 'car') P.busy = true;

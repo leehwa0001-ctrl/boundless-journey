@@ -133,7 +133,7 @@
     const held = q => { const e = byId(q.eid); if (!e) return ''; return '<div class="ft-row er-row"><b>F 級・' + esc(e.name) + '</b><small>委託人：' + esc(e.who) + '・報酬 ' + e.pay + ' 費拉' + (e.fare ? '＋車資 ' + e.fare : '') + '</small><div class="er-steps">' + stepLine(q, e) + '</div><div class="row">'
       + (q.done ? '<button type="button" class="btn gold" data-erin="' + q.eid + '">繳交（' + total(e) + ' 費拉）</button>' : '<button type="button" class="mini" data-erwp="' + q.eid + '">標在地圖上</button>') + '<button type="button" class="mini" data-erdrop="' + q.eid + '">放棄</button></div></div>'; };
     const offer = e => '<div class="ft-row er-row"><b>F 級・' + esc(e.name) + '</b><small>委託人：' + esc(e.who) + '・' + e.steps.length + ' 站・報酬 ' + e.pay + ' 費拉' + (e.fare ? '＋車資 ' + e.fare + '（搭電車，會過 1 天以上）' : '') + (e.herb ? '＋藥草 ' + e.herb : '') + '</small><div class="er-steps">' + e.steps.map(st => '<span class="er-st">' + esc(st.txt) + '</span>').join('<i>→</i>') + '</div><div class="row"><button type="button" class="btn" data-ertake="' + e.id + '"' + (full ? ' disabled' : '') + '>接下</button></div></div>';
-    const off = E.filter(e => !took.includes(e.id) && !done.includes(e.id));
+    const off = novice() ? E.filter(e => !took.includes(e.id) && !done.includes(e.id)) : [];   // 升到冒險段以後不再接新的，手上的照樣能繳交、放棄
     return '<h3>委託板・初心跑腿（新人段）</h3><p class="note">城裡城外跑跑腿：送東西、貼告示、探望農家、巡燈塔，也有搭電車送信到別的城市。不用下遺跡。一次最多接 ' + MAX + ' 張，目的地會標在地圖上，走到旁邊就算到了；做完回這裡繳交，每張算一件 F 級的任務、算進升階的件數。每張每天做一次。</p>'
       + (qs.length ? '<p><b>手上的跑腿（' + qs.length + '／' + MAX + '）</b></p><div class="ft-list">' + qs.map(held).join('') + '</div>' : '')
       + '<p><b>今天的跑腿</b>' + (done.length ? '（今天做完 ' + done.length + ' 張）' : '') + '</p>' + (off.length ? '<div class="ft-list">' + off.map(offer).join('') + '</div>' : '<p class="note">今天的跑腿都做完了，明天再來。</p>');
@@ -142,7 +142,7 @@
   R.hub = (t, f) => {
     hub0(t, f);
     try {
-      const body = $('hub-body'), card = body && body.querySelector('.hero-card'), s = S(); if (!card || !s || !novice()) return;
+      const body = $('hub-body'), card = body && body.querySelector('.hero-card'), s = S(); if (!card || !s || (!novice() && !mine().length)) return;   // 2026-10-16 修正：升段以後手上的跑腿還要能繳交（原本整個框不見，跑腿卡著）
       const el = document.createElement('div'); el.className = 'ft-box er-box'; el.innerHTML = box(); card.after(el);
       const again = () => { R.save(); R.hub(t, f); };
       el.querySelectorAll('[data-ertake]').forEach(b => { b.onclick = () => { if (mine().length >= MAX || mine().some(q => q.eid === b.dataset.ertake)) return; const q = { eid: b.dataset.ertake, step: 0, day0: s.day || 0 }; mine().push(q); wp(q); R.sfx && R.sfx('click'); R.toast && R.toast('接下跑腿：' + byId(q.eid).name + '。第一站：' + byId(q.eid).steps[0].txt, '#E8C04A'); again(); }; });

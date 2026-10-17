@@ -66,7 +66,8 @@
     if (!s || !s.classes) return s;
     if (s.loadout) Object.keys(s.loadout).forEach(cls => {
       const lo = s.loadout[cls]; if (!Array.isArray(lo)) return;
-      s.loadout[cls] = lo.map(id => { if (!id || SK[id] || !MERGE[id]) return id; const t = MERGE[id]; return learnable(s, cls, t) && !lo.includes(t) ? t : null; });
+      const used = new Set(lo.filter(x => x && SK[x]));   // 2026-10-16 修正：兩招合併成同一招時，不要放進兩格
+      s.loadout[cls] = lo.map(id => { if (!id || SK[id] || !MERGE[id]) return id; const t = MERGE[id]; if (learnable(s, cls, t) && !used.has(t)) { used.add(t); return t; } return null; });
     });
     Object.keys(s.classes).forEach(cls => {
       const sp = s.classes[cls] && s.classes[cls].sp; if (!sp) return;

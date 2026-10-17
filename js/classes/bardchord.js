@@ -89,7 +89,7 @@
   const areaK = P => (chordOf(P).id === 'sev' ? 1 + pctOf(P) / 100 : 1);   // 2026-10-11：大三和弦與七和弦交換
   const healK = P => (chordOf(P).id === 'min' ? 1 + pctOf(P) / 100 : 1);
   const dmgK = P => (chordOf(P).id === 'maj' ? 1 + pctOf(P) / 100 : 1);
-  const syncHaste = P => { if (!P || !('haste' in P)) return; const want = IS(P) && chordOf(P).id === 'nin' ? hasteOf(P) : 0, had = P._bdHaste || 0; if (want !== had) { P.haste = (P.haste || 0) - had + want; P._bdHaste = want; } };
+  const syncHaste = P => { if (!P || !('haste' in P)) return; const want = IS(P) && chordOf(P).id === 'nin' ? hasteOf(P) : 0, had = P._bdHaste || 0; if (want !== had) { const h0 = P.haste || 0, h1 = Math.max(0, h0 - had + want), dsc = Object.getOwnPropertyDescriptor(P, 'skillCdMult'); P.haste = h1; P._bdHaste = want; if (dsc && !dsc.get && R.hasteCd) P.skillCdMult *= R.hasteCd(h1) / R.hasteCd(h0); } };   // 2026-10-16 修正：遺跡裡算好的角色，急速已經是普通數字，要連冷卻倍率一起改（不然九和弦的急速沒作用、換掉也不會拿掉）
   const nextChord = P => {
     const av = CH.filter(c => (P.lv || 1) >= c.lv), i = av.findIndex(c => c.id === chordOf(P).id); let c = av[(i + 1) % av.length];
     SV().chord = c.id; syncHaste(P); c = chordOf(P);
@@ -525,7 +525,7 @@
   const C = R.CORE && R.CORE.bard;
   if (C) Object.assign(C, {
     name: '和弦', col: '#FFB8E0',   // 職業條的顏色跟著和弦（gauge 回傳的 col）
-    help: P => '和弦與樂譜：X 點一下換和弦（C 大三＝傷害、Am 小三＝恢復與護盾、20 級 Cmaj7 七和弦＝範圍、30 級 Fmaj9 九和弦＝技能急速、40 級 Dm11 十一和弦＝演奏回魔）；技能數值照最大魔力（治療、護盾＝最大魔力的 %，強化的 +% 每 100 點最大魔力算一次，技能傷害 ×（200＋最大魔力）÷ 300）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
+    help: P => '和弦與樂譜：X 點一下換和弦（C 大三＝傷害、Am 小三＝恢復與護盾、20 級 Cmaj7 七和弦＝範圍、30 級 Fmaj9 九和弦＝技能急速、40 級 Dm11 十一和弦＝演奏回魔）；技能數值照最大魔力（治療、護盾＝最大魔力的 %，強化的 +% 每 100 點最大魔力算一次，技能傷害 ×（100＋√最大魔力）%）；按住 X 重新錄製 10 秒的樂譜——普攻是八分音符、基礎冷卻 13 秒以內的技能是四分、以上是二分（一個小節 '
       + capOf(P) + ' 拍）。寫樂譜的時候普攻只記音符、不發出攻擊。之後每次出手：按下 → 演奏（' + perfDur(P).toFixed(1) + ' 秒，可以走、翻滾，不能普攻；攻速每 +1% 演奏快 0.5%；演奏中按的技能，或放開再按一次普攻，會記一個、演奏完馬上接著放（技能優先）；最後一拍左鍵還按著也會接著演奏；耗魔照樂譜：八分 0.5、四分 1.5、二分 5，這份 ' + perfCost(SV().notes) + ' 點）→ 發出。普攻演奏中經過一個音符就射出那一顆（一次普攻射幾發就射幾顆；普攻本身不耗魔力；攻擊音符碰到敵人、撞牆、飛完都會炸開，四分 2 公尺、二分 4 公尺；增益音符給你和隊友最大魔力 10% 的護盾，二分再回同樣多的生命；樂譜是空的就不射），技能照音符加攻速、傷害、範圍、恢復、增益（同一種音符第二個減半、第三個起 1/4）。普攻音符的護盾每段演奏刷新；技能給的護盾另外算、可以跟普攻護盾疊在一起（各自時間到才消失）。'
       + ({ aria: '詠嘆詩人：增益音符效果 ×1.5。', drummer: '戰鼓手：攻擊音符效果 ×1.5；每次演奏打一小節鼓。', serane: '奏域師：八分音符的攻速維持兩倍久；開頭的和弦用管風琴。' }[P && P.adv] || ''),
     step() { }, onCast() { }, play() { },

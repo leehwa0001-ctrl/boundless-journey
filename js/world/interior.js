@@ -523,6 +523,7 @@
     ins.geos.forEach(g => g.dispose());
     ins.walls.forEach(w => { if (w.ghost) w.ghost.forEach(m => m.dispose()); });
   };
+  R.disposeInterior = dispose;   // 2026-10-16：在屋裡直接回城（睡一晚）時 town.js 用來丟掉屋裡的形狀
 
   // ---------- 赤提燈：吃的、喝的（下一趟遺跡的加成）、住一晚 ----------
   R.tavernSheet = mode => {

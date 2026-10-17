@@ -29,7 +29,7 @@
     if (cp0) W.renderer.compile = () => { };
     try { (CK._enterPixel || R.enterTownNow)(from, at); } finally { R.makeHeroSprite = mh0; if (cp0) W.renderer.compile = cp0; }   // 像素版原本的那一套（dhswitch.js 包住 R.enterTownNow 以後，這裡要直接叫原本的）
     const tw = W.town, out = { inter: [], npcs: [], steals: [] };
-    (tw.inter || []).forEach(it => { const l = lbl(it); if (!l || (it.follow && !it.person)) return;   /* 劇情人物（people.js）的對話跟著那個人：留著，蓋好以後改指向新的人 */ if (STEAL.test(l)) { out.steals.push(it); return; } if (GENERIC.test(l)) return; out.inter.push(it); });
+    (tw.inter || []).forEach(it => { const l = lbl(it); if (!l || (it.follow && !it.person && !it.job)) return;   /* 2026-10-16 修正：私人委託的交件（jobs.js 標 job）也要收下，不然精緻版東鶴交不了件 */   /* 劇情人物（people.js）的對話跟著那個人：留著，蓋好以後改指向新的人 */ if (STEAL.test(l)) { out.steals.push(it); return; } if (GENERIC.test(l)) return; out.inter.push(it); });
     // 站著不動的人（店員、攤販、衛兵、今天在城裡的劇情人物）：記下外觀，精緻版照原樣重建
     (tw.npcs || []).forEach(n => { if (n.walk || n.off || !n.h || !n.near) return; out.npcs.push({ x: n.x, z: n.z, rot: n.rot || 0, opt: n.h.look0 !== undefined ? n.h.look0 : (n.h.opt || null), base: n.h.base || null, kind: n.h.kind, name: n.name || '', person: n.person || null, watch: n.watch, src: n }); });
     return out;
