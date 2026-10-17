@@ -208,7 +208,7 @@
       R.changeRace(m => { R.hub(); if (m) flashMsg(m); });
     });
     on('[data-cards]', () => { const cs = S.cards || [], b = cs.reduce((a, c) => a + (c.revoked ? 120 : c.hunter ? 60 : 40), 0); S.gold += b; S.rep = (S.rep || 0) + cs.length; cs.forEach(c => R.addDeed && R.addDeed(c.revoked ? '公會東鶴分館收回一張冒用的勇者證（' + c.no + '）。' : '公會東鶴分館受理遺跡內的襲擊通報。')); S.cards = []; R.hub(); flashMsg('公會給了 ' + b + ' 費拉的獎金。'); });
-    const face = body.querySelector('#hc-face'); if (face && R.heroSheetCanvas) { const sh = R.heroSheetCanvas(Object.assign({ weapon: null }, R.CLASSES[S.cls] ? R.CLASSES[S.cls].look : {}, R.playerLook())), x = face.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(sh, 0, 0, 24, 30, 0, 0, 72, 90); }
+    const face = body.querySelector('#hc-face'); if (face && R.heroSheetCanvas) { const sh = R.heroSheetCanvas(Object.assign({ weapon: null }, R.CLASSES[S.cls] ? R.CLASSES[S.cls].look : {}, R.playerLook())), x = face.getContext('2d'), q = sh._ck || 1; x.imageSmoothingEnabled = false; x.drawImage(sh, 0, 0, 24 * q, 30 * q, 0, 0, 72, 90); }   // q：素材版一格 3 倍大
     on('[data-map]', () => R.openMap && R.openMap('nation'));
     on('[data-gall]', () => R.hub('guild'));
     on('[data-cls]', b => { S.cls = b.dataset.cls; R.ensureKit(S.cls); R.hub(); });

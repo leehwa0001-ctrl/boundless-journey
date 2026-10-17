@@ -31,13 +31,13 @@
   // ---------- 預覽：正面、側面、背面，走路的樣子 ----------
   let sheet = null, sheetKey = '';
   const preview = cv => {
-    const look = Object.assign({ weapon: st.weapon || R.STARTER[st.cls] || 'katana', shield: !!R.CLASSES[st.cls].shield, race: st.race }, st.look), k = JSON.stringify(look);
+    const look = Object.assign({ weapon: st.weapon || R.STARTER[st.cls] || 'katana', shield: !!R.CLASSES[st.cls].shield, race: st.race }, st.look), k = JSON.stringify(look) + (R.charkitSheetKey ? R.charkitSheetKey() : '');   // 換人物模型也重畫
     if (k !== sheetKey) { sheet = R.heroSheetCanvas(look); sheetKey = k; }
     let t = 0;
     const draw = () => {
       const x = cv.getContext('2d'), S = 5, fr = [0, 1, 0, 2][t++ % 4], k = R.lookScale ? R.lookScale(st.look) : { x: 1, y: 1 };
       x.imageSmoothingEnabled = false; x.clearRect(0, 0, cv.width, cv.height);
-      [0, 2, 1].forEach((dir, i) => { const w = 24 * S * k.x, hh = 30 * S * k.y; x.drawImage(sheet, fr * 24, dir * 30, 24, 30, i * 24 * S + (24 * S - w) / 2, cv.height - hh, w, hh); });   // 身高、體格（lookplus.js）
+      [0, 2, 1].forEach((dir, i) => { const w = 24 * S * k.x, hh = 30 * S * k.y; const q = sheet._ck || 1; x.drawImage(sheet, fr * 24 * q, dir * 30 * q, 24 * q, 30 * q, i * 24 * S + (24 * S - w) / 2, cv.height - hh, w, hh); });   // q：素材版的圖一格是 3 倍大   // 身高、體格（lookplus.js）
     };
     draw(); clearInterval(timer); timer = setInterval(() => { if (!cv.isConnected) { clearInterval(timer); return; } draw(); }, 240);
   };
