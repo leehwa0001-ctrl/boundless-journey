@@ -5,6 +5,7 @@
 //   翻滾、倒下、坐著素材還沒有，沿用原本的圖。圖放大成 3 倍（一格 72×90），素材畫成 2 倍、腳底對齊——人物在畫面上一樣高，只是畫得比較細。
 //   顏色照每個人的外觀：身體＝膚色、衣服＝上衣（條紋＝披風色）、褲子＝披風色、頭髮、眼睛；髮型照原本的 hs 對到素材的七種。
 //   武器、盾、兜帽、種族特徵（耳朵、角、翅膀……）素材還沒有：兜帽的人不畫頭髮；剪影（還沒認識的人）照舊用原本的圖。
+//   2026-10-18：完整版（charkitfull.js）載入之後，R.charkitKitFor(o) 給這個人的身體、合身的圖層、多畫的圖層（種族特徵、盔甲、武器）。
 // 放在 sprites.js、lookplus.js、gearmore.js 後面（最外層的 R.makeHeroSprite、R.spriteLook）。
 (function (R) {
   const K = R.CHARKIT; if (!K || !R.makeHeroSprite) return;
@@ -24,16 +25,17 @@
   const BLACK = [20, 16, 24], WHITE = [255, 255, 255];
   // 一層的上色規則 → 顏色（base＝這一層的顏色，alt＝「隨機色」那幾格用的第二個顏色）
   const paint = (base, alt) => { const b = hex(base), a = hex(alt || base); return [null, css(BLACK), css(b), css(mix(b, BLACK, 0.45)), css(mix(b, BLACK, 0.7)), css(a), css(mix(b, BLACK, 0.78)), css(b, 0.5), css(WHITE), css(mix(b, WHITE, 0.45))]; };
+  R.charkitPaint = paint;
   // ---------- 外觀 → 素材的選擇 ----------
   const HAIR = { short: '短髮', long: '長髮', ponytail: '狼尾', bun: '包頭', bob: '公主切', crop: '三七分', spiky: '爆炸頭' };
   const hashOf = s => { let h = 7; s = String(s || ''); for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0; return h; };
-  const pick = (layer, name, seed) => { const L = K.layers[layer]; if (!L) return null; if (name && L[name]) return L[name]; const ks = Object.keys(L); return L[ks[seed % ks.length]]; };
-  const lookOf = o => {
+  const pick = (layer, name, seed, kk) => { const L = (kk || K).layers[layer]; if (!L) return null; if (name && L[name]) return L[name]; const ks = Object.keys(L); return L[ks[seed % ks.length]]; };
+  const lookOf = (o, kk) => {
     const rc = (R.raceLook && o.race ? R.raceLook(o.race) : null) || {}, seed = hashOf((o.top || '') + (o.hair || '') + (o.hs || '') + (o.cloak || ''));
     return {
       skin: o.skin || (rc.skins ? rc.skins[0] : '#E8C2A0'), hair: rc.hairCol || o.hair || '#2A2420', top: o.top || '#6A5A48', cloak: o.cloak || '#3A3440', eye: o.eye || rc.eye || '#1A1714',
-      hairV: o.hs === 'bald' || o.hood || (rc.hood && !o.noRaceHood) ? null : pick('髮型', HAIR[o.hs], seed), eyeV: pick('眼睛', o.eyeStyle || '大眼', seed), browV: pick('眉毛', o.browStyle || '細眉', seed),
-      glasses: o.acc === 'glasses' || o.glasses ? pick('眼鏡', null, 0) : null
+      hairV: o.hs === 'bald' || o.hood || (rc.hood && !o.noRaceHood) || (kk && kk.noHair) ? null : pick('髮型', HAIR[o.hs], seed, kk), eyeV: kk && kk.noFace ? null : pick('眼睛', o.eyeStyle || '大眼', seed, kk), browV: kk && kk.noFace ? null : pick('眉毛', o.browStyle || '細眉', seed, kk),
+      glasses: o.acc === 'glasses' || o.glasses ? pick('眼鏡', null, 0, kk) : null
     };
   };
   // ---------- 一格：身體＋圖層 ----------
@@ -44,7 +46,7 @@
   const drawCell = (g, ox, oy, frames) => {
     if (!TMP) { const c = document.createElement('canvas'); c.width = c.height = G; const x = c.getContext('2d'); TMP = { c, x, img: x.createImageData(G, G) }; TMP.u = new Uint32Array(TMP.img.data.buffer); }
     const U = TMP.u, B = TMP.img.data; U.fill(0);
-    frames.forEach(([str, pal]) => { if (!str) return; const d = dec(str), I = d.i, V = d.v; for (let n = 0; n < I.length; n++) { const c = pal[V[n]]; if (!c) continue; const k = I[n]; if (c[3] >= 255) U[k] = c[4]; else { const al = c[3] / 255, q = k * 4; B[q] = B[q] * (1 - al) + c[0] * al; B[q + 1] = B[q + 1] * (1 - al) + c[1] * al; B[q + 2] = B[q + 2] * (1 - al) + c[2] * al; B[q + 3] = Math.max(B[q + 3], c[3]); } } });
+    frames.forEach(([str, pal]) => { if (!str) return; const d = dec(str), I = d.i, V = d.v; for (let n = 0; n < I.length; n++) { const c = pal[V[n]]; if (!c) continue; const k = I[n]; if (c[3] >= 255) U[k] = c[4]; else { const al = c[3] / 255, q = k * 4; if (!B[q + 3]) { B[q] = c[0]; B[q + 1] = c[1]; B[q + 2] = c[2]; B[q + 3] = c[3]; continue; }   /* 底下是空的：留著半透明（2026-10-18：原本跟黑色混，殘影變深灰） */ B[q] = B[q] * (1 - al) + c[0] * al; B[q + 1] = B[q + 1] * (1 - al) + c[1] * al; B[q + 2] = B[q + 2] * (1 - al) + c[2] * al; B[q + 3] = Math.max(B[q + 3], c[3]); } } });
     TMP.x.putImageData(TMP.img, 0, 0);
     const dy = oy + (FH - 1) * S - (footRow() + 1) * KS, dx = ox + CW / 2 - G * KS / 2;
     g.save(); g.beginPath(); g.rect(ox, oy, CW, CH); g.clip(); g.drawImage(TMP.c, dx, dy, G * KS, G * KS); g.restore();
@@ -56,26 +58,28 @@
   // 素材那四列照外觀快取（城裡兩百多人，很多人長得一樣）；每個人只把原本圖的翻滾、倒下、坐著貼過來
   const CACHE = new Map();
   const kitRows = o => {
-    const L = lookOf(o), two = /^(greatsword|axe|hammer|halberd|spear|zanbato)/.test(String(o.weapon || '')), sw = two && K.body.swing2 ? 'swing2' : 'swing1';
-    const key = JSON.stringify([L.skin, L.hair, L.top, L.cloak, L.eye, o.hs, !!L.hairV, o.eyeStyle, o.browStyle, !!L.glasses, sw]);
+    const KK = R.charkitKitFor ? R.charkitKitFor(o) : null, KB = KK || K;   // 完整版：這個人的身體和合身的圖層（還沒載入就用原本的人類）
+    const L = lookOf(o, KK), two = /^(greatsword|axe|hammer|halberd|spear|zanbato)/.test(String(o.weapon || '')), sw = two && KB.body.swing2 ? 'swing2' : 'swing1';
+    const key = JSON.stringify([L.skin, L.hair, L.top, L.cloak, L.eye, o.hs, !!L.hairV, o.eyeStyle, o.browStyle, !!L.glasses, sw, KK ? KK.key : '']);
     let c = CACHE.get(key); if (c) return c;
     c = document.createElement('canvas'); c.width = CW * COLS; c.height = CH * 4; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
     const P = { body: paint(L.skin), pants: paint(L.cloak), shoes: paint('#3A2A20'), top: paint(L.top, L.cloak), eye: paint(L.eye), brow: paint(L.hair), hair: paint(L.hair), glass: paint('#2A2A34') };
-    const first = n => { const Ly = K.layers[n]; return Ly && Ly[Object.keys(Ly)[0]]; }, LY = { pants: first('褲子'), shoes: first('鞋子'), top: first('衣服') };
+    const first = n => { const Ly = KB.layers[n]; return Ly && Ly[Object.keys(Ly)[0]]; }, LY = { pants: first('褲子'), shoes: first('鞋子'), top: first('衣服') };
     DIRMAP.forEach((d, row) => COLMAP.forEach(([act0, i], col) => {
-      const act = act0 === 'swing' ? sw : act0, bf = K.body[act] || K.body.stand, b = bf[Math.min(i, bf.length - 1)];
+      const act = act0 === 'swing' ? sw : act0, bf = KB.body[act] || KB.body.stand, b = bf[Math.min(i, bf.length - 1)];
       const pickF = by => { const f = layerFrame(by, act, i); return f ? f[d] : null; };
-      drawCell(g, col * CW, row * CH, [[b[d], P.body], [pickF(LY.pants), P.pants], [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass]]);
+      drawCell(g, col * CW, row * CH, [[b[d], P.body], [pickF(LY.pants), P.pants], [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass]].concat(KK && KK.extra ? KK.extra(act, i, d, layerFrame) : []));
     }));
     if (CACHE.size > 300) CACHE.clear(); CACHE.set(key, c);
     return c;
   };
   const POOL = new Map();
   const sheetFor = (o, orig) => {
-    if (o.pool && POOL.has(o.pool)) return POOL.get(o.pool);
+    const pk = o.pool && o.pool + (R.charkitPoolKey ? R.charkitPoolKey() : '');   // 完整版載入之後重新畫
+    if (pk && POOL.has(pk)) return POOL.get(pk);
     const k = kitRows(o), c = document.createElement('canvas'); c.width = CW * COLS; c.height = CH * ROWS; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
     if (orig) g.drawImage(orig, 0, orig.height * 4 / ROWS, orig.width, orig.height * 3 / ROWS, 0, CH * 4, c.width, CH * 3);   // 翻滾、倒下、坐著先用原本的
-    g.drawImage(k, 0, 0); if (o.pool) POOL.set(o.pool, c); return c;
+    g.drawImage(k, 0, 0); if (pk) POOL.set(pk, c); return c;
   };
   // ---------- 接上：做人物的時候換成素材的圖 ----------
   const apply = h => {
@@ -100,7 +104,7 @@
     const row = document.querySelector('#r-sheet .row'); if (!row || row.querySelector('#ck-kit')) return;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ck-kit';
     b.textContent = '人物：' + (on() ? '素材版（測試）' : '原本');
-    b.title = '用人物編輯器的素材畫人物（測試中：翻滾、倒下、坐著、武器、種族特徵還沒有）';
+    b.title = '用人物編輯器的素材畫人物（測試中：種族、盔甲、武器第一次打開時才載入；翻滾、倒下、坐著還沒有）';
     b.onclick = () => { LS('tfl-charkit', on() ? null : '1'); refresh(); b.textContent = '人物：' + (on() ? '素材版（測試）' : '原本'); };
     row.appendChild(b);
   };
