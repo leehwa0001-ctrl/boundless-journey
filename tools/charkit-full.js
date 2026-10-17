@@ -1,5 +1,8 @@
 // 人物素材「完整版」（2026-10-18 作者：打包並匯入遊戲內，連同種族和裝備）→ 遊戲用的 js/art/charkit-full.js
 // 用法：node tools/charkit-full.js <〇〇族種_匯入用.zip ...>（也可以直接給 素材_〇〇族種.json、〇〇族種_對照表.csv）
+//       node tools/charkit-full.js --extra：只把 tools/charkit-extra.json 併進現有的 js/art/charkit-full.js（不用重讀全部的 zip）
+// - tools/charkit-extra.json（2026-10-19）：捏角畫面有、編輯器匯出檔還沒有的造型（馬尾、鮑伯頭、和服、裙子、袴、八字眉、圍巾……），
+//   寫法跟輸出的 layers 一樣（變體 → a＝人類、by＝畫得不一樣的身體）；每次轉檔都會併進去（同名的變體不蓋掉作者畫的）。
 //   zip 裡面＝人物編輯器的匯出檔（每個族種一個，裡面有人類＋那個族種＋共用的衣服、裝備、武器）＋族種對照表（族名 → 身體、各圖層用哪一個）。
 // - 格子照 charkit-convert.js 的寫法（0～9 換成 a～j，連續的寫個數）。匯出檔是 49×49 的話裁回 45×45（左右各 2 格、下面 4 列：遊戲裡那裡本來就畫不到）。
 // - bodies：每一個身體（人類、精靈、獸人族種、半身族……）的站立、移動、單手揮擊、雙手揮擊；同一個族種有別的體型組（獨臂、六足、半身……）的叫「族種/體型組」。
@@ -30,7 +33,8 @@ args.forEach(f => {
 const DIRS = ['front', 'back', 'left', 'right'], ACT = { '站立': 'stand', '移動': 'move', '單手揮擊': 'swing1', '雙手揮擊': 'swing2' };
 const enc = a => { let s = '', i = 0; while (i < a.length) { const v = a[i] | 0; let n = 1; while (i + n < a.length && (a[i + n] | 0) === v) n++; s += String.fromCharCode(97 + Math.max(0, Math.min(9, v))) + (n > 1 ? n : ''); i += n; } return s; };
 const crop = (a, g) => { if (!a || g === 45) return a || []; const o = new Array(45 * 45).fill(0); for (let y = 0; y < 45; y++) for (let x = 0; x < 45; x++) o[y * 45 + x] = a[y * g + x + 2] | 0; return o; };
-const out = { grid: 45, order: [], bodies: {}, layers: {}, weapons: {}, races: {} };
+const EXTRA_ONLY = args[0] === '--extra', dst = path.join(__dirname, '..', 'js', 'art', 'charkit-full.js');
+const out = EXTRA_ONLY ? (() => { global.window = {}; require(dst); return window.R.CHARKIT_FULL; })() : { grid: 45, order: [], bodies: {}, layers: {}, weapons: {}, races: {} };
 const frameOf = (f, g) => { const o = {}; DIRS.forEach(d => { o[d] = enc(crop(f[d], g)); }); return o; };
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 JSONS.forEach(file => {
@@ -73,6 +77,11 @@ CSVS.forEach(file => {
   });
 });
 Object.values(out.layers).forEach(LL => Object.values(LL).forEach(V => { if (V.by && !Object.keys(V.by).length) delete V.by; }));   // 沒有另外畫的身體：不存
-const dst = path.join(__dirname, '..', 'js', 'art', 'charkit-full.js');
+const XP = path.join(__dirname, 'charkit-extra.json');
+if (fs.existsSync(XP)) {
+  const X = JSON.parse(fs.readFileSync(XP, 'utf8')).layers || {}; let n = 0;
+  Object.keys(X).forEach(L => { if (!out.order.includes(L)) out.order.push(L); const LL = out.layers[L] = out.layers[L] || {}; Object.keys(X[L]).forEach(v => { if (!LL[v] || LL[v]._extra) { LL[v] = Object.assign({ _extra: 1 }, X[L][v]); n++; } }); });
+  console.log('併進 charkit-extra.json：' + n + ' 個變體');
+}
 fs.writeFileSync(dst, '// 人物素材完整版的資料（tools/charkit-full.js 從作者的人物編輯器匯出檔＋族種對照表轉出來的，不要手改；遊戲打開「人物：素材版」才載入）\nwindow.R = window.R || {}; window.R.CHARKIT_FULL = ' + JSON.stringify(out) + ';\nwindow.R.charkitFullLoaded && window.R.charkitFullLoaded();\n');
 console.log('寫好了：' + dst + '（' + Math.round(fs.statSync(dst).size / 1024) + ' KB）；身體 ' + Object.keys(out.bodies).length + '、圖層 ' + Object.keys(out.layers).length + '、武器 ' + Object.keys(out.weapons).length + '、族 ' + Object.keys(out.races).length);
