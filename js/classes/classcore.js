@@ -238,6 +238,7 @@
   // 2026-10-18 作者：彈種改成按住 X 換——一般彈；暈眩彈（暈 2 秒、射程 −50%）；穿甲彈（貫穿 +1、護甲穿透 +50%、一發用 2 顆）；螺旋彈（傷害 ×2、暴擊率 +50%、一發用 3 顆）
   const AMMO = { normal: ['一般彈', '#C8C0B0'], stun: ['暈眩彈', '#FFE08A'], ap: ['穿甲彈', '#C8D0DC'], spiral: ['螺旋彈', '#FF9A6A'] }, AM = ['normal', 'stun', 'ap', 'spiral'];
   const AMK = { normal: { cost: 1 }, stun: { cost: 1, lifeK: 0.5, stun: 2 }, ap: { cost: 2, pierce: 1, xPen: 0.5 }, spiral: { cost: 3, dmgK: 2, critP: 0.5 } };
+  const AMD = { normal: '普通的子彈', stun: '暈眩 2 秒・射程 −50%', ap: '貫穿 +1・護甲穿透 +50%・一發用 2 顆', spiral: '傷害 ×2・暴擊率 +50%・一發用 3 顆' };   // 2026-10-18 作者：換了彈種，左下角的量表寫出效果
   const amT = P => (AMMO[P._ammoT] ? P._ammoT : 'normal');
   R.gunAmmo = P => AMK[amT(P)];   // combat.js 射擊時用
   const GHOLD = 0.4;   // 按住 X 多久算「換彈種」
@@ -279,9 +280,9 @@
 
     gauge(P) {
       const ws = P.ws || {}, t = amT(P);
-      if (ws.mpShot) return { name: AMMO[t][0], col: AMMO[t][1], text: '每發 ' + ws.mpShot * AMK[t].cost + ' 魔力', sub: '', x: '按住：換彈種' };
+      if (ws.mpShot) return { name: AMMO[t][0], col: AMMO[t][1], text: '每發 ' + ws.mpShot * AMK[t].cost + ' 魔力', sub: AMD[t].replace(/・一發用 d 顆/, '・魔力 ×' + AMK[t].cost), x: '按住：換彈種' };
       if (P.reloadT > 0) return { name: '換彈中', col: '#FFE08A', v: 1 - P.reloadT / (ws.reload || 1), max: 1, text: P._tried ? '' : '抓金色那一格', zone: (R.legOf ? R.legOf(P) : null) === 'lg_receiver' ? [0.35, 0.75] : ZONE, x: P._tried ? '' : '完美換彈' };
-      return { name: AMMO[t][0], col: AMMO[t][1], text: (P.ammo || 0) + '／' + (ws.mag || 0) + (P._perfect ? '・完美 +25%' : ''), sub: '', x: '按住：換彈種・按：換彈' };
+      return { name: AMMO[t][0], col: AMMO[t][1], text: (P.ammo || 0) + '／' + (ws.mag || 0) + (P._perfect ? '・完美 +25%' : ''), sub: AMD[t], x: '按住：換彈種・按：換彈' };
     }
   };
 
