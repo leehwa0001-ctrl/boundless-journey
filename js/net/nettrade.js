@@ -15,7 +15,7 @@
   const inRun = () => { const run = W().run; return !!(run && !run.done); };
   const send = (d, to) => { const n = N(); if (n.send && n.inRoom && n.inRoom()) n.send(d, to); };
   const worn = id => Object.values(S().equip || {}).some(eq => eq && Object.values(eq).includes(id));
-  const tradable = it => it && ['weapon', 'armor', 'charm', 'acc'].includes(it.kind) && !worn(it.id);
+  const tradable = it => it && ['weapon', 'armor', 'charm', 'acc'].includes(it.kind) && !worn(it.id) && !it.bound;   // bound：綁在身上的（寺川參狹）不能交易
   const mineItems = () => (T ? T.mine.map(id => R.itemById(id)).filter(Boolean) : []);
   const sig = () => !T ? '' : JSON.stringify([[...T.mine].sort(), T.gold | 0, T.theirs.map(x => x.id).sort(), T.theirGold | 0]);
   const sigFor = () => !T ? '' : JSON.stringify([T.theirs.map(x => x.id).sort(), T.theirGold | 0, [...T.mine].sort(), T.gold | 0]);   // 對方眼中的樣子

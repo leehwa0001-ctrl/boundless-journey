@@ -29,7 +29,7 @@
     const was = e && !e.dead, r = ke0(e, by);
     try {
       // 召喚物（classes2b.js 的 pet）咬死的不算親手（2026-10-05 作者：召喚師的召喚物會掉玩家的理智）
-      if (was && e.dead && e.def && e.def.human && !by && !e.fake && !e.petHit && W().run) {
+      if (was && e.dead && e.def && e.def.human && !e.def.phantom && !by && !e.fake && !e.petHit && W().run) {   // phantom：刀鬼之影（不是人）
         const d = e.innocent ? 15 : 6; set(get() - d);
         R.toast && R.toast(KILL_LINE[Math.floor(rnd() * KILL_LINE.length)] + '理智 −' + d, '#B8A0D8');
       }

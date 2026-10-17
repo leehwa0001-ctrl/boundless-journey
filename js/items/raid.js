@@ -197,6 +197,7 @@
       if (a === 'eq' && it) { err = equip(it); if (!err) sel = { slot: slotOf(it) }; }
       else if (a === 'uneq' && sel.slot) { const was = R.equipped(s.cls)[sel.slot]; err = unequip(sel.slot); if (!err) sel = { it: was }; }
       else if (a === 'rot' && it) { const p = g.at.get(it); if (p && fitsAt(it, p.x, p.y, 1 - p.r, it)) p.r = 1 - p.r; else { const sp = findSpot(it, it); if (sp && sp.r !== (p && p.r)) g.at.set(it, sp); else err = '轉不過來（旁邊沒有空間）。'; } }
+      else if (a === 'drop' && it && it.bound) err = '這把刀綁在你身上，丟不掉。';   // 寺川參狹（kuzeshadow.js）
       else if (a === 'drop' && it) { run.bag = run.bag.filter(x => x !== it); g.at.delete(it); const P = W().P; if (R.addDrop && P) { const [x, z] = dropAt(P), d = R.addDrop({ type: 'item', item: it, x, z, from: [P.x, P.z] }); if (d) { d.warned = true; d.noPick = true; } } sel = null; }
       if (err) R.toast(err, '#FF9A6A'); R.bagSheet();
     }; });
