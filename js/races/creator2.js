@@ -58,16 +58,17 @@
   // ---------- 立繪 ----------
   const draw = (cv, big) => {
     if (!cv || !st.race) return;
-    const look = lookOf(), k = JSON.stringify(look); if (k !== sheetKey) { sheet = R.heroSheetCanvas(look); sheetKey = k; }
+    const look = lookOf(), k = JSON.stringify(look) + (R.charkitSheetKey ? R.charkitSheetKey() : ''); if (k !== sheetKey) { sheet = R.heroSheetCanvas(look); sheetKey = k; }   // 換人物模型、素材載入完也重畫
+    const q = sheet._ck || 1;   // 素材版的圖一格是 3 倍大
     const x = cv.getContext('2d'), sc = R.lookScale ? R.lookScale(st.look) : { x: 1, y: 1 }, fr = [0, 1, 0, 2][Math.floor(performance.now() / 240) % 4];
     x.imageSmoothingEnabled = false; x.clearRect(0, 0, cv.width, cv.height);
     if (big) {
       const S = Math.floor(Math.min(cv.width / 24, cv.height / 30) * 0.92), w = 24 * S * sc.x, h = 30 * S * sc.y;
       x.fillStyle = 'rgba(0,0,0,.28)'; x.beginPath(); x.ellipse(cv.width / 2, cv.height - 10, w * 0.32, 9, 0, 0, Math.PI * 2); x.fill();
-      x.drawImage(sheet, fr * 24, 0, 24, 30, (cv.width - w) / 2, cv.height - h - 6, w, h);
+      x.drawImage(sheet, fr * 24 * q, 0, 24 * q, 30 * q, (cv.width - w) / 2, cv.height - h - 6, w, h);
     } else {
       const S = Math.floor(Math.min(cv.width / 72, cv.height / 30));
-      [0, 2, 1].forEach((dir, i) => { const w = 24 * S * sc.x, h = 30 * S * sc.y; x.drawImage(sheet, fr * 24, dir * 30, 24, 30, i * 24 * S + (24 * S - w) / 2, cv.height - h, w, h); });
+      [0, 2, 1].forEach((dir, i) => { const w = 24 * S * sc.x, h = 30 * S * sc.y; x.drawImage(sheet, fr * 24 * q, dir * 30 * q, 24 * q, 30 * q, i * 24 * S + (24 * S - w) / 2, cv.height - h, w, h); });
     }
   };
   const loop = () => { clearInterval(timer); timer = setInterval(() => { const a = $('c2-big'), b = $('c2-tri'), c = $('c2-mini'); if (!a && !c) { clearInterval(timer); return; } draw(a, true); draw(b, false); draw(c, true); }, 240); };

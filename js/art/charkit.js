@@ -100,6 +100,7 @@
   // 換開關的時候，畫面上的人一起換
   const refresh = () => { const W = R.W, all = []; if (W.P && W.P.h) all.push(W.P.h); [W.town && W.town.npcs, W.town && W.town.allies, W.inside && W.inside.npcs, W.allies].forEach(L => (L || []).forEach(n => { if (n && n.h) all.push(n.h); })); all.forEach(apply); };
   R.charkitRefresh = refresh;
+  R.charkitSheet = (o, orig) => sheetFor(o, orig);   // 2026-10-18：建角色、角色頁的預覽也用素材版（charkitfull.js 包 R.heroSheetCanvas）
   const addBtn = () => {
     const row = document.querySelector('#r-sheet .row'); if (!row || row.querySelector('#ck-kit')) return;
     const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ck-kit';

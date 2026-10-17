@@ -69,6 +69,14 @@
       };
     } catch (e) { console.warn('[charkitfull]', e); return null; }
   };
+  // 建角色、角色頁的預覽（R.heroSheetCanvas）：素材版開著的時候也給素材的圖（一格 72×90，_ck＝3 倍；呼叫的地方照 _ck 取格子）
+  const hs0 = R.heroSheetCanvas;
+  if (hs0) R.heroSheetCanvas = o => {
+    const orig = hs0(o);
+    try { if (R.charkitOn && R.charkitOn() && R.charkitSheet && o && !o.sil) { const c = R.charkitSheet(o, orig); c._ck = 3; return c; } } catch (e) { console.warn('[charkitfull]', e); }
+    return orig;
+  };
+  R.charkitSheetKey = () => (R.charkitOn && R.charkitOn() ? '|ck' + (FULL ? 'f' : '') : '');
   // 換武器（R.setHeroWeapon 只重畫原本的圖）：素材版開著的時候也換成素材的
   const sw0 = R.setHeroWeapon;
   if (sw0) R.setHeroWeapon = (h, base) => { const r = sw0(h, base); try { if (R.charkitOn && R.charkitOn() && R.spriteLook && h && h.sp) R.spriteLook(h, {}); } catch (e) { console.warn('[charkitfull]', e); } return r; };
