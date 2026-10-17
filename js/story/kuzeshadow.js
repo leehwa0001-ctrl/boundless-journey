@@ -2,7 +2,7 @@
 // - 刀鬼之影和《傳奇人物誌》裡已故的刀鬼・久世玄悟不是同一個（作者 2026-10-17）：是妖刀留下的影子，打倒不扣理智（R.ENEMIES 的 phantom）。
 // （一）皇嶺的書店・積學堂翻《傳奇人物誌》才會觸發（東鶴書房的那本不會）：紙條掉出來的小劇情 → 發現隱藏任務。
 // 刀鬼之影：拿到（一）之後，每一趟吉山近郊・工廠遺跡（不論從第 1 層走下去、還是用存檔點下去，重新進遺跡就算一趟）45% 會出現，一趟最多一次；
-//   畫面上的第 18 層以後、最深那層前面隨機挑一層（第一次到 18 層以後的那一層才挑，用存檔點跳過去也挑得到）。
+//   畫面上的第 13 層以後（2026-10-18 作者：原本 18 層）、最深那層前面隨機挑一層（第一次到 13 層以後的那一層才挑，用存檔點跳過去也挑得到）。
 //   那一層沒有任何遺跡生物、沒有別的勇者，只有他；樓層提示「這層充斥著血腥味」，不提示他在。
 //   數值：生命 16000、攻擊 25～45（每一下隨機）、移速 4.3、攻速每秒 2.5、IS 1，不受遺跡分級、深度加成；組隊照連線人數加（每多一人生命 +50%，跟 net2.js 一樣）。
 //   外型：精靈族、武者胴、布褲、草鞋、紅色綁帶；用妖刀使的招（啜血、妖氣、飢渴、妖斬・四方、蝕月、妖刀解放、千刃・妖刀），每 4～8 秒一招。
@@ -19,7 +19,7 @@
 (function (R) {
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), rnd = Math.random;
   const esc = s => (R.esc ? R.esc(s) : String(s));
-  const QID = 'kuze_echo', EID = 'kuze_shadow', SITE = 'js-factory', BLADE = 'brokenblade', UNIQ = 'terakawa', ODD = 0.45, FROM = 18;
+  const QID = 'kuze_echo', EID = 'kuze_shadow', SITE = 'js-factory', BLADE = 'brokenblade', UNIQ = 'terakawa', ODD = 0.45, FROM = 13;
   const NEED = { mutacore: 6, purecry: 35, ember: 20, iron: 200 };
   const PURPLE = '#B83AE8';
   const matName = k => (R.MATS && R.MATS[k] ? R.MATS[k].name : k);
