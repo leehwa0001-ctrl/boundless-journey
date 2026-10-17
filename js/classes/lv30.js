@@ -47,7 +47,7 @@
         (W().allies || []).forEach(a => { if (!a || a.hpMax == null) return; if (last && a.downed) { a.downed = false; a.dead = false; a.hp = a.hpMax; R.num && R.num(a.x, 2.4, a.z, '復活', 'heal'); return; }
           if (!a.downed && inR(a)) { a.hp = Math.min(a.hpMax, a.hp + a.hpMax * 0.5); if (last) a.shield = (a.shield || 0) + a.hpMax * 0.25; } });
       })); } },
-    blade: { n: '刀意解放', cd: 90, d: '5 秒內刀意一直是滿的：每一刀都是居合，而且一直處在刀意渾圓，攻速再 ×2；每次普攻都瞬移到 10 公尺內最近的敵人身前砍一刀，再瞬移回原位（不衝刺）。', go(P) {
+    blade: { n: '刀意解放', cd: 90, d: '5 秒內刀意一直是滿的：每一刀都是居合，而且一直處在刀意渾圓，攻速再 ×2；每次普攻都瞬移到 10 公尺（跟著攻擊範圍變大）內最近的敵人身前砍一刀，再瞬移回原位（不衝刺）。', go(P) {
       P._l30BdT = CT() + 5; P._bdSt = 'drawn'; P._bdRead = null; R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 3, color: '#FFFFFF' }); } },
     knight: { n: '守護意志', cd: 75, d: '嘲諷 10 公尺內所有敵人，把牠們拉到身邊（無視牆壁）、全部改打你；接著 2.5 秒受到的傷害 −90%、移動 −80%，記下這段時間受到的傷害，結束時反擊 5 公尺內：（受到的傷害＋1% 最大生命）× 100，並得到 40% 最大生命的護盾。', go(P) {
       const es = within(P.x, P.z, 10); es.forEach((e, i) => { const a = i / Math.max(1, es.length) * Math.PI * 2, rr = 1.4 + (e.def.size || 1) * 0.5, q = R.nearestFloor ? R.nearestFloor(P.x + Math.sin(a) * rr, P.z + Math.cos(a) * rr) : [P.x, P.z]; e.x = q[0]; e.z = q[1]; e.aggro = true; e.provoked = true; e.taunt = 2.5; });

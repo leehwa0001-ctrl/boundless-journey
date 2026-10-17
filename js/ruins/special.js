@@ -1,54 +1,58 @@
-// 無境之旅：特殊遺跡——不照一般分級規則、超難的遺跡（2026-10-13 作者：某些特殊狀況會出現超級難的、不符合尋常遺跡分級難度的遺跡；
-//   先出一座「200 層的阿彌勒級」：怪物一開始 ×0.75，越深越強，最深處 +100%）。
-// - 出現規則：公會的「特殊遺跡告示」——每 30 個遊戲日只開 3 天（第 SP.offset 天起），而且要阿彌勒級已經開放。
-//   開著的時候回到城裡會跳一次公會告示；沒開的時候地圖、圖鑑上照樣看得到，但顯示「還不能進」。
-// - 難度：遺跡生物生命、傷害 ×SP.start（0.75），深度增幅（deepbonus.js）最深 +SP.depthMax（+100%，複利，照走到第幾成）；
-//   IS（ruinis.js）照「25 層的阿彌勒級」換算，不會因為 200 層而一路疊上去。
+// 無境之旅：特殊遺跡「無底迴廊」——不照一般分級規則、超難的遺跡。
+// 2026-10-17 作者：只剩一座、全天開放；共 300 層（另有第 0 層休息區），每層增幅 ×1.04（指數，第 n 層 1.04^n）；
+//   遺跡等級跟著樓層走：第 0～5 層哈米莉亞級、6～30 阿彌勒級、31～70 摩爾斯級、71～150 克森特級、151～300 卡索級；存檔點固定每 10 層一個。
+// - 換分級：包 R.loadFloor，進每一層前把 run.grade 換成那一層的分級——只改遺跡生物的強度和樓層特色（克森特級的環境、元素混亂等）；
+//   樓層結構不變：每層都有往下的樓梯，佩特拉核心只在第 300 層（其他層不會出現，也不會有驅逐型反應）。
+// - 增幅：R.depthBonus 對這座改成「第 n 層 ×1.04^n」（生命 1.04^n − 1、傷害一半，跟其他遺跡一樣）。
+// - IS（ruinis.js）：照「這一層在該分級區段裡的位置」換算成該分級很深的一般遺跡（不會因為 300 層一路疊上去）。
 // - 常數都在 R.SPECIAL_RUIN，改這裡就好。
 (function (R) {
   const W = () => R.W;
-  // 2026-10-13 作者：無底迴廊加摩爾斯級、克森特級、卡索級（各 200 層、城區型；卡索級的也不是浮島）。開放的日子錯開（30 天一輪、各開 3 天）。
-  //   isFloors：IS 照「這個分級很深的一般遺跡」換算（阿彌勒 25、摩爾斯 40、克森特 60、卡索 120 層）。
-  const SP = R.SPECIAL_RUIN = { floors: 200, start: 0.75, depthMax: 1.0, every: 30, open: 3 };
-  const LIST = R.SPECIAL_RUINS = [
-    { id: 'sp-mugen', grade: 'amile', name: '無底迴廊', offset: 11, isFloors: 25, x: 36.55, z: -21.35 },
-    { id: 'sp-mugen-mors', grade: 'mors', name: '無底迴廊・摩爾斯', offset: 4, isFloors: 40, x: 35.55, z: -23.95 },
-    { id: 'sp-mugen-kesent', grade: 'kesent', name: '無底迴廊・克森特', offset: 26, isFloors: 60, x: 37.85, z: -24.45 },
-    { id: 'sp-mugen-kaso', grade: 'kaso', name: '無底迴廊・卡索', offset: 19, isFloors: 120, x: 39.05, z: -24.65 }
-  ];
-  const GN = { amile: '阿彌勒級', mors: '摩爾斯級', kesent: '克森特級', kaso: '卡索級' };
-  const sites = LIST.map(d => ({ id: d.id, map: 'nation', x: d.x, z: d.z, kind: 'ruin', grade: d.grade, type: 'city', special: 1, floorsFixed: SP.floors, depthMax: SP.depthMax, spOffset: d.offset, isFloors: d.isFloors, name: d.name, src: '遊戲',
-    desc: '公會特別告示的「特殊遺跡」。登記是' + GN[d.grade] + '，卻往下長了兩百層——不照尋常分級的規矩。每隔一段時間才會浮出入口，幾天後又沉下去。' + (d.grade === 'kaso' ? '卡索級的規定照舊：要有特別討伐令、要帶隊友。' : ''), status: 'lock' }));
-  sites.forEach(st => { if (R.SITES && !R.SITES.some(s => s.id === st.id)) R.SITES.push(st); });
-  const site = sites[0];
-  const day = () => (R.S && R.S.day) || 0;
-  const k = s => (((day() + (s.spOffset || 0)) % SP.every) + SP.every) % SP.every;
-  const spOf = s => (typeof s === 'string' ? sites.find(x => x.id === s) : s && s.special ? s : null) || site;
-  R.specialRuleText = s => { s = spOf(s); const d0 = ((SP.every - (s.spOffset || 0)) % SP.every); return '共 ' + SP.floors + ' 層・遺跡生物一開始 ×' + SP.start + '、越深越強、最深 +' + Math.round(SP.depthMax * 100) + '%・每 ' + SP.every + ' 天只開 ' + SP.open + ' 天（每輪第 ' + (d0 + 1) + '～' + (d0 + SP.open) + ' 天）'; };
-  // 這一輪還剩幾天（0＝沒開）
-  R.specialDaysLeft = s => { s = spOf(s); return k(s) < SP.open ? SP.open - k(s) : 0; };
-  R.specialNextIn = s => { s = spOf(s); return k(s) < SP.open ? 0 : SP.every - k(s); };
-  const open = s => R.specialDaysLeft(s) > 0 && (!R.gradeOpen || R.gradeOpen(s.grade));
-  const sync0 = R.syncStatus;
-  R.syncStatus = (...a) => { const r = sync0 ? sync0(...a) : undefined; sites.forEach(s => { s.status = open(s) || (R.S && R.S.admin) ? 'open' : 'lock'; }); return r; };
-  // 公會告示：開著的時候回城跳一次（每座各一次）
-  const en0 = R.enterTownNow;
-  if (en0) R.enterTownNow = (...a) => {
-    const r = en0(...a);
-    try { R.syncStatus && R.syncStatus(); const S = R.S; if (S) { S.spNotice = S.spNotice && typeof S.spNotice === 'object' ? S.spNotice : {}; let t = 1800;
-      sites.forEach(s => { const left = R.specialDaysLeft(s), key = Math.floor((day() + s.spOffset) / SP.every); if (left > 0 && open(s) && S.spNotice[s.id] !== key) { S.spNotice[s.id] = key; R.save && R.save(); setTimeout(() => R.toast && R.toast('公會告示：特殊遺跡「' + s.name + '」浮出入口了（共 ' + SP.floors + ' 層，還有 ' + left + ' 天）', '#FF6AD8'), t); t += 2600; } }); } } catch (e) { }
-    return r;
-  };
+  const SP = R.SPECIAL_RUIN = { floors: 300, per: 0.04, every: 10,
+    bands: [[5, 'hamilia', 12], [30, 'amile', 25], [70, 'mors', 40], [150, 'kesent', 60], [300, 'kaso', 120]] };   // [到第幾層, 分級, IS 換算的層數]
+  const site = { id: 'sp-mugen', map: 'nation', x: 36.55, z: -21.35, kind: 'ruin', grade: 'hamilia', type: 'city', special: 1, floorsFixed: SP.floors, name: '無底迴廊', src: '遊戲',
+    desc: '公會特別告示的「特殊遺跡」。入口看起來只是哈米莉亞級，卻往下長了三百層——越往下，遺跡的等級一路升上去，最底下是卡索級。', status: 'open' };
+  if (R.SITES) { for (let i = R.SITES.length - 1; i >= 0; i--) if (/^sp-mugen/.test(R.SITES[i].id)) R.SITES.splice(i, 1); R.SITES.push(site); }
+  const bandOf = n => SP.bands.find(b => n <= b[0]) || SP.bands[SP.bands.length - 1];
   const isSp = run => !!(run && run.site && run.site.special);
-  // 生命、傷害 ×0.75；IS 照這個分級很深的一般遺跡換算
+  const shown = run => (run.f0 ? run.floor : run.floor + 1);
+  R.specialGradeAt = n => bandOf(n)[1];
+  R.specialRuleText = () => '共 ' + SP.floors + ' 層（另有第 0 層）・每層增幅 ×' + (1 + SP.per) + '（指數）・第 0～5 層哈米莉亞級、6～30 阿彌勒級、31～70 摩爾斯級、71～150 克森特級、151～300 卡索級・每 ' + SP.every + ' 層一個存檔點・全天開放';
+  R.specialDaysLeft = () => 99; R.specialNextIn = () => 0;
+  const sync0 = R.syncStatus;
+  R.syncStatus = (...a) => { const r = sync0 ? sync0(...a) : undefined; site.status = 'open'; return r; };
+  // 進每一層前換分級
+  const setGrade = (run, f) => {
+    const n = run.f0 ? f : f + 1, g = R.gradeById(bandOf(Math.max(0, n))[1]); if (!g) return;
+    run.grade = Object.assign({}, g, { floor0: 1, sealed0: 0, boss: n >= SP.floors ? 'petra' : null });   // 第 0 層一直都在（樓層數字才不會錯開）；佩特拉核心只在最底層
+    if (run.reaction === 'expel') { const ks = Object.keys(R.REACTIONS).filter(k => k !== 'expel' && k !== 'tail'); run.reaction = ks[Math.floor(Math.random() * ks.length)]; }   // 驅逐型會把核心叫上來，這座不要
+  };
+  const lf0 = R.loadFloor;
+  R.loadFloor = (f, o) => { const run = W().run; if (isSp(run)) setGrade(run, f); return lf0(f, o); };
+  // 哈米莉亞那幾層：「前一半沒有遺跡生物」只算到第 2 層（不然 300 層的一半都是空的）——生成完再把第 3 層以後的平靜房間改回來
+  const gf0 = R.genFloor;
+  R.genFloor = (run, f) => {
+    const F = gf0(run, f);
+    if (isSp(run) && F && F.calm && (run.f0 ? f : f + 1) > 2) { F.calm = false; F.rooms.forEach(r => { if (r.calm) { r.calm = 0; r.cleared = false; } }); }
+    return F;
+  };
+  // 增幅：第 n 層 ×1.04^n
+  const db0 = R.depthBonus;
+  R.depthBonus = run => {
+    if (!isSp(run)) return db0(run);
+    const n = Math.max(0, shown(run)), amp = Math.pow(1 + SP.per, n) - 1, total = SP.floors;
+    return { n, total, p: n / total, k: n > 0 ? 1 : 0, amp, cap: Math.pow(1 + SP.per, total) - 1, rate: SP.per, hp: amp, dmg: amp * 0.5, qty: Math.min(1, amp * 0.1), rare: Math.min(1, amp * 0.1), xp: Math.min(3, amp * 0.25) };
+  };
+  // 存檔點：固定每 10 層
+  const se1 = R.saveEvery;
+  R.saveEvery = run => (isSp(run) ? SP.every : se1(run));
+  // IS：照這一層在分級區段裡的位置換算
   const se0 = R.spawnEnemy;
   R.spawnEnemy = (id, x, z, room, o) => {
-    const run = W().run; if (!isSp(run)) return se0(id, x, z, room, o);
-    const own = run.isRealFloor == null, f0 = run.f0 ? 1 : 0, isF = run.site.isFloors || 25;
-    if (own) run.isRealFloor = Math.round(f0 + (run.floor - f0) / Math.max(1, run.floors - 1 - f0) * (isF - 1));
-    let e; try { e = se0(id, x, z, room, o); } finally { if (own) run.isRealFloor = null; }
-    if (e && !e.spDone) { e.spDone = 1; e.hp *= SP.start; e.hpMax *= SP.start; e.dmg *= SP.start; }
-    return e;
+    const run = W().run; if (!isSp(run) || run.isRealFloor != null) return se0(id, x, z, room, o);
+    const n = shown(run), b = bandOf(n), i = SP.bands.indexOf(b), lo = i ? SP.bands[i - 1][0] + 1 : 1;
+    run.isRealFloor = Math.max(0, Math.round((n - lo) / Math.max(1, b[0] - lo) * (b[2] - 1)));
+    try { return se0(id, x, z, room, o); } finally { run.isRealFloor = null; }
   };
-  R.SPECIAL_SITE = site;
+  R.SPECIAL_RUINS = [site]; R.SPECIAL_SITE = site;
 })(window.R);
