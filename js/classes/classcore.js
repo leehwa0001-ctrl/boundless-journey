@@ -507,9 +507,12 @@
     floor(P) { if (P._bdWant && P._bdSpSet === P.speed) P.speed /= P._bdWant; P._bdWant = 1; P._bdSpBase = P.speed; P._bdSpSet = P.speed; P._bdSt = 'drawn'; P._bdRead = null; P._iai = 0; P._zanT = 0; P._bdSlowT = 0; walls.length = 0; },
     step(dt, P) {
       const roll = P.h && P.h.roll > 0; if (roll && !P._rolling) { P._bdRolled = true; if (pvB(P, 'bdPierce')) P._bdPierce = true; } P._rolling = roll;
-      if (pvB(P, 'bdIntent')) addIaiRaw(P, (pvB(P, 'bdMuga') && P.hp < P.hpMax * 0.5 ? 2 : 5) * dt);   // 被動「刀意」：每秒自動 +5；無我生效（半血以下）時只 +2（2026-10-17 作者：不然一直重複觸發刀意渾圓）
+      const mugaOn = pvB(P, 'bdMuga') && P.hp < P.hpMax * 0.5 && !P.dead, intentOn = pvB(P, 'bdIntent');
+      // 2026-10-17 作者：【無我】【刀意】同時生效＝每秒 +5 −3，合起來還是 +2，刀意不會往下掉（滿的時候也不會掉下來又重複觸發刀意渾圓）；無我照樣每秒回 3% 最大生命
+      if (intentOn && mugaOn) { addIaiRaw(P, 2 * dt); R.healP && R.healP(P.hpMax * 0.03 * dt, true); }
+      else if (intentOn) addIaiRaw(P, 5 * dt);   // 被動「刀意」：每秒自動 +5
       if ((P._bdSoul || 0) > 0 && CT > (P._bdSoulT || 0)) { P._bdSoul = Math.max(0, P._bdSoul - 1); P._bdSoulT = CT + 5; }   // 刀魂：5 秒沒疊加掉 1 層（2026-10-17 作者）
-      if (pvB(P, 'bdMuga') && P.hp < P.hpMax * 0.5 && (P._iai || 0) > 0 && !P.dead) {   // 被動「無我」：生命低於一半，每秒用 3 點刀意，每點回 1% 最大生命
+      if (mugaOn && !intentOn && (P._iai || 0) > 0) {   // 被動「無我」：生命低於一半，每秒用 3 點刀意，每點回 1% 最大生命
         const use = Math.min(P._iai, 3 * dt); P._iai -= use; R.healP && R.healP(P.hpMax * 0.01 * use, true);
       }
       const rd = P._bdRead;
