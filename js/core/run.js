@@ -451,7 +451,7 @@
     if (run.grade.traps === 'set') { run.calT = (run.calT == null ? 6 : run.calT) - dt; if (run.calT <= 0) { run.calT = 5 + Math.random() * 4; const c = W.enemies.find(e => !e.dead && e.aggro && !e.def.fly && !e.def.boss && Math.hypot(e.x - P.x, e.z - P.z) < 12); if (c) { R.addZone({ kind: 'caltrop', x: c.x, z: c.z, r: 1, life: 16, dmg: 6 + run.grade.lv * 2 }); R.toast(c.def.name + '在地上撒了撒菱'); } } }
     // 保留區最深處的核心：浮著、看著你
     if (W.F.coreView) { const cv = W.F.coreView; cv.m.g.position.y = (cv.m.isSprite ? 1.2 : 3.2) + Math.sin(run.t * 1.2) * 0.25; cv.m.g.rotation.y = Math.atan2(P.x - cv.x, P.z - cv.z); R.animBeast(cv.m, 'petra', run.t, false); cv.field.material.opacity = 0.08 + Math.sin(run.t * 2) * 0.03; }
-    W.dyn = W.dyn.filter(f => f(dt) !== false);
+    { const cur = W.dyn; W.dyn = []; const keep = cur.filter(f => f(dt) !== false); W.dyn = keep.concat(W.dyn); }   // 2026-10-18：更新途中新加進來的（例如術陣師蓄力完放出的結界燈、雷陣、重力陣）以前會被 filter 丟掉
     R.updateFx(dt);
     // 目目連
     const open = Math.floor(run.aware / 100 * W.F.eyes.length);
