@@ -22,7 +22,7 @@
     ['sn_titan', '召喚・石巨人', 'summoner', 23, 22, 30, 'pet', { beast: 'nurikabe', t: 14, k: 2, speed: 3, rate: 1.1, kb: 3, color: '#8A8476' }, '捏出一尊比巨像更大的石巨人，14 秒。'],
     ['sn_legion', '召喚・軍勢', 'summoner', 25, 24, 34, 'pet', { beast: 'okuriinu', n: 5, t: 10, k: 0.6, color: '#C8A878' }, '一口氣捏出五隻泥狼組成的軍勢。'],
     // 術陣師
-    ['ry_mirror', '反射陣', 'arraymage', 17, 16, 14, 'buff', { t: 5, kekkai: 1, def: 0.2, color: '#7AC8E8' }, '腳下畫反射陣：5 秒內擋下投射物、受到的傷害 −20%。'],
+    ['ry_mirror', '反射陣', 'arraymage', 17, 16, 14, 'buff', { t: 5, kekkai: 1, def: 0.2, color: '#7AC8E8' }, '腳下畫反射陣：5 秒內飛過來的投射物會被反射回去（打敵人）、受到的傷害 −20%。'],
     ['ry_gravity', '重力陣', 'arraymage', 19, 12, 16, 'pull', { range: 10, r: 4.2, t: 3, k: 0.5 }, '準心處的重力陣把敵人吸到中間 3 秒。'],
     ['ry_frost', '法陣・霜', 'arraymage', 21, 12, 16, 'at', { range: 10, r: 3.4, k: 1.2, root: 2, delay: 500, fx: 'ring', color: '#9AD8FF' }, '準心處畫霜陣，半秒後凍住範圍內的敵人 2 秒。'],
     ['ry_star', '星陣', 'arraymage', 23, 14, 22, 'at', { range: 11, r: 2.4, k: 1.4, waves: 5, scatter: 2.5, gap: 180, delay: 400, fx: 'pillar', color: '#BFE8FF' }, '五角星的五個頂點依序落下光柱。'],

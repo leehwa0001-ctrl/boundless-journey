@@ -203,6 +203,8 @@
   };
   R.updateShots = dt => {
     const w = W(), P = w.P;
+    // 2026-10-18 作者：反射陣（術陣師 ry_mirror）要真的反射——擋下的投射物掉頭、變成你的，打回去
+    const mirror = s => { const b = P && P.sb && P.sb.ry_mirror; if (!b || !(b.left > 0)) return false; s.owner = 'p'; s.vx = -s.vx; s.vz = -s.vz; s.hit = new Set(); s.primary = false; s.src = null; s.life = Math.max(s.life, 1.2); s.pierce = 0; R.fx && R.fx('spark', s.x, 1.2, s.z, { a: Math.atan2(s.vx, s.vz) }); return true; };
     for (const s of w.shots) {
       if (s.dead) continue;
       s.life -= dt;
@@ -229,12 +231,12 @@
           }
         }
       } else if (!P.dead && Math.hypot(P.x - s.x, P.z - s.z) < s.rad + 0.45) {
-        if (P.buff.kekkai > 0) { R.killShot(s); continue; }
+        if (P.buff.kekkai > 0) { if (!mirror(s)) R.killShot(s); continue; }
         R.hurtPlayer(s.dmg, s.src, { blind: s.kind === 'sand' ? 2 : 0, slow: s.kind === 'cold' || s.kind === 'web' ? 2 : 0 });
         if (s.kind === 'web') R.webZone(s.x, s.z);
         R.killShot(s);
       } else if (w.allies && w.allies.some(a => !a.downed && Math.hypot(a.x - s.x, a.z - s.z) < s.rad + 0.45 && (R.hurtAlly(a, s.dmg, s.src), true))) R.killShot(s);
-      else if (P.buff.kekkai > 0 && Math.hypot(P.x - s.x, P.z - s.z) < 4.2) R.killShot(s);
+      else if (P.buff.kekkai > 0 && Math.hypot(P.x - s.x, P.z - s.z) < 4.2) { if (!mirror(s)) R.killShot(s); }
       if (!s.dead && s.life <= 0) { if (s.splash || s.kind === 'fire') R.explode(s); else R.killShot(s); }   // 2026-10-16 修正：同一格打中又到時間，不要炸兩次
     }
     w.shots = w.shots.filter(s => !s.dead);
