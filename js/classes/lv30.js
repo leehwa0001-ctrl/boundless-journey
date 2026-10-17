@@ -192,7 +192,8 @@
   };
   // 子彈：無盡彈匣的子彈穿牆、無限穿透
   const fi0 = R.fire;
-  R.fire = o => { const s = fi0(o); if (T.gun && s && o && o.owner === 'p') { s.ghost = true; s.pierce = 999; } return s; };
+  R.fire = o => { const s = fi0(o); if (T.gun && s && o && o.owner === 'p') { s.ghost = true; if (s.splash && o.primary) s.radius = 7; else s.pierce = 999; } return s; };   // 2026-10-18 作者：爆破手的子彈照舊打中就炸，穿透直接到最大＝半徑 7 公尺
+  R.l30GunOn = () => !!T.gun;   // combat.js：無盡彈匣期間普攻不耗彈匣、魔導槍手不耗魔力
   // 刻印爆裂：武器丟出去的時候不能攻擊、放技能；之後 6 秒刻印失效
   const block = () => { const P = W().P; if (T.ench && P && P.cls === 'enchanter') { if (!block.t || performance.now() - block.t > 900) { block.t = performance.now(); R.toast && R.toast('武器丟出去了：不能攻擊、放技能'); } return true; } return false; };
   ['attack', 'castSlot', 'useSkill'].forEach(fn => { const f0 = R[fn]; if (f0) R[fn] = (...a) => (block() ? undefined : f0(...a)); });

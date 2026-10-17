@@ -278,7 +278,9 @@
     const aim = P.aimA;
     if (ws.kind === 'gun') {
       const am = (R.gunAmmo && R.gunAmmo(P)) || { cost: 1 };   // 彈種（classcore.js）
-      if (ws.mpShot) { const need = ws.mpShot * am.cost; if (P.mp < need) { R.toast('魔力不夠'); P.atkCd = 0.4; return; } P.mp -= need; }   // 魔導槍手：用魔力
+      const free = (R.l30GunOn && R.l30GunOn()) || (P.pv && P.pv.freeShot && (ws.mpShot || (P.ammo > 0 && !(P.reloadT > 0))) && Math.random() < P.pv.freeShot);   // 無盡彈匣；神槍手 25% 不消耗
+      if (free) { if (!ws.mpShot && P.reloadT > 0) return; }
+      else if (ws.mpShot) { const need = ws.mpShot * am.cost; if (P.mp < need) { R.toast('魔力不夠'); P.atkCd = 0.4; return; } P.mp -= need; }   // 魔導槍手：用魔力
       else { if (P.reloadT > 0) return; if (P.ammo <= 0) { R.reload(); return; } P.ammo -= Math.min(P.ammo, am.cost); }
       P.atkCd = 1 / ws.rate; P.h.recoil = 1;
       const pierce0 = (ws.pierce || 0) + (am.pierce || 0), boom = P.adv === 'bomber';   // 爆破手：不貫穿，打中炸開（半徑 1 公尺＋每 1 點貫穿 1 公尺，最多 7）
