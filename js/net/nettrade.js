@@ -50,7 +50,8 @@
     box.querySelectorAll('[data-tradd]').forEach(b => { b.onclick = () => { if (T.mine.length >= MAX) return; T.mine.push(b.dataset.tradd); changed(); }; });
     box.querySelectorAll('[data-trdel]').forEach(b => { b.onclick = () => { T.mine = T.mine.filter(id => id !== b.dataset.trdel); changed(); }; });
     const g = $('tr-gold'); if (g) g.onchange = () => { T.gold = Math.max(0, Math.min(S().gold | 0, Math.floor(+g.value || 0))); changed(); };
-    $('tr-ok').onclick = () => { T.myOk = !T.myOk; send({ k: 'trr', tid: T.tid, on: T.myOk, sig: sig() }, T.with); render(); tryDeal(); };
+    $('tr-ok').onclick = () => { if (!T.myOk && !mineOk()) { cancel(true, '東西對不上（可能穿上了或賣掉了），交易取消。'); return; } T.myOk = !T.myOk;   // 2026-10-16 修正：按確定之前先檢查自己的東西、錢還在（不然對方那邊已經換過去，自己這邊才發現不夠）
+      send({ k: 'trr', tid: T.tid, on: T.myOk, sig: sig() }, T.with); render(); tryDeal(); };
     $('tr-x').onclick = () => cancel(true, '不換了。');
   };
   const changed = () => {
@@ -60,6 +61,7 @@
   };
   const cancel = (tell, msg) => { if (!T) return; if (tell) send({ k: 'trx', tid: T.tid }, T.with); T = null; close(); if (msg) R.toast(msg, '#FFB45A'); };
   // 兩邊都確定、內容一樣：交換
+  const mineOk = () => { const s = S(), mine = mineItems(); return mine.length === T.mine.length && !mine.some(it => !tradable(it)) && (T.gold | 0) <= (s.gold | 0); };
   const tryDeal = () => {
     if (!T || !T.myOk || !T.theirOk || T.theirSig !== sigFor()) return;
     const s = S(), mine = mineItems();

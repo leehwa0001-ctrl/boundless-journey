@@ -14,7 +14,7 @@
   const K = R.HASTE_K = 2.5;
   const cdOf = R.hasteCd = h => 100 / (100 + Math.max(0, h || 0));
   // 只乘、不算急速（場地效果）
-  R.cdMul = (P, f) => { if (P.hasteSt) P.hasteSt.mul *= f; else P.skillCdMult *= f; };
+  R.cdMul = (P, f) => { const d = Object.getOwnPropertyDescriptor(P, 'skillCdMult'); if (P.hasteSt) P.hasteSt.mul *= f; if (!P.hasteSt || (d && !d.get)) P.skillCdMult *= f; };   // 2026-10-16 修正：算好以後冷卻倍率是普通數字，也要直接乘（遺跡裡途中才乘的場地效果原本沒作用）
   const arm = P => {
     const st = { haste: 0, mul: 1 };
     const add = f => { if (!(f > 0)) return; if (f < 1) st.haste += (1 - f) * 100 * K; else if (f > 1) st.mul *= f; };

@@ -92,7 +92,7 @@
     const free = freeId === id, cont = contId === id; freeId = null; contId = null;
     const r = sr1(id), run = W().run, h = S().heldTask;
     if (cont && run && h && run.site && run.site.id === h.siteId && !run.task) {
-      run.task = { kind: h.kind, need: h.need, limitH: h.limitH, letter: h.letter, floors: h.floors, t: h.t, props: h.props, deepest: h.deepest, kills0: h.kills, react0: h.react, notice0: h.notice, rankExam: h.rankExam, cont: 1 };
+      run.task = { kind: h.kind, need: h.need, limitH: h.limitH, letter: h.letter, floors: h.floors, t: h.t, props: h.props, deepest: h.deepest, kills0: h.kills, react0: h.react, notice0: h.notice, rankExam: h.rankExam, bonusK: h.bonusK || 0, cont: 1 };   // 2026-10-16 修正：繼續委託也照字母等級加成（原本第二趟起沒加）
       run.pact = h.pact || { sel: {}, pts: 0 };   // 加注條款照第一趟的（pact.js 看到 run.pact 就不會再加一次）
       setTimeout(() => R.toast && R.toast('繼續委託：' + R.heldLine(h), '#E8C04A'), 2600);
       return r;
@@ -145,7 +145,7 @@
     const prev = s.heldTask && s.heldTask.siteId === run.site.id ? s.heldTask : null;
     const h = { siteId: run.site.id, site: run.site.name, grade: run.grade.id, letter: tk.letter, kind: tk.kind, need: tk.need, floors: tk.floors, limitH: tk.limitH, t: tk.t, props: tk.props, deepest: tk.deepest,
       kills: run.kills + (tk.kills0 || 0), react: (run.reactCount || 0) + (tk.react0 || 0), notice: (run.noticeCount || 0) + (tk.notice0 || 0), hp: P ? P.hp / P.hpMax : 1, downAllies: (W().allies || []).filter(a => a.downed).length,
-      pay: prev ? prev.pay || 0 : 0, day0: prev ? prev.day0 : s.day, trips: (prev ? prev.trips || 1 : 0) + 1, rankExam: tk.rankExam, boss: (prev && prev.boss) || !!run.bossDown, pact: run.pact || null };
+      pay: prev ? prev.pay || 0 : 0, day0: prev ? prev.day0 : s.day, trips: (prev ? prev.trips || 1 : 0) + 1, rankExam: tk.rankExam, boss: (prev && prev.boss) || !!run.bossDown, pact: run.pact || null, bonusK: tk.bonusK || 0 };
     // 遺跡的委託：回到地面先記在手上，到公會繳交才算（倒下＝失敗，馬上記；狩獵場照舊馬上記）
     if (!failed && run.site.kind === 'ruin') { s.heldTask = h; R.save(); return; }
     if (prev) s.heldTask = null;

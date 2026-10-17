@@ -648,6 +648,7 @@
   R.enterTownNow = (from, at) => {
     const TH = T();
     R.initGL();
+    if (W.town && !W.run && W.inside && R.disposeInterior) { try { R.disposeInterior(W.inside); } catch (e) { } }   // 2026-10-16 修正：在屋裡睡一晚直接回城，屋裡的形狀沒丟掉
     if (W.town && !W.run) R.disposeScene(W.inside ? (W.outside && W.outside.scene) : W.scene);
     else if (W.run && W.scene) R.disposeScene(W.scene);
     W.run = null; W.enemies = []; W.shots = []; W.drops = []; W.zones = []; W.fxs = []; W.dyn = []; W.F = null;

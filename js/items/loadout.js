@@ -11,7 +11,7 @@
   const list = () => { const s = S(); s.loadouts = s.loadouts || {}; return (s.loadouts[s.cls] = s.loadouts[s.cls] || []); };
   const say = (t, c) => { if (R.say) R.say(t, c); };
   const snap = () => { const e = S().equip[S().cls] || {}, eq = {}; R.GEAR_KEYS.forEach(k => { eq[k] = e[k] || null; }); return eq; };
-  const wear = set => {
+  const wear = set => { if (R.stashLocked && R.stashLocked()) { R.toast && R.toast('倉庫搬到家裡了：回家打開收納櫃才能換上倉庫裡的裝備。'); return; }
     const s = S(), cls = s.cls, e = s.equip[cls] = s.equip[cls] || {}, miss = [];
     R.GEAR_KEYS.forEach(k => {
       const id = set.eq[k];

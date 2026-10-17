@@ -24,7 +24,7 @@
     return { gift: ['notebook', 'dango', 'rose', 'tea'][Math.floor(Math.random() * 4)] };
   };
   const done = n => {
-    pp = null; n.picked = S().day; const l = loot(), s = S(); if (l.gold && R.stealGold) l.gold = R.stealGold(l.gold);   // 特質「扒手」+35%（traitlife.js）
+    pp = null; n.picked = S().day; const l = loot(), s = S(); if (l && l.gold && R.stealGold) l.gold = R.stealGold(l.gold);   // 特質「扒手」+35%（traitlife.js）
     s.stats = s.stats || {}; s.stats.picked = (s.stats.picked || 0) + 1;
     if (!l) R.toast('錢包是空的，只有一張當鋪的收據。', '#E8A03A');
     else if (l.gold) { s.gold += l.gold; R.toast((l.fat ? '鼓鼓的錢包：' : '扒到了：') + l.gold + ' 費拉', '#E8A03A'); if (R.sfx) R.sfx('coin'); }

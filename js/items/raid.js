@@ -191,6 +191,7 @@
     box.querySelectorAll('[data-mdrop]').forEach(el => { el.onclick = () => { const k = sel && sel.mat, n = Math.min(el.dataset.mdrop === 'all' ? 1e9 : (k ? ST(k) : 10), (k && run.mats[k]) || 0); if (!n) return; run.mats[k] -= n; if (run.mats[k] <= 0) { delete run.mats[k]; sel = null; } const P = W().P; if (R.addDrop && P) { const [x, z] = dropAt(P), d = R.addDrop({ type: 'mat', mat: k, n, x, z, from: [P.x, P.z] }); if (d) d.noPick = true; } R.bagSheet(); }; });
     box.querySelectorAll('[data-dm]').forEach(el => { el.onclick = () => { const k = el.dataset.dm, n = Math.min(ST(k), run.mats[k] || 0); if (!n) return; run.mats[k] -= n; if (run.mats[k] <= 0) delete run.mats[k]; const P = W().P; if (R.addDrop && P) { const [x, z] = dropAt(P), d = R.addDrop({ type: 'mat', mat: k, n, x, z, from: [P.x, P.z] }); if (d) d.noPick = true; } R.bagSheet(); }; });
     box.querySelectorAll('[data-loose]').forEach(el => { el.onclick = () => { const it = run.bag[+el.dataset.loose], sp = it && findSpot(it); if (sp) { g.at.set(it, sp); R.bagSheet(); } else R.toast('還是放不下。'); }; });
+    R.bagEquip = (it, k) => { const err = equip(it, k); if (err) R.toast(err, '#FF9A6A'); else sel = { slot: slotOf(it) }; R.bagSheet(); };   // 2026-10-16：比較飾品二再換上，要換到飾品二（gearcmp.js）
     box.querySelectorAll('[data-act]').forEach(el => { el.onclick = () => {
       const a = el.dataset.act, it = sel && sel.it; let err = null;
       if (a === 'eq' && it) { err = equip(it); if (!err) sel = { slot: slotOf(it) }; }

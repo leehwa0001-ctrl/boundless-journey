@@ -6,7 +6,7 @@
 (function (R) {
   const W = R.W, rnd = Math.random, pick = a => a[Math.floor(rnd() * a.length)];
   const FLOOR = 1, WALL = 2, VOID = 0, N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
-  const CW = 38, CH = 32, BAD = ['start', 'stairs', 'boss', 'deep', 'lord', 'chest', 'puzzle'];
+  const BAD = ['start', 'stairs', 'boss', 'deep', 'lord', 'chest', 'puzzle'];
   const carve0 = R.carve;
   R.carve = (F, run) => {
     carve0(F, run);
@@ -31,6 +31,7 @@
     if (!blocks.length) return;
     blocks.sort((a, b) => b.score - a.score); const top = blocks.filter(b => b.score === blocks[0].score), B = pick(top);
     const t = F.tile, { nx, nz, T, RM, id, tX, tZ, cX, cZ } = t;
+    const CW = (R.CELL && R.CELL.CW) || 50, CH = (R.CELL && R.CELL.CH) || 42;   // 2026-10-16 修正：格子間距照 dungeon.js 現在的（原本寫死舊的 38×32，大空洞會挖在錯的地方、打穿別的房間的牆）
     const x0 = B.gx * CW - CW / 2 + 3, x1 = (B.gx + B.w - 1) * CW + CW / 2 - 3, z0 = B.gy * CH - CH / 2 + 3, z1 = (B.gy + B.h - 1) * CH + CH / 2 - 3;
     const was = new Set(), inZone = [], zli = (F.links || []).findIndex(L => B.rs.some(o => o.i === L.a || o.i === L.b));   // 小地圖：打通的地方算在連到這幾間房的通道上
     const seed = rnd() * 100, noise = (x, z) => Math.sin(x * 0.31 + seed) * Math.cos(z * 0.27 - seed) + Math.sin((x + z) * 0.13 + seed * 2) * 0.6;

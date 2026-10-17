@@ -72,6 +72,7 @@
   let openBox = null, drag = null, popId = null;
   const cs = () => (window.innerWidth < 600 ? 30 : 42);
   const where = () => { const W = R.W || {}; const inApt = !!(W.inside && W.inside.kind === 'home'); return { inApt, hasHome: !!(S() && S().home), full: inApt || !(S() && S().home) }; };
+  R.stashLocked = () => { const W = R.W || {}; return !!(W.town && !W.run && !where().full); };   // 2026-10-16：有家的人不在家時，不能從倉庫換裝（gearcmp.js、loadout.js 也照這個擋）
 
   const tileHtml = (it, p, c) => { const [a, b] = dims(...sizeOf(it), p.r); return '<div class="tk-it' + (p.r ? ' rot' : '') + '" data-tk="' + it.id + '" style="left:' + p.x * c + 'px;top:' + p.y * c + 'px;width:' + a * c + 'px;height:' + b * c + 'px;--c:' + R.rarityColor(it) + '">' + (R.itemIconTag ? R.itemIconTag(it, 'tk-ic') : '') + '<i>' + esc(R.itemName(it)) + '</i>' + (it.locked ? '<em>🔒</em>' : '') + (it.identified ? '' : '<em class="q">？</em>') + '</div>'; };
   const gridHtml = (key, c) => {

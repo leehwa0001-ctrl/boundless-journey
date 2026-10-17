@@ -131,5 +131,7 @@
     if (M && lord) { if (lord !== M.lord && lord.id !== M.th.id) { M.th = themeOf(lord.id); } M.lord = lord; M.rage = !!lord.lpRage; }
     if (!want && M) { const m = M; M = null; clearInterval(m.iv); m.bus.gain.setTargetAtTime(0.0001, m.ctx.currentTime, 0.6); setTimeout(() => { try { m.bus.disconnect(); } catch (e) { } }, 3000); if (held) { R.musicHold = false; held = false; } }
   };
+  // 2026-10-16 修正：領主戰中用水晶回城（或倒下），R.step 不再跑，戰鬥音樂會一直在城裡響、城裡的音樂也一直被停著——回城時收掉
+  const endL0 = R.endRun; if (endL0) R.endRun = (...a) => { if (M) { const m = M; M = null; clearInterval(m.iv); try { m.bus.disconnect(); } catch (e) { } } if (held) { R.musicHold = false; held = false; } return endL0(...a); };
   R.lordMusicDebug = { themeOf, get M() { return M; } };
 })(window.R);

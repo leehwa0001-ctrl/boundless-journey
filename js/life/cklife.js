@@ -110,7 +110,7 @@
   CK.spawnLife = B => { sl0(B); try { setup(B); } catch (e) { console.warn('[cklife]', e); } };
   // ---------- 每一格 ----------
   const step = dt => {
-    const tw = W.town, P = W.P; if (!tw || !tw.ck || tw.room || !P || W.paused) return;
+    const tw = W.town, P = W.P; if (!tw || !tw.ck || tw.room || !P || W.paused || W.inside) return;
     if (tw.life && R.lifeStep) R.lifeStep(dt);
     // townlife 把東西放在 y＝0：照地面的高度補上（台地、橋上）
     if (tw.life) { tw.life.bikes.forEach(b => { if (b.m.g.visible) b.m.g.position.y = CK.heightAt(b.x, b.z); }); tw.life.pets.forEach(a => { if (a.m.g.visible) a.m.g.position.y = CK.heightAt(a.x, a.z); }); tw.life.birds.forEach(b => { if (b.m.g.visible) b.m.g.position.y = CK.heightAt(b.x, b.z) + (b.y || 0); }); }

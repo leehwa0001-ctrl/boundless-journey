@@ -91,9 +91,9 @@
     // 炸藥：錢不夠的原因
     root.querySelectorAll('[data-bomb]').forEach(b => { if (!b.disabled) return; const c = b.closest('.recipe'), m = c && c.textContent.match(/一顆\s*(\d+)\s*費拉/); if (m) { const n = +b.dataset.bomb.split(':')[1] || 1, need = +m[1] * (n > 1 ? 1 : 1) - s.gold; if (need > 0) why(b, '還差 ' + need + ' 費拉'); } });
     // 背包：比現在多幾格、錢不夠的原因
-    const cards = [...root.querySelectorAll('.pk-list > *')], curCard = cards.find(c => !c.querySelector('[data-pkbuy]')) || null, curCells = curCard ? cells(curCard.textContent) : 0;
+    const cards = [...root.querySelectorAll('.pk-list > *')], curCard = root.querySelector('.pk-list > .pk-card.on') || null,   /* 2026-10-16 修正：「比現在多幾格」跟背著的那個比（原本永遠跟布袋比） */ curCells = curCard ? cells(curCard.textContent) : 0;
     cards.forEach(c => {
-      const b = c.querySelector('[data-pkbuy]'), n = cells(c.textContent); if (!b) { c.classList.add('hk-cur'); return; }
+      const b = c.querySelector('[data-pkbuy]'), n = cells(c.textContent); if (c === curCard) c.classList.add('hk-cur'); if (!b) return;
       if (curCells && n) { const d = document.createElement('em'); d.className = 'hk-diff' + (n > curCells ? ' up' : ''); d.textContent = n > curCells ? '比現在多 ' + (n - curCells) + ' 格' : n === curCells ? '跟現在一樣大' : '比現在少 ' + (curCells - n) + ' 格'; b.before(d); }
       const m = c.textContent.match(/(\d+)\s*費拉/); if (b.disabled && m && s.gold < +m[1]) why(b, '還差 ' + (+m[1] - s.gold) + ' 費拉');
     });

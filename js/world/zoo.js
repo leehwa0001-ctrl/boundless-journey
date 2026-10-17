@@ -106,7 +106,7 @@
   // ---------- 遺跡：動物園、溫馴的小生物 ----------
   const isZoo = run => run && run.site && run.site.id === 'kanko';
   const sr0 = R.startRun;
-  R.startRun = id => { if (id === 'kanko' && S()) { if (S().gold < 10) { R.say ? R.say('門票 10 費拉，錢不夠。') : R.toast('錢不夠。'); return; } S().gold -= 10; R.save && R.save(); setTimeout(() => R.toast('買了門票（10 費拉）。「歡迎光臨皇嶺南郊遺跡動物園！」'), 2600); } return sr0(id); };
+  R.startRun = id => { if (id === 'kanko' && S() && !(S().banUntil > S().day)) { if (S().gold < 10) { R.say ? R.say('門票 10 費拉，錢不夠。') : R.toast('錢不夠。'); return; } S().gold -= 10; R.save && R.save(); setTimeout(() => R.toast('買了門票（10 費拉）。「歡迎光臨皇嶺南郊遺跡動物園！」'), 2600); } return sr0(id); };
   const gf0 = R.genFloor;
   R.genFloor = (run, f) => {
     const F = gf0(run, f);

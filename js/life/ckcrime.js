@@ -62,7 +62,7 @@
   // ---------- 每一格 ----------
   const moveTo = (n, tx, tz, sp, dt) => { const dx = tx - n.x, dz = tz - n.z, d = Math.hypot(dx, dz); if (d < 0.3) { R.animHero(n.h, 0, dt, false); return d; } const st = Math.min(d, sp * dt); n.x += dx / d * st; n.z += dz / d * st; const o = { x: n.x, z: n.z }; R.collide(o, 0.35); n.x = o.x; n.z = o.z; n.h.g.position.set(n.x, CK.heightAt(n.x, n.z), n.z); n.h.g.rotation.y = Math.atan2(dx, dz); R.animHero(n.h, sp, dt, false); return d; };
   const step = dt => {
-    const tw = W.town, P = W.P; if (!tw || !tw.ck || !P || W.paused) return;
+    const tw = W.town, P = W.P; if (!tw || !tw.ck || !P || W.paused || W.inside) return;
     if (tw.room) { if (R.crimeStep) R.crimeStep(dt, tw.watchers, tw); return; }   // 店裡：店員看得到你；通緝中躲在店裡，看不到你的時間一久星星就退
     if (R.crimeStep) R.crimeStep(dt, tw.watchers, tw);
     if (R.pickStep) R.pickStep(dt);

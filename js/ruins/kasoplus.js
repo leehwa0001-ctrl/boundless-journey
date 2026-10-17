@@ -240,7 +240,7 @@
     const L = new TH.PointLight('#B04AFF', 1.2, 8, 1.6); L.position.y = 1.6; g.add(L);
     g.position.set(x, 0, z); return { g, ring, core };
   };
-  const roomsOk = F => (F.rooms || []).filter(r => r.type !== 'boss' && r.tiles && r.tiles.length > 6);
+  const roomsOk = F => (F.rooms || []).filter(r => r.type !== 'boss' && r.tiles && r.tiles.length > 6 && !r.wingHide && !r.locked && r.type !== 'lord' && !r.trial);   // 2026-10-16 修正：裂隙不要把人丟進封住的出口、上鎖的房間、領主房
   const st0 = R.step;
   R.step = dt => {
     const r = st0(dt);

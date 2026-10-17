@@ -47,7 +47,7 @@
   // ---------- 每一格 ----------
   const ts0 = R.townStep;
   R.townStep = dt => {
-    ts0(dt); const tw = W.town; if (!tw || !tw.ck || tw.room || !W.P || W.paused) return;
+    ts0(dt); const tw = W.town; if (!tw || !tw.ck || tw.room || !W.P || W.paused || W.inside) return;
     try {
       if (R.streetEventTick) R.streetEventTick(dt);
       const ev = SE() && SE().ev; if (ev) (ev.npcs || []).forEach(n => { if (n.h) n.h.g.position.y = CK.heightAt(n.x, n.z); });   // streetevents.js 放在 y＝0

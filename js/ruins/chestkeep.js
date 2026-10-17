@@ -26,8 +26,8 @@
     const r = lf0(f, o), F = W().F;
     try {
       if (run && F && W().run === run && !run.coop) {
-        F.keepRun = run; F.keepFloor = run.floor;
-        const memo = run.chestMemo && run.chestMemo[run.floor];
+        F.keepRun = run; F.keepFloor = run.izZ ? run.floor + ':' + run.izZ.zone : run.floor;   // 2026-10-16 修正：浮島型同一層的每一區各記各的寶箱（原本整層共用一份）
+        const memo = run.chestMemo && run.chestMemo[F.keepFloor];
         if (memo && F.group && R.addChest) {
           (F.chests || []).forEach(c => { if (c.mesh && c.mesh.parent) c.mesh.parent.remove(c.mesh); if (c.col) c.col.on = false; });
           F.chests = [];

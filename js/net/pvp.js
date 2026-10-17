@@ -119,7 +119,8 @@
   };
   const take = d => {   // 拿到別人給的：放在腳下，下一格照一般的撿法（背包放不下就留在地上）
     const P = W().P; if (!P) return;
-    const g = R.addDrop({ type: d.type, mat: d.mat, n: d.n, item: d.item, x: P.x, z: P.z });
+    let it = d.item; if (it) { it = JSON.parse(JSON.stringify(it)); const s = R.S; s.nextId = (s.nextId || 1) + 1; it.id = 'i' + s.nextId; }   // 2026-10-16 修正：別人的裝備換一個自己的編號（不然跟自己的裝備撞號，穿、賣會弄錯件）
+    const g = R.addDrop({ type: d.type, mat: d.mat, n: d.n, item: it, x: P.x, z: P.z });
     if (g) { g.x = P.x; g.z = P.z; if (g.mesh) g.mesh.position.set(P.x, 0.5, P.z); }
     R.toast && R.toast('搶到了：' + label(d), '#FFD04A');
   };

@@ -474,7 +474,7 @@
       if (o.t === 'lobby') { NET.lobby = o; NET.host = o.host; if (o.started && !NET.paid) { NET.paid = true; R.S.gold -= FEE; R.save && R.save(); } if (!o.started) { V = null; lobbyScreen(); } return; }
       if (o.t === 'state') {
         const prevPhase = V && V.phase; V = o.v; dl = o.dl; dlAt = Date.now(); NET.bank = o.bank || 0;
-        if (prevPhase === 'over' && V.phase !== 'over') { rewardDone = false; }
+        if (prevPhase === 'over' && V.phase !== 'over') { rewardDone = false; if (MODE === 'net' && R.S) { R.S.gold = Math.max(0, R.S.gold - FEE); R.save && R.save(); R.toast && R.toast('再打一局：桌費 ' + FEE + ' 費拉。'); } }   // 2026-10-16 修正：線上桌「再打一局」原本不收桌費、照樣發獎金
         RIICHI = RIICHI && V.opts && V.opts.kind === 'turn'; if (!V.opts) { CHIMENU = false; SEL = null; }
         render(); rewards(); autoPlay();
       }
