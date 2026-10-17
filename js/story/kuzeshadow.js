@@ -13,7 +13,7 @@
 // （二）撿到破損刀刃（放進任務道具包 questbag.js）→ 小劇情 → 去東鶴找老岩。多人連線：每個人自己的遊戲裡有接任務的才拿得到。
 // （三）帶著破損刀刃走進東鶴老岩的鐵匠鋪 → 老岩的小劇情；之後帶齊異變核心 ×6、高純度魔力水晶 ×35、餘燼核 ×20、鐵礦 ×200 再走進去，
 //   老岩修好給你「虛幻的妖刀-寺川參狹」，任務完成；不夠：「我一個鐵匠可下不了遺跡幫你收集」。
-// 寺川參狹：傳說品質的刀（刀客），普攻傷害 250、每秒 2.3 刀（強化、詞綴照算），最多強化到 +10、詞綴最多 8 條；
+// 寺川參狹：神話品質的刀（刀客），普攻傷害 480（2026-10-18 作者：原本傳說、250）、每秒 2.3 刀（強化、詞綴照算），最多強化到 +10、詞綴最多 8 條；
 //   綁在身上：一直上鎖（解不開）、不能賣、不能拆、不能交易、不能典當、不能丟，倒下也不會掉（affixplus、nettrade、ruinmarket、raid 各改了一行）。
 // 放在 index.html 最後面（main.js 前面）：包 R.hurtPlayer、R.onPlayerDown、R.descend、R.loadFloor 的最外面。
 (function (R) {
@@ -359,7 +359,7 @@
   const makeBlade = () => {
     const s = S(), lv = s && s.classes && s.classes[s.cls] ? s.classes[s.cls].lv : 10;
     const cursed = x => x.affixes.some(a => { const d = R.affixDef(x, a.id); return d && d.curse; });
-    let it = null; for (let i = 0; i < 12 && (!it || cursed(it)); i++) it = R.makeItem({ kind: 'weapon', base: 'katana', ilvl: Math.max(10, lv || 10), rarity: 4, identified: true });   // 不出詛咒詞綴
+    let it = null; for (let i = 0; i < 12 && (!it || cursed(it)); i++) it = R.makeItem({ kind: 'weapon', base: 'katana', ilvl: Math.max(10, lv || 10), rarity: 5, identified: true });   // 不出詛咒詞綴
     if (cursed(it)) it.affixes = it.affixes.filter(a => { const d = R.affixDef(it, a.id); return !(d && d.curse); });
     Object.assign(it,{ legend: null, uniq: UNIQ, locked: true, bound: 1, affixMax: 8, topped: 1 });
     s.stash.push(it); R.save && R.save(); return it;
@@ -386,6 +386,7 @@
   const isU = it => !!(it && it.uniq === UNIQ);
   const ws0 = R.weaponStats;
   R.weaponStats = it => {
+    if (isU(it) && it.rarity < 5) it.rarity = 5;   // 舊存檔拿到的是傳說：換成神話
     const ws = ws0(it); if (!isU(it) || !ws) return ws;
     try {
       // 強化、詞綴照算：跟一把沒強化、沒詞綴的同一把比，乘上去
@@ -393,7 +394,7 @@
       const kd = plain && plain.dmg > 0 ? ws.dmg / plain.dmg : 1, kr = plain && plain.rate > 0 ? ws.rate / plain.rate : 1;
       const real = R.bladeWeaponReal ? R.bladeWeaponReal('katana', { dmg: 1, rate: 1 }) : null;   // 刀客的普攻：刀的傷害、攻速換算（classcore.js）
       const fd = real && real.dmg > 0 ? real.dmg : 1, fr = real && real.rate > 0 ? real.rate : 1;
-      ws.dmg = 250 / fd * kd; ws.rate = 2.3 / fr * kr;
+      ws.dmg = 480 / fd * kd; ws.rate = 2.3 / fr * kr;
     } catch (e) { console.warn('[kuzeshadow]', e); }
     return ws;
   };
