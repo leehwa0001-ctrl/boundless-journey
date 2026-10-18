@@ -24,7 +24,7 @@
       const kind = ['gather', 'deliver', 'hunt', 'deliver', 'gather', 'escort'][Math.floor(h('k') * 6)], client = CLIENTS[Math.floor(h('c') * CLIENTS.length)];
       let job = { id, kind, client, day: dd.day, due: dd.day + 2 + Math.floor(h('d') * 3), scam: null };
       // 騙局的種類
-      const sr = h('s');
+      const sr = h('s') * (R.repScamK ? R.repScamK() : 1);   // 信譽值低：騙局比較多（repute.js）
       if (kind === 'escort') job.scam = 'traffic';
       else if (sr < 0.14) job.scam = 'deposit'; else if (sr < 0.26) job.scam = 'fakegold'; else if (sr < 0.36 && kind === 'deliver') job.scam = 'contraband'; else if (sr < 0.45) job.scam = 'baddate'; else if (sr < 0.53 && kind === 'hunt') job.scam = 'trap';
       if (kind === 'gather') { const [m, q] = MAT_JOBS[Math.floor(h('m') * MAT_JOBS.length)]; Object.assign(job, { mat: m, n: q, reward: Math.round(R.MATS[m].value * q * 2.2 + 20), title: '收購' + R.MATS[m].name + ' ×' + q, text: '帶' + R.MATS[m].name + ' ' + q + ' 個到後巷的木板，委託人會來收。' }); }
@@ -74,10 +74,10 @@
     const s = S(); s.offersTaken[j.id] = 1;
     if (j.scam) {
       const b = { traffic: 180, contraband: 150, fakegold: 90, trap: 120, deposit: 70, baddate: 70 }[j.scam];
-      s.gold += b; s.rep = (s.rep || 0) + 2;
+      s.gold += b; s.rep = (s.rep || 0) + 3;
       R.addDeed({ traffic: '有勇者向衛兵通報「臨時搬運工」的委託，衛兵在後巷逮捕了一名男子。', contraband: '衛兵在後巷查獲德克斯凡礦務公司失竊的爆裂核心。', fakegold: '衛兵查獲一批偽造的赤金。', trap: '衛兵在霜溪一帶抓到一夥假委託真搶劫的人。', deposit: '後巷的「保證金」騙子被抓了。', baddate: '一份日期造假的合約被送到了衛兵所。' }[j.scam]);
       R.save(); R.closeSheet(); R.townTalk('東鶴的衛兵', ['「通報得好。」', '（拿到 ' + b + ' 費拉的通報獎金。）']);
-    } else { s.rep = (s.rep || 0) - 1; R.save(); R.closeSheet(); R.townTalk('東鶴的衛兵', ['衛兵去問了一圈，回來瞪了你一眼。', '「人家是正經的委託。別亂報。」']); }
+    } else { s.rep = (s.rep || 0) - 3; R.save(); R.closeSheet(); R.townTalk('東鶴的衛兵', ['衛兵去問了一圈，回來瞪了你一眼。', '「人家是正經的委託。別亂報。」']); }
   };
   R.questLog = () => {
     const s = S();
@@ -98,7 +98,7 @@
       s.contraband = (s.contraband || 0) + 1; R.addDeed('衛兵在城外查獲一批來路不明的爆裂核心。據說是有人幫忙「送貨」。');
       if (R.crime) { R.crime.heat = Math.max(R.crime.heat, 1); }
     }
-    else { s.gold += j.reward; s.rep = (s.rep || 0) + 1; R.townTalk(j.client, [msg, '（拿到 ' + j.reward + ' 費拉。）']); }
+    else { const pay = Math.round(j.reward * (R.repJobMul ? R.repJobMul() : 1)); s.gold += pay; s.rep = (s.rep || 0) + 1; R.townTalk(j.client, [msg, '（拿到 ' + pay + ' 費拉' + (pay > j.reward ? '，信任你多給了一點' : '') + '。）']); }
     R.save(); if (R.refreshJobs) R.refreshJobs();
   };
   // 城裡：收貨的人、收素材的人（在目的地等著）
@@ -116,7 +116,7 @@
     const s = S();
     (s.jobs || []).slice().forEach(j => {
       if (j.kind === 'hunt' && run.killIds) { j.got = Math.min(j.n, j.got + (run.killIds[j.target] || 0)); if (j.got >= j.n) { if (j.scam === 'baddate' || j.scam === 'deposit') finish(j, ''); else { s.jobs = s.jobs.filter(v => v !== j); s.gold += j.scam === 'fakegold' ? 0 : j.reward; if (j.scam === 'fakegold') s.fake = (s.fake || 0) + 1; R.toast('私人委託完成：' + j.title + (j.scam === 'fakegold' ? '（拿到一枚赤金）' : '（' + j.reward + ' 費拉）')); } } }
-      if (j.kind === 'escort' && run.site.id === j.site) { s.jobs = s.jobs.filter(v => v !== j); s.gold += j.reward; s.rep = (s.rep || 0) - 4; s.wantedEscort = 1; R.addDeed('公會東鶴分館發布警示：有勇者帶著沒有身分的「臨時搬運工」進入城西遺跡。'); R.toast('「臨時搬運工」在遺跡入口就被人帶走了。……拿到 ' + j.reward + ' 費拉。'); }
+      if (j.kind === 'escort' && run.site.id === j.site) { s.jobs = s.jobs.filter(v => v !== j); s.gold += j.reward; s.rep = (s.rep || 0) - 10; s.wantedEscort = 1; R.addDeed('公會東鶴分館發布警示：有勇者帶著沒有身分的「臨時搬運工」進入城西遺跡。'); R.toast('「臨時搬運工」在遺跡入口就被人帶走了。……拿到 ' + j.reward + ' 費拉。'); }
     });
     R.save();
   };
@@ -126,6 +126,6 @@
   R.jobsNewDay = dd => {
     const s = S(); if (!s.jobs) return;
     s.jobs.forEach(j => { if (j.vanish && dd.day > j.day) j.gone = true; });
-    s.jobs = s.jobs.filter(j => { if (j.gone) return false; if (dd.day > j.due) { s.rep = (s.rep || 0) - (j.scam ? 0 : 1); return false; } return true; });
+    s.jobs = s.jobs.filter(j => { if (j.gone) return false; if (dd.day > j.due) { s.rep = (s.rep || 0) - (j.scam ? 0 : 2); return false; } return true; });
   };
 })(window.R);

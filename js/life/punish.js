@@ -13,7 +13,7 @@
     const paid = Math.min(S.wallet || 0, fine), unpaid = fine - paid; S.gold -= paid;   // 罰金只從錢包扣（wallet.js）
     const days = Math.min(7, stars + prior + Math.ceil(unpaid / 150));
     const ban = prior >= 1 ? Math.min(10, prior * 2 + stars) : 0;
-    S.rep = (S.rep || 0) - (4 + 2 * stars);
+    S.rep = (S.rep || 0) - (5 + 3 * stars);
     const left = (S.party || []).filter(m => !m.story).map(m => m.name); S.party = (S.party || []).filter(m => m.story);
     if (R.advanceDays) R.advanceDays(days);
     S.shameUntil = Math.max(S.shameUntil || 0, S.day + 5);

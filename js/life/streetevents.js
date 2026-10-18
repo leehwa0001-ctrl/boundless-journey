@@ -49,7 +49,7 @@
     const p = navPath(toS(n.x), toS(n.z), toS(t[0]), toS(t[1])); n.path = p && p.length > 1 ? p.map(([a, b]) => [toW(a), toW(b)]) : null; n.pi = 0;
   };
   const say = (who, lines) => R.townTalk(who, lines);
-  const rep = v => { const s = S(); s.rep = (s.rep || 0) + v; };
+  const rep = v => { const s = S(); s.rep = (s.rep || 0) + v * 2; };   // 2026-10-18 信譽值：街上幫忙一次 +2
   const gold = v => { const s = S(); s.gold = Math.max(0, s.gold + v); R.save && R.save(); };
 
   // ---------- 畫面：上面的計時、目標頭上的紅箭頭 ----------
@@ -303,6 +303,7 @@
     const order = Object.keys(KINDS).sort(() => rnd() - 0.5);
     // 晚上在巷子裡優先遇到強盜
     if ((h >= 20 || h < 4) && inAlley() && rnd() < 0.7) order.unshift('rob');
+    if (R.repRob && rnd() < R.repRob()) order.unshift(rnd() < 0.5 ? 'pick' : 'rob');   // 信譽值低：比較容易被搶（repute.js）
     for (const k of order) { try { if (KINDS[k].ok(h) && KINDS[k].start()) return; } catch (e) { console.warn('[streetevents]', k, e); ev = null; } }
   };
   const step0 = R.townStep;
