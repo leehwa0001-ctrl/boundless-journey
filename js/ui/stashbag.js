@@ -20,7 +20,7 @@
     const hd = host.querySelector('.tk-head'); if (hd) { hd.onpointerdown = null; hd.style.cursor = 'default'; hd.removeAttribute('title'); }
     const x = host.querySelector('#bag-x'); if (x) { const row = x.closest('.row'); (row || x).remove(); }
     const sb = host.querySelector('#tb-stash'); if (sb) { const row = sb.closest('.row'); (row || sb).remove(); }   // 已經在倉庫了
-    host.querySelectorAll('.tb-note .note').forEach(p => { p.textContent = p.textContent.replace(/在城裡換裝備請到倉庫。?/, '換裝備：點倉庫裡的裝備「換上」。'); });
+
   };
   const bs1 = R.bagSheet;
   R.bagSheet = (...a) => {

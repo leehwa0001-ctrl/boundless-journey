@@ -5,6 +5,9 @@
 // - 倉庫在公寓 302 室的收納櫃；有家之後，別的地方打開倉庫只能看身上的裝備。還沒租房子的人照舊在公會寄放。
 // - 擴充：加大倉庫（每次 +2 排）、買箱子（箱子本身佔格子，裡面有更大的格子，有的只收某一類）。
 // - 2026-10-18 作者：所有東西都放進倉庫格——費拉、素材、藥水、炸彈、卷軸、禮物、代幣、家具、任務道具照數量切成一疊一疊（stacks.js 的 R.stackList，一疊 1×1），跟裝備一樣拖、排、記位置。
+// - 2026-10-18 第二階段：背包也是一個格子（g:'bag'，大小＝目前的背包 R.PACKS[R.S.pack]，裝備照遺跡背包的大小 R.itemSize）；
+//   倉庫頁面上倉庫格、背包格可以互相拖：裝備進出背包（R.S.bagIds），一疊的東西搬數量（倉庫 R.S.vault ⇄ 背包的數字，carry.js、stacks.js）。
+//   R.renderBagGrid(容器)：把背包格畫進去（倉庫頁面、城裡的背包視窗用）。
 // 放在所有包 R.hub 的檔案後面（stashux.js 後面）。
 (function (R) {
   const COLS = 14, BASE_ROWS = 10, UP_ROWS = 2, UP_MAX = 20;   // 2026-10-13 作者：增加一些收納上限（10×8→14×10，加大次數 12→20；舊存檔多 2 排，見 tg()）
@@ -27,6 +30,7 @@
     return [1, 1];   // 護符、飾品、其他
   };
   R.stashItemSize = sizeOf;
+  const sizeIn = (it, key) => (it && !it.stack && key === 'bag' && R.itemSize ? R.itemSize(it) : sizeOf(it));   // 背包裡的裝備照遺跡背包的大小
   const dims = (w, h, r) => (r ? [h, w] : [w, h]);
   const upPrice = n => Math.round(300 * Math.pow(1.5, n) / 50) * 50;
   const boxPrice = t => { const g = tg(); return Math.round(BOX[t].price * Math.pow(1.5, (g.bought[t] || 0)) / 50) * 50; };
@@ -34,23 +38,28 @@
   const S = () => R.S;
   const tg = () => { const s = S(); if (!s.tg || typeof s.tg !== 'object') s.tg = { v: 1, v2: 1, rows: BASE_ROWS, up: 0, boxes: [], pos: {}, bought: {} }; const g = s.tg; if (!g.v2) { g.rows = Math.max((g.rows || 8) + 2, BASE_ROWS); g.v2 = 1; } g.boxes = g.boxes || []; g.pos = g.pos || {}; g.bought = g.bought || {}; g.rows = g.rows || BASE_ROWS; return g; };
   // 倉庫格裡的東西＝沒穿在身上的裝備＋一疊一疊的東西（一下子會問很多次，記 50 毫秒）
-  let LC = null, LT = 0;
-  const loose = () => { const now = performance.now(); if (LC && now - LT < 50) return LC; const eq = R.equippedIds(); LC = (S().stash || []).filter(it => !eq.has(it.id)).concat(R.stackList ? R.stackList() : []); LT = now; return LC; };
-  const fresh = () => { LC = null; };
-  const itemOf = id => loose().find(it => String(it.id) === String(id)) || (R.isStackId && R.isStackId(id) ? null : R.itemById(id));
-  const gridDim = key => { const g = tg(); if (key === 'main') return [COLS, g.rows]; const b = g.boxes.find(x => x.id === key); return b ? [BOX[b.t].iw, BOX[b.t].ih] : [0, 0]; };
-  const allows = (key, it) => { if (key === 'main') return true; const b = tg().boxes.find(x => x.id === key); if (!b) return false; const o = BOX[b.t].only; return !o || o.includes(kindOf(it)); };
+  let LC = null, LT = 0, BC = null;
+  const loose = () => { const now = performance.now(); if (LC && now - LT < 50) return LC; const eq = R.equippedIds(); LC = (S().stash || []).filter(it => !eq.has(it.id) && !(R.inBag && R.inBag(it.id))).concat(R.stackList ? R.stackList('stash') : []); BC = (R.bagGear ? R.bagGear() : []).concat(R.stackList ? R.stackList('bag') : []); LT = now; return LC; };
+  const bagList = () => { loose(); return BC || []; };
+  const allList = () => loose().concat(bagList());
+  const isBagThing = it => !!it && (it.stack ? it.where === 'bag' : !!(R.inBag && R.inBag(it.id)));
+  const fresh = () => { LC = null; BC = null; };
+  const itemOf = id => allList().find(it => String(it.id) === String(id)) || (R.isStackId && R.isStackId(id) ? null : R.itemById(id));
+  const packDim = () => { const P = R.PACKS && (R.PACKS[S().pack] || R.PACKS.sack); return P ? [P.w, P.h] : [6, 5]; };
+  const gridDim = key => { const g = tg(); if (key === 'main') return [COLS, g.rows]; if (key === 'bag') return packDim(); const b = g.boxes.find(x => x.id === key); return b ? [BOX[b.t].iw, BOX[b.t].ih] : [0, 0]; };
+  const allows = (key, it) => { if (key === 'bag') return !it.stack || (R.stackBagOk && R.stackBagOk(it.key)); if (key === 'main') return true; const b = tg().boxes.find(x => x.id === key); if (!b) return false; const o = BOX[b.t].only; return !o || o.includes(kindOf(it)); };
   // 某一格子裡被佔掉的格（ignore：拖曳中的那一件／那個箱子）
   const occ = (key, ignore) => {
     const [w, h] = gridDim(key), m = new Uint8Array(w * h), g = tg(), mark = (x, y, a, b) => { for (let j = y; j < y + b; j++) for (let i = x; i < x + a; i++) if (i >= 0 && j >= 0 && i < w && j < h) m[j * w + i] = 1; };
-    const byId = new Map(loose().map(it => [String(it.id), it]));
-    Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (p.g !== key || id === ignore) return; const it = byId.get(id); if (!it) return; const [a, b] = dims(...sizeOf(it), p.r); mark(p.x, p.y, a, b); });
+    const byId = new Map(allList().map(it => [String(it.id), it]));
+    Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (p.g !== key || id === ignore) return; const it = byId.get(id); if (!it) return; const [a, b] = dims(...sizeIn(it, key), p.r); mark(p.x, p.y, a, b); });
     if (key === 'main') g.boxes.forEach(b => { if (b.id === ignore) return; const [a, c] = dims(BOX[b.t].w, BOX[b.t].h, b.r); mark(b.x, b.y, a, c); });
     return { m, w, h };
   };
   const fits = (o, x, y, a, b) => { if (x < 0 || y < 0 || x + a > o.w || y + b > o.h) return false; for (let j = y; j < y + b; j++) for (let i = x; i < x + a; i++) if (o.m[j * o.w + i]) return false; return true; };
   const findSpot = (key, a, b, ignore) => { const o = occ(key, ignore); for (let y = 0; y < o.h; y++) for (let x = 0; x < o.w; x++) if (fits(o, x, y, a, b)) return [x, y, 0]; if (a !== b) for (let y = 0; y < o.h; y++) for (let x = 0; x < o.w; x++) if (fits(o, x, y, b, a)) return [x, y, 1]; return null; };
   const autoPlace = it => {
+    if (isBagThing(it)) { const [w, h] = sizeIn(it, 'bag'), sp = findSpot('bag', w, h); if (!sp) return false; tg().pos[it.id] = { g: 'bag', x: sp[0], y: sp[1], r: sp[2] ? (w === h ? 0 : 1) : 0 }; return true; }
     const g = tg(), [w, h] = sizeOf(it), k = kindOf(it);
     const keys = g.boxes.filter(b => BOX[b.t].only && BOX[b.t].only.includes(k)).map(b => b.id).concat(['main'], g.boxes.filter(b => !BOX[b.t].only).map(b => b.id));
     for (const key of keys) { const s = findSpot(key, w, h); if (s) { g.pos[it.id] = { g: key, x: s[0], y: s[1], r: s[2] ? (w === h ? 0 : 1) : 0 }; if (s[2]) { /* findSpot 的 r=1 表示轉過 */ } return true; } }
@@ -60,16 +69,18 @@
   R.stashTryPlace = it => { const p = tg().pos[it.id]; return (p && !p.over) || autoPlace(it); };
   // 整理資料：拿掉已經不在倉庫（穿上、賣掉）的位置、補上新東西的位置；第一次（舊存檔）放不下就把倉庫加長
   const reconcile = () => {
-    fresh(); const g = tg(), items = loose(), ids = new Set(items.map(it => String(it.id)));
-    Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (!ids.has(id) || (p.g !== 'main' && !g.boxes.some(b => b.id === p.g)) || p.over) delete g.pos[id]; });
+    fresh(); const g = tg(), items = loose(), ids = new Set(items.map(it => String(it.id))), bag = bagList(), bids = new Set(bag.map(it => String(it.id)));
+    Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (bids.has(id)) { if (p.g !== 'bag') delete g.pos[id]; return; } if (!ids.has(id) || (p.g !== 'main' && !g.boxes.some(b => b.id === p.g)) || p.over) delete g.pos[id]; });
+    BOVER = bag.filter(it => !g.pos[it.id]).sort((a, b) => sizeIn(b, 'bag')[0] * sizeIn(b, 'bag')[1] - sizeIn(a, 'bag')[0] * sizeIn(a, 'bag')[1]).filter(it => !autoPlace(it));   // 背包放不下的
     g.pin = g.pin || {}; Object.keys(g.pin).forEach(id => { if (!ids.has(id) || g.pos[id]) delete g.pin[id]; });
     const fresh0 = !g.mig; let over = items.filter(it => !g.pos[it.id] && !g.pin[it.id]).sort((a, b) => sizeOf(b)[0] * sizeOf(b)[1] - sizeOf(a)[0] * sizeOf(a)[1]).filter(it => !autoPlace(it));
     if (fresh0) { while (over.length && g.rows < 200) { g.rows += 1; over = over.filter(it => !autoPlace(it)); } g.mig = 1; }
     if (!g.mig2) { while (over.length && g.rows < 200) { g.rows += 1; over = over.filter(it => !autoPlace(it)); } g.mig2 = 1; }   // 2026-10-18：一疊一疊的東西第一次放進來，放不下就把倉庫加長（不用花錢）
     return over.concat(items.filter(it => g.pin[it.id] && !g.pos[it.id]));   // 暫放區
   };
+  let BOVER = [];
   const sortAll = () => {
-    const g = tg(); g.pos = {}; g.pin = {};
+    const g = tg(), keepBag = {}; Object.keys(g.pos).forEach(id => { if (g.pos[id].g === 'bag') keepBag[id] = g.pos[id]; }); g.pos = keepBag; g.pin = {};   // 自動整理只排倉庫，背包不動
     const bs = g.boxes.slice().sort((a, b) => BOX[b.t].w * BOX[b.t].h - BOX[a.t].w * BOX[a.t].h); bs.forEach(b => { b.x = -99; b.y = -99; });
     bs.forEach(b => { const s = findSpot('main', BOX[b.t].w, BOX[b.t].h, b.id); if (s) { b.x = s[0]; b.y = s[1]; b.r = s[2]; } else { g.rows += BOX[b.t].h; const t = findSpot('main', BOX[b.t].w, BOX[b.t].h, b.id); b.x = t[0]; b.y = t[1]; b.r = t[2]; } });
     fresh(); loose().slice().sort((a, b) => (a.stack ? 1 : 0) - (b.stack ? 1 : 0) || sizeOf(b)[0] * sizeOf(b)[1] - sizeOf(a)[0] * sizeOf(a)[1] || (b.rarity || 0) - (a.rarity || 0) || String(a.cat || '').localeCompare(String(b.cat || '')) || String(a.key || '').localeCompare(String(b.key || ''))).forEach(autoPlace);
@@ -84,9 +95,9 @@
   const inner = it => it.stack ? '<span class="gicon">' + it.icon() + '</span><i>' + esc(it.name) + '</i><em class="sk-n">' + (it.key === 'gold' ? it.n.toLocaleString('zh-TW') : it.n) + '</em>'
     : (R.itemIconTag ? R.itemIconTag(it, 'tk-ic') : '') + '<i>' + esc(R.itemName(it)) + '</i>' + (it.locked ? '<em>🔒</em>' : '') + (it.identified ? '' : '<em class="q">？</em>');
   const colOf = it => (it.stack ? it.color : R.rarityColor(it));
-  const tileHtml = (it, p, c) => { const [a, b] = dims(...sizeOf(it), p.r); return '<div class="tk-it' + (p.r ? ' rot' : '') + (it.stack ? ' sk' : '') + '" data-tk="' + it.id + '" style="left:' + p.x * c + 'px;top:' + p.y * c + 'px;width:' + a * c + 'px;height:' + b * c + 'px;--c:' + colOf(it) + '"' + (it.stack ? ' title="' + esc(it.name + ' ×' + it.n + '（全部 ' + it.total + '）') + '"' : '') + '>' + inner(it) + '</div>'; };
+  const tileHtml = (it, p, c) => { const [a, b] = dims(...sizeIn(it, p.g), p.r); return '<div class="tk-it' + (p.r ? ' rot' : '') + (it.stack ? ' sk' : '') + '" data-tk="' + it.id + '" style="left:' + p.x * c + 'px;top:' + p.y * c + 'px;width:' + a * c + 'px;height:' + b * c + 'px;--c:' + colOf(it) + '"' + (it.stack ? ' title="' + esc(it.name + ' ×' + it.n + '（全部 ' + it.total + '）') + '"' : '') + '>' + inner(it) + '</div>'; };
   const gridHtml = (key, c) => {
-    const g = tg(), [w, h] = gridDim(key), byId = new Map(loose().map(it => [String(it.id), it]));
+    const g = tg(), [w, h] = gridDim(key), byId = new Map(allList().map(it => [String(it.id), it]));
     let h1 = '<div class="tk-grid" data-tkg="' + key + '" style="width:' + w * c + 'px;height:' + h * c + 'px;--cs:' + c + 'px">';
     if (key === 'main') g.boxes.forEach(b => { const d = BOX[b.t], [a, e] = dims(d.w, d.h, b.r), n = Object.values(g.pos).filter(p => p.g === b.id).length; h1 += '<div class="tk-it tk-box' + (openBox === b.id ? ' open' : '') + '" data-tkb="' + b.id + '" title="' + esc(d.name + '（' + d.iw + '×' + d.ih + '，' + d.note + '）點一下打開') + '" style="left:' + b.x * c + 'px;top:' + b.y * c + 'px;width:' + a * c + 'px;height:' + e * c + 'px"><b>📦</b><i>' + esc(d.name) + '<br>' + n + ' 件</i></div>'; });
     Object.keys(g.pos).forEach(id => { const p = g.pos[id], it = byId.get(id); if (p.g === key && it) h1 += tileHtml(it, p, c); });
@@ -107,24 +118,48 @@
   };
 
   let cur = null;   // { wrap, sec, cards }
-  const refresh = () => { if (!cur || !cur.wrap.isConnected) return; const over = reconcile(); render(cur.wrap, over); dim(); R.save && R.save(); };
+  let BAG = null;   // 背包格畫在哪裡（倉庫頁面、城裡的背包視窗）
+  const refresh = () => {
+    const a = cur && cur.wrap.isConnected, b = BAG && BAG.isConnected; if (!a && !b) return;
+    const over = reconcile(); if (a) { render(cur.wrap, over); dim(); } if (b) renderBag(BAG); R.save && R.save();
+  };
+  // 背包格（g:'bag'）：大小＝目前背的背包；放不下的列在下面
+  const renderBag = el => {
+    const c = cs(), [w, h] = packDim(), P = R.PACKS && (R.PACKS[S().pack] || R.PACKS.sack);
+    el.innerHTML = '<div class="tk-bagbar"><b>' + esc(P ? P.name : '背包') + '（' + w + '×' + h + '）</b><span>錢包 ' + Math.floor(S().gold || 0).toLocaleString('zh-TW') + ' 費拉</span><small>' + (cur && cur.wrap.isConnected ? '跟倉庫互相拖曳就是拿進、放回。' : '要拿東西進出，到倉庫（家裡的收納櫃）。') + '</small></div>'
+      + '<div class="tk-wrap">' + gridHtml('bag', c) + '</div>'
+      + (BOVER.length ? '<h4 class="tk-bagover-h">背包放不下的（' + BOVER.length + ' 樣，先整理或放回倉庫）</h4><div class="tk-over tk-bagover">' + BOVER.map(it => { const [a, e] = sizeIn(it, 'bag'); return '<div class="tk-it' + (it.stack ? ' sk' : '') + '" data-tk="' + it.id + '" style="position:relative;width:' + a * c + 'px;height:' + e * c + 'px;--c:' + colOf(it) + '">' + inner(it) + '</div>'; }).join('') + '</div>' : '')
+      + '<div class="tk-pop" hidden></div>';
+    bindGrid(el);
+  };
+  R.renderBagGrid = el => { BAG = el; reconcile(); renderBag(el); };
+  // 一疊東西搬到另一邊（倉庫 ⇄ 背包）：整疊的數量搬過去；原本那邊拖走的那格空出來，搬過去那邊新的一疊放在放下的位置
+  const moveStack = (it, to, t) => {
+    const g = tg(), from = it.where, pre = w => (w === 'bag' ? 'bk:' : 'sk:'), cnt = w => R.stackCount(it.key, w), per = it.per;
+    const m0 = Math.ceil(cnt(from) / per), d0 = Math.ceil(cnt(to) / per), old = []; for (let i = 0; i < m0; i++) old.push(g.pos[pre(from) + it.key + ':' + i]);
+    R.stackAdd(it.key, from, -it.n); R.stackAdd(it.key, to, it.n);
+    const rest = old.filter((_, i) => i !== it.idx); for (let i = 0; i < m0; i++) { const id = pre(from) + it.key + ':' + i; if (i < rest.length && rest[i]) g.pos[id] = rest[i]; else delete g.pos[id]; }
+    const d1 = Math.ceil(cnt(to) / per); if (d1 > d0 && t && t.g !== 'over') g.pos[pre(to) + it.key + ':' + d0] = { g: t.g, x: t.x, y: t.y, r: 0 };
+    fresh();
+  };
   const dim = () => { if (!cur) return; const q = ((document.getElementById('st-q') || {}).value || '').trim(); cur.wrap.querySelectorAll('.tk-it[data-tk]').forEach(el => { if (el.classList.contains('sk')) { el.classList.toggle('dim', !!q && !(el.textContent || '').includes(q)); return; } const cd = cur.cards.get(el.dataset.tk); el.classList.toggle('dim', !cd || cd.hidden); }); };
 
   const showPop = (id, wrap) => {
-    const pop = wrap.querySelector('.tk-pop'), card = cur.cards.get(id); if (!pop) return;
+    const pop = wrap.querySelector('.tk-pop'), card = cur && cur.wrap.isConnected ? cur.cards.get(id) : null; if (!pop) return;
     popId = id; pop.innerHTML = ''; pop.hidden = false;
     if (card) { card.hidden = false; card.dataset.tkShown = '1'; pop.appendChild(card); }
     const sk = R.isStackId && R.isStackId(id) ? itemOf(id) : null;
+    if (!card && !sk) { const it = itemOf(id); if (it && R.itemInfo) { const d = document.createElement('div'); d.className = 'sk-card'; d.innerHTML = '<b style="color:' + R.rarityColor(it) + '">' + esc(R.itemName(it)) + '</b>' + R.itemInfo(it, ''); pop.appendChild(d); } }
     if (sk) { const d = document.createElement('div'); d.className = 'sk-card'; d.innerHTML = '<b style="color:' + sk.color + '">' + esc(sk.name) + ' ×' + sk.n.toLocaleString('zh-TW') + '</b><small>這一疊 ' + sk.n + '／' + sk.per + '・全部 ' + sk.total.toLocaleString('zh-TW') + '</small><p class="note">' + esc(sk.desc || '') + '</p>'; pop.appendChild(d); }
     const row = document.createElement('div'); row.className = 'row';
     row.innerHTML = '<button type="button" class="mini" data-tkrotin="1">旋轉</button><button type="button" class="mini" data-tkpx="1">關閉</button>';
     pop.appendChild(row);
-    row.querySelector('[data-tkpx]').onclick = () => { if (card) { cur.items.appendChild(card); } pop.hidden = true; popId = null; dim(); };
+    row.querySelector('[data-tkpx]').onclick = () => { if (card && cur) { cur.items.appendChild(card); } pop.hidden = true; popId = null; dim(); };
     row.querySelector('[data-tkrotin]').onclick = () => { rotateInPlace(id); };
   };
   const rotateInPlace = id => {
     const g = tg(), p = g.pos[id], it = itemOf(id); if (!p || !it) return;
-    const [a, b] = dims(...sizeOf(it), !p.r), o = occ(p.g, id);
+    const [a, b] = dims(...sizeIn(it, p.g), !p.r), o = occ(p.g, id);
     if (fits(o, p.x, p.y, a, b)) { p.r = p.r ? 0 : 1; refresh(); } else R.toast && R.toast('轉不過來：旁邊沒有空位。');
   };
 
@@ -140,7 +175,7 @@
       g.boxes.push(bx); openBox = bx.id; R.sfx && R.sfx('coin'); R.hub('stash'); R.toast && R.toast('買了' + d.name + '，放進倉庫了。');
     });
     on('[data-tkclose]', () => { openBox = null; refresh(); });
-    wrap.querySelectorAll('.tk-it').forEach(el => { el.onpointerdown = e => startDrag(e, el, wrap); const cd = el.dataset.tk && cur.cards.get(el.dataset.tk); if (cd && !el.title) el.title = (cd.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 300); });
+    wrap.querySelectorAll('.tk-it').forEach(el => { el.onpointerdown = e => startDrag(e, el, wrap); const cd = el.dataset.tk && cur && cur.cards.get(el.dataset.tk); if (cd && !el.title) el.title = (cd.textContent || '').replace(/\s+/g, ' ').trim().slice(0, 300); });
   };
 
   // 拖曳（pointer events：滑鼠、觸控、筆都一樣）
@@ -151,7 +186,7 @@
     const g = tg(), c = cs(), isBox = !!el.dataset.tkb, id = el.dataset.tkb || el.dataset.tk;
     let w, h, r, it = null;
     if (isBox) { const b = g.boxes.find(x => x.id === id); if (!b) return; w = BOX[b.t].w; h = BOX[b.t].h; r = b.r || 0; }
-    else { it = itemOf(id); if (!it) return; [w, h] = sizeOf(it); r = (g.pos[id] && g.pos[id].r) || 0; }
+    else { it = itemOf(id); if (!it) return; [w, h] = sizeIn(it, (g.pos[id] || {}).g); r = (g.pos[id] && g.pos[id].r) || 0; }
     const rc = el.getBoundingClientRect();
     const st = { id, isBox, it, w, h, r, ox: Math.floor((e.clientX - rc.left) / c), oy: Math.floor((e.clientY - rc.top) / c), sx: e.clientX, sy: e.clientY, moved: false, el };
     e.preventDefault();
@@ -160,7 +195,8 @@
       if (!st.moved) { st.moved = true; drag = st; ghost = el.cloneNode(true); ghost.className += ' tk-ghost'; ghost.removeAttribute('title'); document.body.appendChild(ghost); el.classList.add('dragging'); ghostSize(); }
       ghost.style.left = (ev.clientX - st.ox * c - c / 2) + 'px'; ghost.style.top = (ev.clientY - st.oy * c - c / 2) + 'px';
       wrap.querySelectorAll('.tk-grid').forEach(gr => gr.classList.remove('ok', 'bad'));
-      const t = target(ev, st); if (t && t.g) { const gr = wrap.querySelector('[data-tkg="' + t.g + '"]'); if (gr) gr.classList.add(t.ok ? 'ok' : 'bad'); }
+      document.querySelectorAll('.tk-grid.ok,.tk-grid.bad').forEach(gr => gr.classList.remove('ok', 'bad'));
+      const t = target(ev, st); if (t && t.g) { const gr = document.querySelector('[data-tkg="' + t.g + '"]'); if (gr) gr.classList.add(t.ok ? 'ok' : 'bad'); }
     };
     const up = ev => {
       window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
@@ -169,9 +205,14 @@
       if (!st.moved) { if (isBox) { openBox = openBox === id ? null : id; refresh(); } else showPop(id, wrap); return; }
       const t = ev.type === 'pointerup' ? target(ev, was) : null;
       if (t && t.ok) {
+        const it = was.it, wasBag = !isBox && isBagThing(it), toBag = t.g === 'bag';
         if (isBox) { const b = g.boxes.find(x => x.id === id); b.x = t.x; b.y = t.y; b.r = was.r; }
-        else if (t.g === 'over') { delete g.pos[id]; g.pin = g.pin || {}; g.pin[id] = 1; }
-        else g.pos[id] = { g: t.g, x: t.x, y: t.y, r: was.r };
+        else if (it.stack && wasBag !== toBag) moveStack(it, toBag ? 'bag' : 'stash', t);   // 一疊：搬數量
+        else {
+          if (wasBag !== toBag) { if (toBag) R.toBag(id); else R.fromBag(id); fresh(); }   // 裝備：拿進背包／放回倉庫
+          if (t.g === 'over') { delete g.pos[id]; g.pin = g.pin || {}; g.pin[id] = 1; }
+          else g.pos[id] = { g: t.g, x: t.x, y: t.y, r: was.r };
+        }
       } else if (t && t.why) R.toast && R.toast(t.why);
       refresh();
     };
@@ -182,9 +223,10 @@
     if (!el) return null; const key = el.dataset.tkg;
     if (key === 'over') return st.isBox ? { why: '箱子不能放暫放區。' } : { g: 'over', ok: true };
     if (st.isBox && key !== 'main') return { g: key, ok: false, why: '箱子不能放進箱子裡。' };
-    if (!st.isBox && !allows(key, st.it)) return { g: key, ok: false, why: '這個箱子' + BOX[tg().boxes.find(b => b.id === key).t].note + '。' };
+    if (st.isBox && key === 'bag') return { g: key, ok: false, why: '箱子不能放進背包。' };
+    if (!st.isBox && !allows(key, st.it)) return { g: key, ok: false, why: key === 'bag' ? '這個只能放倉庫。' : '這個箱子' + BOX[tg().boxes.find(b => b.id === key).t].note + '。' };
     if (st.isBox && key === 'main') { /* 有東西的箱子照樣能搬 */ }
-    const rc = el.getBoundingClientRect(), [a, b] = dims(st.w, st.h, st.r);
+    const rc = el.getBoundingClientRect(), [a, b] = st.isBox ? dims(st.w, st.h, st.r) : dims(...sizeIn(st.it, key), st.r);
     const x = Math.floor((ev.clientX - rc.left) / c) - st.ox, y = Math.floor((ev.clientY - rc.top) / c) - st.oy;
     const ok = fits(occ(key, st.id), x, y, a, b);
     return { g: key, x, y, ok, why: ok ? '' : '放不下：位置被佔了或超出格子。' };
@@ -236,6 +278,7 @@
     + '.tk-it .gicon{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:none;border:0}.tk-it .gicon img{max-width:90%;max-height:90%;image-rendering:pixelated}.tk-it.rot .gicon img{transform:rotate(90deg)}'
     + '.tk-it i{position:absolute;left:1px;right:1px;bottom:0;font-size:9px;line-height:1.1;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 2px #000;pointer-events:none}.tk-it em{position:absolute;top:0;right:1px;font-size:9px;font-style:normal}.tk-it em.q{left:2px;right:auto;color:#fc6}'
     + '.tk-it.sk .gicon img{max-width:80%;max-height:80%}.tk-it.sk i{font-size:8px}.tk-it em.sk-n{top:0;right:2px;font-size:10px;font-weight:700;color:#fff;text-shadow:0 0 2px #000,0 0 2px #000}.sk-card{display:flex;flex-direction:column;gap:2px;margin-bottom:6px}'
+    + '.tk-bagbar{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin:0 0 4px}.tk-bagbar small{opacity:.75}.tk-bagover-h{margin:6px 0 2px;font-size:12px;color:#FF9A6A}'
     + '.tk-it.dim{opacity:.25}.tk-it.dragging{opacity:.3}.tk-ghost{position:fixed!important;z-index:9999;pointer-events:none;opacity:.85}'
     + '.tk-box{background:repeating-linear-gradient(45deg,#4a3a26,#4a3a26 6px,#55432c 6px,#55432c 12px);border-color:#c8a85a}.tk-box b{font-size:18px}.tk-box i{font-size:10px;text-align:center;white-space:normal}.tk-box.open{outline:2px solid #e8c04a}'
     + '.tk-over{display:flex;flex-wrap:wrap;gap:4px;padding:6px;min-height:40px;border:1px dashed rgba(255,255,255,.3)}'

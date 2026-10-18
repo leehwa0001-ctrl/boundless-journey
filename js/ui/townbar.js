@@ -29,10 +29,13 @@
     sh.querySelectorAll('[data-act],[data-dm],[data-mdrop],[data-loose],[data-gc]').forEach(b => b.remove());
     sh.querySelectorAll('.bl-note').forEach(p => p.remove());
     const S = R.S, po = S.potions || {}, side = sh.querySelector('.tk-side');
-    const h2 = sh.querySelector('.tk-head h2'); if (h2 && !/城裡/.test(h2.textContent)) h2.textContent += '（城裡）';
-    const own = '帶在身上：回復藥 ×' + (po.hp || 0) + '、魔力藥 ×' + (po.mp || 0);
+    const h2 = sh.querySelector('.tk-head h2'); if (h2) h2.textContent = '背包';
+    const hs = sh.querySelector('.tk-head > span:not(.tk-zoom)'); if (hs) hs.remove();
+    // 2026-10-18 第二階段：背包格換成真的背包（tarkovstash.js 的 R.renderBagGrid：裝備、費拉、素材、藥水……）
+    const gw = sh.querySelector('.tk-gridwrap'); if (gw && R.renderBagGrid) { gw.innerHTML = ''; const el = document.createElement('div'); el.className = 'tk-bagwrap'; gw.appendChild(el); R.renderBagGrid(el); }
+    const own = '錢包＝背包裡的費拉，倉庫裡的錢要先拿進背包才能花';
     const p = document.createElement('div'); p.className = 'tb-note';
-    p.innerHTML = '<p class="note">' + esc(own) + '。背包的格子要到遺跡裡才會裝東西；回到地面時，背包裡撿到的東西會放進倉庫。在城裡換裝備請到倉庫。</p><div class="row"><button type="button" class="btn" id="tb-stash">打開倉庫</button></div>';
+    p.innerHTML = '<p class="note">' + esc(own) + '。背包裡的東西會跟著你下遺跡（佔遺跡背包的格子），倒下的話會留在遺跡；從遺跡帶回來的東西也會先放在背包。</p><div class="row"><button type="button" class="btn" id="tb-stash">打開倉庫</button></div>';
     if (side) side.after(p); else (sh.querySelector('.bl-bag') || sh).appendChild(p);
     const b = $('tb-stash'); if (b) b.onclick = () => { R.closeSheet(); R.openHub && R.openHub('stash'); };
   };
