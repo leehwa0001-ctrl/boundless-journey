@@ -2,7 +2,7 @@
 // - 資料：charkit-data.js（tools/charkit-convert.js 從作者的人物編輯器匯出檔轉的；45×45 一格，四個方向，站立、移動、單手揮擊、雙手揮擊）。
 // - 開關：暫停選單「人物：素材版（測試）」，存在瀏覽器（tfl-charkit）；預設關，玩家看到的照舊。
 // - 怎麼畫：照原本人物圖的排法（6 欄 × 7 列，sprites.js），前四列（正面、背面、朝右、朝左 × 站、走 1、走 2、砍下、舉起、收招）換成素材；
-//   翻滾、倒下、坐著素材還沒有，沿用原本的圖。圖放大成 3 倍（一格 72×90），素材畫成 2 倍、腳底對齊——人物在畫面上一樣高，只是畫得比較細。
+//   翻滾素材還沒有，沿用原本的圖；倒下、坐著（第 7 列）2026-10-18 起用素材的站姿改出來（坐著＝大腿那幾列拿掉、倒下＝側面轉 90 度）。圖放大成 3 倍（一格 72×90），素材畫成 2 倍、腳底對齊——人物在畫面上一樣高，只是畫得比較細。
 //   顏色照每個人的外觀：身體＝膚色、衣服＝上衣（條紋＝披風色）、褲子＝披風色、頭髮、眼睛；髮型照原本的 hs 對到素材的七種。
 //   武器、盾、兜帽、種族特徵（耳朵、角、翅膀……）素材還沒有：兜帽的人不畫頭髮；剪影（還沒認識的人）照舊用原本的圖。
 //   2026-10-18：完整版（charkitfull.js）載入之後，R.charkitKitFor(o) 給這個人的身體、合身的圖層、多畫的圖層（種族特徵、盔甲、武器）。
@@ -53,13 +53,24 @@
   let FOOT = null;   // 素材的腳底在第幾列（站立正面的最下面一列）
   const footRow = () => { if (FOOT != null) return FOOT; const a = dec(K.body.stand[0].front).full; FOOT = 0; for (let y = G - 1; y >= 0 && !FOOT; y--) for (let x = 0; x < G; x++) if (a[y * G + x]) { FOOT = y; break; } return FOOT; };
   let TMP = null;
-  const drawCell = (g, ox, oy, frames) => {
+  const drawCell = (g, ox, oy, frames, mode) => {
     if (!TMP) { const c = document.createElement('canvas'); c.width = c.height = G; const x = c.getContext('2d'); TMP = { c, x, img: x.createImageData(G, G) }; TMP.u = new Uint32Array(TMP.img.data.buffer); }
     const U = TMP.u, B = TMP.img.data; U.fill(0);
     frames.forEach(([str, pal]) => { if (!str) return; const d = dec(str), I = d.i, V = d.v; for (let n = 0; n < I.length; n++) { const c = pal[V[n]]; if (!c) continue; const k = I[n]; if (c[3] >= 255) U[k] = c[4]; else { const al = c[3] / 255, q = k * 4; if (!B[q + 3]) { B[q] = c[0]; B[q + 1] = c[1]; B[q + 2] = c[2]; B[q + 3] = c[3]; continue; }   /* 底下是空的：留著半透明（2026-10-18：原本跟黑色混，殘影變深灰） */ B[q] = B[q] * (1 - al) + c[0] * al; B[q + 1] = B[q + 1] * (1 - al) + c[1] * al; B[q + 2] = B[q + 2] * (1 - al) + c[2] * al; B[q + 3] = Math.max(B[q + 3], c[3]); } } });
     TMP.x.putImageData(TMP.img, 0, 0);
     const dy = oy + (FH - 1) * S - (footRow() + 1) * KS, dx = ox + CW / 2 - G * KS / 2;
-    g.save(); g.beginPath(); g.rect(ox, oy, CW, CH); g.clip(); g.drawImage(TMP.c, dx, dy, G * KS, G * KS); g.restore();
+    g.save(); g.beginPath(); g.rect(ox, oy, CW, CH); g.clip();
+    if (!mode) g.drawImage(TMP.c, dx, dy, G * KS, G * KS);
+    else if (mode === 'sit') {   // 2026-10-18：坐著（膝蓋朝前）：大腿那四列拿掉，上半身往下挪四格，腳還是踩在地上
+      const hip = footRow() - 7, cut = 4, y2 = hip + 1 + cut;
+      g.drawImage(TMP.c, 0, 0, G, hip + 1, dx, dy + cut * KS, G * KS, (hip + 1) * KS);
+      g.drawImage(TMP.c, 0, y2, G, G - y2, dx, dy + y2 * KS, G * KS, (G - y2) * KS);
+    } else {   // 倒下：朝右的側面轉 90 度（頭在左、臉朝上），躺在地上
+      let x0 = G, y0 = G, y1 = 0; for (let k = 0; k < G * G; k++) if (B[k * 4 + 3]) { const x = k % G, y = (k - x) / G; if (x < x0) x0 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      g.translate(ox + CW / 2, oy + (FH - 1) * S); if (mode === 'downM') g.scale(-1, 1); g.rotate(-Math.PI / 2);
+      g.drawImage(TMP.c, -x0 * KS, -(y0 + y1) / 2 * KS, G * KS, G * KS);
+    }
+    g.restore();
   };
 
   // 原本的排法：欄 0 站、1 走 1、2 走 2、3 砍下、4 舉起、5 收招；列 0 正面、1 背面、2 朝右、3 朝左
@@ -74,17 +85,22 @@
     const L = lookOf(o, KK), two = /^(greatsword|axe|hammer|halberd|spear|zanbato)/.test(String(o.weapon || '')), sw = two && KB.body.swing2 ? 'swing2' : 'swing1';
     const key = JSON.stringify([L.skin, L.hair, L.top, L.cloak, L.eye, o.hs, !!L.hairV, o.eyeStyle, o.browStyle, !!L.glasses, sw, KK ? KK.key : '', o.brow, o.pupil, o.mouth, o.acc, o.accCol, o.topStyle, o.pantsStyle, o.shoeStyle, o.top2, o.pants, o.shoe, NS ? o.sig : '']);
     let c = CACHE.get(key); if (c) return c;
-    c = document.createElement('canvas'); c.width = CW * COLS; c.height = CH * 4; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+    c = document.createElement('canvas'); c.width = CW * COLS; c.height = CH * 7; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
+    const KN = o.weapon && R.charkitKitFor ? R.charkitKitFor(Object.assign({}, o, { weapon: null })) : KK;   // 坐著、倒下不拿武器
     const P = { body: paint(L.skin), pants: paint(o.pants || L.cloak), shoes: paint(o.shoe || '#3A2A20'), top: paint(L.top, o.top2 || L.cloak), eye: paint(L.eye), brow: paint(L.hair), hair: paint(L.hair), glass: paint('#2A2A34'), mouth: paint('#6A2E2E'), acc: paint(o.acc === 'earring' ? '#E8C04A' : o.accCol || '#C8323A') };
     const first = (n, v) => { const Ly = KB.layers[n]; return Ly && (Ly[v] || Ly[Object.keys(Ly)[0]]); }, LY = { pants: first('褲子', PANTS[o.pantsStyle || '']), shoes: first('鞋子', SHOES[o.shoeStyle || '']), top: first('衣服', TOP[o.topStyle || '']) };
     const accP = o.acc === 'eyepatch' ? P.glass : P.acc, accLow = ACC_UNDER_HAIR[o.acc] ? L.accV : null, accHigh = accLow ? null : L.accV;
     const colOf = c => c === 'hair' ? L.hair : c === 'top' ? L.top : c === 'cloak' ? L.cloak : c;
     const NP = NS && NS.parts ? NS.parts.map(([n, v, c, a]) => [KB.layers[n] && KB.layers[n][v], paint(colOf(c), a)]).filter(x => x[0]) : [];
-    DIRMAP.forEach((d, row) => COLMAP.forEach(([act0, i], col) => {
-      const act = act0 === 'swing' ? sw : act0, bf = KB.body[act] || KB.body.stand, b = bf[Math.min(i, bf.length - 1)];
+    const framesOf = (act, i, d, kk) => {
+      const bf = KB.body[act] || KB.body.stand, b = bf[Math.min(i, bf.length - 1)];
       const pickF = by => { const f = layerFrame(by, act, i); return f ? f[d] : null; };
-      drawCell(g, col * CW, row * CH, [[b[d], P.body]].concat(KK && KK.under ? KK.under(act, i, d, layerFrame) : [], [[pickF(LY.pants), P.pants]]).concat([ [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.mouthV), P.mouth], [pickF(accLow), accP], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass], [pickF(accHigh), accP]], NP.map(([by, pal]) => [pickF(by), pal])).concat(KK && KK.extra ? KK.extra(act, i, d, layerFrame) : []));
-    }));
+      return [[b[d], P.body]].concat(kk && kk.under ? kk.under(act, i, d, layerFrame) : [], [[pickF(LY.pants), P.pants]]).concat([ [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.mouthV), P.mouth], [pickF(accLow), accP], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass], [pickF(accHigh), accP]], NP.map(([by, pal]) => [pickF(by), pal])).concat(kk && kk.extra ? kk.extra(act, i, d, layerFrame) : []);
+    };
+    DIRMAP.forEach((d, row) => COLMAP.forEach(([act0, i], col) => drawCell(g, col * CW, row * CH, framesOf(act0 === 'swing' ? sw : act0, i, d, KK))));
+    // 第 7 列（2026-10-18 作者：赤提燈裡坐著的人還是舊的）：倒下（朝右、左右翻）、坐著（正面、背面）
+    drawCell(g, 0, 6 * CH, framesOf('stand', 0, 'right', KN), 'down'); drawCell(g, CW, 6 * CH, framesOf('stand', 0, 'right', KN), 'downM');
+    drawCell(g, 2 * CW, 6 * CH, framesOf('stand', 0, 'front', KN), 'sit'); drawCell(g, 3 * CW, 6 * CH, framesOf('stand', 0, 'back', KN), 'sit');
     if (CACHE.size > 300) CACHE.clear(); CACHE.set(key, c);
     return c;
   };
@@ -93,7 +109,7 @@
     const pk = o.pool && o.pool + (R.charkitPoolKey ? R.charkitPoolKey() : '');   // 完整版載入之後重新畫
     if (pk && POOL.has(pk)) return POOL.get(pk);
     const k = kitRows(o), c = document.createElement('canvas'); c.width = CW * COLS; c.height = CH * ROWS; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
-    if (orig) g.drawImage(orig, 0, orig.height * 4 / ROWS, orig.width, orig.height * 3 / ROWS, 0, CH * 4, c.width, CH * 3);   // 翻滾、倒下、坐著先用原本的
+    if (orig) g.drawImage(orig, 0, orig.height * 4 / ROWS, orig.width, orig.height * 2 / ROWS, 0, CH * 4, c.width, CH * 2);   // 翻滾先用原本的（倒下、坐著素材版自己畫）
     g.drawImage(k, 0, 0); if (pk) POOL.set(pk, c); return c;
   };
   // ---------- 接上：做人物的時候換成素材的圖 ----------
