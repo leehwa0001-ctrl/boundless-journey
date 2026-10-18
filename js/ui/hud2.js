@@ -17,6 +17,7 @@
   const iconFor = id => { if (!id) return 'none'; const s = R.SKILL_LIB && R.SKILL_LIB[id]; if (s) { const t = s.type === 'combo' ? s.p.parts[0][0] : s.type; return TYPE_ICON[t] || 'star'; } return ICON_OF[id] || 'star'; };
   const cache = {};
   const icon = k => {
+    if ((k === 'hp' || k === 'mp') && R.consumableIconURL) return R.consumableIconURL('pot:' + k);
     if (cache[k]) return cache[k];
     const c = document.createElement('canvas'); c.width = c.height = 16; const x = c.getContext('2d');
     const P = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); };

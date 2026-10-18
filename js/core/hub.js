@@ -192,8 +192,8 @@
   const shop = () => {
     const S = R.S, php = R.shopPrice ? R.shopPrice(30, 'shop') : 30, pmp = R.shopPrice ? R.shopPrice(25, 'shop') : 25;
     return '<section class="panel-doc"><h2>白藤堂</h2><p class="note">城西的藥鋪。掌櫃說：「藥草三株換一瓶回復藥。樹枝就別拿來了。」</p><div class="recipes">'
-      + (php == null ? '<p class="hand">掌櫃看到你，往後退了一步：「……我們不賣東西給你。請你走。」</p>' : '<div class="recipe"><b>回復藥</b><small>回復 35% 生命。按 1 使用。</small><button type="button" class="btn pri" data-buy="hp:' + php + '"' + (S.gold < php ? ' disabled' : '') + '>買（' + php + ' 費拉）</button></div>')
-      + (php == null ? '' : '<div class="recipe"><b>魔力藥</b><small>回復 50% 魔力。按 2 使用。</small><button type="button" class="btn pri" data-buy="mp:' + pmp + '"' + (S.gold < pmp ? ' disabled' : '') + '>買（' + pmp + ' 費拉）</button></div>')
+      + (php == null ? '<p class="hand">掌櫃看到你，往後退了一步：「……我們不賣東西給你。請你走。」</p>' : '<div class="recipe">' + (R.consumableIconTag ? R.consumableIconTag('pot:hp') : '') + '<b>回復藥</b><small>回復 35% 生命。按 1 使用。</small><button type="button" class="btn pri" data-buy="hp:' + php + '"' + (S.gold < php ? ' disabled' : '') + '>買（' + php + ' 費拉）</button></div>')
+      + (php == null ? '' : '<div class="recipe">' + (R.consumableIconTag ? R.consumableIconTag('pot:mp') : '') + '<b>魔力藥</b><small>回復 50% 魔力。按 2 使用。</small><button type="button" class="btn pri" data-buy="mp:' + pmp + '"' + (S.gold < pmp ? ' disabled' : '') + '>買（' + pmp + ' 費拉）</button></div>')
       + '<div class="recipe"><b>藥草換回復藥</b><small>藥草 ' + S.mats.herb + '／3</small><button type="button" class="btn" data-herb="1"' + (S.mats.herb < 3 ? ' disabled' : '') + '>換</button></div>'
       + '<div class="recipe"><b>賣樹枝</b><small>樹枝 ' + S.mats.branch + ' 根，一根 1 費拉</small><button type="button" class="btn" data-branch="1"' + (S.mats.branch < 1 ? ' disabled' : '') + '>全部賣掉</button></div></div></section>';
   };
