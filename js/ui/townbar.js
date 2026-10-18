@@ -44,7 +44,7 @@
   const bar = document.createElement('div'); bar.id = 'tb-bar'; bar.className = 'hud'; bar.hidden = true;
   const KEY = R.touch ? {} : { hp: '1', mp: '2', bag: 'I', s1: '3', s2: '4', s3: '5', s4: '6', s0: 'R／右鍵' };
   const btn = (k, cls, n) => '<button type="button" class="act ' + cls + '" data-tb="' + k + '"><span class="tb-n">' + n + '</span>' + (KEY[k] ? '<kbd>' + KEY[k] + '</kbd>' : '') + '</button>';
-  bar.innerHTML = btn('hp', 'tb-pot', '回復藥') + btn('mp', 'tb-pot', '魔力藥') + btn('bag', 'tb-bag', '背包') + btn('s1', 'sk', '技能') + btn('s2', 'sk', '技能') + btn('s3', 'sk', '技能') + btn('s4', 'sk', '技能') + btn('s0', 'big', '技能');
+  bar.innerHTML = btn('bag', 'tb-bag', '背包');   // 2026-10-18 作者：城裡右下角只有背包（藥水、技能到遺跡裡才有）
   bar.addEventListener('click', e => {
     const b = e.target.closest('[data-tb]'); if (!b) return; const k = b.dataset.tb;
     if (k === 'bag') R.bagSheet();
@@ -69,10 +69,6 @@
     const run = $('run'), show = !!(run && !run.hidden && run.classList.contains('town') && R.townBarOn() && R.S);
     if (bar.hidden === !show && !force && !show) return;
     bar.hidden = !show; if (!show) return;
-    const po = R.S.potions || {};
-    bar.querySelector('[data-tb="hp"] .tb-n').textContent = '回復藥 ×' + (po.hp || 0);
-    bar.querySelector('[data-tb="mp"] .tb-n').textContent = '魔力藥 ×' + (po.mp || 0);
-    skills();
   };
   setInterval(() => { try { tick(); } catch (e) { } }, 500);
   const css = document.createElement('style');
