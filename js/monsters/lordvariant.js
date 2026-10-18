@@ -174,7 +174,8 @@
         const P = e.tgt && !e.tgt.dead ? e.tgt : w.P; if (!P || dist(P, e) > 22) { v.t = 1; return; }
         const moves = V[e.id], list = v.phase >= 3 ? [moves[2], moves[3]] : [moves[2]];
         v.t = v.phase >= 3 ? 5 + rnd() * 2 : 8 + rnd() * 2;
-        pick(list)(e, P);
+        const mv = pick(list); e._vMove = (e._vMove || 0) + 1; e._vMoveK = mv === moves[2] ? 'v0' : 'v1';   // 2026-10-18：給動畫看是哪一招（beastpaint.js 的領主體動畫）
+        mv(e, P);
       });
     } catch (err) { console.warn('[lordvariant]', err); }
     return r;
@@ -252,4 +253,62 @@
     '.dx-th.lv-mut.dim img,.dr-th.lv-mut.dim img{filter:grayscale(1) brightness(.5)}'
   ].join('\n');
   document.head.appendChild(css);
+  // ---------- 環境變種（2026-10-18 作者：一座遺跡只有一種領主會太重複——同一隻領主體在不同環境的遺跡長得、打起來不一樣） ----------
+  // 有環境的遺跡（火山、凍原、沙漠、深海、熔爐）裡出現的領主體，會變成那個環境的變種：名字前面多環境的名號、染上環境的顏色、
+  // 多一個環境的被動和一招環境招式（每 8～10 秒），怕的、耐的屬性也跟著變。本來就住在那個環境的（凍原的霜冠鹿、火山的熔顎蜥……）不變。
+  // 跟異變可以同時有（例：霜凍・棘背狼【千棘狼王】）。
+  const ENV_V = R.LORD_ENV = {
+    volcano: { n: '爆炎', col: '#FF5A1A', native: ['lavajaw'], weak: 'frost', resist: 'fire',
+      d: '身上燒著火：走過的地方留下熔岩；每隔一陣子在你身邊連炸幾下火柱。怕冰（×1.3），火燒不太動（×0.5）。',
+      tick: e => B.trail(e, { t: 0.6, kind: 'lava', life: 5 }), move: e => B.rain(e, { n: 4, r: 1.8, col: '#FF5A1A', k: 1.2, zone: 4 }) },
+    snow: { n: '霜凍', col: '#9AD8FF', native: ['frostdeer'], weak: 'fire', resist: 'frost',
+      d: '身上結著冰：靠近牠會被凍得變慢；每隔一陣子從地面冒出一圈冰柱。怕火（×1.3），冰凍不太動（×0.5）。',
+      aura: (e, P, dt) => { if (dist(P, e) < BR(e) + 4) P.slowT = Math.max(P.slowT || 0, 0.4); }, move: e => B.rings(e, { n: 2, col: '#9AD8FF', k: 1.1, slow: 2 }) },
+    desert: { n: '暴風沙', col: '#D8B86A', native: ['sandwhale'], weak: 'shock', resist: 'fire',
+      d: '捲著沙暴：每隔一陣子颳一陣沙——看不清楚、被往外吹；沙裡的蒺藜扎腳。怕雷（×1.3），火不太有用（×0.5）。',
+      move: e => { targets().forEach(t => { if (t === W().P) t.blindT = Math.max(t.blindT || 0, 2.2); const dd = dist(t, e); if (dd < BR(e) + 10 && !(t.iframe > 0)) { const a = angTo(e, t); t.x += Math.sin(a) * 3; t.z += Math.cos(a) * 3; R.collide && R.collide(t, 0.42); } }); R.fx('poof', e.x, 1, e.z, { color: '#D8B86A', n: 30 }); B.rain(e, { n: 3, r: 1.5, col: '#C8A86A', k: 1, slow: 1.5 }); } },
+    deep: { n: '深淵', col: '#3A8AAA', native: ['kraken'], weak: 'shock', resist: 'frost',
+      d: '身上淌著深海的水：每隔一陣子捲起漩渦把人往牠那裡拉，同時噴墨（看不清楚）。怕雷（×1.3），冰不太有用（×0.5）。',
+      move: e => { B.pull(e, { r: 10, t: 2.2, s: 3, col: '#3A8AAA', quiet: 1 }); targets().forEach(t => { if (t === W().P && dist(t, e) < BR(e) + 12) t.blindT = Math.max(t.blindT || 0, 1.5); }); } },
+    forge: { n: '鍛鐵', col: '#C8A060', native: ['muhyo'], weak: 'frost', resist: 'fire', armor: 0.15,
+      d: '身上鑲了兵工廠的鐵板：護甲更厚（+15%）；每隔一陣子叫熔爐砲擊你站的地方。怕冰（×1.3），火燒不太動（×0.5）。',
+      move: e => B.rain(e, { n: 5, r: 2, col: '#FF8A3A', k: 1.3, gap: 300 }) }
+  };
+  const envTint = (e, col) => { try { const TH = window.THREE, sp = e.m && e.m.sp; if (TH && sp && sp.mat && sp.mat.color) sp.mat.color.lerp(new TH.Color(col), 0.42); } catch (err) { } };
+  const seEnv0 = R.spawnEnemy;
+  R.spawnEnemy = (id, x, z, room, o) => {
+    const e = seEnv0(id, x, z, room, o), run = W().run;
+    try {
+      const v = run && run.env && ENV_V[run.env];
+      if (e && v && !e.envV && /^領主體/.test((e.def && e.def.name) || '') && !v.native.includes(e.id) && !(o && o.quiet === 'mirror') && !e.mirror) {
+        e.envV = run.env; e.envT = 4 + rnd() * 3;
+        e.def = Object.assign({}, e.def, { name: e.def.name.replace(/^領主體・/, '領主體・' + v.n + '・') });
+        if (v.armor) e.def.armor = Math.min(0.6, (e.def.armor || 0) + v.armor);
+        envTint(e, v.col);
+        S().envSeen = S().envSeen || {}; S().envSeen[id + ':' + run.env] = 1;
+      }
+    } catch (err) { console.warn('[lordenv]', err); }
+    return e;
+  };
+  // 屬性：怕的 ×1.3、耐的 ×0.5
+  const elemOf = o => !o ? null : o.elem === 'fire' || o.burn ? 'fire' : o.elem === 'frost' || o.slow ? 'frost' : o.elem === 'shock' || o.chain ? 'shock' : null;
+  const heEnv0 = R.hurtEnemy;
+  R.hurtEnemy = (e, raw, o) => { const v = e && e.envV && ENV_V[e.envV], el = v && elemOf(o); if (el) raw *= el === v.weak ? 1.3 : el === v.resist ? 0.5 : 1; return heEnv0(e, raw, o); };
+  // 環境的被動、環境招式
+  const stEnv0 = R.step;
+  R.step = dt => {
+    const r = stEnv0(dt), w = W();
+    try {
+      if (!w.run || w.paused || guest()) return r;
+      const P = w.P; if (!P || P.dead) return r;
+      (w.enemies || []).forEach(e => {
+        if (!e.envV || e.dead || !e.aggro || e.invuln) return; const v = ENV_V[e.envV]; if (!v) return;
+        if (v.aura) v.aura(e, P, dt);
+        if (v.tick) { e.envTk = (e.envTk || 0) - dt; if (e.envTk <= 0 && e.moving !== false) { e.envTk = 0.6; v.tick(e); } }
+        e.envT -= dt; if (e.envT > 0 || dist(P, e) > 22 || (e.vBusy > 0)) return;
+        e.envT = 8 + rnd() * 2; R.fx('ring', e.x, 0.1, e.z, { r: BR(e) + 1.5, color: v.col }); v.move(e);
+      });
+    } catch (err) { console.warn('[lordenv]', err); }
+    return r;
+  };
 })(window.R);
