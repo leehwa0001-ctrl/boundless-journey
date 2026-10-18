@@ -55,4 +55,7 @@
     try { return se0(id, x, z, room, o); } finally { run.isRealFloor = null; }
   };
   R.SPECIAL_RUINS = [site]; R.SPECIAL_SITE = site;
+  // 2026-10-18 作者：Boss（領主體、佩特拉核心等 def.boss 的）血量再 +50%——放在這裡（幾乎最外層），其他調整生命的都算完才乘
+  const seB0 = R.spawnEnemy;
+  R.spawnEnemy = (id, x, z, room, o) => { const e = seB0(id, x, z, room, o); if (e && e.def && e.def.boss && !e._bossHp) { e._bossHp = 1; e.hpMax *= 1.5; e.hp *= 1.5; } return e; };
 })(window.R);
