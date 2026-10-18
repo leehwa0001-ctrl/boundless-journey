@@ -59,7 +59,8 @@
     const s = S(); if (!s || !s.carry) return;
     const c = s.carry; s.carry = null;
     const have = new Set((s.stash || []).map(it => String(it.id)));
-    (c.items || []).forEach(it => { if (!have.has(String(it.id))) s.stash.push(it); R.toBag(it.id); });
+    const put = () => (c.items || []).forEach(it => { if (!have.has(String(it.id))) s.stash.push(it); R.toBag(it.id); });
+    if (R.noBagRoute) R.noBagRoute(put); else put();
     Object.keys(c.mats || {}).forEach(k => { s.mats[k] = (s.mats[k] || 0) + c.mats[k]; });
   };
   const et0 = R.enterTown; if (et0) R.enterTown = (...a) => { try { restore(); } catch (e) { console.warn('[carry]', e); } return et0(...a); };

@@ -136,6 +136,7 @@
   // ---------- 背包放不放得下（2026-10-18 第三階段：買到的、獎勵、合成的東西放背包，放不下就不能拿） ----------
   const bagFree = () => { reconcile(); const o = occ('bag'); let f = 0; for (let i = 0; i < o.m.length; i++) if (!o.m[i]) f++; BOVER.forEach(it => { const [a, b] = sizeIn(it, 'bag'); f -= a * b; }); return Math.max(0, f); };
   R.bagFreeCells = bagFree;
+  R.bagOverflow = () => { reconcile(); return BOVER.length; };
   // 這一種最多還能放幾個（裝滿最後那疊＋空格子）
   R.bagMaxAdd = key => { const m = R.stackMeta && R.stackMeta(key); if (!m || !R.stackBagOk || !R.stackBagOk(key)) return 0; const cur = R.stackCount(key, 'bag'), part = cur % m.per ? m.per - cur % m.per : 0; return part + bagFree() * m.per; };
   R.bagCanAdd = (key, n) => (n || 0) <= R.bagMaxAdd(key);
