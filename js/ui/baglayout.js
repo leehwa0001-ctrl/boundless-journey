@@ -5,6 +5,7 @@
 // - 不改 raid.js：包住 R.bagSheet，畫完以後把原本的格子、裝備欄、說明搬到新的位置（按鈕、拖曳都是原本的，搬過去照樣能用）。
 // - 放在 questbag.js、gearcmp.js 後面（它們先把任務道具、比較按鈕放進去，這裡再搬）。
 // - 角色可以點一下轉方向（正面→右→背面→左）。
+// - 2026-10-18 作者：護符左邊一個小格子放「勇者證」（不能丟、賣、掉、卸下；辨別勇者用，銀行的錢存在勇者證裡）。點一下看勇者證。
 (function (R) {
   const bs0 = R.bagSheet; if (!bs0) return;
   const $ = id => document.getElementById(id);
@@ -33,6 +34,19 @@
     });
     return col;
   };
+  // 勇者證（不是真的裝備：不在 GEAR_KEYS 裡，不能拖、不能脫）
+  let badgeSel = false;
+  const badgeInfo = () => {
+    const S = R.S, rc = R.RACES && R.RACES[S.race], c = R.CLASSES[S.cls], st = S.classes && S.classes[S.cls], bal = S.bank ? Math.floor(S.bank.bal || 0) : 0;
+    return '<div class="tk-info"><b style="color:#E8C04A">勇者證</b><small>公會發的身分證明，用來辨別勇者。不能丟、不能賣、倒下也不會掉、不能卸下。</small>'
+      + '<p class="note">持有人：' + (R.esc ? R.esc(S.name || '（還沒有名字）') : S.name) + (rc ? '・' + rc.name : '') + (c ? '・' + c.name + (st ? ' Lv ' + st.lv : '') : '') + '<br>銀行存款（存在勇者證裡）：' + bal.toLocaleString('zh-TW') + ' 費拉</p></div>';
+  };
+  const badgeSlot = () => {
+    const w = document.createElement('div'); w.className = 'bl-slot bl-badge';
+    const b = document.createElement('div'); b.className = 'mc-slot bl-card' + (badgeSel ? ' sel' : ''); b.title = '勇者證'; b.innerHTML = '<span class="bl-card-ic">證</span>';
+    b.onclick = e => { e.stopPropagation(); badgeSel = true; R.bagSheet(); };
+    const lb = document.createElement('small'); lb.textContent = '勇者證'; w.appendChild(b); w.appendChild(lb); return w;
+  };
   const sec = (cls, title) => { const s = document.createElement('section'); s.className = 'bl-sec ' + cls; if (title) { const h = document.createElement('h3'); h.textContent = title; s.appendChild(h); } return s; };
   R.bagSheet = (...a) => {
     const r = bs0(...a);
@@ -48,7 +62,11 @@
       const cv = document.createElement('canvas'); cv.width = 144; cv.height = 180; mid.appendChild(cv);
       const nm = document.createElement('small'); nm.textContent = (R.S.name || '') + (R.CLASSES[R.S.cls] ? '・' + R.CLASSES[R.S.cls].name : ''); mid.appendChild(nm);
       mid.onclick = () => { dir = (dir + 1) % 4; drawFace(cv); };
-      eqs.appendChild(slotCol(wrap, LEFT)); eqs.appendChild(mid); eqs.appendChild(slotCol(wrap, RIGHT));
+      const rc = slotCol(wrap, RIGHT), ch = rc.querySelector('[data-slot="charm"]');
+      if (ch) { const row = document.createElement('div'); row.className = 'bl-row'; const cw = ch.closest('.bl-slot'); cw.before(row); row.appendChild(badgeSlot()); row.appendChild(cw); }
+      eqs.appendChild(slotCol(wrap, LEFT)); eqs.appendChild(mid); eqs.appendChild(rc);
+      if (badgeSel) { const sd = wrap.querySelector('.tk-side'); if (sd) sd.innerHTML = badgeInfo(); wrap.querySelectorAll('.mc-slot.sel,.tk-item.sel').forEach(x => x.classList.remove('sel')); }
+      wrap.querySelectorAll('.mc-slot[data-slot],.tk-item,.tk-mat').forEach(x => x.addEventListener('pointerdown', () => { badgeSel = false; }, true));
       // 左下：角色素質
       const st = sec('bl-stats', '角色素質');
       const cs = document.createElement('div'); cs.innerHTML = R.charSheetHtml ? R.charSheetHtml(R.S.cls, { live: !(R.W.run && R.W.run.townBag) }) : '';
@@ -86,6 +104,9 @@
     '#r-sheet.bl-on .bl-slot{display:flex;flex-direction:column;align-items:center;gap:1px}',
     '#r-sheet.bl-on .bl-slot small{font-size:11px;opacity:.75}',
     '#r-sheet.bl-on .bl-slot .mc-slot{width:52px;height:52px}',
+    '#r-sheet.bl-on .bl-row{display:flex;align-items:flex-end;gap:4px;margin-left:-44px}',
+    '#r-sheet.bl-on .bl-badge .mc-slot.bl-card{width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center}',
+    '#r-sheet.bl-on .bl-card-ic{display:flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:3px;background:linear-gradient(135deg,#E8C04A,#9A7A2A);color:#2A1E10;font-weight:700;font-size:12px;box-shadow:0 0 0 1px #3A2A10}',
     '#r-sheet.bl-on .bl-face{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;border-radius:8px;background:radial-gradient(ellipse at 50% 85%,rgba(201,161,58,.18),rgba(0,0,0,.25) 70%);cursor:pointer;padding:6px}',
     '#r-sheet.bl-on .bl-face canvas{width:100%;max-width:200px;height:auto;aspect-ratio:4/5;image-rendering:pixelated}',
     '#r-sheet.bl-on .bl-face small{opacity:.8}',
