@@ -57,7 +57,7 @@
     if (C && !C.done && w.run && C.list.every(e => e.dead)) {
       C.done = true;
       try { const [x, z] = R.nearestFloor ? R.nearestFloor(C.r.x, C.r.z) : [C.r.x, C.r.z]; if (R.addChest) R.addChest(F.group, F, x, z, 1, C.r.i); R.fx && R.fx('ring', x, 0.2, z, { r: 3, color: '#FFE08A' }); } catch (e) { console.warn('[colony]', e); }
-      const g = w.run.grade.lv || 1; if (R.gainXp) R.gainXp(25 * g); w.run.gold += 40 * g;
+      const g = w.run.grade.lv || 1; if (R.gainXp) R.gainXp(25 * g); w.run.gold += 12 * g;
       R.banner && R.banner('聚落清空了', name0(C) + '・多一個寶箱、經驗 +' + 25 * g + '、費拉 +' + 40 * g);
     }
     return r;

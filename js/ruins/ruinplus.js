@@ -106,8 +106,10 @@
     const san = W.F && !W.F.sanRest && R.sanAdd; if (san) { W.F.sanRest = 1; R.sanAdd(8); }   // 2026-10-08 作者：營火回一點理智（約 8；一層一次）
     R.sfx && R.sfx('drink'); R.toast('在營火旁坐了一會兒。手腳暖了，傷也包紮好了。（生命、魔力回滿' + (san ? '、理智 +8' : '') + '）');
   };
+  // 2026-10-18 作者：遺跡裡的藥水一定比城裡貴——至少是城裡現在價錢的 1.3 倍、而且至少貴 5 費拉（城裡的價錢會隨特質、市集活動變）
+  R.ruinPotPrice = (k, own) => { const base = k === 'hp' ? 30 : 25, town = (R.shopPrice ? R.shopPrice(base, 'shop') : null) || base; return Math.max(own || 0, Math.ceil(town * 1.3), town + 5); };
   const supply = () => {
-    const S = R.S, ph = 24, pm = 24;
+    const S = R.S, ph = R.ruinPotPrice('hp', 0), pm = R.ruinPotPrice('mp', 0);
     R.sheet('<p class="kicker">第 0 層・公會調查點</p><h2>補給</h2><p>「遺跡裡的價錢，比城裡貴一點。搬下來很累的。」</p><p class="note">回復藥 ' + (S.potions.hp || 0) + ' 瓶、魔力藥 ' + (S.potions.mp || 0) + ' 瓶。身上 ' + S.gold + ' 費拉。</p>',
       '<div class="row"><button type="button" class="btn pri" id="rp-hp">回復藥（' + ph + ' 費拉）</button><button type="button" class="btn" id="rp-mp">魔力藥（' + pm + ' 費拉）</button><button type="button" class="btn" id="rp-x">不用了</button></div>');
     const buy = (k, p) => () => { if (S.gold < p) { R.toast('錢不夠。'); return; } S.gold -= p; S.potions[k] = (S.potions[k] || 0) + 1; R.save && R.save(); R.closeSheet(); supply(); };

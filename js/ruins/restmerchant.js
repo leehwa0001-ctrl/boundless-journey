@@ -6,7 +6,7 @@
 // 放在 savepoint.js、raid.js 後面。
 (function (R) {
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => R.esc(s);
-  const K = 0.8, HP = 45, MP = 38;
+  const K = 0.8, HP0 = 45, MP0 = 38;
   const ok = run => run && run.site && run.site.kind === 'ruin' && run.site.id !== 'kanko';
   const build = () => {
     const w = W(), run = w.run, F = w.F; if (!ok(run) || !F || !F.save || !F.group) return;
@@ -22,6 +22,7 @@
   const sheet = () => {
     const w = W(), run = w.run, s = S(); if (!run) return;
     const bag = run.bag || [], mats = Object.keys(run.mats || {}).filter(k => run.mats[k] > 0 && R.MATS[k]);
+    const HP = R.ruinPotPrice ? R.ruinPotPrice('hp', HP0) : HP0, MP = R.ruinPotPrice ? R.ruinPotPrice('mp', MP0) : MP0;   // 一定比城裡貴
     const itemP = it => Math.max(1, Math.round(R.sellPrice(it) * K)), matP = k => Math.max(1, Math.round((R.MATS[k].value || 1) * K));
     R.sheet('<p class="kicker">安全區</p><h2>流浪商人</h2><p>商人把腳邊的木箱挪開，空出一塊地方。「要賣的放這裡，我看看。先說，比地面少兩成，我還得搬出去。」</p>'
       + '<h3>賣裝備（賣價八成）</h3>' + (bag.length ? '<div class="recipes">' + bag.map((it, i) => '<div class="recipe"><b style="color:' + R.rarityColor(it) + '">' + esc(R.itemName(it)) + '</b><small>' + esc((R.itemLines ? R.itemLines(it) : []).slice(0, 3).join('・')) + '</small><button type="button" class="btn" data-tri="' + i + '"' + (it.locked ? ' disabled title="上鎖的不能賣"' : '') + '>賣（' + itemP(it) + ' 費拉）</button></div>').join('') + '</div>' : '<p class="note">背包裡沒有裝備。</p>')

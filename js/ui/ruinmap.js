@@ -120,7 +120,7 @@
     draw();
   };
   const big0 = R.bigMap;
-  R.bigMap = () => { if (W.run && !W.town) { if (R.sheetOpen && R.sheetOpen()) { R.closeSheet(); return; } open(); return; } big0(); };
+  R.bigMap = () => { if (W.run && !W.town) { if (R.sheetOpen && R.sheetOpen()) { R.closeSheet(); return; } if (document.body.classList.contains('rv-lost')) { R.toast && R.toast('迷途：這一層看不到地圖，只能靠自己記路。'); return; } open(); return; } big0(); };
   // M 在遺跡裡也打開地圖
   window.addEventListener('keydown', e => { if (e.key.toLowerCase() !== 'm' || !W.run || W.town || !$('run') || $('run').hidden || e.target && /INPUT|TEXTAREA/.test(e.target.tagName)) return; if (R.sheetOpen && R.sheetOpen()) { if (cv && cv.isConnected) R.closeSheet(); return; } R.bigMap(); });
 })(window.R);

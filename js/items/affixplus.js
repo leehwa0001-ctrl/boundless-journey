@@ -20,8 +20,8 @@
   const can = c => { const s = S(); return s.gold >= c.gold && Object.keys(c.mats || {}).every(k => R.matHave(k) >= c.mats[k]); };
   const pay = c => { const s = S(); s.gold -= c.gold; Object.keys(c.mats || {}).forEach(k => R.matSpend(k, c.mats[k])); };
   const matsTxt = m => Object.keys(m || {}).map(k => (R.MATS[k] ? R.MATS[k].name : k) + ' ' + m[k]).join('・');
-  const rollPrice = it => ({ gold: 200 + 150 * it.rarity, mats: { crystal: 3 + it.rarity } });
-  const addPrice = it => ({ gold: 800 + 600 * it.rarity, mats: { core: 1, purecry: 2 } });
+  const rollPrice = it => ({ gold: [50, 100, 250, 800, 4000, 20000][it.rarity || 0],   /* 2026-10-19：照稀有度 */ mats: { crystal: 3 + it.rarity } });
+  const addPrice = it => ({ gold: [200, 400, 800, 2500, 10000, 40000][it.rarity || 0], mats: { core: 1, purecry: 2 } });
   R.affixRoll = (it, i) => { if (!it || locked(it, i) || !can(rollPrice(it))) return false; const a = newAffix(it); if (!a) return false; pay(rollPrice(it)); it.affixes[i] = a; R.save(); return a; };
   R.affixAdd = it => { if (!it || it.rarity < 3 || it.affixes.length >= maxOf(it) || !can(addPrice(it))) return false; const a = newAffix(it); if (!a) return false; pay(addPrice(it)); it.affixes.push(a); R.save(); return a; };
   const rollSheet = it => {

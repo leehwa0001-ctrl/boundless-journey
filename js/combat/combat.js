@@ -268,7 +268,7 @@
     if (byPlayer && !R.hasAdv('inner')) R.addAware(p.kind === 'crystal' ? 8 : 5, 'prop');
     const r = Math.random(), g = W().run.grade.lv;
     if (p.kind === 'crystal' && r < 0.7) R.dropMat('crystal', 1, p.x, p.z);
-    else if (r < 0.45) R.dropGold(Math.round(rnd(1, 4) * (1 + g * 0.5) * (1 + W().P.greed)), p.x, p.z);
+    else if (r < 0.45) R.dropGold(Math.max(1, Math.round(rnd(1, 4) * (1 + g * 0.5) * 0.3 * (1 + W().P.greed))), p.x, p.z);
     else if (r < 0.55) R.dropFruit(p.x, p.z);
   };
 

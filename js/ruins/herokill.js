@@ -37,7 +37,7 @@
   const hd0 = R.humanDown;
   R.humanDown = e => {
     const m = e && e.member;
-    if (m && e.innocent) R.dropGold(10 + Math.floor(rnd() * 30) + m.lv * 2, e.x, e.z);   // 老實勇者：不掉勇者證
+    if (m && e.innocent) R.dropGold(Math.round((10 + Math.floor(rnd() * 30) + m.lv * 2) * 0.3), e.x, e.z);   // 老實勇者：不掉勇者證
     else if (hd0) hd0(e);
     try { if (m) makeBody(e.x, e.z, m, { innocent: e.innocent, pa: e.pa }); } catch (err) { console.warn('[herokill]', err); }
   };
@@ -45,7 +45,7 @@
   const search = b => {
     const run = W().run; if (!run || b.looted) return; b.looted = true;
     const got = [], m = b.m, x = b.x, z = b.z + 0.6;
-    const gold = 15 + Math.floor(rnd() * 30) + (m.lv || 1) * 3; R.dropGold(gold, x, z); got.push(gold + ' 費拉');
+    const gold = Math.round((15 + Math.floor(rnd() * 30) + (m.lv || 1) * 3) * 0.3); R.dropGold(gold, x, z); got.push(gold + ' 費拉');
     const mats = ['herb', 'branch', 'crystal', 'bone', 'silk'].filter(k => R.MATS[k]);
     for (let i = 0; i < 1 + (rnd() < 0.5 ? 1 : 0); i++) { const k = mats[Math.floor(rnd() * mats.length)]; R.dropMat(k, 1, x + rnd() - 0.5, z); got.push(R.MATS[k].name); }
     const pa = b.pa, tiers = pa && pa.stolenTiers && pa.stolenTiers.length ? pa.stolenTiers.splice(0) : rnd() < 0.3 ? [0] : [];
