@@ -107,7 +107,7 @@
     const g = tg(), c = cs(), s = S(), b = openBox && g.boxes.find(x => x.id === openBox);
     if (!b) openBox = null;
     const n = g.up < UP_MAX ? upPrice(g.up) : 0;
-    wrap.innerHTML = '<h3>倉庫（' + COLS + '×' + g.rows + '）</h3><p class="note">拖曳搬動，拖曳中按 R（或兩指點一下「旋轉」）轉向；點一下看那件東西。武器 3×1（長柄 4×1）、上衣 2×3、帽子／褲子／鞋子 2×2、護符／飾品 1×1；費拉、素材、藥水這些一疊 1×1（費拉一格 1000、藥水 10 瓶、炸彈 5 顆、素材 10～40 個）。</p>'
+    wrap.innerHTML = '<h3>倉庫（' + COLS + '×' + g.rows + '）</h3><p class="note">拖曳搬動，拖曳中按 R（或兩指點一下「旋轉」）轉向；點一下看那件東西。按住 Shift 點一下，直接搬進背包／放回倉庫。武器 3×1（長柄 4×1）、上衣 2×3、帽子／褲子／鞋子 2×2、護符／飾品 1×1；費拉、素材、藥水這些一疊 1×1（費拉一格 1000、藥水 10 瓶、炸彈 5 顆、素材 10～40 個）。</p>'
       + '<div class="tk-bar"><button type="button" class="mini gold" data-tksort="1">自動整理</button><button type="button" class="mini" data-tkrot="1">旋轉（R）</button>'
       + (g.up < UP_MAX ? '<button type="button" class="mini" data-tkup="1"' + (s.gold < n ? ' disabled' : '') + '>加大倉庫 +' + UP_ROWS + ' 排（' + n + ' 費拉）</button>' : '<span class="note">倉庫已經最大了</span>')
       + '</div><div class="tk-shop">' + Object.keys(BOX).map(t => { const d = BOX[t], p = boxPrice(t); return '<button type="button" class="mini" data-tkbuy="' + t + '"' + (s.gold < p ? ' disabled' : '') + ' title="' + esc(d.note + '，外面佔 ' + d.w + '×' + d.h + '，裡面 ' + d.iw + '×' + d.ih) + '">買' + esc(d.name) + '（' + d.w + '×' + d.h + '→' + d.iw + '×' + d.ih + '・' + p + ' 費拉）</button>'; }).join('') + '</div>'
@@ -126,7 +126,7 @@
   // 背包格（g:'bag'）：大小＝目前背的背包；放不下的列在下面
   const renderBag = el => {
     const c = cs(), [w, h] = packDim(), P = R.PACKS && (R.PACKS[S().pack] || R.PACKS.sack);
-    el.innerHTML = '<div class="tk-bagbar"><b>' + esc(P ? P.name : '背包') + '（' + w + '×' + h + '）</b><span>錢包 ' + Math.floor(S().gold || 0).toLocaleString('zh-TW') + ' 費拉</span><small>' + (cur && cur.wrap.isConnected ? '跟倉庫互相拖曳就是拿進、放回。' : '要拿東西進出，到倉庫（家裡的收納櫃）。') + '</small></div>'
+    el.innerHTML = '<div class="tk-bagbar"><b>' + esc(P ? P.name : '背包') + '（' + w + '×' + h + '）</b><span>錢包 ' + Math.floor(S().gold || 0).toLocaleString('zh-TW') + ' 費拉</span><small>' + (cur && cur.wrap.isConnected ? '跟倉庫互相拖曳就是拿進、放回；按住 Shift 點一下直接搬過去。' : '要拿東西進出，到倉庫（家裡的收納櫃）。') + '</small></div>'
       + '<div class="tk-wrap">' + gridHtml('bag', c) + '</div>'
       + (BOVER.length ? '<h4 class="tk-bagover-h">背包放不下的（' + BOVER.length + ' 樣，先整理或放回倉庫）</h4><div class="tk-over tk-bagover">' + BOVER.map(it => { const [a, e] = sizeIn(it, 'bag'); return '<div class="tk-it' + (it.stack ? ' sk' : '') + '" data-tk="' + it.id + '" style="position:relative;width:' + a * c + 'px;height:' + e * c + 'px;--c:' + colOf(it) + '">' + inner(it) + '</div>'; }).join('') + '</div>' : '')
       + '<div class="tk-pop" hidden></div>';
@@ -193,12 +193,34 @@
   // 拖曳（pointer events：滑鼠、觸控、筆都一樣）
   let ghost = null;
   const ghostSize = () => { if (!drag || !ghost) return; const c = cs(), [a, b] = dims(drag.w, drag.h, drag.r); ghost.style.width = a * c + 'px'; ghost.style.height = b * c + 'px'; drag.ox = Math.min(drag.ox, a - 1); drag.oy = Math.min(drag.oy, b - 1); };
+  // 按住 Shift 點一下：倉庫 ⇄ 背包直接搬過去（2026-10-18 作者；倉庫頁面上兩邊都在的時候）
+  const stashSpot = it => {
+    const g = tg(), [w, h] = sizeOf(it), k = kindOf(it);
+    const keys = g.boxes.filter(b => BOX[b.t].only && BOX[b.t].only.includes(k)).map(b => b.id).concat(['main'], g.boxes.filter(b => !BOX[b.t].only).map(b => b.id));
+    for (const key of keys) { const sp = findSpot(key, w, h); if (sp) return { g: key, x: sp[0], y: sp[1], r: sp[2] ? (w === h ? 0 : 1) : 0 }; }
+    return null;
+  };
+  const quickMove = it => {
+    const g = tg(), id = String(it.id), name = it.stack ? it.name : R.itemName(it);
+    if (!isBagThing(it)) {
+      if (!allows('bag', it)) { R.toast && R.toast('「' + name + '」只能放在倉庫。'); return; }
+      const [w, h] = sizeIn(it, 'bag'), sp = findSpot('bag', w, h); if (!sp) { R.bagFullMsg && R.bagFullMsg(name); return; }
+      const t = { g: 'bag', x: sp[0], y: sp[1], r: sp[2] ? (w === h ? 0 : 1) : 0 };
+      if (it.stack) moveStack(it, 'bag', t); else { R.toBag(it.id); fresh(); g.pos[id] = t; }
+    } else {
+      const t = stashSpot(it); if (!t) { R.toast && R.toast('倉庫沒有空位放「' + name + '」：先整理、加大倉庫或買箱子。', '#FF9A6A'); return; }
+      if (it.stack) moveStack(it, 'stash', t); else { R.fromBag(it.id); fresh(); g.pos[id] = t; }
+    }
+    R.sfx && R.sfx('click');
+    refresh();
+  };
   const startDrag = (e, el, wrap) => {
     if (e.button > 0) return;
     const g = tg(), c = cs(), isBox = !!el.dataset.tkb, id = el.dataset.tkb || el.dataset.tk;
     let w, h, r, it = null;
     if (isBox) { const b = g.boxes.find(x => x.id === id); if (!b) return; w = BOX[b.t].w; h = BOX[b.t].h; r = b.r || 0; }
     else { it = itemOf(id); if (!it) return; [w, h] = sizeIn(it, (g.pos[id] || {}).g); r = (g.pos[id] && g.pos[id].r) || 0; }
+    if (!isBox && e.shiftKey && cur && cur.wrap.isConnected && BAG && BAG.isConnected) { e.preventDefault(); quickMove(it); return; }
     const rc = el.getBoundingClientRect();
     const st = { id, isBox, it, w, h, r, ox: Math.floor((e.clientX - rc.left) / c), oy: Math.floor((e.clientY - rc.top) / c), sx: e.clientX, sy: e.clientY, moved: false, el };
     e.preventDefault();
