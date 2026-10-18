@@ -416,7 +416,7 @@
     inter(-HW + 1.6, 1.3, 1.8, '和搗藥的學徒說話', () => talk('白藤堂的學徒', ['「驅寒藥一箱要送到湯山村，天黑前、兩個人一起……」', '「以前這種送貨都是新人勇者接的。」']));
     // 驅寒茶的爐子、等候的長椅、藤花
     bx(1.0, 0.9, 1.0, '#3A3230', 3.6, 0.45, -3.8); mesh(new TH.CylinderGeometry(0.32, 0.3, 0.4, 10), '#5A5A62', 3.6, 1.1, -3.8); flame(3.6, 0.5, -3.3, 0.6); block(3.1, 4.1, -4.3, -3.3, 'deco'); lamp(3.6, 1.2, -2.8, '#FF9A4A', 0.6, 6, true);
-    inter(3.6, -2.5, 1.6, '驅寒茶（熱茶葉 8 費拉）', () => { const p = R.shopPrice ? R.shopPrice(8, 'pharmacy') : 8; if (p == null) { talk('白藤堂的掌櫃', ['「……請回吧。」']); return; } if (R.S.gold < p) { R.toast('錢不夠。'); return; } R.S.gold -= p; R.addGift('tea', 1); R.save(); R.toast('買了一包驅寒茶葉。'); });
+    inter(3.6, -2.5, 1.6, '驅寒茶（熱茶葉 8 費拉）', () => { const p = R.shopPrice ? R.shopPrice(8, 'pharmacy') : 8; if (p == null) { talk('白藤堂的掌櫃', ['「……請回吧。」']); return; } if (R.S.gold < p) { R.toast('錢不夠。'); return; } if (R.bagCanAdd && !R.bagCanAdd('gift:tea', 1)) { R.bagFullMsg && R.bagFullMsg('驅寒茶葉'); return; } R.S.gold -= p; R.addGift('tea', 1); R.save(); R.toast('買了一包驅寒茶葉。'); });
     benchAt(c, -HW + 0.5, -2.2, 2.6, false); benchAt(c, 1.5, HD - 1.4, 2.6, true);
     [[-HW + 0.7, HD - 0.8], [HW - 0.8, HD - 0.8]].forEach(([x, z]) => { bx(0.6, 0.7, 0.6, '#E6E0D2', x, 0.35, z); for (let i = 0; i < 5; i++) mesh(new TH.SphereGeometry(0.16, 6, 5), lam('#F4F0FF', { tex: 0 }), x + (i - 2) * 0.12, 0.85 + (i % 2) * 0.2, z); block(x - 0.35, x + 0.35, z - 0.35, z + 0.35, 'pot'); });
     lamp(-2, 3.0, 0.5, '#FFE0B0', 0.8, 12); lamp(2, 3.0, 2.5, '#FFE0B0', 0.5, 10);

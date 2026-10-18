@@ -813,6 +813,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/combat/skills.js"></script>
 <script src="js/core/hub.js"></script>
 <script src="js/core/saves.js"></script>
+<script src="js/items/wallet.js"></script><!-- 2026-10-18 錢包＋銀行：R.S.gold＝錢包＋銀行，先扣錢包再扣銀行；被偷、罰金只動錢包（倉庫大改第三階段） -->
 <script src="js/races/creator.js"></script>
 <script src="js/world/daytime.js"></script>
 <script src="js/ui/gtamap.js"></script>
@@ -906,6 +907,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/guild/huntspider.js"></script>
 <script src="js/guild/ranks.js"></script>
 <script src="js/items/raid.js"></script>
+<script src="js/items/carry.js"></script><!-- 2026-10-18 背包跟著角色走：背包裡的裝備、素材帶進遺跡，回來的東西留在背包（倉庫大改第二階段） -->
 <script src="js/combat/bomb.js"></script>
 <script src="js/ruins/restfloor.js"></script>
 <script src="js/ruins/ruinvar.js"></script>
@@ -1109,6 +1111,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/classes/summonai.js"></script><!-- 2026-10-14 召喚物：方格尋路繞牆、卡住偵測、離 20 公尺傳回身邊、IS＝等級÷4（summoncarry、classes2b、summoncraft 後面） -->
 <script src="js/classes/spellcraft.js"></script><!-- 2026-10-13 術士重做：咒文編排（活力-聚合-定點-控制）、咒式書、固化、臨場改寫（包在最外面） -->
 <script src="js/classes/elemreact.js"></script><!-- 2026-10-13 術士：按住 X 看元素反應表；敵人頭上的元素小方塊（spellcraft.js 後面） -->
+<script src="js/items/stacks.js"></script><!-- 2026-10-18 會疊的東西（費拉、素材、藥水、炸彈、卷軸、禮物、代幣、家具、任務道具）切成一疊一疊放進倉庫格 -->
 <script src="js/ui/tarkovstash.js"></script><!-- 格子倉庫（塔科夫式）、倉庫搬進公寓、加大倉庫與箱子（所有包 R.hub 的檔案後面） -->
 <script src="js/ui/guildhall.js"></script><!-- 公會介面重做：暖簾分頁、常駐狀態列、和紙委託單（篩選／排序／搜尋）、確認視窗、快捷鍵（所有包 R.hub 的檔案後面） -->
 <script src="js/ui/smithstash.js"></script><!-- 鐵匠鋪、倉庫介面重做：暖簾分頁、篩選排序、按不了的原因、強化預覽、分解確認與批次分解、簞笥倉庫、容量條、批次賣出（guildhall.js、tarkovstash.js 後面） -->
@@ -1143,5 +1146,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/items/questbag.js"></script><!-- 2026-10-17 任務道具包：任務道具另外放（不佔背包格子、不能賣、不能丟）；遺跡背包、倉庫、手上的委託看得到（raid.js、gearcmp.js、tarkovstash.js、hiddenquest.js 後面） -->
 <script src="js/ui/baglayout.js"></script><!-- 2026-10-18 背包的新版面（裝備＋角色、角色素質、背包格、任務道具；包住 R.bagSheet，questbag.js 後面） -->
 <script src="js/ui/townbar.js"></script><!-- 2026-10-18 城裡的快捷鍵欄（設定→畫面可以關）、城裡打開背包（baglayout.js 後面） -->
+<script src="js/ui/stashbag.js"></script><!-- 2026-10-18 倉庫頁面中間改放新的背包畫面（townbar.js 後面） -->
 <script src="js/story/kuzeshadow.js"></script><!-- 2026-10-17 隱藏任務「舊帝國武士的殘響」、刀鬼之影-久世 玄悟、寺川參狹（包 R.hurtPlayer、R.onPlayerDown、R.descend、R.loadFloor 的最外面：放在最後、main.js 前面） -->
 <script src="js/core/main.js"></script>
+<script src="js/items/bagrules.js"></script><!-- 2026-10-18 背包放不下就不能拿：商店按鈕先檢查、新裝備自動放進背包、背包有放不下的不能下遺跡（倉庫大改第三階段；放最後面） -->

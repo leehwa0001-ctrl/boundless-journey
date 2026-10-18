@@ -49,7 +49,8 @@
   const dims = (it, r) => { const [w, h] = sizeOf(it); return r ? [h, w] : [w, h]; };
   const occ = (g, skip) => { const o = Array(g.w * g.h).fill(null); W().run.bag.forEach(it => { if (it === skip) return; const p = g.at.get(it); if (!p) return; const [w, h] = dims(it, p.r); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) o[(p.y + y) * g.w + p.x + x] = it; }); return o; };
   // R.bagCellBonus：特質（巧手 +2、笨拙 −2，traitfx.js）——素材本來就從空格扣，這裡多扣（−）或少扣（＋）幾格
-  const matCells = extra => { const m = Object.assign({}, W().run.mats); if (extra) m[extra.k] = (m[extra.k] || 0) + extra.n; return Object.keys(m).reduce((a, k) => a + Math.ceil(Math.max(0, m[k]) / ST(k)), 0) - (R.bagCellBonus ? R.bagCellBonus() : 0); };
+  // 2026-10-18 倉庫大改第四階段：帶在背包裡的錢、藥水、炸彈……也佔格子（carry.js 的 R.carryCells；extra.k＝'gold' 是要撿的錢）
+  const matCells = extra => { const m = Object.assign({}, W().run.mats), ex = extra && R.MATS[extra.k] ? extra : null; if (ex) m[ex.k] = (m[ex.k] || 0) + ex.n; return Object.keys(m).reduce((a, k) => a + Math.ceil(Math.max(0, m[k]) / ST(k)), 0) + (R.carryCells ? R.carryCells(extra && !ex ? extra : null) : 0) - (R.bagCellBonus ? R.bagCellBonus() : 0); };
   const freeRect = (g, o, x, y, w, h) => { if (x < 0 || y < 0 || x + w > g.w || y + h > g.h) return false; for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) if (o[(y + j) * g.w + x + i]) return false; return true; };
   const freeCount = o => o.reduce((a, c) => a + (c ? 0 : 1), 0);
   const fitsAt = (it, x, y, r, skip) => { const g = G(), o = occ(g, skip), [w, h] = dims(it, r); return freeRect(g, o, x, y, w, h) && freeCount(o) - w * h >= matCells(); };
@@ -61,6 +62,7 @@
   }
   const usage = () => { const g = G(), o = occ(g); return { used: g.w * g.h - freeCount(o) + matCells(), total: g.w * g.h }; };
   R.raidUsage = () => (W().run ? usage() : null);
+  R.raidFreeCells = () => { const run = W().run; if (!run || !run.packId) return Infinity; return freeCount(occ(G())) - matCells(); };   // 還有幾格空的（第四階段：遺跡裡的商人看這個）
 
   // ---------- 出發：背哪一個背包 ----------
   const eligible = run => run && run.site && run.site.kind === 'ruin' && run.site.id !== 'kanko' && run.grade && run.grade.id !== 'hamilia';
@@ -78,7 +80,12 @@
     if (!run || !P || P.dead || !w.drops || !run.packId) return ud0(dt);
     const held = [];
     w.drops.forEach(d => {
-      if (d.gone || (d.type !== 'item' && d.type !== 'mat')) return;
+      if (d.gone || (d.type !== 'item' && d.type !== 'mat' && d.type !== 'gold')) return;
+      if (d.type === 'gold') {   // 2026-10-18 第四階段：錢也佔格子（一格 1000），放不下就不撿
+        if (Math.hypot(d.x - P.x, d.z - P.z) >= 1.1) return;
+        if (matCells({ k: 'gold', n: d.n || 0 }) > freeCount(occ(G()))) { if (!d.warned) { d.warned = true; R.toast('背包放不下這些費拉。按 I 整理背包。', '#FF9A6A'); } held.push(d); }
+        return;
+      }
       // 自己從背包丟出去的：走開 2.4 公尺以上才會再撿（作者 2026-10-04：背包滿的時候站在裝備上整理背包，
       // 丟下去的東西一落地就被自動撿回來，背包又滿了，地上那件就一直撿不起來）
       const dist = Math.hypot(d.x - P.x, d.z - P.z);
@@ -159,7 +166,9 @@
     const stacks = []; Object.keys(run.mats).forEach(k => { let n = run.mats[k]; while (n > 0) { stacks.push({ k, n: Math.min(ST(k), n) }); n -= ST(k); } });
     const cells = Array.from({ length: g.w * g.h }, (_, i) => '<div class="tk-cell" style="grid-column:' + (i % g.w + 1) + ';grid-row:' + (Math.floor(i / g.w) + 1) + '"></div>').join('');
     const items = run.bag.map((it, i) => { const p = g.at.get(it); if (!p) return ''; const [w, h] = dims(it, p.r); return '<div class="tk-item' + (sel && sel.it === it ? ' sel' : '') + '" data-bi="' + i + '" style="grid-column:' + (p.x + 1) + '/span ' + w + ';grid-row:' + (p.y + 1) + '/span ' + h + ';--c:' + R.rarityColor(it) + '">' + icon(it) + '<i class="tk-lv">' + it.ilvl + '</i><small>' + esc(R.itemName(it)) + '</small></div>'; }).join('');
-    const matsHtml = stacks.map((st, j) => { const i = free[j]; if (i == null) return ''; return '<div class="tk-mat' + (sel && sel.mat === st.k ? ' sel' : '') + '" data-mk="' + st.k + '" style="grid-column:' + (i % g.w + 1) + ';grid-row:' + (Math.floor(i / g.w) + 1) + ';--c:' + (R.MATS[st.k].color || '#C8B88A') + '" title="' + esc(R.MATS[st.k].name) + '"><i>' + (R.matIconURL ? '<img src="' + R.matIconURL(st.k, 2) + '" alt="">' : '') + '</i><b>' + st.n + '</b></div>'; }).join('');
+    const carried = R.carryStacks ? R.carryStacks() : [];
+    const carryHtml = carried.map((st, j) => { const i = free[stacks.length + j]; if (i == null) return ''; return '<div class="tk-mat tk-carry" style="grid-column:' + (i % g.w + 1) + ';grid-row:' + (Math.floor(i / g.w) + 1) + ';--c:' + st.color + '" title="' + esc(st.name + ' ×' + st.n) + '"><i>' + st.icon() + '</i><b>' + st.n + '</b></div>'; }).join('');
+    const matsHtml = carryHtml + stacks.map((st, j) => { const i = free[j]; if (i == null) return ''; return '<div class="tk-mat' + (sel && sel.mat === st.k ? ' sel' : '') + '" data-mk="' + st.k + '" style="grid-column:' + (i % g.w + 1) + ';grid-row:' + (Math.floor(i / g.w) + 1) + ';--c:' + (R.MATS[st.k].color || '#C8B88A') + '" title="' + esc(R.MATS[st.k].name) + '"><i>' + (R.matIconURL ? '<img src="' + R.matIconURL(st.k, 2) + '" alt="">' : '') + '</i><b>' + st.n + '</b></div>'; }).join('');
     const loose = run.bag.filter(it => !g.at.get(it));
     let info = '<p class="note">點一下看說明；拖曳搬動，拖的時候按 R 或右鍵轉向；拖到左邊的裝備欄就是穿上。</p>';
     if (sel && sel.mat && run.mats[sel.mat] > 0) {   // 選了素材（作者 2026-10-04：裝備可以丟出來，素材也要可以）

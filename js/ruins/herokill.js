@@ -135,7 +135,7 @@
   const investigate = names => {
     const s = S(); if (!s) return; const n = names.length, traced = rnd() < 1 - Math.pow(0.4, n);
     if (!traced) { R.addDeed && R.addDeed('遺跡裡發現了 ' + n + ' 具勇者的遺體（' + names.join('、') + '）。公會東鶴分館正在調查。'); R.banner('公會在遺跡裡發現了勇者的遺體', '正在調查……還沒有查到你。'); R.save(); return; }
-    const prior = s.caughtN || 0, fine = Math.min(s.gold, 300 * n), days = Math.min(7, 2 + n + prior), ban = Math.min(30, 5 * n + 3 * prior);
+    const prior = s.caughtN || 0, fine = Math.min(s.wallet || 0, 300 * n), days = Math.min(7, 2 + n + prior), ban = Math.min(30, 5 * n + 3 * prior);
     s.gold -= fine; s.caughtN = prior + 1; s.rep = (s.rep || 0) - 15 * n; s.shameUntil = Math.max(s.shameUntil || 0, s.day + 7); s.banUntil = Math.max(s.banUntil || 0, s.day + days + ban);
     const left = (s.party || []).filter(m => !m.story).map(m => m.name); s.party = (s.party || []).filter(m => m.story);
     if (R.advanceDays) R.advanceDays(days);

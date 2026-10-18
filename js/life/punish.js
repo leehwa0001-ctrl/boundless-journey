@@ -9,8 +9,8 @@
   const W = R.W, $ = id => document.getElementById(id), esc = s => R.esc(s);
   R.arrestPunish = heat => {
     const S = R.S, prior = S.caughtN || 0, stars = Math.max(1, heat || 1);
-    const base = Math.round((60 + 80 * stars) * (1 + 0.4 * prior)), fine = base + Math.min(Math.round(S.gold * 0.05), 150 * stars);
-    const paid = Math.min(S.gold, fine), unpaid = fine - paid; S.gold -= paid;
+    const base = Math.round((60 + 80 * stars) * (1 + 0.4 * prior)), fine = base + Math.min(Math.round((S.wallet || 0) * 0.05), 150 * stars);
+    const paid = Math.min(S.wallet || 0, fine), unpaid = fine - paid; S.gold -= paid;   // 罰金只從錢包扣（wallet.js）
     const days = Math.min(7, stars + prior + Math.ceil(unpaid / 150));
     const ban = prior >= 1 ? Math.min(10, prior * 2 + stars) : 0;
     S.rep = (S.rep || 0) - (4 + 2 * stars);
