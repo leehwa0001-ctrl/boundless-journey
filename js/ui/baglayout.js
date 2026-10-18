@@ -94,38 +94,38 @@
   const css = document.createElement('style');
   css.textContent = [
     '#r-sheet.bl-on{width:min(96vw,1180px);max-width:min(96vw,1180px)}',
-    '#r-sheet.bl-on .bl{display:grid;grid-template-columns:minmax(330px,41%) 1fr;gap:10px;height:min(74vh,640px);min-height:0}',
-    '#r-sheet.bl-on .bl-left,#r-sheet.bl-on .bl-right{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}',
-    '#r-sheet.bl-on .bl-sec{background:var(--bg2,rgba(0,0,0,.25));border:1px solid var(--line,#5A4A30);border-radius:10px;padding:8px 10px;min-height:0}',
-    '#r-sheet.bl-on .bl-sec>h3{margin:0 0 6px;font-size:14px;color:var(--gold,#C9A13A)}',
+    '.bl-on .bl{display:grid;grid-template-columns:minmax(330px,41%) 1fr;gap:10px;height:min(74vh,640px);min-height:0}',
+    '.bl-on .bl-left,.bl-on .bl-right{display:flex;flex-direction:column;gap:10px;min-height:0;min-width:0}',
+    '.bl-on .bl-sec{background:var(--bg2,rgba(0,0,0,.25));border:1px solid var(--line,#5A4A30);border-radius:10px;padding:8px 10px;min-height:0}',
+    '.bl-on .bl-sec>h3{margin:0 0 6px;font-size:14px;color:var(--gold,#C9A13A)}',
     // 裝備＋角色
-    '#r-sheet.bl-on .bl-eq{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:stretch;flex:0 0 auto}',
-    '#r-sheet.bl-on .bl-col{display:flex;flex-direction:column;justify-content:space-between;gap:6px}',
-    '#r-sheet.bl-on .bl-slot{display:flex;flex-direction:column;align-items:center;gap:1px}',
-    '#r-sheet.bl-on .bl-slot small{font-size:11px;opacity:.75}',
-    '#r-sheet.bl-on .bl-slot .mc-slot{width:52px;height:52px}',
-    '#r-sheet.bl-on .bl-row{display:flex;align-items:flex-end;gap:4px;margin-left:-44px}',
-    '#r-sheet.bl-on .bl-badge .mc-slot.bl-card{width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center}',
-    '#r-sheet.bl-on .bl-card-ic{display:flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:3px;background:linear-gradient(135deg,#E8C04A,#9A7A2A);color:#2A1E10;font-weight:700;font-size:12px;box-shadow:0 0 0 1px #3A2A10}',
-    '#r-sheet.bl-on .bl-face{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;border-radius:8px;background:radial-gradient(ellipse at 50% 85%,rgba(201,161,58,.18),rgba(0,0,0,.25) 70%);cursor:pointer;padding:6px}',
-    '#r-sheet.bl-on .bl-face canvas{width:100%;max-width:200px;height:auto;aspect-ratio:4/5;image-rendering:pixelated}',
-    '#r-sheet.bl-on .bl-face small{opacity:.8}',
+    '.bl-on .bl-eq{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:stretch;flex:0 0 auto}',
+    '.bl-on .bl-col{display:flex;flex-direction:column;justify-content:space-between;gap:6px}',
+    '.bl-on .bl-slot{display:flex;flex-direction:column;align-items:center;gap:1px}',
+    '.bl-on .bl-slot small{font-size:11px;opacity:.75}',
+    '.bl-on .bl-slot .mc-slot{width:52px;height:52px}',
+    '.bl-on .bl-row{display:flex;align-items:flex-end;gap:4px;margin-left:-44px}',
+    '.bl-on .bl-badge .mc-slot.bl-card{width:38px;height:38px;cursor:pointer;display:flex;align-items:center;justify-content:center}',
+    '.bl-on .bl-card-ic{display:flex;align-items:center;justify-content:center;width:26px;height:20px;border-radius:3px;background:linear-gradient(135deg,#E8C04A,#9A7A2A);color:#2A1E10;font-weight:700;font-size:12px;box-shadow:0 0 0 1px #3A2A10}',
+    '.bl-on .bl-face{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;border-radius:8px;background:radial-gradient(ellipse at 50% 85%,rgba(201,161,58,.18),rgba(0,0,0,.25) 70%);cursor:pointer;padding:6px}',
+    '.bl-on .bl-face canvas{width:100%;max-width:200px;height:auto;aspect-ratio:4/5;image-rendering:pixelated}',
+    '.bl-on .bl-face small{opacity:.8}',
     // 角色素質
-    '#r-sheet.bl-on .bl-stats{flex:1 1 auto;overflow:auto}',
-    '#r-sheet.bl-on .bl-stats .cs-box{background:none;border:0;padding:0;margin:0}',
+    '.bl-on .bl-stats{flex:1 1 auto;overflow:auto}',
+    '.bl-on .bl-stats .cs-box{background:none;border:0;padding:0;margin:0}',
     // 背包格
-    '#r-sheet.bl-on .bl-bag{flex:1 1 auto;display:flex;flex-direction:column;gap:6px;overflow:hidden}',
-    '#r-sheet.bl-on .bl-bag .tk-gridwrap{flex:1 1 auto;overflow:auto;min-height:120px;display:flex;justify-content:center;align-items:flex-start}',
-    '#r-sheet.bl-on .bl-bag .tk-side{flex:0 1 auto;max-height:38%;overflow:auto;width:auto;max-width:none;border-top:1px solid var(--line,#5A4A30);padding-top:6px}',
-    '#r-sheet.bl-on .bl-bag .bl-note{margin:0;font-size:12px;max-height:5.5em;overflow:auto}',
+    '.bl-on .bl-bag{flex:1 1 auto;display:flex;flex-direction:column;gap:6px;overflow:hidden}',
+    '.bl-on .bl-bag .tk-gridwrap{flex:1 1 auto;overflow:auto;min-height:120px;display:flex;justify-content:center;align-items:flex-start}',
+    '.bl-on .bl-bag .tk-side{flex:0 1 auto;max-height:38%;overflow:auto;width:auto;max-width:none;border-top:1px solid var(--line,#5A4A30);padding-top:6px}',
+    '.bl-on .bl-bag .bl-note{margin:0;font-size:12px;max-height:5.5em;overflow:auto}',
     // 任務道具
-    '#r-sheet.bl-on .bl-quest{flex:0 0 auto;max-height:24%;overflow:auto}',
-    '#r-sheet.bl-on .bl-quest .qb-box{margin:0}',
-    '#r-sheet.bl-on .bl-quest .qb-box h3{margin:0 0 6px;font-size:14px;color:var(--gold,#C9A13A)}',
-    '#r-sheet.bl-on .bl-quest .qb-list{flex-wrap:nowrap;overflow-x:auto}',
-    '#r-sheet.bl-on .bl-quest .qb-it{min-width:170px}',
+    '.bl-on .bl-quest{flex:0 0 auto;max-height:24%;overflow:auto}',
+    '.bl-on .bl-quest .qb-box{margin:0}',
+    '.bl-on .bl-quest .qb-box h3{margin:0 0 6px;font-size:14px;color:var(--gold,#C9A13A)}',
+    '.bl-on .bl-quest .qb-list{flex-wrap:nowrap;overflow-x:auto}',
+    '.bl-on .bl-quest .qb-it{min-width:170px}',
     // 窄的畫面：上下排
-    '@media (max-width:820px){#r-sheet.bl-on .bl{grid-template-columns:1fr;height:auto}#r-sheet.bl-on .bl-stats{max-height:40vh}#r-sheet.bl-on .bl-bag .tk-gridwrap{max-height:55vh}}'
+    '@media (max-width:820px){.bl-on .bl{grid-template-columns:1fr;height:auto}.bl-on .bl-stats{max-height:40vh}.bl-on .bl-bag .tk-gridwrap{max-height:55vh}}'
   ].join('');
   document.head.appendChild(css);
 })(window.R = window.R || {});

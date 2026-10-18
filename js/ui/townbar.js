@@ -81,6 +81,6 @@
     + '#tb-bar .act.big{width:80px;height:80px}'
     + 'body.touch #tb-bar{right:auto;left:50%;transform:translateX(-50%);bottom:calc(max(8px,env(safe-area-inset-bottom)) + 4px);gap:5px}'
     + 'body.touch #tb-bar .act{width:46px;height:46px;font-size:10px}body.touch #tb-bar .act.big{width:54px;height:54px}'
-    + '#r-sheet.tb-townbag .tb-note{border-top:1px solid var(--line,#5A4A30);padding-top:6px}';
+    + '.tb-townbag .tb-note{border-top:1px solid var(--line,#5A4A30);padding-top:6px}';
   document.head.appendChild(css);
 })(window.R = window.R || {});
