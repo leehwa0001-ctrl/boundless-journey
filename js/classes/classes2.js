@@ -30,7 +30,7 @@
   R.REG.push(
     { cls: 'bard', group: '樂器', list: [['lute', '音波穿過兩隻敵人。'], ['flute', '兩個會追蹤的音符。']] },
     { cls: 'summoner', group: '召喚媒介', list: [['tome', '會爆開的魔力彈。'], ['bell', '兩發會追蹤的鈴音。']] },
-    { cls: 'arraymage', group: '陣具', list: [['chalk', '會爆開的陣光。'], ['disc', '兩發會追蹤的陣光。']] },
+    { cls: 'arraymage', group: '陣具', list: [['chalk', '所有法陣（普攻、技能）的前搖 −20%。'], ['disc', '1 秒 1 下、一段重擊（傷害 ×5），每發 2.5 魔力。'], ['compass', '1 秒 1.5 下；法陣可以放的範圍 +30%；普攻把敵人吸到法陣中間。']] }   /* 2026-10-18 作者 */,
     { cls: 'enchanter', group: '附魔兵器', list: [['runeblade', '平衡，刻著咒文。'], ['runedagger', '一次砍兩下。']] },
     { cls: 'scroll', group: '卷軸', list: [['scrollb', '一次三張，扇形打出去。'], ['talisman', '射得快、射得遠。']] }
   );

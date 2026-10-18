@@ -17,8 +17,8 @@
   // 舊的傳說、神話：補到新的條數
   const topUp = () => { const s = S(); if (!s || !s.stash) return; let n = 0; s.stash.concat(Object.values(s.equip || {}).flatMap(e => Object.values(e || {})).map(id => R.itemById ? R.itemById(id) : null)).forEach(it => { if (!it || it.topped || !(it.kind === 'weapon' || it.kind === 'armor') || it.rarity < 4) return; it.topped = 1; while (it.affixes.length < R.RARITY[it.rarity].affix) { const a = newAffix(it); if (!a) break; it.affixes.push(a); n++; } }); if (n) R.save(); };
   // 價錢
-  const can = c => { const s = S(); return s.gold >= c.gold && Object.keys(c.mats || {}).every(k => (s.mats[k] || 0) >= c.mats[k]); };
-  const pay = c => { const s = S(); s.gold -= c.gold; Object.keys(c.mats || {}).forEach(k => { s.mats[k] -= c.mats[k]; }); };
+  const can = c => { const s = S(); return s.gold >= c.gold && Object.keys(c.mats || {}).every(k => R.matHave(k) >= c.mats[k]); };
+  const pay = c => { const s = S(); s.gold -= c.gold; Object.keys(c.mats || {}).forEach(k => R.matSpend(k, c.mats[k])); };
   const matsTxt = m => Object.keys(m || {}).map(k => (R.MATS[k] ? R.MATS[k].name : k) + ' ' + m[k]).join('・');
   const rollPrice = it => ({ gold: 200 + 150 * it.rarity, mats: { crystal: 3 + it.rarity } });
   const addPrice = it => ({ gold: 800 + 600 * it.rarity, mats: { core: 1, purecry: 2 } });

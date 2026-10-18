@@ -100,14 +100,17 @@
   R.upgrade = it => {
     if (!it.identified || it.plus >= 5) return false;
     const c = R.upgradePrice(it);
-    if (R.S.gold < c.gold || (R.S.mats.crystal || 0) < c.crystal) return false;
-    R.S.gold -= c.gold; R.S.mats.crystal -= c.crystal; it.plus++;
+    if (R.S.gold < c.gold || R.matHave('crystal') < c.crystal) return false;
+    R.S.gold -= c.gold; R.matSpend('crystal', c.crystal); it.plus++;
     return true;
   };
-  R.canCraft = rc => R.S.gold >= rc.gold && Object.keys(rc.mats).every(k => (R.S.mats[k] || 0) >= rc.mats[k]);
+  // 2026-10-18 作者：鐵匠鋪直接用倉庫裡的素材——R.matHave＝背包＋倉庫；R.matSpend 先扣背包、不夠再扣倉庫（倉庫＝R.S.vault，stacks.js）
+  R.matHave = k => ((R.S.mats && R.S.mats[k]) || 0) + (R.stackCount ? R.stackCount('mat:' + k, 'stash') : 0);
+  R.matSpend = (k, n) => { const s = R.S; s.mats = s.mats || {}; const a = Math.min(s.mats[k] || 0, n); s.mats[k] = (s.mats[k] || 0) - a; const rest = n - a; if (rest > 0 && R.stackAdd) R.stackAdd('mat:' + k, 'stash', -rest); };
+  R.canCraft = rc => R.S.gold >= rc.gold && Object.keys(rc.mats).every(k => R.matHave(k) >= rc.mats[k]);
   R.craft = (rc, kind, base) => {
     if (!R.canCraft(rc)) return null;
-    R.S.gold -= rc.gold; Object.keys(rc.mats).forEach(k => { R.S.mats[k] -= rc.mats[k]; });
+    R.S.gold -= rc.gold; Object.keys(rc.mats).forEach(k => R.matSpend(k, rc.mats[k]));
     const it = R.makeItem({ kind, base, ilvl: rc.ilvl, rarity: wpick(rc.weights), identified: true });
     R.S.stash.push(it);
     return it;

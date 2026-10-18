@@ -184,8 +184,8 @@
     const keep = isTrinket(it) && defOf(it) ? 1 : 0;
     if (it.affixes.length > keep && it.affixes.length >= keep + R.RARITY[it.rarity].affix) it.affixes[keep + Math.floor(Math.random() * (it.affixes.length - keep))] = a; else it.affixes.push(a);
   };
-  const pay = c => { const s = S(); s.gold -= c.gold || 0; Object.keys(c.mats || {}).forEach(k => { s.mats[k] -= c.mats[k]; }); };
-  const can = c => { const s = S(); return s.gold >= (c.gold || 0) && Object.keys(c.mats || {}).every(k => (s.mats[k] || 0) >= c.mats[k]); };
+  const pay = c => { const s = S(); s.gold -= c.gold || 0; Object.keys(c.mats || {}).forEach(k => R.matSpend(k, c.mats[k])); };
+  const can = c => { const s = S(); return s.gold >= (c.gold || 0) && Object.keys(c.mats || {}).every(k => R.matHave(k) >= c.mats[k]); };
   R.craftNamed = rc => {
     if (!can(rc)) return null; pay(rc);
     const it = R.makeItem({ kind: rc.kind, base: rc.base, ilvl: rc.ilvl, rarity: R.wpick(rc.weights), identified: true });
@@ -249,7 +249,7 @@
   // ---------- 鐵匠鋪的新分頁 ----------
   const TABS = [['acc', '飾品工房'], ['refine', '精煉・重鑄・附魔'], ['buy', '買素材']];
   let csub = null;
-  const matsTxt = m => Object.keys(m).map(k => (R.matChip ? R.matChip(k, (S().mats[k] || 0) + '／' + m[k]) : esc(R.MATS[k].name) + ' ' + (S().mats[k] || 0) + '／' + m[k])).join(' ');
+  const matsTxt = m => Object.keys(m).map(k => (R.matChip ? R.matChip(k, R.matHave(k) + '／' + m[k]) : esc(R.MATS[k].name) + ' ' + R.matHave(k) + '／' + m[k])).join(' ');
   const card = (it, btns) => '<div class="item-card" data-iid="' + it.id + '" style="--c:' + R.rarityColor(it) + '">' + (R.itemIconTag ? R.itemIconTag(it, 'card') : '') + '<b>' + esc(R.itemName(it)) + '</b>' + (R.itemInfo ? R.itemInfo(it) : '<small class="rar">' + (it.identified ? R.RARITY[it.rarity].name : '？？？') + (it.plus ? '・+' + it.plus : '') + '</small><ul>' + R.itemLines(it).map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>') + '<div class="row">' + btns + '</div></div>';
   const accTab = () => '<p class="note">「照圖做的東西，做出來是什麼樣子我心裡有數。」配方上寫的詞綴一定會有；其他的詞綴看運氣。做出來當場就鑑定好了。</p><div class="recipes">'
     + ACC_RC.map((rc, i) => { const d = rc.kind === 'acc' ? ACC[rc.base] : CHARM2[rc.base], imp = d ? ACCDEF(d.imp) : null, ex = rc.extra ? ACCDEF(rc.extra) : null;
@@ -272,7 +272,7 @@
   };
   const buyTab = () => {
     const s = S(); let h = '<p class="note">「布、皮、紙、漆這些，我跟城裡的店調得到。銀錠是兌換所熔的，珍珠是魚市場的。」</p><div class="recipes">';
-    BUY.forEach(([k, p0]) => { const p = R.shopPrice ? R.shopPrice(p0, 'smith') : p0; if (p == null) return; h += '<div class="recipe">' + (R.matIconTag ? R.matIconTag(k, 'card') : '') + '<b>' + esc(R.MATS[k].name) + '</b><small>' + esc(R.MATS[k].desc) + '</small><small>一個 ' + p + ' 費拉・手邊 ' + (s.mats[k] || 0) + '</small><div class="row"><button type="button" class="btn pri" data-mbuy="' + k + ':1:' + p + '"' + (s.gold < p ? ' disabled' : '') + '>買 1</button><button type="button" class="btn" data-mbuy="' + k + ':5:' + p + '"' + (s.gold < p * 5 ? ' disabled' : '') + '>買 5</button></div></div>'; });
+    BUY.forEach(([k, p0]) => { const p = R.shopPrice ? R.shopPrice(p0, 'smith') : p0; if (p == null) return; h += '<div class="recipe">' + (R.matIconTag ? R.matIconTag(k, 'card') : '') + '<b>' + esc(R.MATS[k].name) + '</b><small>' + esc(R.MATS[k].desc) + '</small><small>一個 ' + p + ' 費拉・背包＋倉庫 ' + R.matHave(k) + '</small><div class="row"><button type="button" class="btn pri" data-mbuy="' + k + ':1:' + p + '"' + (s.gold < p ? ' disabled' : '') + '>買 1</button><button type="button" class="btn" data-mbuy="' + k + ':5:' + p + '"' + (s.gold < p * 5 ? ' disabled' : '') + '>買 5</button></div></div>'; });
     if (R.shopPrice && R.shopPrice(10, 'smith') == null) h += '<p class="hand">老岩搖搖頭：「今天不賣你。」</p>';
     return h + '</div>';
   };

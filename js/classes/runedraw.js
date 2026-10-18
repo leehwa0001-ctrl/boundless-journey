@@ -83,9 +83,12 @@
     // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋Loop 的攻擊範圍）
     E.rangeUp = Math.max(0, ((P && P.rangeMult) || 1) - 1 + E.loopArea); E.windMul = 1 + 0.5 * E.rangeUp;
     E.pvArea = pv('ry2') ? 0.3 : 0;   // 抑制圈：技能範圍 +30%（另外乘）
-    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul * (pv('ry1') ? 0.75 : 1) * (pv('ry3') ? 2 : 1) * (legLine ? 0.8 : 1);
-    E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind))) * E.windMul;
-    E.reach = pv('ry4') ? 1.5 : 1;   // 定點
+    const wb = P && P.item && P.item.base, penK = wb === 'chalk' ? 0.8 : 1;   // 2026-10-18 作者：陣筆——所有法陣的前搖 −20%
+    E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul * (pv('ry1') ? 0.75 : 1) * (pv('ry3') ? 2 : 1) * (legLine ? 0.8 : 1) * penK;
+    E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind))) * E.windMul * penK;
+    E.reach = (pv('ry4') ? 1.5 : 1) * (wb === 'compass' ? 1.3 : 1);   // 定點；羅盤：法陣可以放的範圍 +30%（2026-10-18 作者）
+    E.naBase = wb === 'disc' ? 2.5 : 1.5;   // 陣盤：每發 2.5 魔力
+    E.naPull = wb === 'compass';   // 羅盤：普攻的擊退 −100%（吸到普攻正中間）
     E.multi = pv('ry3');   // 閉環（被動）
     E.slowIn = pv('ry6');   // 陣地
     E.echo = pv('ry10');   // 艾達諾拉
@@ -234,6 +237,8 @@
   }, true);
   window.addEventListener('keydown', e => { if (e.key === 'Escape' && pend) { clearPend(); e.stopPropagation(); } }, true);
 
+  // 2026-10-18 作者：術陣師的武器——陣盤：1 秒 1 下、一段傷害、傷害 ×5（7 → 35）、每發 2.5 魔力；羅盤：1 秒 1.5 下、傷害跟陣筆一樣（13）
+  { const Wp = R.WEAPONS || {}; if (Wp.disc) Object.assign(Wp.disc, { dmg: 35, pellets: 1, rate: 1, mp: 2.5, spread: 0 }); if (Wp.compass) Object.assign(Wp.compass, { dmg: 13, rate: 1.5 }); }
   // ---------- 普攻：地面法陣 ----------
   let naCap = null, naN = 0;
   const fi0 = R.fire;
@@ -245,7 +250,7 @@
   R.attack = (...a) => {
     const P = W() && W().P; if (!isRM(P) || !P.ws || P.ws.kind !== 'magic') return at0(...a);
     // 2026-10-13：普攻和技能可以同時放、同時蓄力（不再互相擋）。普攻耗魔＝1.5＋每個核心 0.25（魔力核心再 −75%）
-    const e0 = E(); let cost = (1.5 + 0.25 * e0.nCore) * (1 - e0.naMp); if (cost > 0 && e0.echo) cost *= 1.8;   // cost < 0：回魔
+    const e0 = E(); let cost = ((e0.naBase || 1.5) + 0.25 * e0.nCore) * (1 - e0.naMp); if (cost > 0 && e0.echo) cost *= 1.8;   // cost < 0：回魔
     if ((P.atkCd || 0) <= 0 && P.mp < cost) { R.toast && R.toast('魔力不夠'); P.atkCd = 0.4; return; }
     const cd0 = P.atkCd || 0, mp0 = P.mp; naCap = { dmg: 0, n: 0 };
     let cap0; try { at0(...a); } finally { cap0 = naCap; naCap = null; }
@@ -263,8 +268,8 @@
       // 觀星術師：星星墜落在法陣範圍內；傷害 ×(1 − 12% × Core 數量)，每點亮一個 Core 多落一顆
       const k1 = star ? Math.max(0, 1 - 0.12 * nC) : 1, fall = () => { const a = Math.random() * 6.28, d = Math.random() * r * 0.6, sx = x + Math.sin(a) * d, sz = z + Math.cos(a) * d; R.fx && R.fx('pillar', sx, 0, sz, { r: Math.max(0.5, r * 0.22), color: '#FFF4B8' }); R.fx && R.fx('spark', sx, 0.6, sz, { a, crit: true }); };
       if (star) fall();
-      const n = R.aoe(x, z, r, dmg * k1, { primary: true, kbX: x, kbZ: z });   // 2026-10-18：擊退以普攻法陣的正中央為準
-      if (star) for (let i = 1; i <= nC; i++) setTimeout(() => { const w3 = W(); if (!w3.run) return; fall(); R.aoe(x, z, r, dmg * k1, { primary: true, kbX: x, kbZ: z }); }, i * 140);
+      const n = R.aoe(x, z, r, dmg * k1, { primary: true, kbX: x, kbZ: z, kb: E().naPull ? -((W().P.ws && W().P.ws.kb) || 0.5) : undefined });   // 2026-10-18：擊退以普攻法陣的正中央為準
+      if (star) for (let i = 1; i <= nC; i++) setTimeout(() => { const w3 = W(); if (!w3.run) return; fall(); R.aoe(x, z, r, dmg * k1, { primary: true, kbX: x, kbZ: z, kb: E().naPull ? -((W().P.ws && W().P.ws.kb) || 0.5) : undefined }); }, i * 140);
       if (P0 && P0.adv === 'warder') edgeStun(x, z, r, 0.25);   // 結界師：普攻法陣的邊界暈眩 0.25 秒
       const P2 = W().P; if (!P2) return; const e2 = E();
       // 癒／防核心：打中遺跡生物，或自己站在這次普攻的法陣範圍內，才有效
