@@ -381,6 +381,7 @@ window.R = window.R || {};
     { tier: 2, name: '核心', ilvl: 6, mats: { manaore: 6, crystal: 4, core: 1 }, gold: 300, weights: [0, 0, 40, 50, 10] }
   ];
   R.idPrice = it => 12 + it.ilvl * 12;
-  R.sellPrice = it => Math.round((6 + it.ilvl * 5) * (it.identified ? [1, 1.6, 2.6, 4.2, 7, 12][it.rarity] : 1.3));
+  // 2026-10-19 重訂（1 費拉 ≈ 100 円）：裝備等級 30 的時候 普通 15、精良 40、稀有 150、史詩 1,200、傳說 20,000、神話約 30 萬（20～50 萬）
+  R.sellPrice = it => { const k = (6 + (it.ilvl || 1) * 5) / 156; if (!it.identified) return Math.max(1, Math.round(20 * k)); if (it.rarity >= 5) return Math.round(Math.max(200000, Math.min(500000, 300000 * k)) / 100) * 100; return Math.max(1, Math.round([15, 40, 150, 1200, 20000][it.rarity || 0] * k)); };
   R.upgradePrice = it => ({ gold: 30 * (it.plus + 1), crystal: it.plus + 1 });
 })(window.R);

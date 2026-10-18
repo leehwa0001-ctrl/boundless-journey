@@ -300,12 +300,13 @@
     const S = R.S;
     run.bag.forEach(it => S.stash.push(it));
     Object.keys(run.mats).forEach(k => { S.mats[k] = (S.mats[k] || 0) + run.mats[k]; });
-    S.gold += Math.round(run.gold || 0);   // 2026-10-16 修正：遺跡裡撿到的費拉（木箱、勇者、聚落）原本只記在 run.gold，帶回來沒有加進錢包
     // 走完：到了最後一層，而且打倒了核心（保留區：走到最深處、看到核心；摩爾斯級還要清掉送犬的巢）
     const full = run.floor === run.floors - 1 && (run.grade.boss ? !!run.bossDown : W.F.rooms.some(r => r.type === 'deep' && r.visited && r.cleared));
     // 公會的委託報酬：看分級、走到第幾層、擊倒幾隻、有沒有走完
     const lv = run.grade.lv, greed = R.calcPlayer(S.cls).greed || 0;
-    run.reward = Math.round(([30, 90, 220, 520, 1100][lv - 1] + [12, 30, 70, 160, 320][lv - 1] * run.floor + run.kills * (1 + lv)) * (full ? 1.6 : 1) * (1 + greed));
+    // 2026-10-19 重訂費拉（1 費拉 ≈ 100 円）：委託報酬只有走完才拿得到、一次付清；走到一半回來沒有報酬，遺跡裡撿到的費拉也帶不回來
+    run.reward = full ? Math.round([120, 400, 1200, 3500, 12000][lv - 1] * (1 + greed)) : 0;
+    if (full) S.gold += Math.round(run.gold || 0); else run.gold = 0;
     // 隊友照公會規矩分走報酬
     const alive = (run.party || []).filter(pm => !pm.gone).length; run.share = Math.round(run.reward * R.PARTY_SHARE * alive);
     S.gold += run.reward - run.share;

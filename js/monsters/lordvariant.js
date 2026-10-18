@@ -4,7 +4,7 @@
 // - 三個形態：（2026-10-05 起跟兩條血對齊，見下面）第一條血打破、第二條血剩一半的時候「異變」——1.5 秒不會受傷、震開周圍、橫幅寫第幾形態；
 //   第二形態多一招、第三形態再多一招（每一種領主體自己的兩招，見下面 V），而且原本的招式出得更快、移動更快。
 // - 打倒：掉「異變核心」2 個（卡索級 3 個）、一個魔力核心，15% 直接掉一件神話（紅武）；第一次打倒那一種的異變，多給 2 個異變核心。
-// - 紅武：鐵匠鋪的製作多一條「異變（紅武）」——異變核心 ×4、高純度魔力水晶 ×2、3000 費拉，做出來一定是神話（紅色），
+// - 紅武：鐵匠鋪的製作多一條「異變（紅武）」——異變核心 ×4、高純度魔力水晶 ×2、150,000 費拉，做出來一定是神話（紅色），
 //   物品等級跟著現在的職業等級（至少 12）。
 // - 管理員面板生領主體的時候勾「異變」就是異變的（R.lordVariant(e)）。
 // - 2026-10-05 作者：圖鑑沒有記載領主變體、領主變體可以有兩條血——
@@ -200,7 +200,7 @@
   const nm0 = R.itemName, il0 = R.itemLines;
   if (nm0) R.itemName = it => { const n = nm0(it); try { if (it && it.muta && V[it.muta] && it.identified !== false && !it.lord) return '【' + V[it.muta][0] + '】' + n; } catch (e) { } return n; };
   if (il0) R.itemLines = it => { const L = il0(it); try { if (it && it.muta && V[it.muta] && R.ENEMIES[it.muta]) L.push('異變的領主體「' + R.ENEMIES[it.muta].name.replace(/^領主體・/, '') + '【' + V[it.muta][0] + '】」的紅武'); } catch (e) { } return L; };
-  if (R.RECIPES) R.RECIPES.push({ tier: 3, name: '異變（紅武）', get ilvl() { const s = S(); return Math.max(12, s && s.classes && s.classes[s.cls] ? s.classes[s.cls].lv : 12); }, mats: { mutacore: 4, purecry: 2 }, gold: 3000, weights: [0, 0, 0, 0, 0, 1], note: '異變核心做的：一定是神話（紅色）。' });
+  if (R.RECIPES) R.RECIPES.push({ tier: 3, name: '異變（紅武）', get ilvl() { const s = S(); return Math.max(12, s && s.classes && s.classes[s.cls] ? s.classes[s.cls].lv : 12); }, mats: { mutacore: 4, purecry: 2 }, gold: 150000, weights: [0, 0, 0, 0, 0, 1], note: '異變核心做的：一定是神話（紅色）。' });
   // ---------- 兩條血：第一條還在的時候不會倒 ----------
   // 傷害有很多條路（自己打、隊友打、隊員從網路傳來的、燒傷……），最後都會叫 R.killEnemy；所以等所有檔案都讀完，
   // 在最外面包一層：第一條血還沒打破就「倒下」的，改成血停在一半、直接進第二形態。管理員面板的「全部倒下」血還沒歸零，照常倒。

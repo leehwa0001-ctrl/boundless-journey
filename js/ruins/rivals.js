@@ -147,7 +147,7 @@
   // 倒下的壞人：掉錢、掉勇者證（拿回公會可以領獎金）
   R.humanDown = e => {
     const m = e.member; if (!m) return;
-    R.dropGold(10 + Math.floor(Math.random() * 30) + m.lv * 2, e.x, e.z);
+    R.dropGold(Math.round((10 + Math.floor(Math.random() * 30) + m.lv * 2) * 0.3), e.x, e.z);
     R.S.cards = R.S.cards || []; R.S.cards.push({ no: m.card, name: m.name, revoked: m.revoked, day: R.S.day, hunter: e.id === 'hunter' });
     R.toast('撿到' + m.name + '的勇者證（' + m.card + '）。拿回公會。');
   };
