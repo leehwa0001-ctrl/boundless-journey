@@ -448,7 +448,7 @@
       propSprite(wagasa(), x + 0.7, z - 1.7, group);
       SB.add(G3.box, lam('#8A2A24', { tex: 0 }), x + 1.9, 0.45, z + 0.3, 1.6, 0.12, 0.6); [-0.6, 0.6].forEach(o => SB.add(G3.box, lam('#5A3E26', { tex: 0 }), x + 1.9 + o, 0.2, z + 0.3, 0.1, 0.4, 0.5));
       block(x - 1.1, x + 1.1, z - 0.4, z + 0.4); block(x + 1.1, x + 2.7, z, z + 0.6, 'deco');
-      const suga = npc(x - 0.3, z - 0.9, { top: '#6A5A7A', hair: '#D8D2C4', cloak: '#5A4A6A', hs: 'bun' }, '菅婆婆', 0);
+      const suga = npc(x - 0.3, z - 0.9, { top: '#6A5A7A', hair: '#D8D2C4', cloak: '#5A4A6A', hs: 'bun', sig: 'suga' }, '菅婆婆', 0);
       suga.watch = { range: 7, fov: 1.4, kind: 'suga' }; tw.watchers.push(suga);
       inter(x, z + 1.2, 2.2, '菅婆婆的糰子攤', () => (R.sugaSheet ? R.sugaSheet() : talk('菅婆婆', ['糰子一串兩費拉。今天冷，吃熱的。'])));
       if (R.addSteal) R.addSteal({ x: x - 0.9, z: z + 1.0, r: 1.2, label: '偷一串糰子', owner: 'suga', time: 0.9, loot: () => ({ gift: 'dango', n: 1 }), max: 2 }); }

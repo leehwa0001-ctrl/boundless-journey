@@ -15,15 +15,22 @@
     s.onerror = () => { loading = false; console.warn('[charkitfull] 載入失敗：' + SRC); };
     document.head.appendChild(s);
   };
-  R.charkitFullLoaded = () => { FULL = R.CHARKIT_FULL || null; loading = false; KITS.clear(); try { R.charkitRefresh && R.charkitRefresh(); } catch (e) { console.warn('[charkitfull]', e); } };
+  R.charkitFullLoaded = () => { FULL = R.CHARKIT_FULL || null; loading = false; KITS.clear(); RACE_FEAT.clear(); try { R.charkitRefresh && R.charkitRefresh(); } catch (e) { console.warn('[charkitfull]', e); } };
   R.charkitPoolKey = () => (FULL ? '|full' : '');
   // ---------- 種族 → 身體、特徵 ----------
   const raceName = id => (R.RACES && R.RACES[id] && R.RACES[id].name) || '';
+  // 2026-10-18：對照表沒寫到的種族（犬人、狼人、精靈、幻魔……），照遊戲裡的種族外觀（耳朵、角、尾巴、翅膀）配素材的特徵
+  const FEAT = { ears: ['獸耳', { cat: '貓耳', wolf: '狼耳', fox: '狐耳', dog: '垂耳', round: '圓耳', rabbit: '兔耳', fin: '鰭耳', antenna: '細觸角' }],
+    horns: ['角', { small: '小角', goat: '羊角', antler: '鹿角', dragon: '龍角', demon: '羊角' }], tail: ['尾巴', { cat: '貓尾', fox: '狐尾', dragon: '龍尾', wolf: '狼尾', dog: '短尾' }], wings: ['翅膀', { feather: '羽翼', demon: '蝠翼' }] };
+  const RACE_FEAT = new Map();
   const raceOf = o => {
     const n = raceName(o.race), m = FULL.races[n];
     if (m) return m;
-    const body = /精靈/.test(n) && FULL.bodies['精靈'] ? '精靈' : /矮人/.test(n) && FULL.bodies['矮人'] ? '矮人' : '人類';
-    return { body, parts: {} };
+    let r = RACE_FEAT.get(o.race); if (r) return r;
+    const body = /精靈/.test(n) && FULL.bodies['精靈'] ? '精靈' : /矮人/.test(n) && FULL.bodies['矮人'] ? '矮人' : '人類', parts = {}, rl = (R.raceLook && R.raceLook(o.race)) || {};
+    Object.keys(FEAT).forEach(k => { const [layer, map] = FEAT[k], v = map[rl[k]]; if (v && FULL.layers[layer] && FULL.layers[layer][v]) parts[layer] = v; });
+    if (rl.ears === 'elf' && FULL.layers['種族特徵'] && FULL.layers['種族特徵']['尖耳']) parts['種族特徵'] = '尖耳';
+    r = { body, parts }; RACE_FEAT.set(o.race, r); return r;
   };
   // 這個身體的圖層（合身的畫法）
   const KITS = new Map();
@@ -44,7 +51,7 @@
     if (!R.charkitOn || !R.charkitOn()) return null;
     if (!FULL) { load(); return null; }
     try {
-      const rc = raceOf(o), base = kitOf(rc.body), parts = rc.parts || {}, P = R.charkitPaint;
+      const rc = raceOf(o), base = kitOf(rc.body), parts = o.ckNoRace ? {} : rc.parts || {}, P = R.charkitPaint;
       const skin = o.skin || '#E8C2A0', cloak = o.cloak || '#3A3440';
       const eq = o.eq || {}, armor = ARMOR_SLOTS.map(([layer, slot]) => { const it = eq[slot], A = it && R.ARMOR && R.ARMOR[it.base]; return A && FULL.layers[layer] && FULL.layers[layer][A.name] ? [layer, A.name, A.w] : null; }).filter(Boolean);
       const wp = o.weapon && FULL.weapons[o.weapon] ? o.weapon : null;

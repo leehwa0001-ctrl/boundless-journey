@@ -42,7 +42,7 @@
     const rc = (R.raceLook && o.race ? R.raceLook(o.race) : null) || {}, seed = hashOf((o.top || '') + (o.hair || '') + (o.hs || '') + (o.cloak || ''));
     return {
       skin: o.skin || (rc.skins ? rc.skins[0] : '#E8C2A0'), hair: rc.hairCol || o.hair || '#2A2420', top: o.top || '#6A5A48', cloak: o.cloak || '#3A3440', eye: o.eye || rc.eye || '#1A1714',
-      hairV: o.hs === 'bald' || o.hood || (rc.hood && !o.noRaceHood) || (kk && kk.noHair) ? null : pick('髮型', HAIR[o.hs], seed, kk), eyeV: kk && kk.noFace ? null : pick('眼睛', o.eyeStyle || PUPIL[o.pupil] || '大眼', seed, kk), browV: kk && kk.noFace || o.brow === 'none' ? null : pick('眉毛', o.browStyle || BROW[o.brow] || '細眉', seed, kk),
+      hairV: o.hs === 'bald' || o.ckHair === '' || o.hood || (rc.hood && !o.noRaceHood) || (kk && kk.noHair) ? null : pick('髮型', o.ckHair || HAIR[o.hs], seed, kk), eyeV: kk && kk.noFace ? null : pick('眼睛', o.eyeStyle || PUPIL[o.pupil] || '大眼', seed, kk), browV: kk && kk.noFace || o.brow === 'none' ? null : pick('眉毛', o.browStyle || BROW[o.brow] || '細眉', seed, kk),
       mouthV: kk && kk.noFace || !MOUTH[o.mouth] ? null : pick('表情', MOUTH[o.mouth], seed, kk),
       glasses: o.acc === 'glasses' || o.glasses ? pick('眼鏡', '太陽眼鏡', 0, kk) : null,
       accV: ACC[o.acc] && o.acc !== 'glasses' && (kk || K).layers[ACC[o.acc][0]] && (kk || K).layers[ACC[o.acc][0]][ACC[o.acc][1]] ? (kk || K).layers[ACC[o.acc][0]][ACC[o.acc][1]] : null
@@ -68,18 +68,22 @@
   // 素材那四列照外觀快取（城裡兩百多人，很多人長得一樣）；每個人只把原本圖的翻滾、倒下、坐著貼過來
   const CACHE = new Map();
   const kitRows = o => {
+    const NS = R.CK_NPC && o.sig && !o.hood && R.CK_NPC[o.sig];   // 2026-10-18：重要 NPC 換上素材版的款式＋專屬細節（charkitnpc.js）
+    if (NS) o = Object.assign({}, o, NS.look);
     const KK = R.charkitKitFor ? R.charkitKitFor(o) : null, KB = KK || K;   // 完整版：這個人的身體和合身的圖層（還沒載入就用原本的人類）
     const L = lookOf(o, KK), two = /^(greatsword|axe|hammer|halberd|spear|zanbato)/.test(String(o.weapon || '')), sw = two && KB.body.swing2 ? 'swing2' : 'swing1';
-    const key = JSON.stringify([L.skin, L.hair, L.top, L.cloak, L.eye, o.hs, !!L.hairV, o.eyeStyle, o.browStyle, !!L.glasses, sw, KK ? KK.key : '', o.brow, o.pupil, o.mouth, o.acc, o.accCol, o.topStyle, o.pantsStyle, o.shoeStyle, o.top2, o.pants, o.shoe]);
+    const key = JSON.stringify([L.skin, L.hair, L.top, L.cloak, L.eye, o.hs, !!L.hairV, o.eyeStyle, o.browStyle, !!L.glasses, sw, KK ? KK.key : '', o.brow, o.pupil, o.mouth, o.acc, o.accCol, o.topStyle, o.pantsStyle, o.shoeStyle, o.top2, o.pants, o.shoe, NS ? o.sig : '']);
     let c = CACHE.get(key); if (c) return c;
     c = document.createElement('canvas'); c.width = CW * COLS; c.height = CH * 4; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
     const P = { body: paint(L.skin), pants: paint(o.pants || L.cloak), shoes: paint(o.shoe || '#3A2A20'), top: paint(L.top, o.top2 || L.cloak), eye: paint(L.eye), brow: paint(L.hair), hair: paint(L.hair), glass: paint('#2A2A34'), mouth: paint('#6A2E2E'), acc: paint(o.acc === 'earring' ? '#E8C04A' : o.accCol || '#C8323A') };
     const first = (n, v) => { const Ly = KB.layers[n]; return Ly && (Ly[v] || Ly[Object.keys(Ly)[0]]); }, LY = { pants: first('褲子', PANTS[o.pantsStyle || '']), shoes: first('鞋子', SHOES[o.shoeStyle || '']), top: first('衣服', TOP[o.topStyle || '']) };
     const accP = o.acc === 'eyepatch' ? P.glass : P.acc, accLow = ACC_UNDER_HAIR[o.acc] ? L.accV : null, accHigh = accLow ? null : L.accV;
+    const colOf = c => c === 'hair' ? L.hair : c === 'top' ? L.top : c === 'cloak' ? L.cloak : c;
+    const NP = NS && NS.parts ? NS.parts.map(([n, v, c, a]) => [KB.layers[n] && KB.layers[n][v], paint(colOf(c), a)]).filter(x => x[0]) : [];
     DIRMAP.forEach((d, row) => COLMAP.forEach(([act0, i], col) => {
       const act = act0 === 'swing' ? sw : act0, bf = KB.body[act] || KB.body.stand, b = bf[Math.min(i, bf.length - 1)];
       const pickF = by => { const f = layerFrame(by, act, i); return f ? f[d] : null; };
-      drawCell(g, col * CW, row * CH, [[b[d], P.body]].concat(KK && KK.under ? KK.under(act, i, d, layerFrame) : [], [[pickF(LY.pants), P.pants]]).concat([ [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.mouthV), P.mouth], [pickF(accLow), accP], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass], [pickF(accHigh), accP]]).concat(KK && KK.extra ? KK.extra(act, i, d, layerFrame) : []));
+      drawCell(g, col * CW, row * CH, [[b[d], P.body]].concat(KK && KK.under ? KK.under(act, i, d, layerFrame) : [], [[pickF(LY.pants), P.pants]]).concat([ [pickF(LY.shoes), P.shoes], [pickF(LY.top), P.top], [pickF(L.eyeV), P.eye], [pickF(L.browV), P.brow], [pickF(L.mouthV), P.mouth], [pickF(accLow), accP], [pickF(L.hairV), P.hair], [pickF(L.glasses), P.glass], [pickF(accHigh), accP]], NP.map(([by, pal]) => [pickF(by), pal])).concat(KK && KK.extra ? KK.extra(act, i, d, layerFrame) : []));
     }));
     if (CACHE.size > 300) CACHE.clear(); CACHE.set(key, c);
     return c;
