@@ -1,4 +1,5 @@
 // 第三人稱肩部視角（2026-10-18 作者：鏡頭在玩家角色的左肩上方、往後一點；視角中心跟著準心，滑鼠移動就轉視角。先做一版看看）
+// - 鏡頭的位置可以自己調（前後、左右、上下、換邊）：設定→畫面「肩部視角的位置」或 Shift＋P。
 // - 設定→畫面「鏡頭：一般／肩部視角」切換（存在 localStorage 的 tfl-shouldercam）；遊戲中也可以按 P 切換（不能自訂；V 是大招）。
 // - 第一版只在遺跡裡有效；城裡（立體城市 citykit 有自己的鏡頭）、觸控照原本的鏡頭。
 // - 滑鼠：點一下遊戲畫面就鎖定滑鼠（pointer lock），左右轉視角、上下抬頭低頭；Esc 會放開（同時打開選單）。
@@ -14,8 +15,12 @@
   const KEY = 'tfl-shouldercam';
   const LS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { } return null; };
   R.shoulderOn = () => LS(KEY) === '1' && !R.touch;
-  const st = { yaw: null, pitch: -0.2, dist: 6, locked: false, edgeX: 0 };
-  const SIDE = 1.5, HIGH = 3.1;   // 人物（點陣）大約 3 公尺高：肩膀往左 1.5、高 3.1，往後 6 公尺
+  // 鏡頭的位置（2026-10-18 作者：玩家可以自己調前後、左右、上下）：存在 localStorage 的 tfl-shouldercam-pos
+  //   back＝往後幾公尺、side＝往左幾公尺（負的＝右肩）、high＝高幾公尺。人物（點陣）大約 3 公尺高，預設左 1.5、高 3.1、往後 6。
+  const DEF = { back: 6, side: 1.5, high: 3.1 }, LIM = { back: [2, 14], side: [-3.5, 3.5], high: [1, 7] };
+  const loadPos = () => { let o = {}; try { o = JSON.parse(LS(KEY + '-pos') || '{}') || {}; } catch (e) { } const r = {}; Object.keys(DEF).forEach(k => { const v = +o[k]; r[k] = isFinite(v) ? Math.max(LIM[k][0], Math.min(LIM[k][1], v)) : DEF[k]; }); return r; };
+  let POS = loadPos();
+  const st = { yaw: null, pitch: -0.2, dist: POS.back, locked: false, edgeX: 0 };
   R.setShoulder = on => {
     LS(KEY, on ? '1' : '0'); st.yaw = null;
     if (!on && document.pointerLockElement) document.exitPointerLock();
@@ -55,7 +60,7 @@
     try {
       const cam = w.camera, P = w.P; if (!cam.isPerspectiveCamera) return r;
       const y = st.yaw, [fx, fz] = fwd(y), [lx, lz] = left(y), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
-      const hx = P.x + lx * SIDE, hy = HIGH, hz = P.z + lz * SIDE;   // 左肩上方
+      const hx = P.x + lx * POS.side, hy = POS.high, hz = P.z + lz * POS.side;   // 肩膀上方（預設左肩）
       const k = fit(P.x, P.z, hx, hz), sx = P.x + (hx - P.x) * k, sz = P.z + (hz - P.z) * k;
       const bx = sx - fx * cp * st.dist, bz = sz - fz * cp * st.dist, by = hy - sp * st.dist;
       const kb = fit(sx, sz, bx, bz), j = shake ? (Math.random() - 0.5) * shake * 0.15 : 0;
@@ -69,7 +74,7 @@
   const rc0 = R.rotateCam;
   R.rotateCam = d => { if (active()) { st.yaw = (st.yaw == null ? W().cam.yaw : st.yaw) + d * Math.PI / 8; return; } return rc0(d); };
   const zc0 = R.zoomCam;
-  R.zoomCam = z => { if (active()) { st.dist = Math.max(3.5, Math.min(10, 6 * z)); return; } return zc0(z); };
+  R.zoomCam = z => { if (active()) { st.dist = Math.max(LIM.back[0], Math.min(LIM.back[1] + 4, POS.back * z)); return; } return zc0(z); };
   // ---------- 瞄準：準心＝畫面正中間 ----------
   const aim = () => {
     const w = W(), P = w.P, cam = w.camera, I = R.input; if (!P || !cam || !T()) return;
@@ -103,12 +108,37 @@
   });
   // 選單打開（暫停）就放開滑鼠
   setInterval(() => { if (st.locked && (W().paused || !active())) { try { document.exitPointerLock(); } catch (e) { } } hud(); }, 300);
+  // ---------- 調整鏡頭的位置（設定→畫面「肩部視角的位置」、Shift＋P） ----------
+  const panel = document.createElement('div'); panel.id = 'sc-pos'; panel.hidden = true;
+  const ROWS = [['back', '前後（往後幾公尺）', 0.1], ['side', '左右（正的＝左肩、負的＝右肩）', 0.1], ['high', '上下（高幾公尺）', 0.1]];
+  let wasPaused = false;
+  const savePos = () => { LS(KEY + '-pos', JSON.stringify(POS)); st.dist = POS.back; };
+  const preview = () => { try { if (active() && R.placeCam) R.placeCam(null); } catch (e) { } };
+  const paint = () => {
+    panel.innerHTML = '<b>肩部視角的位置</b><small>拖曳滑桿，畫面會馬上換（遺跡裡）；點一下滑桿之後也可以用 ← → 微調。</small>'
+      + ROWS.map(([k, n, stp]) => '<label><span>' + n + '</span><input type="range" min="' + LIM[k][0] + '" max="' + LIM[k][1] + '" step="' + stp + '" value="' + POS[k] + '" data-scp="' + k + '"><em>' + POS[k].toFixed(1) + '</em></label>').join('')
+      + '<div class="row"><button type="button" class="btn" id="sc-pos-def">回到預設</button><button type="button" class="btn" id="sc-pos-flip">換邊（左肩／右肩）</button><button type="button" class="btn pri" id="sc-pos-ok">好</button></div>';
+    panel.querySelectorAll('[data-scp]').forEach(inp => { inp.oninput = () => { const k = inp.dataset.scp; POS[k] = +inp.value; inp.nextElementSibling.textContent = POS[k].toFixed(1); savePos(); preview(); }; });
+    panel.querySelector('#sc-pos-def').onclick = () => { POS = Object.assign({}, DEF); savePos(); paint(); preview(); };
+    panel.querySelector('#sc-pos-flip').onclick = () => { POS.side = -POS.side; savePos(); paint(); preview(); };
+    panel.querySelector('#sc-pos-ok').onclick = () => R.shoulderPosClose();
+  };
+  R.shoulderPos = () => {
+    const run = $('run'); if (run && panel.parentNode !== run) run.appendChild(panel);
+    if (R.closeSheet) R.closeSheet();
+    if (!R.shoulderOn()) R.setShoulder(true);
+    wasPaused = !!W().paused; if (W().run) W().paused = true;   // 調的時候遊戲停住，畫面照樣畫
+    if (document.pointerLockElement) document.exitPointerLock();
+    paint(); panel.hidden = false; preview();
+  };
+  R.shoulderPosClose = () => { panel.hidden = true; if (W().run && !wasPaused) W().paused = false; };
+  R.shoulderPosValue = () => Object.assign({}, POS);
   // P：切換
   window.addEventListener('keydown', e => {
     if (e.code !== 'KeyP' || e.repeat || e.ctrlKey || e.altKey || e.metaKey || R.touch) return;
     if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
-    const run = $('run'); if (!run || run.hidden || (R.sheetOpen && R.sheetOpen())) return;
-    e.preventDefault(); R.setShoulder(!R.shoulderOn());
+    const run = $('run'); if (!run || run.hidden || (R.sheetOpen && R.sheetOpen() && panel.hidden)) return;
+    e.preventDefault(); if (e.shiftKey) { if (panel.hidden) R.shoulderPos(); else R.shoulderPosClose(); return; } R.setShoulder(!R.shoulderOn());
   });
   // ---------- 準心、提示 ----------
   const cross = document.createElement('div'); cross.id = 'sc-cross'; cross.hidden = true;
@@ -128,6 +158,9 @@
     + '#sc-cross b{position:absolute;left:-1px;top:-11px;width:2px;height:22px;background:rgba(255,255,255,.9);box-shadow:0 0 2px #000}'
     + '#sc-cross span{position:absolute;left:-90px;top:22px;width:180px;text-align:center;font-size:12px;color:#fff;text-shadow:0 0 3px #000;white-space:nowrap}'
     + '#sc-cross.locked span{display:none}'
-    + 'body.sc-on #r-field,body.sc-on canvas{cursor:crosshair}';
+    + 'body.sc-on #r-field,body.sc-on canvas{cursor:crosshair}'
+    + '#sc-pos{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:min(340px,calc(100vw - 32px));z-index:40;background:rgba(20,16,12,.92);border:1px solid #6A5A3A;border-radius:10px;padding:12px 14px;color:#EDE4D0;display:flex;flex-direction:column;gap:8px}'
+    + '#sc-pos[hidden]{display:none}#sc-pos small{color:#B8AC94}#sc-pos label{display:grid;grid-template-columns:1fr 44px;gap:2px 8px;align-items:center;font-size:13px}'
+    + '#sc-pos label span{grid-column:1/3}#sc-pos input{width:100%}#sc-pos em{font-style:normal;text-align:right;color:#FFE08A}#sc-pos .row{display:flex;flex-wrap:wrap;gap:6px}';
   document.head.appendChild(css);
 })(window.R = window.R || {});

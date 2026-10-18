@@ -72,6 +72,10 @@
         const lab = () => { b.textContent = '鏡頭：' + (R.shoulderOn() ? '肩部視角' : '一般') + '（P）'; };
         lab(); b.onclick = () => { R.setShoulder(!R.shoulderOn()); lab(); }; slot(w, 'screen').appendChild(b);
       }
+      if (R.shoulderPos && !R.touch && !sh.querySelector('#sc-pos-open')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'sc-pos-open'; b.textContent = '肩部視角的位置（Shift＋P）';
+        b.onclick = () => R.shoulderPos(); slot(w, 'screen').appendChild(b);
+      }
       // 按鍵設定：鍵盤玩家一定看得到（城市選單原本沒有）
       if (!R.touch && R.keySheet && !sh.querySelector('#kb-open')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'kb-open'; b.textContent = '按鍵設定';
