@@ -47,7 +47,7 @@
         if (k === 'B') { E.coreShield += 0.01 * m; add('普攻護盾 ' + pct(0.01 * m) + ' 魔上限（5 層）'); }
         if (k === 'H') { E.naHeal += 0.01 * m; add('每 2 下普攻回復 ' + pct(0.01 * m) + ' 魔上限'); }
         if (k === 'C') { E.coreCd += m; add('普攻減技能冷卻' + (m > 1 ? '（×' + m + '）' : '')); }
-        if (k === 'M') { E.naMp += 0.75 * m; add('普攻耗魔 −' + pct(Math.min(1, 0.75 * m))); }
+        if (k === 'M') { E.naMp += 0.75 * m; add('普攻耗魔 −' + pct(0.75 * m) + (0.75 * m > 1 ? '（超過 100% 的部分改成回魔）' : '')); }
       } else if (t === 'line') {
         if (k === 'D') { E.skDmg += pc * 0.1 * m; add('技能傷害 +' + pct(pc * 0.1 * m)); }
         if (k === 'A') { E.skArea += pc * 0.1 * m; add('技能範圍 +' + pct(pc * 0.1 * m)); }
@@ -78,7 +78,7 @@
       // 複合結構／永續陣：起點以外的節點也發揮自己的效果（30%）
       if ((t === 'line' && pv('ry8')) || (t === 'loop' && pv('ry9'))) sh.n.slice(1).forEach(i => one(NODES[i].k, t, pc, m * 0.3, s => E.lines.push([NODES[i].c, lab + '→' + NODES[i].n + '（30%）', s])));
     });
-    E.naWind = Math.min(0.9, E.naWind); E.naMp = Math.min(1, E.naMp);
+    E.naWind = Math.min(0.9, E.naWind);   // 2026-10-18 作者：普攻耗魔不再鎖在 −100%，超過的部分改成回魔（−150%＝每次普攻回 50% 的基礎耗魔）
     const ar = 1 + E.skArea + E.loopArea; E.auras.forEach(a => { a.r = a.pc * ar * (legLoop ? 1.5 : 1); });
     // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋Loop 的攻擊範圍）
     E.rangeUp = Math.max(0, ((P && P.rangeMult) || 1) - 1 + E.loopArea); E.windMul = 1 + 0.5 * E.rangeUp;
@@ -119,7 +119,7 @@
   const libOf = id => R.SKILL_LIB && R.SKILL_LIB[id];
   const isSelf = L => { if (!L) return true; const p = L.p || {}; if (p.self) return true; if (SELF_T[L.type]) return true; if (L.type === 'combo') return !(p.parts || []).some(x => !SELF_T[x[0]] && !(x[1] && x[1].self)); return false; };
   const aimPt = (P, max) => { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA) * 6, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA) * 6, d = Math.hypot(ax - P.x, az - P.z), k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
-  const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'arc' && q.range) || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea) * (1 + E().pvArea); };
+  const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p, dmgK = ((q.k || 0) > 0 && q.zone !== 'sanct' && q.r ? 1.5 : 1) * ((W() && W().P && W().P.rangeMult) || 1); return dmgK * (q.r || (L && L.type === 'arc' && q.range) || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea) * (1 + E().pvArea); };   // 2026-10-18：預覽跟實際一樣（有傷害的技能範圍 ×1.5；角色數值的攻擊範圍也放大技能範圍，skillrange.js）
   const skRange = () => { const P = W() && W().P; return ((P && P.ws && P.ws.range) || 12) * E().reach; };   // 所有技能：圓心在普攻射程內都能放
   const BODY_T = { guard: 1, parry: 1, orbit: 1 };   // 這幾型本來就是貼身的，只能在腳下
   const bodyOnly = L => { if (!L) return true; if (BODY_T[L.type]) return true; if (L.type === 'combo') return (L.p && L.p.parts || []).some(x => BODY_T[x[0]]); return false; };
@@ -176,6 +176,7 @@
     const me = { i, m, x, z, r }; chgs.push(me); live.push(me);
     const done = () => { chgs = chgs.filter(c => c !== me); live = live.filter(c => c !== me); };
     R.num && R.num(P.x, 2.6, P.z, '蓄陣…', 'heal');
+    R.fx && R.fx('mark', x, 0, z, { r, t: E().charge, color: col });   // 2026-10-18 作者：蓄陣時就顯示施放時的六芒星法陣
     tick(dt => {
       if (dt < 0) { if (!fired) m.rm(); done(); return false; }
       if (W().paused) return true;
@@ -244,14 +245,14 @@
   R.attack = (...a) => {
     const P = W() && W().P; if (!isRM(P) || !P.ws || P.ws.kind !== 'magic') return at0(...a);
     // 2026-10-13：普攻和技能可以同時放、同時蓄力（不再互相擋）。普攻耗魔＝1.5＋每個核心 0.25（魔力核心再 −75%）
-    const e0 = E(), cost = (1.5 + 0.25 * e0.nCore) * (1 - e0.naMp) * (e0.echo ? 1.8 : 1);
+    const e0 = E(); let cost = (1.5 + 0.25 * e0.nCore) * (1 - e0.naMp); if (cost > 0 && e0.echo) cost *= 1.8;   // cost < 0：回魔
     if ((P.atkCd || 0) <= 0 && P.mp < cost) { R.toast && R.toast('魔力不夠'); P.atkCd = 0.4; return; }
     const cd0 = P.atkCd || 0, mp0 = P.mp; naCap = { dmg: 0, n: 0 };
     let cap0; try { at0(...a); } finally { cap0 = naCap; naCap = null; }
     if (!cap0.n) return;
     const e = E();
     if ((P.atkCd || 0) > cd0 + 0.001 && e.atkSpd > 0) P.atkCd /= 1 + e.atkSpd;
-    if (P.mp < mp0) P.mp = Math.max(0, mp0 - cost);
+    P.mp = Math.min(P.mpMax, Math.max(0, mp0 - cost));
     const nth = (naN = (naN + 1) % 2) === 0;   // 第 2、4、6…下
     const [x, z] = aimPt(P, (P.ws.range || 12) * e.reach), r = 2 * (1 + e.naArea + e.loopArea), dmg = cap0.dmg * (1 + e.naDmg), dl = e.naDelay;
     const m = naRune(x, z, r); let t = 0, fired = 0;
