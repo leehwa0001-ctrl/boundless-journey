@@ -60,6 +60,12 @@
         const lab = () => { b.textContent = '減少閃光：' + (R.lessFlash() ? '開' : '關'); };
         lab(); b.onclick = () => { try { localStorage.setItem('tfl_lessflash', R.lessFlash() ? '0' : '1'); } catch (e) { } lab(); }; slot(w, 'screen').appendChild(b);
       }
+      // 城裡的快捷鍵欄（2026-10-18，townbar.js）
+      if (R.townBarOn && !sh.querySelector('#tb-tg')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'tb-tg';
+        const lab = () => { b.textContent = '城裡的快捷鍵欄：' + (R.townBarOn() ? '開' : '關'); };
+        lab(); b.onclick = () => { R.setTownBar(!R.townBarOn()); lab(); }; slot(w, 'screen').appendChild(b);
+      }
       // 按鍵設定：鍵盤玩家一定看得到（城市選單原本沒有）
       if (!R.touch && R.keySheet && !sh.querySelector('#kb-open')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'kb-open'; b.textContent = '按鍵設定';
