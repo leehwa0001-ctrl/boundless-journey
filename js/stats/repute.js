@@ -3,7 +3,8 @@
 //   反饋（委託成績的反饋 +20～−20，不超過 100；traitlife.js 的 R.traitTaskAxes 呼叫 R.repFb）、
 //   所有消費（−15%～+15%：包 R.priceMul、R.spendMul）、霧島撿回裝備的機率（raid.js 呼叫 R.repKiri）、
 //   遺跡裡倒下被路過的勇者救起來（25%／10%／5%：醒在這一層樓梯旁的營火邊，生命 30%）、
-//   100：偷東西被看到 75% 被原諒（props.js 呼叫 R.repForgive，還是會扣信譽值）、偷聽路人聊天會分享情報；
+//   100：每天第一次偷東西被看到 75% 被原諒（props.js 呼叫 R.repForgive，還是會扣信譽值；作者 2026-10-18：每天只有第一次才擲）、
+//   偷聽路人聊天會分享情報（今天哪座遺跡的佩特拉反應——那天去那座遺跡真的會是那個反應、市集的特價日、黑市進了什麼、隱藏任務的線索、重要角色在哪裡）；
 //   −50 以下：城裡比較容易被搶（streetevents.js 呼叫 R.repRob）；−75 以下信譽值的獲取量 −50%、−100 −75%。
 // - 其他（作者「其他的獲取來源、加成你幫我想」）：
 //   ≥50：私人委託的報酬 +10%（jobs.js 呼叫 R.repJobMul）、通緝一星的小罪只口頭警告（不罰錢、不算前科）；
@@ -84,8 +85,9 @@
   if (sm0) R.spendMul = kind => sm0(kind) * priceK();
   // 偷東西被看到（100：75% 被原諒；props.js 的 caught 呼叫）
   R.repForgive = name => {
-    if (tk() < 100 || rnd() >= 0.75) return false;
-    const s = S(); s.rep = (s.rep || 0) - 5;
+    const s = S(); if (tk() < 100 || s.repForgiveDay === s.day) return false;
+    s.repForgiveDay = s.day; if (rnd() >= 0.75) return false;   // 每天只有第一次被看到才擲
+    s.rep = (s.rep || 0) - 5;
     R.townTalk && R.townTalk(name || '路人', ['「……啊，是你。」', '（對方認出了你，嘆了一口氣，把東西拿回去，沒有叫衛兵。）', '「這次就當我沒看到。別再這樣了。」']);
     return true;
   };
@@ -173,8 +175,26 @@
     return r;
   };
   // ---------- 城裡的人 ----------
+  // 今天哪座遺跡的佩特拉反應：說出口就定下來（記在 R.S.repIntel），今天去那座遺跡就是那個反應
+  const reactionIntel = s => {
+    let it = s.repIntel;
+    if (!it || it.day !== s.day) {
+      const sites = (R.SITES || []).filter(x => x.kind === 'ruin' && !/^sp-/.test(x.id) && R.gradeById && R.gradeById(x.grade)); if (!sites.length || !R.REACTIONS) return null;
+      const site = pick(sites), g = R.gradeById(site.grade), ks = Object.keys(R.REACTIONS).filter(k => !(g.crystal === 'none' && k === 'tail'));
+      it = s.repIntel = { day: s.day, site: site.id, r: pick(ks) };
+    }
+    const site = R.SITES.find(x => x.id === it.site), rx = R.REACTIONS[it.r];
+    return site && rx ? '「我朋友是公會的調查員，說今天「' + site.name + '」的佩特拉是「' + rx.name + '」。要去的話小心一點。」' : null;
+  };
+  const sr0 = R.startRun;
+  if (sr0) R.startRun = (...a) => {
+    const r = sr0(...a);
+    try { const s = S(), run = W().run, it = s && s.repIntel; if (run && it && it.day === s.day && run.site && run.site.id === it.site && !run.coop && R.REACTIONS[it.r]) { run.reaction = it.r; run.reactionKnown = true; } } catch (e) { console.warn('[repute]', e); }
+    return r;
+  };
   const intel = () => {
     const s = S(), L = [];
+    try { const ri = reactionIntel(s); if (ri) L.push(ri, ri); } catch (e) { }
     try {
       const E = R.eventsOf && R.dateOf ? R.eventsOf(R.dateOf((s.day || 0) + 1)) : {};
       if (E.market) L.push('「明天是凝日喔，市集的攤子打八折。要買東西明天再買。」');
@@ -224,7 +244,7 @@
     if (p) L.push('消費 ' + (p > 0 ? '+' : '−') + Math.round(Math.abs(p) * 100) + '%' + (p < 0 && priceK() === 1 ? '（默默無名：沒有折扣）' : ''));
     if (k) L.push('霧島撿回 ' + (k > 0 ? '+' : '−') + Math.round(Math.abs(k) * 100) + '%');
     if (SAVE[t]) L.push('倒下 ' + Math.round(SAVE[t] * 100) + '% 被路過的勇者救起來');
-    if (t >= 100) L.push('偷東西 75% 被原諒、路人分享情報、公會每週謝禮');
+    if (t >= 100) L.push('每天第一次偷東西被看到 75% 被原諒、路人分享情報、公會每週謝禮');
     if (t >= 50) L.push('私人委託報酬 +10%、小罪口頭警告');
     if (ROB[t]) L.push('被搶 +' + Math.round(ROB[t] * 100) + '%');
     if (t <= -75) L.push('獲取量 −' + (t <= -100 ? 75 : 50) + '%、市集和藥鋪不賣你、公會不派救援委託');
