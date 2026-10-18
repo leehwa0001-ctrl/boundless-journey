@@ -150,9 +150,7 @@
       if (a === 'drummer') { P.skillCdMult *= 0.88; if (P.ws) P.ws.crit += 0.06; }
       if (a === 'serane') { P.calm += 0.2; P.mpMax = Math.round(P.mpMax * 1.2); }
       if (a === 'beastlord') { P.petMul = 1.1; }   // 2026-10-13：人海戰術——單隻弱一點、便宜很多（summonsub.js）
-      if (a === 'grandarray') P.dmgMult *= 1.15;
-      if (a === 'warder') P.def += 3;
-      if (a === 'eidanora') P.skillCdMult *= 0.9;
+      // 2026-10-18 作者：術陣師三個轉職的額外效果重做（觀星術師、結界師、艾達諾拉的傳人：runedraw.js）
       if (a === 'runesmith') { P.pen = Math.min(0.85, (P.pen || 0) + 0.15); if (P.ws) P.ws.fire = (P.ws.fire || 0) + 0.1; }
       if (a === 'spellblade') { P.dmgMult *= 1.1; P.mpMax = Math.round(P.mpMax * 1.25); }
       if (a === 'entian') P.pen = Math.min(0.9, (P.pen || 0) + 0.3);
@@ -166,7 +164,7 @@
   R.healP = (v, q) => { const P = W().P; return hl0(P && P.healMul ? v * P.healMul : v, q); };   // 詠嘆詩人：治療 +30%
   // 受到的傷害（結界師 −12%、詠嘆詩人的隊友）
   const hp0 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { const P = W().P; if (P && P.adv === 'warder' && R.dmgRedAdd) R.dmgRedAdd(0.12); return hp0(raw, src, o); };   // 減傷係數（dmgred.js）
+  R.hurtPlayer = (raw, src, o) => hp0(raw, src, o);   // 2026-10-18：結界師的減傷改成「在自己的法陣、Loop 裡 −20%」（runedraw.js）   // 減傷係數（dmgred.js）
   if (R.hurtAlly) { const ha0 = R.hurtAlly; R.hurtAlly = (a, dmg, src) => { const P = W().P; if (P && P.adv === 'aria') dmg *= 0.85; return ha0(a, dmg, src); }; }
 
   // ---------- 大招、光的顏色 ----------
