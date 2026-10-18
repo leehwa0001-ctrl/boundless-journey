@@ -6,7 +6,7 @@
 (function (R) {
   const S = () => R.S, esc = s => R.esc(s), MAX = 15;
   const COST = { 11: [6000, 4, 2, 1, 1], 12: [12000, 6, 3, 1, 0.8], 13: [25000, 8, 4, 2, 0.6], 14: [50000, 10, 5, 2, 0.45], 15: [100000, 12, 6, 3, 0.3] };
-  R.refinePlusPrice = it => { const c = COST[(it.plus || 0) + 1]; return c ? { gold: c[0], mats: { purecry: c[1], redgold: c[2], core: c[3] }, rate: c[4] } : null; };
+  R.refinePlusPrice = it => { const c = COST[(it.plus || 0) + 1]; return c ? { gold: Math.round(c[0] * [0.3, 0.5, 0.7, 1, 1.5, 3][it.rarity || 0]),   /* 2026-10-19：照稀有度 */ mats: { purecry: c[1], redgold: c[2], core: c[3] }, rate: c[4] } : null; };
   const can = c => { const s = S(); return s.gold >= c.gold && Object.keys(c.mats).every(k => R.matHave(k) >= c.mats[k]); };
   const matsTxt = m => Object.keys(m).map(k => esc(R.MATS[k] ? R.MATS[k].name : k) + ' ' + R.matHave(k) + '／' + m[k]).join('・');
   R.refinePlus = it => {

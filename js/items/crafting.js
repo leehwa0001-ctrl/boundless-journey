@@ -194,9 +194,11 @@
   };
 
   // ---------- 精煉（+6～+10）、重鑄（重骰詞綴）、附魔（元素晶石灌進武器） ----------
-  R.refinePrice = it => ({ gold: 120 + 90 * (it.plus - 5), mats: Object.assign({ purecry: 1 + Math.floor((it.plus - 5) / 2) }, it.plus >= 8 ? { redgold: 1 } : {}) });
+  // 2026-10-19 重訂：精煉、重鑄的費拉照稀有度（普通便宜、神話很貴）
+  R.RAR_COST = [0.5, 0.8, 1, 2, 5, 12];
+  R.refinePrice = it => ({ gold: Math.round((120 + 90 * (it.plus - 5)) * R.RAR_COST[it.rarity || 0]), mats: Object.assign({ purecry: 1 + Math.floor((it.plus - 5) / 2) }, it.plus >= 8 ? { redgold: 1 } : {}) });
   R.refine = it => { if (!it || !it.identified || it.plus < 5 || it.plus >= 10) return false; const c = R.refinePrice(it); if (!can(c)) return false; pay(c); it.plus++; R.save(); return true; };
-  R.reforgePrice = it => ({ gold: 60 + 50 * it.rarity, mats: Object.assign({ crystal: 2 + it.rarity }, it.rarity >= 3 ? { purecry: 1 } : {}) });
+  R.reforgePrice = it => ({ gold: [30, 60, 150, 600, 3000, 15000][it.rarity || 0], mats: Object.assign({ crystal: 2 + it.rarity }, it.rarity >= 3 ? { purecry: 1 } : {}) });
   R.reforge = it => {
     if (!it || !it.identified || !it.rarity) return false; const c = R.reforgePrice(it); if (!can(c)) return false; pay(c);
     const fresh = R.makeItem({ kind: it.kind, base: it.base, ilvl: it.ilvl, rarity: it.rarity, identified: true }), d = defOf(it), keep = d ? [it.affixes[0]] : [];
