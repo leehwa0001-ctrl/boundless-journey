@@ -55,7 +55,7 @@
     html: (site, sp) => {
       if (!isHamiSite(site) || pending) return '';
       const h = HM(); if (h.roll == null) { h.roll = rnd() < 0.45; R.save && R.save(); }
-      if (!h.roll || h.done.rescue) return '';
+      if (!h.roll || h.done.rescue || (R.repTier && R.repTier() <= -75)) return '';   // 信譽值太低：公會不派救援（repute.js）
       return '<div class="hm-urgent" style="border:1px solid #E07A5A;border-radius:8px;padding:8px 10px;margin:8px 0;background:rgba(224,122,90,.12)"><b style="color:#F09A7A">公會的緊急委託・救援</b><p class="note" style="margin:4px 0">在哈米莉亞級的深處，有民眾回報有人昏迷。限時 8 分鐘，報酬 ' + PAY.rescue + ' 費拉。</p><button type="button" class="btn" id="hm-rescue">接下緊急委託</button></div>';
     },
     bind: (box, site) => { const b = box && box.querySelector('#hm-rescue'); if (!b) return; b.onclick = () => { pending = { kind: 'rescue', floor: ri(4, 7) }; const no = box.querySelector('#tk-no') || $('tk-no'); if (no) no.click(); else if (R.closeSheet) R.closeSheet(); setTimeout(() => R.startRun(site.id), 80); }; }
@@ -220,7 +220,7 @@
   const rescue = hm => {
     hm.found = RESCUE_T - hm.left;
     const done = (fb, how) => {
-      hm.saved = true; hm.ok = true; hm.done = true; hm.fb = fb; if (obj && obj.h && R.setDown) R.setDown(obj.h, false); if (obj && obj.star && obj.star.parent) obj.star.parent.remove(obj.star);
+      hm.saved = true; hm.ok = true; hm.done = true; hm.fb = fb; if (R.repAdd) R.repAdd(3);   // 信譽值 +3 if (obj && obj.h && R.setDown) R.setDown(obj.h, false); if (obj && obj.star && obj.star.parent) obj.star.parent.remove(obj.star);
       R.sheet('<p class="kicker">救援委託</p><h2>' + esc(how) + '</h2><p>民眾慢慢睜開眼睛：「……謝、謝謝你。」</p>', '<div class="row"><button type="button" class="btn pri" id="hm-back">陪他回去</button><button type="button" class="btn" id="hm-stay">繼續探索（公會的人會來接他）</button></div>');
       $('hm-back').onclick = () => { R.closeSheet(); hm.back = 1; leave(); };
       $('hm-stay').onclick = () => { R.closeSheet(); hm.fb = Math.max(1, hm.fb - 10); goneNpc(); };

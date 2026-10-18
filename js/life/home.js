@@ -42,7 +42,7 @@
     if (st.runs) lines.push('下過遺跡 ' + st.runs + ' 趟。');
     if (st.jobGold) lines.push('打工賺的錢：' + st.jobGold + ' 費拉。');
     if (st.robbers) lines.push('打倒的強盜：' + st.robbers + ' 個。');
-    if ((s.rep || 0) > 0) lines.push('街坊的名聲：' + s.rep + '。');
+    lines.push('信譽值：' + Math.round(s.rep || 0) + (R.repTierName ? '（' + R.repTierName() + '）' : '') + '。');
     R.townTalk('戰利品架', lines);
   };
   const sleep = () => {

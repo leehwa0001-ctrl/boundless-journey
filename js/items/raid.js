@@ -345,7 +345,7 @@
     const got = [], miss = [];
     let black = 0;
     due.forEach(x => x.list.forEach(o => {
-      const dp = x.depth || 1, rar = o.pack ? 0 : (o.rarity || 0), lose = Math.min(0.6, 0.15 + 0.012 * dp) + (rar >= 5 ? 0.25 : rar >= 4 ? 0.15 : rar >= 3 ? 0.08 : 0);
+      const dp = x.depth || 1, rar = o.pack ? 0 : (o.rarity || 0), lose = Math.max(0, Math.min(0.6, 0.15 + 0.012 * dp) + (rar >= 5 ? 0.25 : rar >= 4 ? 0.15 : rar >= 3 ? 0.08 : 0) - (R.repKiri ? R.repKiri() : 0));   // 信譽值：撿回的機率（repute.js）
       if (Math.random() >= lose) { if (o.pack) { packs(); s.packs[o.pack] = (s.packs[o.pack] || 0) + 1; got.push(PACKS[o.pack].name); } else { s.stash.push(o); got.push(R.itemName(o)); } return; }
       miss.push(o.pack ? PACKS[o.pack].name : R.itemName(o));
       if (!o.pack && rar >= 3) { s.blackMarket = s.blackMarket || []; s.blackMarket.push({ it: o, price: R.cost ? R.cost(Math.round(R.sellPrice(o) * 3), 'service') : Math.round(R.sellPrice(o) * 3), from: (s.day || 0) + 2 }); black++; }   // 被撿走的好東西：過兩天在後巷的黑市賣

@@ -147,8 +147,9 @@
       addGift('dango', 1); S().rep = (S().rep || 0) - 1; S().wallet = Math.max(0, (S().wallet || 0) - 2);
       R.townTalk('菅婆婆', ['「孩子，要吃就說。」', '（她把一串糰子塞進你手裡，敲了一下你的頭。）', '「兩費拉，從你口袋拿了。」']); R.save(); return;
     }
+    if (R.repForgive && R.repForgive(name)) { R.save(); return; }   // 信譽值 100：75% 被原諒（repute.js）
     C.heat = Math.min(3, C.heat + (who && who.watch.guard ? 2 : 1)); C.lostT = 0;
-    S().rep = (S().rep || 0) - 2; S().grudge = S().grudge || {}; S().grudge[st.owner] = S().day + 3;
+    S().rep = (S().rep || 0) - 5; S().grudge = S().grudge || {}; S().grudge[st.owner] = S().day + 3;
     R.banner('被看見了！', name + '大喊：「小偷！」——衛兵往這裡來了（通緝 ' + '★'.repeat(C.heat) + '）');
     if (W.town && !W.inside) (W.town.watchers || []).forEach(n => { if (n.watch.guard && Math.hypot(n.x - W.P.x, n.z - W.P.z) < 45) { n.chase = true; n.lastX = W.P.x; n.lastZ = W.P.z; } });
     R.save();
@@ -232,7 +233,7 @@
       + (fakes ? '<p class="hand">你身上有 ' + fakes + ' 枚私人委託付的「赤金」。掌櫃拿起來對著燈看：鳴文是藍色的直紋——假的。</p>' : '<p class="note">身上沒有可疑的錢。</p>'),
       '<div class="row">' + (fakes ? '<button type="button" class="btn pri" id="ex-report">交給衛兵（假幣）</button>' : '') + '<button type="button" class="btn" id="ex-x">好</button></div>');
     $('ex-x').onclick = R.closeSheet;
-    if ($('ex-report')) $('ex-report').onclick = () => { s.fake = 0; const b = 30; s.gold += b; s.rep = (s.rep || 0) + 1; R.addDeed && R.addDeed('有勇者把私人委託收到的假赤金交給衛兵。衛兵說：「最近這種很多。」'); R.save(); R.closeSheet(); R.toast('衛兵給了 ' + b + ' 費拉的通報獎金。'); };
+    if ($('ex-report')) $('ex-report').onclick = () => { s.fake = 0; const b = 30; s.gold += b; s.rep = (s.rep || 0) + 2; R.addDeed && R.addDeed('有勇者把私人委託收到的假赤金交給衛兵。衛兵說：「最近這種很多。」'); R.save(); R.closeSheet(); R.toast('衛兵給了 ' + b + ' 費拉的通報獎金。'); };
   };
   // 南橋下釣魚：看準時機收線
   R.fishing = () => {

@@ -44,6 +44,7 @@
     if (a === 'mat') { const M = R.MATS && R.MATS[b]; if (!M) return null; return { name: M.name, cat: 'mat', per: matPer(b), color: M.color || '#C8B88A', desc: (M.desc || '素材') + '。一格疊 ' + matPer(b) + ' 個。', icon: () => (R.matIconURL ? '<img src="' + R.matIconURL(b, 3) + '" alt="">' : glyph(M.name[0], M.color || '#C8B88A')) }; }
     if (key === 'pot:hp') return { name: '回復藥', cat: 'item', per: PER.potion, color: '#E0505A', desc: '喝了回復生命。一格疊 ' + PER.potion + ' 瓶。', icon: () => glyph('藥', '#E0505A') };
     if (key === 'pot:mp') return { name: '魔力藥', cat: 'item', per: PER.potion, color: '#4A8AE0', desc: '喝了回復魔力。一格疊 ' + PER.potion + ' 瓶。', icon: () => glyph('魔', '#4A8AE0') };
+    if (a === 'pot' && R.FAT_ITEMS && R.FAT_ITEMS[b]) { const F = R.FAT_ITEMS[b]; return { name: F.name, cat: 'item', per: F.per, color: F.color, desc: F.desc + '一格疊 ' + F.per + ' 個。', icon: () => glyph(F.glyph, F.color) }; }   // 疲憊值的道具（fatigue.js）
     if (a === 'bomb') { const T = Object.values(R.BOMB_TYPES || {}).find(t => t.key === b); if (!T) return null; const per = T.core ? PER.bombCore : PER.bomb; return { name: T.name, cat: 'item', per, color: T.color || '#FF7A3A', desc: (T.desc || '') + '一格疊 ' + per + ' 顆。', icon: () => glyph('炸', T.color || '#FF7A3A') }; }
     if (key === 'scrolls') return { name: '卷軸', cat: 'item', per: PER.scroll, color: '#D8C098', desc: '一般的卷軸。一格疊 ' + PER.scroll + ' 張。', icon: () => glyph('卷', '#D8C098') };
     if (a === 'sbag') return { name: '咒卷', cat: 'item', per: PER.scroll, color: '#C8A0E0', desc: '寫好法術的卷軸（' + b + '）。一格疊 ' + PER.scroll + ' 張。', icon: () => glyph('咒', '#C8A0E0') };
@@ -63,7 +64,7 @@
   const bagKeys = () => {
     const s = S(), L = ['gold'];
     Object.keys(s.mats || {}).forEach(k => L.push('mat:' + k));
-    L.push('pot:hp', 'pot:mp');
+    L.push('pot:hp', 'pot:mp'); Object.keys(R.FAT_ITEMS || {}).forEach(k => L.push('pot:' + k));
     Object.values(R.BOMB_TYPES || {}).forEach(t => L.push('bomb:' + t.key));
     L.push('scrolls'); Object.keys(s.scrollBag || {}).forEach(k => L.push('sbag:' + k));
     L.push('xpBooks', 'raceTickets'); Object.keys(s.raceSelect || {}).forEach(k => L.push('rsel:' + k));

@@ -53,7 +53,7 @@
   const li = t => LET.indexOf(String(t.letter || 'F').split('～')[0]);
   R.traitTaskAxes = (s, t) => {
     if (s[4] == null) return s;
-    let f = Math.min(100, s[4] + (has('liangmin') ? 10 : 0) + (has('yingxiong') ? 35 : 0));
+    let f = Math.min(100, s[4] + (has('liangmin') ? 10 : 0) + (has('yingxiong') ? 35 : 0) + (R.repFb ? R.repFb() : 0));   // 信譽值的反饋（repute.js）
     if (has('eming')) f = Math.min(25, f); if (has('momo')) f = Math.min(70, f);
     const o = s.slice(); o[4] = Math.max(1, f); return o;
   };

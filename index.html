@@ -1115,6 +1115,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ui/tarkovstash.js"></script><!-- 格子倉庫（塔科夫式）、倉庫搬進公寓、加大倉庫與箱子（所有包 R.hub 的檔案後面） -->
 <script src="js/ui/guildhall.js"></script><!-- 公會介面重做：暖簾分頁、常駐狀態列、和紙委託單（篩選／排序／搜尋）、確認視窗、快捷鍵（所有包 R.hub 的檔案後面） -->
 <script src="js/ui/smithstash.js"></script><!-- 鐵匠鋪、倉庫介面重做：暖簾分頁、篩選排序、按不了的原因、強化預覽、分解確認與批次分解、簞笥倉庫、容量條、批次賣出（guildhall.js、tarkovstash.js 後面） -->
+<script src="js/items/fatigueitems.js"></script><!-- 2026-10-18 疲憊值的道具：提神藥、乾糧、小帳篷（白藤堂的旅行用品；stacks.js 後面、hakuto.js 前面） -->
 <script src="js/ui/hakuto.js"></script><!-- 白藤堂介面重做：招牌、狀態列、暖簾分頁（藥品／炸藥／背包／符卷）、一次買多瓶、全部換藥、按不了的原因、背包格數比較與確認（smithstash.js 後面） -->
 <script src="js/ui/darktheme.js"></script><!-- 低眩光深色主題：公會、鐵匠鋪、倉庫、白藤堂、人物誌的卡片改成深色牌子（放在這些檔案後面） -->
 <script src="js/ui/tutorial2.js"></script><!-- 新手教學：一步一步的小提示、框出畫面上的按鈕、做到自己跳下一步、可跳過、城裡選單可重看；各職業第一次的提示（darktheme.js 後面） -->
@@ -1147,6 +1148,8 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ui/baglayout.js"></script><!-- 2026-10-18 背包的新版面（裝備＋角色、角色素質、背包格、任務道具；包住 R.bagSheet，questbag.js 後面） -->
 <script src="js/ui/townbar.js"></script><!-- 2026-10-18 城裡的快捷鍵欄（設定→畫面可以關）、城裡打開背包（baglayout.js 後面） -->
 <script src="js/ui/stashbag.js"></script><!-- 2026-10-18 倉庫頁面中間改放新的背包畫面（townbar.js 後面） -->
+<script src="js/stats/fatigue.js"></script><!-- 2026-10-18 疲憊值：上限、消耗、回復、累的效果、倒下、左上角的顯示、背包的隨身用品（stashbag.js 後面，包 R.bagSheet 最外面） -->
+<script src="js/stats/repute.js"></script><!-- 2026-10-18 信譽值（−100～100，重做原本的名聲）：等級的效果（反饋、消費、霧島、被路過的勇者救、原諒、情報、被搶、獲取量）、來源、左上角（fatigue.js 後面、kuzeshadow.js 前面） -->
 <script src="js/story/kuzeshadow.js"></script><!-- 2026-10-17 隱藏任務「舊帝國武士的殘響」、刀鬼之影-久世 玄悟、寺川參狹（包 R.hurtPlayer、R.onPlayerDown、R.descend、R.loadFloor 的最外面：放在最後、main.js 前面） -->
 <script src="js/core/main.js"></script>
 <script src="js/items/bagrules.js"></script><!-- 2026-10-18 背包放不下就不能拿：商店按鈕先檢查、新裝備自動放進背包、背包有放不下的不能下遺跡（倉庫大改第三階段；放最後面） -->
