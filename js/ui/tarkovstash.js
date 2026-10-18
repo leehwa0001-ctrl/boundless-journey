@@ -133,6 +133,17 @@
     bindGrid(el);
   };
   R.renderBagGrid = el => { BAG = el; reconcile(); renderBag(el); };
+  // ---------- 背包放不放得下（2026-10-18 第三階段：買到的、獎勵、合成的東西放背包，放不下就不能拿） ----------
+  const bagFree = () => { reconcile(); const o = occ('bag'); let f = 0; for (let i = 0; i < o.m.length; i++) if (!o.m[i]) f++; BOVER.forEach(it => { const [a, b] = sizeIn(it, 'bag'); f -= a * b; }); return Math.max(0, f); };
+  R.bagFreeCells = bagFree;
+  // 這一種最多還能放幾個（裝滿最後那疊＋空格子）
+  R.bagMaxAdd = key => { const m = R.stackMeta && R.stackMeta(key); if (!m || !R.stackBagOk || !R.stackBagOk(key)) return 0; const cur = R.stackCount(key, 'bag'), part = cur % m.per ? m.per - cur % m.per : 0; return part + bagFree() * m.per; };
+  R.bagCanAdd = (key, n) => (n || 0) <= R.bagMaxAdd(key);
+  R.bagCanFitItem = it => { reconcile(); const [w, h] = sizeIn(it, 'bag'), free = bagFree(); if (w * h > free) return false; return !!findSpot('bag', w, h); };
+  // 放進背包：放得下才放（回傳 true／false）；裝備放進 R.S.stash＋背包，一疊加數量
+  R.giveItem = it => { if (!it || !R.bagCanFitItem(it)) return false; S().stash.push(it); R.toBag(it.id); fresh(); const [w, h] = sizeIn(it, 'bag'), sp = findSpot('bag', w, h); if (sp) tg().pos[it.id] = { g: 'bag', x: sp[0], y: sp[1], r: sp[2] ? (w === h ? 0 : 1) : 0 }; fresh(); return true; };
+  R.giveStack = (key, n) => { if (!(n > 0)) return true; if (!R.bagCanAdd(key, n)) return false; R.stackAdd(key, 'bag', n); fresh(); return true; };
+  R.bagFullMsg = what => { if (R.toast) R.toast('背包放不下' + (what ? '「' + what + '」' : '') + '：先整理背包、把東西放回倉庫或賣掉。', '#FF9A6A'); };
   // 一疊東西搬到另一邊（倉庫 ⇄ 背包）：整疊的數量搬過去；原本那邊拖走的那格空出來，搬過去那邊新的一疊放在放下的位置
   const moveStack = (it, to, t) => {
     const g = tg(), from = it.where, pre = w => (w === 'bag' ? 'bk:' : 'sk:'), cnt = w => R.stackCount(it.key, w), per = it.per;

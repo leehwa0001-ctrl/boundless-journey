@@ -15,8 +15,11 @@
   // 背包裡的裝備（沒穿在身上、還在 R.S.stash 裡的）
   R.bagGear = () => { const eq = R.equippedIds ? R.equippedIds() : new Set(), set = new Set(ids().map(String)); return (S().stash || []).filter(it => set.has(String(it.id)) && !eq.has(it.id)); };
   // ---------- 舊存檔 ----------
-  const migrate = () => {
-    const s = S(); if (!s || s.inv2) return;
+  const migrate = (s0) => {
+    const s = s0 || S(); if (!s || s.inv2) return;
+    const keep0 = R.S; R.S = s; try { migrate1(s); } finally { R.S = keep0; }
+  };
+  const migrate1 = s => {
     s.vault = s.vault || {}; s.bagIds = [];
     const keep = { gold: 1000, 'pot:hp': 10, 'pot:mp': 10 };
     R.stackList('bag').map(x => x.key).filter((k, i, a) => a.indexOf(k) === i).forEach(k => {
@@ -26,7 +29,7 @@
     s.inv2 = 1;
   };
   R.carryMigrate = migrate;
-  const ld0 = R.load; if (ld0) R.load = (...a) => { const r = ld0(...a); try { migrate(); } catch (e) { console.warn('[carry]', e); } return r; };
+  const ls0 = R.loadSlot; if (ls0) R.loadSlot = (...a) => { const r = ls0(...a); try { migrate(r); } catch (e) { console.warn('[carry]', e); } return r; };
   const fs0 = R.freshSave; if (fs0) R.freshSave = (...a) => { const s = fs0(...a); s.inv2 = 1; s.vault = s.vault || {}; s.bagIds = []; return s; };   // 新的存檔：東西本來就在背包
   // ---------- 下遺跡：背包裡的裝備、素材帶進去 ----------
   // 帶進去的記在 R.S.carry（存檔裡）：回來（R.extract）、倒下（R.onPlayerDown）就清掉；

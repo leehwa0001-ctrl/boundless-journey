@@ -20,7 +20,7 @@
     const s = S(), [a, b] = String(key).split(':');
     const obj = (name, k) => [() => (s[name] && s[name][k]) || 0, v => { s[name] = s[name] || {}; s[name][k] = v; }];
     const top = name => [() => s[name] || 0, v => { s[name] = v; }];
-    if (key === 'gold') return top('gold');
+    if (key === 'gold') return top('wallet');   // 錢包（wallet.js：R.S.gold＝錢包＋銀行）
     if (a === 'mat') return obj('mats', b);
     if (a === 'pot') return obj('potions', b);
     if (a === 'bomb') return top(b);

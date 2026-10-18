@@ -85,7 +85,7 @@
     try {
       const paid = Math.max(0, g0 - s.gold), served = Math.max(0, s.day - d0);
       const fine = Math.round(paid * ((has('pashou') ? 0.45 : 0) + (has('eming') ? 2 : 0))), days = (has('pashou') ? 2 : 0) + (has('eming') ? served * 2 : 0);
-      if (fine || days) { s.gold = Math.max(0, s.gold - fine); if (days && R.advanceDays) R.advanceDays(days); R.save && R.save(); setTimeout(() => R.toast && R.toast((has('eming') ? '惡名遠洋：衛兵特別「照顧」你。' : '扒手的前科：') + (fine ? '罰款多 ' + fine + ' 費拉' : '') + (fine && days ? '、' : '') + (days ? '多關 ' + days + ' 天' : '') + '。', '#F0A060'), 600); }
+      if (fine || days) { s.wallet = Math.max(0, (s.wallet || 0) - fine); if (days && R.advanceDays) R.advanceDays(days); R.save && R.save(); setTimeout(() => R.toast && R.toast((has('eming') ? '惡名遠洋：衛兵特別「照顧」你。' : '扒手的前科：') + (fine ? '罰款多 ' + fine + ' 費拉' : '') + (fine && days ? '、' : '') + (days ? '多關 ' + days + ' 天' : '') + '。', '#F0A060'), 600); }
     } catch (e) { console.warn('[traitlife]', e); }
     return r;
   };

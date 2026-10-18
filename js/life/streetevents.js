@@ -90,7 +90,7 @@
         if (ev.st === 'approach') {
           const d = moveTo(t, Pl.x, Pl.z, 3.6, dt);
           if (d < 0.9) {
-            const s = S(), amt = Math.max(5, Math.min(s.gold, 60, Math.round(s.gold * 0.07 + 10 + rnd() * 30))); gold(-amt); ev.amt = amt; ev.st = 'flee'; ev.t = 0; ev.speed = 0.9; ev.limit = 35; t.path = null;
+            const s = S(), amt = Math.min(s.wallet || 0, Math.max(5, Math.min(s.wallet || 0, 60, Math.round((s.wallet || 0) * 0.07 + 10 + rnd() * 30))));   /* 2026-10-18：只扒錢包（銀行的錢扒不走，wallet.js） */ gold(-amt); ev.amt = amt; ev.st = 'flee'; ev.t = 0; ev.speed = 0.9; ev.limit = 35; t.path = null;
             R.toast('有人撞了你一下……錢包少了 ' + amt + ' 費拉！是剛剛那個人！', '#E8323A'); R.sfx && R.sfx('swing');
           } else if (ev.t > 25) end();
           return;
@@ -150,7 +150,7 @@
           ev.ct += dt; let caught = false; ev.robbers.forEach(r => { moveTo(r, Pl.x, Pl.z, runSp() * 0.9, dt); if (dist(r, Pl) < 1.0) caught = true; });
           const d = Math.min(...ev.robbers.map(r => dist(r, Pl)));
           showHud('<b>逃！</b><span>' + Math.round(d) + ' 公尺・撐 ' + Math.max(0, Math.ceil(10 - ev.ct)) + ' 秒</span><small>按住 Shift 跑步</small>'); showArrow(null);
-          if (caught) { const amt = Math.min(300, Math.round(S().gold * 0.3)); gold(-amt); say('強盜', ['「跑什麼跑。」', '（被抓住了。錢包被搶走 ' + amt + ' 費拉。）']); end(); }
+          if (caught) { const amt = Math.min(300, Math.round((S().wallet || 0) * 0.3)); gold(-amt); say('強盜', ['「跑什麼跑。」', '（被抓住了。錢包被搶走 ' + amt + ' 費拉。）']); end(); }
           else if (ev.ct > 10 || d > 26) end('甩掉了。心臟還在狂跳。');
           return;
         }
@@ -225,7 +225,7 @@
 
   // ---------- 強盜：交錢、打、逃 ----------
   const robSheet = () => {
-    const s = S(), n = ev.robbers.length, pay = Math.min(200, Math.round(s.gold * 0.2));
+    const s = S(), n = ev.robbers.length, pay = Math.min(200, Math.round((s.wallet || 0) * 0.2));
     R.sheet('<p class="kicker">深夜的巷子</p><h2>' + (n > 1 ? '兩個' : '一個') + '蒙面的人擋住了路</h2><p>「站住。把錢包留下，就讓你走。」</p><p class="note">手上拿著棍子。' + (n > 1 ? '後面也有一個。' : '') + '</p>',
       '<div class="row"><button type="button" class="btn" id="rb-pay">交出錢（' + pay + ' 費拉）</button><button type="button" class="btn pri" id="rb-fight">打倒他們</button><button type="button" class="btn" id="rb-run">逃跑</button></div>');
     document.getElementById('rb-pay').onclick = () => { gold(-pay); R.closeSheet(); say('強盜', ['「識相。」', '（交出 ' + pay + ' 費拉。兩個人消失在巷子裡。）']); end(); };
@@ -271,7 +271,7 @@
     document.getElementById('rb-leave').onclick = () => { R.closeSheet(); R.toast('他們連滾帶爬地跑了。'); end(); };
   };
   const loseFight = () => {
-    fight = null; const amt = Math.min(300, Math.round(S().gold * 0.3)); gold(-amt); R.closeSheet();
+    fight = null; const amt = Math.min(300, Math.round((S().wallet || 0) * 0.3)); gold(-amt); R.closeSheet();
     say('強盜', ['棍子打在肩膀上，你跪倒在雪裡。', '「早點交出來不就好了。」', '（錢包被搶走 ' + amt + ' 費拉。）']); end();
   };
   // ---------- 勸架、小孩 ----------

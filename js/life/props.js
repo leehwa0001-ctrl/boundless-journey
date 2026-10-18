@@ -144,7 +144,7 @@
     C.ch = null; C.seen = 0;
     const name = who && who.name || '路人';
     if (st.owner === 'suga' || (who && who.watch.kind === 'suga')) {   // 菅婆婆：罵你一頓，還是給你一串
-      addGift('dango', 1); S().rep = (S().rep || 0) - 1; S().gold = Math.max(0, S().gold - 2);
+      addGift('dango', 1); S().rep = (S().rep || 0) - 1; S().wallet = Math.max(0, (S().wallet || 0) - 2);
       R.townTalk('菅婆婆', ['「孩子，要吃就說。」', '（她把一串糰子塞進你手裡，敲了一下你的頭。）', '「兩費拉，從你口袋拿了。」']); R.save(); return;
     }
     C.heat = Math.min(3, C.heat + (who && who.watch.guard ? 2 : 1)); C.lostT = 0;
@@ -158,8 +158,8 @@
     C.heat = 0; C.lostT = 0; if (W.town) (W.town.watchers || []).forEach(n => { n.chase = false; });
     // 嚴重的懲罰（punish.js）：罰金、拘留、停權……；R.onArrest 要在後面（它會把被抓的次數加一）
     if (R.arrestPunish) { R.arrestPunish(heat, g); if (R.onArrest) R.onArrest(); R.save(); if (R.townHud) R.townHud(true); return; }
-    if (S0.gold >= fine) { S0.gold -= fine; R.townTalk('東鶴的衛兵', ['「抓到了。」', '（被押到衛兵所，罰了 ' + fine + ' 費拉。）', '「再有下次，就送公會的懲戒委員會。」']); }
-    else { S0.gold = 0; R.townTalk('東鶴的衛兵', ['「抓到了。……錢不夠？那就在拘留所待一晚。」', '（在拘留所過了一晚。）']); if (R.advanceDays) R.advanceDays(1); }
+    if ((S0.wallet || 0) >= fine) { S0.wallet -= fine; R.townTalk('東鶴的衛兵', ['「抓到了。」', '（被押到衛兵所，罰了 ' + fine + ' 費拉。）', '「再有下次，就送公會的懲戒委員會。」']); }
+    else { S0.wallet = 0; R.townTalk('東鶴的衛兵', ['「抓到了。……錢不夠？那就在拘留所待一晚。」', '（在拘留所過了一晚。）']); if (R.advanceDays) R.advanceDays(1); }
     if (R.addDeed) R.addDeed('西市口的竊案嫌犯被衛兵當場逮捕。據說是一名勇者。');
     S0.rep = (S0.rep || 0) - 3; if (R.onArrest) R.onArrest(); R.save();
     if (R.townHud) R.townHud(true);
