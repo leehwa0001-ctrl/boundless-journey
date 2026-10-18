@@ -300,7 +300,7 @@
     const tw = W.town, L = tw && tw.L; if (!L) return;
     const h = R.hourNow ? R.hourNow() : 12, wn = R.weatherNow ? R.weatherNow() : '晴', city = tw.city, k = CK.lightFor(h + (city.hourShift || 0), wn), TH = T(), lc = a => new TH.Color(a[0], a[1], a[2]);
     const u = L.skyM.uniforms; u.top.value.copy(lc(k.top)).convertSRGBToLinear(); u.hor.value.copy(lc(k.hor)).convertSRGBToLinear(); u.gnd.value.copy(lc(k.gnd)).convertSRGBToLinear(); u.sunCol.value.copy(lc(k.sunC)).convertSRGBToLinear(); u.sunDir.value.set(k.s.dir[0], k.s.dir[1], k.s.dir[2]); u.cloud.value = k.wx.cloud; u.night.value = k.night;
-    W.scene.fog.color.copy(u.hor.value); const fogK = k.wx.fog * (city.fog || 1); W.scene.fog.density = 0.0006 * fogK * (k.night > 0.5 ? 1.3 : 1);
+    if (W.scene.fog) { W.scene.fog.color.copy(u.hor.value); const fogK = k.wx.fog * (city.fog || 1); W.scene.fog.density = 0.0006 * fogK * (k.night > 0.5 ? 1.3 : 1); }   // 在店裡（interior.js 的場景沒有霧）自動降畫質時不會出錯
     L.sun.color.copy(u.sunCol.value); L.sun.intensity = k.sunI; L.sunDir = k.s.dir;
     L.hemi.color.copy(u.top.value).lerp(new TH.Color(1, 1, 1), 0.35); L.hemi.groundColor.copy(lc([0.34, 0.31, 0.28])).convertSRGBToLinear(); L.hemi.intensity = k.hemiI * (k.night > 0.5 ? 0.6 : 1);
     // 環境反光：時間、天氣變了才重算

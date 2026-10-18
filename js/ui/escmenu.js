@@ -67,12 +67,12 @@
         lab(); b.onclick = () => { R.setTownBar(!R.townBarOn()); lab(); }; slot(w, 'screen').appendChild(b);
       }
       // 鏡頭：一般／肩部視角（2026-10-18，shouldercam.js）
-      if (R.setShoulder && !R.touch && !sh.querySelector('#sc-tg')) {
+      if (R.setShoulder && !sh.querySelector('#sc-tg')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'sc-tg';
         const lab = () => { b.textContent = '鏡頭：' + (R.shoulderOn() ? '肩部視角' : '一般') + '（P）'; };
         lab(); b.onclick = () => { R.setShoulder(!R.shoulderOn()); lab(); }; slot(w, 'screen').appendChild(b);
       }
-      if (R.shoulderPos && !R.touch && !sh.querySelector('#sc-pos-open')) {
+      if (R.shoulderPos && !sh.querySelector('#sc-pos-open')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'sc-pos-open'; b.textContent = '肩部視角的位置（Shift＋P）';
         b.onclick = () => R.shoulderPos(); slot(w, 'screen').appendChild(b);
       }

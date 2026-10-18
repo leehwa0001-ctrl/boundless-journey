@@ -16,7 +16,7 @@
   const W = () => R.W || {}, $ = id => document.getElementById(id), T = () => window.THREE;
   const KEY = 'tfl-shouldercam';
   const LS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { } return null; };
-  R.shoulderOn = () => LS(KEY) === '1' && !R.touch;
+  R.shoulderOn = () => LS(KEY) === '1';   // 2026-10-18：有觸控螢幕的筆電也會被當成觸控（R.touch），不再擋
   // 鏡頭的位置（2026-10-18 作者：玩家可以自己調前後、左右、上下）：存在 localStorage 的 tfl-shouldercam-pos
   //   back＝往後幾公尺、side＝往左幾公尺（負的＝右肩）、high＝高幾公尺。人物（點陣）大約 3 公尺高，預設左 1.5、高 3.1、往後 6。
   const DEF = { back: 6, side: 1.5, high: 3.1 }, LIM = { back: [2, 14], side: [-3.5, 3.5], high: [1, 7] };
@@ -26,22 +26,31 @@
   R.setShoulder = on => {
     LS(KEY, on ? '1' : '0'); st.yaw = null;
     if (!on && document.pointerLockElement) document.exitPointerLock();
-    hud(); if (R.toast) R.toast(on ? (active() ? '肩部視角：點一下畫面鎖定滑鼠，移動滑鼠轉視角（Esc 放開；按 P 切回一般鏡頭）。' : '肩部視角：室內暫時還是原本的鏡頭，到街上或遺跡裡就會換。') : '一般鏡頭。', '#C8E0FF');
+    hud(); if (R.toast) R.toast(on ? (active() ? '肩部視角：點一下畫面鎖定滑鼠，移動滑鼠轉視角（Esc 放開；按 P 切回一般鏡頭）。' : '肩部視角：這裡暫時還是原本的鏡頭，到街上、店裡或遺跡裡就會換。') : '一般鏡頭。', '#C8E0FF');
     if (W().camera && R.placeCam) try { R.placeCam(null); } catch (e) { }
   };
   // 現在能不能用
-  const active = () => {
-    const w = W(); if (!R.shoulderOn() || !w.P || !w.camera || !w.cam) return false;
-    return !!(w.run && !w.town) || inCity();
+  // 在哪裡：ruin 遺跡、city 立體城市的街上（精緻版的東鶴、皇嶺……）、room 室內（店、家；interior.js）、town 像素版的東鶴街上
+  //  （2026-10-18 作者：城裡按 P 還是不行——比較慢的電腦東鶴會自動換成像素版 dhswitch.js，第一版只接了精緻版）
+  const where = () => {
+    const w = W(); if (!w.P || !w.camera || !w.cam) return null;
+    if (w.run && !w.town) return 'ruin';
+    if (!w.town || w.run) return null;
+    if (w.inside) return w.inside.pl ? 'room' : null;
+    if (w.town.ck) return w.town.room || !R.CK ? null : 'city';
+    return w.town.hosu ? null : 'town';
   };
-  const inCity = () => { const w = W(); return !!(w.town && w.town.ck && !w.town.room && !w.inside && !w.run && R.CK); };
+  const active = () => R.shoulderOn() && !!where();
+  const inCity = () => where() === 'city';
   R.shoulderActive = active;
   R.shoulderState = () => st;   // 測試用
   const fwd = y => [-Math.sin(y), -Math.cos(y)];   // 鏡頭在 yaw 的方向後面、往反方向看（run.js 的 placeCam）
   const left = y => [-Math.cos(y), Math.sin(y)];
   // 鏡頭往後退的時候碰到牆：看是不是地板格
   const clear = (x, z) => {
-    if (inCity()) { if (!R.collide) return true; const p = { x, z }; try { R.collide(p, 0.3); } catch (e) { return true; } return Math.hypot(p.x - x, p.z - z) < 0.05; }
+    const m = where();
+    if (m === 'room') { const pl = W().inside.pl; return Math.abs(x) < pl.w / 2 - 0.4 && Math.abs(z) < pl.d / 2 - 0.4; }
+    if (m === 'city' || m === 'town') { if (!R.collide) return true; const p = { x, z }; try { R.collide(p, 0.3); } catch (e) { return true; } return Math.hypot(p.x - x, p.z - z) < 0.05; }
     return !R.isFloor || R.isFloor(x, z);
   };
   const fit = (px, pz, tx, tz) => {   // 從 (px,pz) 往 (tx,tz) 走，回傳能走到的比例
@@ -69,7 +78,7 @@
     try {
       const cam = w.camera, P = w.P; if (!cam.isPerspectiveCamera) return;
       const y = st.yaw, [fx, fz] = fwd(y), [lx, lz] = left(y), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
-      const K = inCity() ? 0.8 : 1, dist = st.dist * K;   // 城裡的人物比較小：位置照 0.8 倍縮
+      const m = where(), K = m === 'city' ? 0.8 : m === 'room' ? 0.85 : 1, dist = st.dist * K;   // 精緻版城裡的人物比較小、室內比較窄：位置照比例縮
       const hx = P.x + lx * POS.side * K, hy = gy + POS.high * K, hz = P.z + lz * POS.side * K;   // 肩膀上方（預設左肩）
       const k = fit(P.x, P.z, hx, hz), sx = P.x + (hx - P.x) * k, sz = P.z + (hz - P.z) * k;
       const bx = sx - fx * cp * dist, bz = sz - fz * cp * dist, by = hy - sp * dist;
@@ -157,7 +166,7 @@
   R.shoulderPosValue = () => Object.assign({}, POS);
   // P：切換
   window.addEventListener('keydown', e => {
-    if (e.code !== 'KeyP' || e.repeat || e.ctrlKey || e.altKey || e.metaKey || R.touch) return;
+    if (e.code !== 'KeyP' || e.repeat || e.ctrlKey || e.altKey || e.metaKey) return;
     if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
     const run = $('run'); if (!run || run.hidden || (R.sheetOpen && R.sheetOpen() && panel.hidden)) return;
     e.preventDefault(); if (e.shiftKey) { if (panel.hidden) R.shoulderPos(); else R.shoulderPosClose(); return; } R.setShoulder(!R.shoulderOn());
