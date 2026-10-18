@@ -173,7 +173,7 @@
     bx(0.5, 0.05, 0.36, '#F4E9CD', -2.2, 1.2, -5.6); bx(0.46, 0.05, 0.34, '#EDE0C8', -2.14, 1.25, -5.64); bx(0.7, 0.1, 0.5, '#3A2A1C', 2.6, 1.22, -5.7); bx(0.12, 0.14, 0.12, '#1A1410', 3.2, 1.24, -5.5);
     mesh(new TH.SphereGeometry(0.15, 8, 6, 0, Math.PI * 2, 0, Math.PI / 2), lam('#C9A13A', { tex: 0 }), 1.3, 1.17, -5.45);
     block(-4.65, 4.65, -6.1, -5.05, 'desk'); sign(0, 0.62, -5.1, 0, '登記處', '#2E4A34');
-    npc(0, -7.1, 0, { name: '白川', look: { top: '#2E4A34', hair: '#2A2220', cloak: '#2E4A34', hs: 'bun', acc: 'glasses' } });
+    npc(0, -7.1, 0, { name: '白川', look: { top: '#2E4A34', hair: '#2A2220', cloak: '#2E4A34', hs: 'bun', acc: 'glasses', sig: 'shirakawa' } });
     npc(-3, -7.3, 0.3, { name: '館員', look: { top: '#2E4A34', hair: '#6A4A2E', cloak: '#2E4A34' } });
     inter(0, -4.3, 2.3, '登記處：職業登記・轉職・隊伍名冊', () => R.openHub('guild', 'desk'));
     // 後牆：委託告示板、公會的綠旗、檔案櫃
@@ -328,7 +328,7 @@
     bx(0.9, 0.45, 0.7, '#2E2E34', ax, 0.225, az); bx(0.45, 0.35, 0.4, '#2E2E34', ax, 0.62, az); bx(1.4, 0.32, 0.55, '#4A4A54', ax, 0.95, az);
     const horn = mesh(new TH.ConeGeometry(0.2, 0.6, 6), '#4A4A54', ax + 1.0, 0.95, az); horn.rotation.z = -Math.PI / 2;
     block(ax - 0.7, ax + 1.2, az - 0.4, az + 0.4, 'anvil');
-    const iwa = npc(ax, az - 1.2, 0, { name: '老岩', weapon: 'mace', look: { top: '#5A4A3A', hair: '#D8D2C4', cloak: '#3A2E26' } });
+    const iwa = npc(ax, az - 1.2, 0, { name: '老岩', weapon: 'mace', look: { top: '#5A4A3A', hair: '#D8D2C4', cloak: '#3A2E26', sig: 'oiwa' } });
     iwa.hammer = { x: ax, y: 1.15, z: az };
     inter(ax, az + 1.2, 2.0, '跟老岩說話（鑑定・製作・強化・分解）', () => R.openHub('smith'));
     // 鑑定台（西邊）
