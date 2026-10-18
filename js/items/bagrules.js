@@ -8,6 +8,7 @@
 // - 其他沒辦法先擋的（小遊戲的彩金、拆出來的素材……）：放進背包的數字，放不下的列在背包的「放不下」區；
 //   背包還有放不下的東西時不能下遺跡（先放回倉庫或賣掉）。
 // - 錢：wallet.js（背包放不下的錢存進勇者證）。
+// - 遺跡裡（第四階段）：補給點、行商、休息區商人買藥水先看遺跡背包的空位（RUN_SHOP）。
 // 放在 index.html 最後面（R.startRun、R.addGift、R.craft 最外層）。
 (function (R) {
   const S = () => R.S, W = () => R.W || {};
@@ -31,9 +32,19 @@
     ['#cl-c1', () => ['clawCoins', 1]], ['#cl-c4', () => ['clawCoins', 4]],
     ['[data-bm],[data-bmb],[data-bmp],[data-pwr]', () => 'gear']
   ];
+  // 遺跡裡的商人（2026-10-18 第四階段）：看遺跡背包的空位（R.raidCanAdd，carry.js）
+  const RUN_SHOP = [
+    ['#rp-hp', () => ['pot:hp', 1]], ['#rp-mp', () => ['pot:mp', 1]],
+    ['[data-trb]', el => ['pot:' + el.dataset.trb, 1]],
+    ['[data-mc]', el => { const t = el.textContent || ''; return /魔力藥/.test(t) ? ['pot:mp', 1] : /回復藥/.test(t) ? ['pot:hp', 1] : null; }]   // 裝備是丟在地上，撿的時候再看
+  ];
   document.addEventListener('click', e => {
-    if (!R.S || !R.bagCanAdd || (W().run && !W().town)) return;   // 遺跡裡的商人照舊（第四階段再改）
+    if (!R.S || !R.bagCanAdd) return;
     const t = e.target && e.target.closest ? e.target : null; if (!t) return;
+    if (W().run && !W().town) {
+      for (const [sel, f] of RUN_SHOP) { const el = t.closest(sel); if (!el || el.disabled) continue; const g = f(el); if (g && R.raidCanAdd && !R.raidCanAdd(g[0], g[1])) { e.preventDefault(); e.stopImmediatePropagation(); if (R.toast) R.toast('背包放不下' + nameOf(g[0]) + '：按 I 整理背包。', '#FF9A6A'); } return; }
+      return;
+    }
     for (const [sel, f] of SHOP) {
       const el = t.closest(sel); if (!el || el.disabled) continue;
       const g = f(el); if (!g) return;

@@ -2,7 +2,8 @@
 // - 背包裡的裝備：R.S.bagIds（裝備的 id；裝備本身照舊在 R.S.stash）；位置記在倉庫格的 R.S.tg.pos（g:'bag'）。
 // - 背包裡會疊的東西＝原本的數字（R.S.gold、R.S.mats……），倉庫裡的在 R.S.vault（stacks.js）。
 // - 下遺跡：背包裡的裝備、素材帶進去（佔遺跡背包的格子）；回來的時候背包裡的東西（帶去的＋撿到的）留在背包，不再直接送進倉庫。
-//   倒下：遺跡背包裡的東西照原本的規則留在遺跡。
+//   第四階段：錢（錢包＋這趟撿到的，一格 1000）、藥水、炸彈、卷軸、禮物……也佔遺跡背包的格子（R.carryCells，raid.js 算空位時加進去）；
+//   倒下：背包裡的東西全部留在遺跡，錢包只掉 5％。
 // - 舊存檔第一次（R.S.inv2）：原本的東西全部放進倉庫，背包留 1000 費拉、回復藥和魔力藥各一格（10 瓶），不然一出門什麼都買不了。
 // 放在 raid.js、stacks.js 後面、tarkovstash.js 前面。
 (function (R) {
@@ -64,7 +65,37 @@
     Object.keys(c.mats || {}).forEach(k => { s.mats[k] = (s.mats[k] || 0) + c.mats[k]; });
   };
   const et0 = R.enterTown; if (et0) R.enterTown = (...a) => { try { restore(); } catch (e) { console.warn('[carry]', e); } return et0(...a); };
-  const pd0 = R.onPlayerDown; if (pd0) R.onPlayerDown = (...a) => { const s = S(); if (s) s.carry = null; return pd0(...a); };   // 倒下：帶進去的東西留在遺跡
+  // 倒下（2026-10-18 第四階段）：帶進去的東西留在遺跡——背包裡的裝備、素材（raid.js 原本就會丟）、藥水、炸彈、卷軸、禮物……全部；錢包只掉 5％
+  const pd0 = R.onPlayerDown; if (pd0) R.onPlayerDown = (...a) => {
+    const s = S(), run = W().run;
+    const safe = run && !(run.site && run.site.kind === 'ruin' && run.site.id !== 'kanko' && run.grade && run.grade.id !== 'hamilia');   // 哈米莉亞級、觀光、狩獵場倒下不會掉（跟 raid.js 一樣）：帶進去的回城時放回背包
+    if (s && run && !run.done && !safe) {
+      s.carry = null;
+      try {
+        R.stackList('bag').map(x => x.key).filter((k, i, L) => L.indexOf(k) === i && k !== 'gold').forEach(k => R.stackAdd(k, 'bag', -R.stackCount(k, 'bag')));
+        const lost = Math.floor((s.wallet || 0) * 0.05); s.wallet = (s.wallet || 0) - lost; run.walletLost = lost;
+        setTimeout(() => { if (R.toast) R.toast('背包裡的東西留在遺跡了' + (lost ? '；錢包掉了 ' + lost.toLocaleString('zh-TW') + ' 費拉' : '') + '。', '#FF9A6A'); }, 1600);
+      } catch (e) { console.warn('[carry]', e); }
+    }
+    return pd0(...a);
+  };
+  // ---------- 遺跡背包裡帶著的東西（第四階段）：錢（錢包＋這趟撿到的）、藥水、炸彈……一疊佔一格 ----------
+  const carried = () => {
+    const s = S(), run = W().run; if (!s || !run) return [];
+    const L = [], gm = R.stackMeta && R.stackMeta('gold'), gold = (s.wallet || 0) + Math.round(run.gold || 0);
+    if (gm) for (let left = gold; left > 0; left -= gm.per) L.push(Object.assign({ key: 'gold', n: Math.min(gm.per, left) }, gm));
+    (R.stackList ? R.stackList('bag') : []).forEach(x => { if (x.key !== 'gold' && x.cat !== 'mat') L.push(x); });
+    return L;
+  };
+  R.carryStacks = carried;
+  R.carryCells = extra => {
+    const s = S(), run = W().run; if (!s || !run) return 0;
+    if (!extra) return carried().length;
+    const per = (R.stackMeta && R.stackMeta(extra.k) || {}).per || 1, cur = extra.k === 'gold' ? (s.wallet || 0) + Math.round(run.gold || 0) : R.stackCount(extra.k, 'bag');
+    return carried().length + Math.ceil((cur + extra.n) / per) - Math.ceil(cur / per);
+  };
+  // 遺跡裡加東西（商人）：放不放得下
+  R.raidCanAdd = (key, n) => { const run = W().run; if (!run || !R.raidFreeCells) return true; const per = (R.stackMeta && R.stackMeta(key) || {}).per || 1, cur = key === 'gold' ? (S().wallet || 0) + Math.round(run.gold || 0) : R.stackCount(key, 'bag'); return Math.ceil((cur + n) / per) - Math.ceil(cur / per) <= R.raidFreeCells(); };
   // ---------- 回來：背包裡的東西留在背包 ----------
   const ex0 = R.extract;
   R.extract = (...a) => {
