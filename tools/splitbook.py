@@ -1,5 +1,5 @@
-# 把作者給的圖切成一格一頁，存成 assets/books/<id>/pNN.webp（2026-10-18：東鶴書房的《獸的誘惑》）
-# 用法：python3 tools/splitbook.py dhshelf 圖1 圖2:4 ...
+# 把作者給的圖切成一格一頁，存成 assets/books/<id>/pNN.webp（2026-10-18）
+# 用法：python3 tools/splitbook.py 書的id 圖1 圖2:4 ...
 #   每張圖自動找格子之間的分隔線（整條幾乎同一個顏色的橫線、直線）；沒有分隔線的一排人物，在檔名後面加「:人數」平均切直條。
 #   印出要貼進 bookreader.js 的 pages。
 import sys, os
