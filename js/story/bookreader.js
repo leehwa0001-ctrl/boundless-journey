@@ -44,7 +44,5 @@
     document.body.appendChild(el); window.addEventListener('keydown', key, true); draw();
   };
   R.bookOpen = () => !!el; R.closeBook = close;
-  // ---------- 書 ----------
-  // 東鶴書房 x=4.7 z=-3.9 的書架（2026-10-18 作者：圖等一下給）
-  R.BOOKS.dhshelf = R.BOOKS.dhshelf || { title: '獸的誘惑', sub: '', pages: [{ img: 'assets/books/dhshelf/p01.webp' }, { img: 'assets/books/dhshelf/p02.webp' }, { img: 'assets/books/dhshelf/p03.webp' }, { img: 'assets/books/dhshelf/p04.webp' }, { img: 'assets/books/dhshelf/p05.webp' }, { img: 'assets/books/dhshelf/p06.webp' }, { img: 'assets/books/dhshelf/p07.webp' }, { img: 'assets/books/dhshelf/p08.webp' }, { img: 'assets/books/dhshelf/p09.webp' }, { img: 'assets/books/dhshelf/p10.webp' }, { img: 'assets/books/dhshelf/p11.webp' }, { img: 'assets/books/dhshelf/p12.webp' }, { img: 'assets/books/dhshelf/p13.webp' }, { img: 'assets/books/dhshelf/p14.webp' }, { img: 'assets/books/dhshelf/p15.webp' }] };   // 圖：assets/books/dhshelf/p01.webp…（作者給的圖切成一格一頁）
+  // 書的內容各自一個檔案（例如 book-beast.js 的《獸的誘惑》），刪掉那個檔案就沒有那本書
 })(window.R = window.R || {});
