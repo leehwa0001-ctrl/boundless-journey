@@ -55,7 +55,8 @@
   };
 
   // ---------- 全國地圖 ----------
-  const FR = { x0: 30.3, x1: 41.7, z0: -27.2, z1: -17.4 }, K = 100;
+  // 2026-10-18 作者：地圖的大小改成作者給的圖（原本 x 30.3～41.7、z −27.2～−17.4；上下各裁掉一點，1130×860，跟作者的圖一樣 1.314 : 1）
+  const FR = { x0: 30.35, x1: 41.65, z0: -26.65, z1: -18.05 }, K = 100;
   const NX = x => (x - FR.x0) * K, NY = z => (z - FR.z0) * K;
   const NW = (FR.x1 - FR.x0) * K, NH = (FR.z1 - FR.z0) * K;
   R.drawNation = () => {
@@ -108,7 +109,7 @@
     // 國名（直書，放在東邊的海上）
     s += '<text x="' + NX(39.55) + '" y="' + NY(-24.35) + '" class="nation-name" writing-mode="tb">昭旭聯合王國</text>';
     // 鄰國名稱
-    s += neigh.map(([n, v]) => { let x = NX(v.c[0]), y = NY(v.c[1]); x = Math.max(60, Math.min(NW - 60, x)); y = Math.max(24, Math.min(NH - 14, y)); return '<text x="' + f1(x) + '" y="' + f1(y) + '" class="neigh-name">' + esc(n) + '</text>'; }).join('');
+    s += neigh.map(([n, v]) => { let x = NX(v.c[0]), y = NY(v.c[1]); if (y < 0 || y > NH) return '';   /* 中心在地圖上面、下面的國家不寫名字（作者的圖） */ x = Math.max(60, Math.min(NW - 60, x)); y = Math.max(24, Math.min(NH - 14, y)); return '<text x="' + f1(x) + '" y="' + f1(y) + '" class="neigh-name">' + esc(n) + '</text>'; }).join('');
     // 地點
     s += R.SITES.filter(x => x.map === 'nation').map(x => '<g class="site k-' + x.kind + (x.status === 'lock' ? ' locked' : '') + '" data-site="' + x.id + '" transform="translate(' + f1(NX(x.x)) + ' ' + f1(NY(x.z)) + ')" tabindex="0" role="button" aria-label="' + esc(x.name) + '"><g class="site-in"><g class="mk">' + marker(x) + '</g>'
       + '<text class="site-name"' + (x.lx ? ' x="' + x.lx + '"' : '') + ' y="' + (x.ly != null ? x.ly : x.kind === 'forbidden' ? 62 : x.kind === 'capital' ? 30 : 28) + '">' + esc(x.name) + '</text></g></g>').join('');
