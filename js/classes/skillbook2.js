@@ -146,8 +146,9 @@
       w.dyn.push(dt => {
         if (W().run !== run || P.dead) return false; left -= dt; cd -= dt;
         if (cd <= 0) {
-          cd = s.gap || 0.6; const list = alive().filter(e => dist(e, P) < (s.r || 9));
-          const e = list.length ? list[Math.floor(rnd() * list.length)] : null, x = e ? e.x : P.x + (rnd() - 0.5) * 8, z = e ? e.z : P.z + (rnd() - 0.5) * 8;
+          const C = s.cx != null ? { x: s.cx, z: s.cz } : P;   // 2026-10-18：術陣師的雷陣放在滑鼠處（cx、cz），其他照舊以自己為中心
+          cd = s.gap || 0.6; const list = alive().filter(e => dist(e, C) < (s.r || 9));
+          const e = list.length ? list[Math.floor(rnd() * list.length)] : null, x = e ? e.x : C.x + (rnd() - 0.5) * 8, z = e ? e.z : C.z + (rnd() - 0.5) * 8;
           const fx = s.fx || 'pillar'; if (fx === 'pillar') R.fx('pillar', x, 0, z, { r: (s.hitR || 1.4) * 0.6, color: s.color }); else if (fx === 'spark') { R.fx('spark', x, 1.2, z, { a: rnd() * 6.28, crit: true }); R.fx('poof', x, 1.4, z, { color: s.color || '#E8E0D0', n: 6 }); } else R.fx('boom', x, 0.5, z, { r: s.hitR || 1.4, color: s.color });
           if (e) R.aoe(x, z, s.hitR || 1.4, pw * s.k, { stun: s.stun, root: s.root, burn: s.burn, props: false });
         }

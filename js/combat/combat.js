@@ -83,7 +83,7 @@
     if (o.root) e.st.root = Math.max(e.st.root, o.root);
     if (o.curse) e.st.curse = Math.max(e.st.curse, o.curse);
     const kb = (o.kb != null ? o.kb : o.primary ? ws.kb : 0) * (e.def.boss ? 0.15 : 1);
-    if (kb) { const a = angTo(P, e); e.kx += Math.sin(a) * kb * 6; e.kz += Math.cos(a) * kb * 6; }
+    if (kb) { const a = o.kbX != null ? Math.atan2(e.x - o.kbX, e.z - o.kbZ) : angTo(P, e); e.kx += Math.sin(a) * kb * 6; e.kz += Math.cos(a) * kb * 6; }
     if (!isRef && ws.vamp && o.primary && !R.vampProc) R.healP(dmg * ws.vamp, true);   // vampproc.js 接手：改成每次攻擊有機率回
     if (!isRef && P.buff.rage > 0 && !R.vampProc) R.healP(dmg * 0.025, true);
     if (e.hp <= 0) {
@@ -253,7 +253,7 @@
   R.aoe = (x, z, r, dmg, o) => {
     o = o || {}; let n = 0;
     // 反擊／荊棘旗標要帶下去，不然 R.coreAoe／範圍反傷會被剝掉、又觸發吸血
-    W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < r + e.def.size * 0.5) { R.hurtEnemy(e, dmg, { primary: o.primary, xPen: o.xPen, stun: o.stun, root: o.root, curse: o.curse, kb: o.kb, crit: o.crit, reflect: o.reflect, thorns: o.thorns, noVamp: o.noVamp, fromBehind: o.fromBehind, vSk: o.vSk, xPen: o.xPen }); if (o.burn) e.st.burn = 3; n++; } });
+    W().enemies.forEach(e => { if (!e.dead && Math.hypot(e.x - x, e.z - z) < r + e.def.size * 0.5) { R.hurtEnemy(e, dmg, { primary: o.primary, xPen: o.xPen, kbX: o.kbX, kbZ: o.kbZ, stun: o.stun, root: o.root, curse: o.curse, kb: o.kb, crit: o.crit, reflect: o.reflect, thorns: o.thorns, noVamp: o.noVamp, fromBehind: o.fromBehind, vSk: o.vSk, xPen: o.xPen }); if (o.burn) e.st.burn = 3; n++; } });
     if (o.props !== false) W().F.props.forEach(p => { if (p.alive && Math.hypot(p.x - x, p.z - z) < r + 0.4) R.hitProp(p, dmg, !o.noAware); });
     return n;
   };

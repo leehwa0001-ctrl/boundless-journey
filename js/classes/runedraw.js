@@ -74,6 +74,7 @@
       const lab = ({ core: '核心', line: '線段', loop: 'Loop' })[t] + '・' + NODES[sh.n[0]].n + (t === 'core' ? '' : ' ' + pc);
       const m = t === 'core' ? coreM : t === 'line' ? lineM : loopM;
       one(k, t, pc, m, s => E.lines.push([NODES[sh.n[0]].c, lab, s]));
+      if (t !== 'core' && P && P.adv === 'grandarray') one(k, 'core', pc, coreM * 0.5, s => E.lines.push([NODES[sh.n[0]].c, lab + '→Core（50%・觀星）', s]));   // 2026-10-18 觀星術師：Line、Loop 也能發揮 50% 的 Core 效果
       // 複合結構／永續陣：起點以外的節點也發揮自己的效果（30%）
       if ((t === 'line' && pv('ry8')) || (t === 'loop' && pv('ry9'))) sh.n.slice(1).forEach(i => one(NODES[i].k, t, pc, m * 0.3, s => E.lines.push([NODES[i].c, lab + '→' + NODES[i].n + '（30%）', s])));
     });
@@ -114,13 +115,13 @@
   const tick = (f) => { const w = W(); if (!w || !w.dyn) return; const run = w.run; w.dyn.push(dt => (W().run === run ? f(dt) : (f(-1), false))); };   // f(-1)＝換樓層，清掉
 
   // ---------- 施法分類 ----------
-  const SELF_T = { buff: 1, heal: 1, guard: 1, parry: 1, orbit: 1, storm: 1 };
+  const SELF_T = { buff: 1, heal: 1, guard: 1, parry: 1, orbit: 1 };   // 2026-10-18：雷陣（storm）可以放在滑鼠處
   const libOf = id => R.SKILL_LIB && R.SKILL_LIB[id];
   const isSelf = L => { if (!L) return true; const p = L.p || {}; if (p.self) return true; if (SELF_T[L.type]) return true; if (L.type === 'combo') return !(p.parts || []).some(x => !SELF_T[x[0]] && !(x[1] && x[1].self)); return false; };
   const aimPt = (P, max) => { const ax = P.aimX != null ? P.aimX : P.x + Math.sin(P.aimA) * 6, az = P.aimZ != null ? P.aimZ : P.z + Math.cos(P.aimA) * 6, d = Math.hypot(ax - P.x, az - P.z), k = d > max ? max / d : 1; return [P.x + (ax - P.x) * k, P.z + (az - P.z) * k]; };
   const skR = L => { const p = (L && L.p) || {}; const q = L && L.type === 'combo' ? Object.assign({}, ...(p.parts || []).map(x => x[1] || {})) : p; return (q.r || (L && L.type === 'arc' && q.range) || (L && L.type === 'blink' ? 0.9 : 1.6)) * (1 + E().skArea + E().loopArea) * (1 + E().pvArea); };
   const skRange = () => { const P = W() && W().P; return ((P && P.ws && P.ws.range) || 12) * E().reach; };   // 所有技能：圓心在普攻射程內都能放
-  const BODY_T = { guard: 1, parry: 1, orbit: 1, storm: 1 };   // 這幾型本來就是貼身的，只能在腳下
+  const BODY_T = { guard: 1, parry: 1, orbit: 1 };   // 這幾型本來就是貼身的，只能在腳下
   const bodyOnly = L => { if (!L) return true; if (BODY_T[L.type]) return true; if (L.type === 'combo') return (L.p && L.p.parts || []).some(x => BODY_T[x[0]]); return false; };
   const rankOf = id => (R.skillRank ? R.skillRank(id) || 0 : 0);
   const coarse = () => { try { return matchMedia('(pointer: coarse)').matches && !matchMedia('(pointer: fine)').matches; } catch (e) { return false; } };
@@ -256,8 +257,14 @@
     const m = naRune(x, z, r); let t = 0, fired = 0;
     const me = { x, z, r }; live.push(me);
     const boom = () => {
-      R.fx && R.fx('ring', x, 0.1, z, { r, color: '#9AE8FF' });
-      const n = R.aoe(x, z, r, dmg, { primary: true });
+      const P0 = W().P, star = !!(P0 && P0.adv === 'grandarray'), nC = E().nCore;
+      R.fx && R.fx('ring', x, 0.1, z, { r, color: star ? '#FFF4B8' : '#9AE8FF' });
+      // 觀星術師：星星墜落在法陣範圍內；傷害 ×(1 − 12% × Core 數量)，每點亮一個 Core 多落一顆
+      const k1 = star ? Math.max(0, 1 - 0.12 * nC) : 1, fall = () => { const a = Math.random() * 6.28, d = Math.random() * r * 0.6, sx = x + Math.sin(a) * d, sz = z + Math.cos(a) * d; R.fx && R.fx('pillar', sx, 0, sz, { r: Math.max(0.5, r * 0.22), color: '#FFF4B8' }); R.fx && R.fx('spark', sx, 0.6, sz, { a, crit: true }); };
+      if (star) fall();
+      const n = R.aoe(x, z, r, dmg * k1, { primary: true, kbX: x, kbZ: z });   // 2026-10-18：擊退以普攻法陣的正中央為準
+      if (star) for (let i = 1; i <= nC; i++) setTimeout(() => { const w3 = W(); if (!w3.run) return; fall(); R.aoe(x, z, r, dmg * k1, { primary: true, kbX: x, kbZ: z }); }, i * 140);
+      if (P0 && P0.adv === 'warder') edgeStun(x, z, r, 0.25);   // 結界師：普攻法陣的邊界暈眩 0.25 秒
       const P2 = W().P; if (!P2) return; const e2 = E();
       // 癒／防核心：打中遺跡生物，或自己站在這次普攻的法陣範圍內，才有效
       const okHit = n > 0 || Math.hypot(P2.x - x, P2.z - z) <= r;
@@ -296,9 +303,56 @@
       if (s._id === 'ry_burst') s.delay = 1;
       if (e.skDur) { if (s.t) s.t *= 1 + e.skDur; if (s.life) s.life *= 1 + e.skDur; }
       if (e.skHeal) { if (s.pct) s.pct *= 1 + e.skHeal; if (s.allies) s.allies *= 1 + e.skHeal; if (s.zone === 'sanct') s.healK = (s.healK || 1) * (1 + e.skHeal); }
-      return f(s, P, w, (pw || 0) * (1 + e.skDmg));
+      const adv = P.adv, self = !!s.self, cx = self ? P.x : (P.aimX != null ? P.aimX : P.x), cz = self ? P.z : (P.aimZ != null ? P.aimZ : P.z);
+      if (k === 'storm' && !self) { s.cx = cx; s.cz = cz; }
+      if (adv === 'eidanora' && PERSIST[k]) { if (s.t) s.t *= 2; if (s.life) s.life *= 2; }   // 艾達諾拉的傳人：持續性法陣 ×2
+      const pw2 = (pw || 0) * (1 + e.skDmg), r = f(s, P, w, pw2);
+      try { arrayAfter(k, s, P, cx, cz, pw2); } catch (er) { console.warn('[runedraw]', er); }
+      return r;
     };
   });
+  // ---------- 2026-10-18 作者：轉職的額外效果 ----------
+  // 自己的技能法陣：{ x, z, r, until }（結界師的減傷、邊界暈眩用）。one＝一次性的攻擊法陣（at、mark），其他是持續性的
+  const PERSIST = { zone: 1, pull: 1, turret: 1, storm: 1 }, ONE = { at: 1, mark: 1 };
+  let ARR = [];
+  const nowT = () => R.coreTime();
+  const edgeStun = (x, z, r, t) => (W().enemies || []).forEach(en => { if (en.dead || en.under || !en.st) return; const d = Math.hypot(en.x - x, en.z - z), sz = (en.def && en.def.size || 1) * 0.5; if (Math.abs(d - r) <= sz + 0.6) en.st.stun = Math.max(en.st.stun || 0, t * (en.def && en.def.boss ? 0.3 : 1)); });
+  // 技能爆開的傷害（艾達諾拉的殘陣照這個算 10%）
+  let lastBoom = []; const aoB0 = R.aoe; R.aoe = (x, z, r, dmg, o) => { if (!(o && o.primary) && dmg > 0 && isRM(W().P)) { lastBoom.push({ x, z, dmg, t: performance.now() }); if (lastBoom.length > 12) lastBoom.shift(); } return aoB0(x, z, r, dmg, o); };
+  const arrayAfter = (k, s, P, cx, cz, pw) => {
+    const adv = P.adv, r = s.r || (k === 'turret' ? 1.6 : 0); if (!r) return;
+    if (PERSIST[k]) { const life = s.life || s.t || 5; ARR.push({ x: cx, z: cz, r: k === 'storm' ? (s.r || 8) : r, until: nowT() + life, self: !!s.self && k !== 'zone' }); }
+    if (ONE[k]) {
+      const wait = ((s.delay || 0) + (s.waves ? (s.waves - 1) * (s.gap || 0) : 0)) / 1000 + 0.05, run = W().run;
+      setTimeout(() => {
+        if (W().run !== run || !run) return;
+        if (adv === 'warder') edgeStun(cx, cz, r, 1);   // 結界師：一次性法陣爆開時，在邊界上的敵人暈眩 1 秒
+        if (adv === 'eidanora' && k === 'at') {   // 艾達諾拉的傳人：原地留下同樣大的法陣 5 秒，每秒造成 10%
+          const rec = lastBoom.filter(b => Math.hypot(b.x - cx, b.z - cz) <= r + 0.5 && performance.now() - b.t < 2500).sort((a, b) => b.dmg - a.dmg)[0], dps = (rec ? rec.dmg : pw * (s.k || 1)) * 0.1, m = ground(cx, cz, r, '#5AB8E8', 0.35, true); let left = 5, tk = 1;   // 照那一招實際爆開的傷害算
+          ARR.push({ x: cx, z: cz, r, until: nowT() + 5 });
+          tick(dt => { if (dt < 0) { m.rm(); return false; } if (W().paused) return true; left -= dt; tk -= dt; m.set(0.25 + 0.15 * Math.sin(left * 4)); if (tk <= 0) { tk = 1; R.aoe(cx, cz, r, dps, { props: false }); } if (left <= 0) { m.rm(); return false; } return true; });
+        }
+      }, wait * 1000);
+    }
+  };
+  // 每格：清掉過期的法陣；結界師——敵人穿過技能法陣的邊界就暈 1 秒（同一隻 1.5 秒內不重複）
+  const stA0 = R.step;
+  R.step = dt => {
+    const out = stA0(dt), w = W(), P = w && w.P;
+    try {
+      if (!isRM(P)) { if (ARR.length) ARR = []; return out; }
+      const t = nowT(); ARR = ARR.filter(a => a.until > t); ARR.forEach(a => { if (a.self) { a.x = P.x; a.z = P.z; } });
+      if (P.adv === 'warder' && ARR.length) (w.enemies || []).forEach(en => {
+        if (en.dead || en.under || !en.st) return; en._rdIn = en._rdIn || [];
+        ARR.forEach((a, i) => { const inside = Math.hypot(en.x - a.x, en.z - a.z) < a.r; const was = a.seen && a.seen.get(en); if (!a.seen) a.seen = new Map(); a.seen.set(en, inside); if (was !== undefined && was !== inside && !((en._rdStunT || 0) > t)) { en._rdStunT = t + 1.5; en.st.stun = Math.max(en.st.stun || 0, en.def && en.def.boss ? 0.3 : 1); R.fx && R.fx('ring', en.x, 0.1, en.z, { r: 1, color: '#FFE8A0' }); } });
+      });
+    } catch (er) { console.warn('[runedraw]', er); }
+    return out;
+  };
+  // 結界師：自己和隊友在自己的法陣、Loop 裡，受到的傷害 −20%
+  const inMine = u => { const P = W().P; if (!P || !u) return false; if (E().auras.some(a => Math.hypot(u.x - P.x, u.z - P.z) <= (a.r || 0))) return true; return ARR.some(a => Math.hypot(u.x - a.x, u.z - a.z) <= a.r); };
+  const hpW0 = R.hurtPlayer; if (hpW0) R.hurtPlayer = (raw, src, o) => { const P = W().P; if (isRM(P) && P.adv === 'warder' && inMine(P) && R.dmgRedAdd) R.dmgRedAdd(0.2); return hpW0(raw, src, o); };
+  const haW0 = R.hurtAlly; if (haW0) R.hurtAlly = (a, dmg, ...rest) => { const P = W().P; if (isRM(P) && P.adv === 'warder' && inMine(a)) dmg *= 0.8; return haW0(a, dmg, ...rest); };
   // Loop 的傷害光環：你打的全部傷害（反傷除外）
   const he0 = R.hurtEnemy;
   R.hurtEnemy = (en, raw, o) => { const P = W() && W().P; if (isRM(P) && !(o && (o.reflect || o.thorns))) { const l = E().loopDmg; if (l) raw *= 1 + l; } return he0(en, raw, o); };
