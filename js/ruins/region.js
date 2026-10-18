@@ -248,4 +248,30 @@
   };
   R.coreStyleOf = site => { const rg = regionOf(site); return rg && rg.core; };
   R.recolorCore = recolor;
+  // ---------- 城市的領主體（2026-10-18 作者：每一座城市都有對應的領主體；阿彌勒級不出、摩爾斯級以上出） ----------
+  // 城邊遺跡（摩爾斯級以上）照那座城的領主體為主：摩爾斯級本來沒有領主體——每 3～5 層一隻（lordfloor.js 的規則），只出這一隻；
+  // 克森特級：四成機率是這一隻，其他照原本的名單。照遺跡本身的樣子挑（霜冠鹿不放礦山）。
+  const SITE_LORD = R.SITE_LORD = {
+    hokuroku: 'gashadokuro',   // 皇嶺：北麓陵墓——骨兵、陵墓
+    'ft-camp': 'spikewolf',    // 府廳：舊兵營——軍犬
+    'zy-wreck': 'kraken',      // 征遠：擱淺的舊戰列艦（深海）
+    'nl-fog': 'tsuchigumo',    // 南瀧：霧港倉庫街——貨櫃間牽滿了絲
+    'bb-bridge': 'windelder',  // 板北：海峽大橋橋墩——海峽的風
+    'bn-army': 'bonewyvern',   // 板南：舊陸軍營地、碉堡
+    'yb-mine': 'omukade',      // 岳北：礦山陵墓——礦坑巨蟲
+    'hs-barracks': 'muhyo', 'hs-arsenal': 'muhyo',   // 奉主：舊兵營、兵工廠
+    toudo: 'frostdeer',        // 北州：凍原
+    kazan: 'lavajaw',          // 納瓦：火山
+    tougrei: 'thunderape'      // 天宮東嶺：迷宮裡帶電的野獸
+  };
+  const gfL = R.genFloor;
+  R.genFloor = (run, f) => {
+    const L = run && run.site && SITE_LORD[run.site.id], g0 = run && run.grade;
+    if (!L || !g0 || !R.ENEMIES[L] || (g0.lv || 0) < 3) return gfL(run, f);
+    if (R.GRADES.includes(g0)) run.grade = Object.assign({}, g0);   // 不要改到共用的分級資料
+    const g = run.grade; if (!g.lords) g.lords = [L];
+    const F = gfL(run, f);
+    g.lords = g.id === 'mors' ? [L] : [L, L, L].concat((g.lords || []).filter(x => x !== L).slice(0, 5));   // run.js 進領主房時才從這份名單挑
+    return F;
+  };
 })(window.R);
