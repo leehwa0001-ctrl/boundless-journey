@@ -1,7 +1,9 @@
 // 第三人稱肩部視角（2026-10-18 作者：鏡頭在玩家角色的左肩上方、往後一點；視角中心跟著準心，滑鼠移動就轉視角。先做一版看看）
 // - 鏡頭的位置可以自己調（前後、左右、上下、換邊）：設定→畫面「肩部視角的位置」或 Shift＋P。
 // - 設定→畫面「鏡頭：一般／肩部視角」切換（存在 localStorage 的 tfl-shouldercam）；遊戲中也可以按 P 切換（不能自訂；V 是大招）。
-// - 第一版只在遺跡裡有效；城裡（立體城市 citykit 有自己的鏡頭）、觸控照原本的鏡頭。
+// - 遺跡裡、立體城市的街上（citykit：東鶴、皇嶺……）有效（2026-10-18 作者：城裡按 P 也要換）；室內、觸控照原本的鏡頭。
+//   城裡：citykit2.js 的 step 先 R.placeCam、再自己擺鏡頭（fixCam）、再 CK.fixSprites——這裡包 CK.fixSprites，在最後把鏡頭換到肩膀；
+//   CK.camMode 在肩部視角時當成「漫遊（low）」（天空、太陽陰影照低角度），CK.camPitch 照肩部視角的俯角（人物看板的高度）。
 // - 滑鼠：點一下遊戲畫面就鎖定滑鼠（pointer lock），左右轉視角、上下抬頭低頭；Esc 會放開（同時打開選單）。
 //   沒鎖定的時候滑鼠移到畫面邊緣也會慢慢轉。Q／E 一次轉 22.5 度。滾輪：鏡頭遠近。
 // - 準心固定在畫面正中間：瞄準點＝從鏡頭穿過準心的直線打到離地 1 公尺高的平面（run.js 的 W.plane）的那一點，
@@ -24,20 +26,22 @@
   R.setShoulder = on => {
     LS(KEY, on ? '1' : '0'); st.yaw = null;
     if (!on && document.pointerLockElement) document.exitPointerLock();
-    hud(); if (R.toast) R.toast(on ? '肩部視角：點一下畫面鎖定滑鼠，移動滑鼠轉視角（Esc 放開；按 P 切回一般鏡頭）。' : '一般鏡頭。', '#C8E0FF');
+    hud(); if (R.toast) R.toast(on ? (active() ? '肩部視角：點一下畫面鎖定滑鼠，移動滑鼠轉視角（Esc 放開；按 P 切回一般鏡頭）。' : '肩部視角：室內暫時還是原本的鏡頭，到街上或遺跡裡就會換。') : '一般鏡頭。', '#C8E0FF');
     if (W().camera && R.placeCam) try { R.placeCam(null); } catch (e) { }
   };
   // 現在能不能用
   const active = () => {
     const w = W(); if (!R.shoulderOn() || !w.P || !w.camera || !w.cam) return false;
-    return !!(w.run && !w.town);
+    return !!(w.run && !w.town) || inCity();
   };
+  const inCity = () => { const w = W(); return !!(w.town && w.town.ck && !w.town.room && !w.inside && !w.run && R.CK); };
   R.shoulderActive = active;
   R.shoulderState = () => st;   // 測試用
   const fwd = y => [-Math.sin(y), -Math.cos(y)];   // 鏡頭在 yaw 的方向後面、往反方向看（run.js 的 placeCam）
   const left = y => [-Math.cos(y), Math.sin(y)];
   // 鏡頭往後退的時候碰到牆：看是不是地板格
   const clear = (x, z) => {
+    if (inCity()) { if (!R.collide) return true; const p = { x, z }; try { R.collide(p, 0.3); } catch (e) { return true; } return Math.hypot(p.x - x, p.z - z) < 0.05; }
     return !R.isFloor || R.isFloor(x, z);
   };
   const fit = (px, pz, tx, tz) => {   // 從 (px,pz) 往 (tx,tz) 走，回傳能走到的比例
@@ -57,20 +61,36 @@
     if (on) { if (st.yaw == null) st.yaw = w.cam.yaw; w.cam.yaw = w.cam.yawT = st.yaw; }
     const r = pc0(dt, shake);
     if (!on) { if (w.P && w.P._scFade != null && w.P._scFade !== 1) fade(w.P, 1); return r; }
-    try {
-      const cam = w.camera, P = w.P; if (!cam.isPerspectiveCamera) return r;
-      const y = st.yaw, [fx, fz] = fwd(y), [lx, lz] = left(y), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
-      const hx = P.x + lx * POS.side, hy = POS.high, hz = P.z + lz * POS.side;   // 肩膀上方（預設左肩）
-      const k = fit(P.x, P.z, hx, hz), sx = P.x + (hx - P.x) * k, sz = P.z + (hz - P.z) * k;
-      const bx = sx - fx * cp * st.dist, bz = sz - fz * cp * st.dist, by = hy - sp * st.dist;
-      const kb = fit(sx, sz, bx, bz), j = shake ? (Math.random() - 0.5) * shake * 0.15 : 0;
-      cam.position.set(sx + (bx - sx) * kb + j, Math.max(0.6, hy + (by - hy) * kb), sz + (bz - sz) * kb + j);
-      cam.lookAt(cam.position.x + fx * cp * 10, cam.position.y + sp * 10, cam.position.z + fz * cp * 10);
-      const dd = Math.hypot(cam.position.x - P.x, cam.position.z - P.z); fade(P, dd < 2.6 ? 0.3 : dd < 3.6 ? 0.6 : 1);   // 靠牆時鏡頭被擠到人物旁邊：人物變透明，不擋視線
-      cam.fov = 60; cam.near = 0.1; cam.far = 160; cam.userData.shift = null; cam.updateProjectionMatrix(); cam.updateMatrixWorld();
-    } catch (e) { console.warn('[shouldercam]', e); }
+    if (!inCity()) put(shake, 0);   // 城裡在 CK.fixSprites 之後才擺（citykit2.js 的 fixCam 會蓋掉）
     return r;
   };
+  const put = (shake, gy) => {
+    const w = W();
+    try {
+      const cam = w.camera, P = w.P; if (!cam.isPerspectiveCamera) return;
+      const y = st.yaw, [fx, fz] = fwd(y), [lx, lz] = left(y), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
+      const K = inCity() ? 0.8 : 1, dist = st.dist * K;   // 城裡的人物比較小：位置照 0.8 倍縮
+      const hx = P.x + lx * POS.side * K, hy = gy + POS.high * K, hz = P.z + lz * POS.side * K;   // 肩膀上方（預設左肩）
+      const k = fit(P.x, P.z, hx, hz), sx = P.x + (hx - P.x) * k, sz = P.z + (hz - P.z) * k;
+      const bx = sx - fx * cp * dist, bz = sz - fz * cp * dist, by = hy - sp * dist;
+      const kb = fit(sx, sz, bx, bz), j = shake ? (Math.random() - 0.5) * shake * 0.15 : 0;
+      const cx = sx + (bx - sx) * kb + j, cz = sz + (bz - sz) * kb + j, floorY = inCity() && R.CK.heightAt ? R.CK.heightAt(cx, cz) + 0.8 : 0.6;
+      cam.position.set(cx, Math.max(floorY, hy + (by - hy) * kb), cz);
+      cam.lookAt(cam.position.x + fx * cp * 10, cam.position.y + sp * 10, cam.position.z + fz * cp * 10);
+      const dd = Math.hypot(cam.position.x - P.x, cam.position.z - P.z); fade(P, dd < 2.6 ? 0.3 : dd < 3.6 ? 0.6 : 1);   // 靠牆時鏡頭被擠到人物旁邊：人物變透明，不擋視線
+      cam.fov = 60; cam.near = 0.1; cam.far = inCity() ? Math.max(cam.far, 600) : 160; cam.userData.shift = null; cam.updateProjectionMatrix(); cam.updateMatrixWorld();
+    } catch (e) { console.warn('[shouldercam]', e); }
+  };
+  // 立體城市：鏡頭在 fixCam 之後擺；漫遊模式、俯角
+  const CK = R.CK;
+  if (CK) {
+    const fs0 = CK.fixSprites;
+    if (fs0) CK.fixSprites = (...a) => { if (inCity() && R.shoulderOn()) put(0, W().P.yv || 0); return fs0(...a); };
+    const cm0 = CK.camMode;
+    if (cm0) CK.camMode = () => (R.shoulderOn() && inCity() ? 'low' : cm0());
+    const cp1 = CK.camPitch;
+    if (cp1) CK.camPitch = () => (R.shoulderOn() && inCity() ? Math.max(0.05, -st.pitch) : cp1());
+  }
   const rc0 = R.rotateCam;
   R.rotateCam = d => { if (active()) { st.yaw = (st.yaw == null ? W().cam.yaw : st.yaw) + d * Math.PI / 8; return; } return rc0(d); };
   const zc0 = R.zoomCam;
@@ -87,6 +107,8 @@
     P.aimA = Math.atan2(tx - P.x, tz - P.z); P.aimX = tx; P.aimZ = tz;
   };
   const turnEdge = dt => { if (st.locked || !st.edgeX) return; st.yaw -= st.edgeX * dt * 1.6; };
+  const ts0 = R.townStep;
+  if (ts0) R.townStep = dt => { if (active() && !W().paused) turnEdge(dt); return ts0(dt); };
   const s0 = R.step;
   R.step = dt => { if (active() && !W().paused) { turnEdge(dt); aim(); } return s0(dt); };
   // ---------- 滑鼠 ----------
