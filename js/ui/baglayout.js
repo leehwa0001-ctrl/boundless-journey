@@ -13,7 +13,7 @@
   let dir = 0;
   const lookOf = () => {
     const S = R.S, P = R.W && R.W.P, cls = S.cls, eq = R.equipped(cls);
-    return Object.assign({ weapon: P && P.item ? P.item.base : null, shield: false, eq: R.gearShown ? R.gearShown(eq) : eq }, R.CLASSES[cls] ? R.CLASSES[cls].look : {}, R.playerLook ? R.playerLook() : {});
+    return Object.assign({ weapon: P && P.item ? P.item.base : eq.weapon ? eq.weapon.base : null, shield: false, eq: R.gearShown ? R.gearShown(eq) : eq }, R.CLASSES[cls] ? R.CLASSES[cls].look : {}, R.playerLook ? R.playerLook() : {});
   };
   const drawFace = cv => {
     try {
@@ -51,7 +51,7 @@
       eqs.appendChild(slotCol(wrap, LEFT)); eqs.appendChild(mid); eqs.appendChild(slotCol(wrap, RIGHT));
       // 左下：角色素質
       const st = sec('bl-stats', '角色素質');
-      const cs = document.createElement('div'); cs.innerHTML = R.charSheetHtml ? R.charSheetHtml(R.S.cls, { live: true }) : '';
+      const cs = document.createElement('div'); cs.innerHTML = R.charSheetHtml ? R.charSheetHtml(R.S.cls, { live: !(R.W.run && R.W.run.townBag) }) : '';
       const det = cs.querySelector('details');   // 外面那一層摺疊拿掉（標題已經寫「角色素質」了），裡面的照原本
       if (det) { [...det.childNodes].forEach(n => { if (n.nodeName !== 'SUMMARY') st.appendChild(n); }); } else while (cs.firstChild) st.appendChild(cs.firstChild);
       left.appendChild(eqs); left.appendChild(st);

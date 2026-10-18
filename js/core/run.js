@@ -497,7 +497,7 @@
   // 畫面上的按鈕（觸控與滑鼠共用）
   R.tact = a => {
     if (a === 'run') { R.input.run = !R.input.run; document.querySelectorAll('[data-tact="run"]').forEach(b => b.classList.toggle('on', R.input.run)); return; }
-    if (W.town) { const t = { use: R.townInteract, pause: R.townMenu, bag: () => R.openHub('stash'), rotl: () => R.rotateCam(-1), rotr: () => R.rotateCam(1), zoom: R.cycleZoom }[a]; if (t) t(); return; }
+    if (W.town) { const t = { use: R.townInteract, pause: R.townMenu, bag: () => R.bagSheet(), rotl: () => R.rotateCam(-1), rotr: () => R.rotateCam(1), zoom: R.cycleZoom }[a]; if (t) t(); return; }
     if (!W.run) return; const f = { order: R.orderMenu, skill: R.useSkill, dodge: R.dodge, use: R.interact, hp: () => R.drink('hp'), bag: R.bagSheet, pause: R.pauseSheet, rotl: () => R.rotateCam(-1), rotr: () => R.rotateCam(1), zoom: R.cycleZoom }[a]; if (f) f(); };
   R.fade = f => { const el = $('fade'); el.hidden = false; el.classList.remove('on'); void el.offsetWidth; el.classList.add('on'); setTimeout(() => { f(); setTimeout(() => { el.hidden = true; }, 400); }, 380); };
 
@@ -527,7 +527,7 @@
       if (k === 'shift' && !I.keys.shift) I.shiftAt = performance.now();
       I.keys[k] = true;
       // 按鍵照《飢荒》：Q／E 轉視角、空白鍵互動、F 攻擊最近的敵人、Tab 地圖、Esc 暫停
-      if (W.town) { if (k === 'h' && R.toggleHood) R.toggleHood(); if (k === ' ') { e.preventDefault(); R.townInteract(); } if (k === 'q') R.rotateCam(-1); if (k === 'e') R.rotateCam(1); if (k === 'escape') R.townMenu(); if (k === 'tab') { e.preventDefault(); R.bigMap(); } return; }
+      if (W.town) { if (k === 'i') R.bagSheet(); if (k === 'h' && R.toggleHood) R.toggleHood(); if (k === ' ') { e.preventDefault(); R.townInteract(); } if (k === 'q') R.rotateCam(-1); if (k === 'e') R.rotateCam(1); if (k === 'escape') R.townMenu(); if (k === 'tab') { e.preventDefault(); R.bigMap(); } return; }
       if (R.orderOpen && R.orderOpen() && /^[1-5]$/.test(k)) { R.pickOrder(+k); return; }
       if (k === 'c') R.orderMenu();
       if (k === 'h' && R.toggleHood) R.toggleHood();
