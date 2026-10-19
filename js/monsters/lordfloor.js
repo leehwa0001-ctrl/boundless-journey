@@ -70,6 +70,7 @@
   };
   // ---------- 城堡的大廳 ----------
   const hall = (F, r) => {
+    if (r.arena) return;   // 2026-10-19：有自己房間的領主體（lordarena.js）不蓋城堡大廳
     const T = THREE, t = F.tile, g = new T.Group(), gold = new T.MeshLambertMaterial({ color: '#C8A040', emissive: '#6A4A10', emissiveIntensity: 0.5 }), white = new T.MeshLambertMaterial({ color: '#E8E4DA' });
     const floorAt = (x, z) => { const tx = t.tX(x), tz = t.tZ(z); for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const k = t.id(tx + dx, tz + dz); if (t.T[k] !== 1 || t.RM[k] !== r.i) return false; } return true; };
     const doors = (r.doors || []).map(k => { const tx = k % t.nx, tz = (k - tx) / t.nx; return [t.cX(tx), t.cZ(tz)]; }), nearDoor = (x, z) => doors.some(([a, b]) => Math.hypot(a - x, b - z) < 3.2);

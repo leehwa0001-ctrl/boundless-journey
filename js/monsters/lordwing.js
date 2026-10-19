@@ -19,7 +19,8 @@
   const clash = (b, rooms, pad) => rooms.some(o => { const c = boxOf(o); return b[0] < c[1] + pad && b[1] > c[0] - pad && b[2] < c[3] + pad && b[3] > c[2] - pad; });
 
   // ---------- 配置：在挖地形之前接上長廊 ----------
-  const plan = (F, run) => {
+  const plan = (F, run, WK) => {   // WK：大廳橫向的寬度倍率（2026-10-19 作者：領主的房間再寬 1.5～2 倍；旁邊放不下就退回窄一點的）
+    WK = WK || 1;
     const rooms = F.rooms, form = R.FORM[run.type] || R.FORM.city, calm = () => (Array.isArray(form.calm) ? pick(form.calm) : form.calm);
     const k = rooms.length >= 9 ? 3 : 2;
     const ends = rooms.filter(r => r.i > 0).sort((a, b) => (b.type === 'stairs') - (a.type === 'stairs') || b.dist - a.dist).slice(0, 5);
@@ -28,7 +29,7 @@
         const horiz = !!d[0], cell = i => [E.gx + d[0] * i, E.gy + d[1] * i], at = i => { const [gx, gy] = cell(i); return [gx * CW, gy * CH]; };
         const L = [];
         for (let i = 1; i <= k; i++) { const [x, z] = at(i), hx = (horiz ? 9.5 : 10.5) * RK, hz = (horiz ? 8.5 : 8) * RK; L.push({ role: 'mob', gx: cell(i)[0], gy: cell(i)[1], x, z, hx: hx + rnd() * 1.5 * RK, hz: hz + rnd() * RK, shape: run.type === 'tower' || run.type === 'island' ? 'circle' : pick(['rect', 'hall', 'octagon']) }); }
-        { const [x1, z1] = at(k + 1), [x2, z2] = at(k + 2); L.push({ role: 'hall', gx: cell(k + 1)[0], gy: cell(k + 1)[1], x: (x1 + x2) / 2, z: (z1 + z2) / 2, hx: horiz ? CW / 2 + 11 * RK : 16.5 * RK, hz: horiz ? 14.5 * RK : CH / 2 + 10 * RK, shape: form.boss }); }
+        { const [x1, z1] = at(k + 1), [x2, z2] = at(k + 2); L.push({ role: 'hall', gx: cell(k + 1)[0], gy: cell(k + 1)[1], x: (x1 + x2) / 2, z: (z1 + z2) / 2, hx: horiz ? CW / 2 + 11 * RK : 16.5 * RK * WK, hz: horiz ? 14.5 * RK * WK : CH / 2 + 10 * RK, shape: form.boss }); }
         { const [x, z] = at(k + 3); L.push({ role: 'exit', gx: cell(k + 3)[0], gy: cell(k + 3)[1], x, z, hx: 9.5 * RK, hz: 8 * RK, shape: calm() }); }
         if (L.some(o => clash(boxOf(o), rooms, 5))) continue;
         // 接上
@@ -52,7 +53,7 @@
   const cv0 = R.carve;
   R.carve = (F, run) => {
     let made = false;
-    try { if (!F.wing && want(run, F)) made = plan(F, run); } catch (e) { console.warn('[lordwing]', e); }
+    try { if (!F.wing && want(run, F)) made = plan(F, run, 1.8) || plan(F, run, 1.5) || plan(F, run, 1); } catch (e) { console.warn('[lordwing]', e); }
     const out = cv0(F, run);
     if (made) F.rooms.forEach(r => { if (r.wing && r.type === 'wing') delete r.big; });
     return out;
