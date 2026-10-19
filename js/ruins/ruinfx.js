@@ -21,7 +21,7 @@
     crystal: { tint: [0.96, 0.95, 1.1], lift: [0.018, 0.012, 0.035], sat: 1.1, expo: 1.02, bloom: 0.68, th: 0.78 },
     forest: { tint: [0.95, 1.05, 0.92], lift: [0.01, 0.022, 0.01], sat: 1.06, expo: 1.02, bloom: 0.45, th: 0.88 }
   };
-  const gradeKey = run => { if (!run) return 'base'; if (run.env && GRADE[run.env]) return run.env; const b = run.biome; return b === 'lava' ? 'volcano' : b === 'crystal' ? 'crystal' : b === 'forest' ? 'forest' : 'base'; };
+  const gradeKey = run => { if (!run) return 'base'; if (run.env && GRADE[run.env]) return run.env; const b = run.biome; return b === 'lava' ? 'volcano' : b && GRADE[b] ? b : 'base'; };   // 招牌景色（ruinsites.js）會把自己的色溫加進這張表
   R.RUIN_GRADE = GRADE;
   // ---------- 畫質 ----------
   const gfx = () => { const o = R.S && R.S.opts; if (o && o.ruinGfx != null) return o.ruinGfx; return R.touch ? 0 : 1; };
