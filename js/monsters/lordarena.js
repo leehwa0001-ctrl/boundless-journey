@@ -142,9 +142,9 @@
     snow: { col: '#E8F0F8', slow: 0.25, n: '積雪', bump: '#F6FAFF' }, desert: { col: '#C8A868', slow: 0.2, n: '沙地', bump: '#D8B878' },
     volcano: { col: '#3A2A24', crack: '#FF6A2A', n: '焦土' }, deep: { col: '#2A5A6A', slow: 0.3, n: '淺水', op: 0.85 }, forge: { col: '#55555C', n: '鐵板', crack: '#8A8A92' }
   };
-  const NATIVE = { lava: 'volcano', ice: 'snow' }, KI = 0.78;
+  const NATIVE = { lava: 'volcano', ice: 'snow' }, NOENV = {}, KI = 0.78;   // NOENV：場地本身佔滿整間（斷崖、淹水）的不疊
   const buildEnv = (F, r, A, run) => {
-    const env = run.env, E = ENVR[env]; if (!E || (run.grade.lv || 0) < 4 || NATIVE[A.kind] === env) return;
+    const env = run.env, E = ENVR[env]; if (!E || (run.grade.lv || 0) < 4 || NATIVE[A.kind] === env || NOENV[A.kind]) return;
     const T = THREE, sh = new T.Shape(), hx = r.hx + 0.5, hz = r.hz + 0.5;
     sh.moveTo(-hx, -hz); sh.lineTo(hx, -hz); sh.lineTo(hx, hz); sh.lineTo(-hx, hz); sh.lineTo(-hx, -hz);
     const hole = new T.Path(); hole.absellipse(0, 0, r.hx * KI, r.hz * KI, 0, Math.PI * 2, false, 0); sh.holes.push(hole);
@@ -165,6 +165,7 @@
     if (!A.envTold) { A.envTold = true; R.toast && R.toast('房間外圈是' + A.env.n + (A.env.slow ? '：走起來比較慢' : ''), '#C8D8E8'); }
   };
   const BUILD = { lava: buildLava, ice: buildIce, web: buildWeb }, STEP = { lava: stepLava, ice: stepIce, web: stepWeb };
+  R.LORD_ARENA = { ARENA, BUILD, STEP, NOENV, NATIVE };   // lordarena2.js 加其他領主體的房間
 
   // ---------- 蓋樓層：先決定是哪一隻，再蓋牠的房間 ----------
   const bf0 = R.buildFloor;
