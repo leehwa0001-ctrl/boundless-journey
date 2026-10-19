@@ -122,10 +122,10 @@
   const downInRuin = () => {
     const w = W(), P = w.P; if (!P || P.dead || w.run.done) return;
     R.toast && R.toast('眼皮再也撐不開了……（疲乏-不行了：倒下）', '#F06A6A');
-    set(MAX() * 0.3); P.hp = 0;
+    set(MAX() * 0.3); P.hp = 0; w.run.lastHit = { who: '疲憊值降到 −500（太累倒下，不是被打倒的）', dmg: 99999 };   // 死因（deathcause.js）：不然會顯示好幾分鐘前最後打到你的怪
     try { R.onPlayerDown(); } catch (e) { console.warn('[fatigue]', e); }
     warned = 0;
-    setTimeout(() => { R.banner && R.banner('因為太累倒下了', '疲憊值降到 −500：不是被打倒的。下次記得在營火休息、帶提神藥或乾糧。'); const b = document.querySelector('#r-sheet h2'); if (b && !document.getElementById('fat-why')) { const p = document.createElement('p'); p.id = 'fat-why'; p.className = 'note'; p.style.color = '#F06A6A'; p.textContent = '倒下的原因：疲憊值降到 −500（太累了），不是被打倒的。'; b.after(p); } }, 1200);
+    setTimeout(() => { R.banner && R.banner('因為太累倒下了', '疲憊值降到 −500：不是被打倒的。下次記得在營火休息、帶提神藥或乾糧。'); }, 1200);
   };
   // 普攻（物理武器）
   const at0 = R.attack;
