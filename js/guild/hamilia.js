@@ -1,7 +1,7 @@
 // 哈米莉亞級遺跡價值化（2026-10-15 作者《特質與熟練度》第五節＋審查問題 Q46～Q50；報酬、失敗、放棄、重新接取照 Q48 交給 Claude 設計）
 // 委託都走公會原本的流程（委託書 → run.task → 回到地面記在手上 → 繳交打五軌成績），只是換掉評分：
 // - 保衛（霜溪石窟）：委託人在隨機一層（第 1～7 層）等你；跟著他逛 5～10 分鐘（委託書寫 1～2 小時，Q47），只能在那一層。
-//   腳下 5 公尺的藍圈：走出去先倒數 5 秒，倒數完每秒反饋 −1%；回到圈裡每秒倒數 +1。
+//   腳下 7.5 公尺的藍圈（2026-10-19 原本 5 公尺）：走出去先倒數 5 秒，倒數完每秒反饋 −1%；回到圈裡每秒倒數 +1。
 //   每 45～75 秒有 40% 冒出 1～5 隻會攻擊委託人的遺跡生物：委託人停下、時間暫停，打完才繼續；牠們打委託人固定 1～2 點，委託人每少 1 點完成度 −1%。
 //   委託人倒下＝失敗（「你這樣子也算勇者？」）。時間到：照委託人的目的說一句話（採藥的才說材料採完），可以選「陪委託人回去」或「繼續探索」。效率固定 100%。
 // - 搜索（霜溪石窟，每天輪：戒指、小孩的玩具、野餐籃）：放在第 5～7 層隨機一層的房間裡（一定在走得到的地板上、不在擋住的地方），
@@ -31,7 +31,7 @@
     timid: ['膽小的村民', ['謝謝勇者，你真可靠。']],
     elder: ['退休的老獵人', ['辛苦你了，小勇者，之後一起喝一杯。']]
   };
-  const ESCORT_T = [300, 600], RESCUE_T = 480, LEASH = 5, LEASH_CD = 5;
+  const ESCORT_T = [300, 600], RESCUE_T = 480, LEASH = 7.5,   /* 2026-10-19 作者：圈半徑 +50%（5→7.5） */ LEASH_CD = 5;
   const isHamiSite = site => !!(site && site.grade === 'hamilia' && site.kind === 'ruin');
   const run = () => W().run, hami = () => { const r = run(); return r && r.task && r.task.hami; };
   const HM = () => { const s = S(); s.hami = s.hami || {}; if (s.hami.day !== s.day) { s.hami = { day: s.day, done: {}, roll: null }; } return s.hami; };
@@ -113,7 +113,7 @@
       ring.rotation.x = -Math.PI / 2; ring.position.set(q[0], 0.06, q[1]); W().F.group.add(ring);
       const tag = label('委', '#9FD8FF', 72); tag.position.set(q[0], 2.3, q[1]); W().F.group.add(tag);
       obj = { kind: 'escort', h, ring, tag, x: q[0], z: q[1], ally: true, dead: false, downed: false, invis: 0, buff: {}, iframe: 0, hp: hm.hp, hpMax: 100, name: PURPOSE[hm.purpose || 'tour'][0], wait: 2, path: null, cd: LEASH_CD, enc: null, nextEnc: ri(45, 75) };
-      setTimeout(() => R.banner && R.banner('保衛委託：' + obj.name, '跟著他，不要離開藍圈（5 公尺）。這段時間不能上下樓。'), 1200);
+      setTimeout(() => R.banner && R.banner('保衛委託：' + obj.name, '跟著他，不要離開藍圈（7.5 公尺）；你走出圈圈，他會停下來等你。這段時間不能上下樓。'), 1200);
     } else if (hm.kind === 'search' && !hm.got) {
       const p = farSpot(), it = ITEMS[hm.sub] || ITEMS.ring, star = label('★', '#FFE04A'); star.position.set(p[0], 1.4, p[1]); W().F.group.add(star);
       obj = { kind: 'search', star, x: p[0], z: p[1], name: it[0] };
@@ -157,7 +157,7 @@
     }
     const g = o.path[0], dx = g.x - o.x, dz = g.z - o.z, d = Math.hypot(dx, dz);
     if (d < 0.4) { o.path.shift(); if (!o.path.length) o.wait = 2 + rnd() * 4; return; }
-    const sp = Math.min(3, d / dt); o.x += dx / d * sp * dt; o.z += dz / d * sp * dt;
+    const sp = Math.min(6, d / dt);   /* 2026-10-19 作者：委託人走快一倍（3→6） */ o.x += dx / d * sp * dt; o.z += dz / d * sp * dt;
     o.h.g.rotation.y = Math.atan2(dx, dz); if (R.animHero) R.animHero(o.h, sp, dt, false);
   };
   const finishEscort = () => {
@@ -180,7 +180,7 @@
       if (obj && obj.kind === 'escort' && !hm.done && !hm.failed) {
         const o = obj; o.iframe = Math.max(0, o.iframe - dt);
         if (o.enc) { if (o.enc.every(e => e.dead)) { o.enc = null; R.toast && R.toast('危機解除，委託人鬆了一口氣。', '#9AE07A'); } if (R.animHero) R.animHero(o.h, 0, dt, false); }
-        else { hm.t += dt; o.nextEnc -= dt; if (o.nextEnc <= 0) { o.nextEnc = ri(45, 75); if (rnd() < 0.4) encounter(); } if (!o.enc) moveNpc(o, dt); }
+        else { hm.t += dt; o.nextEnc -= dt; if (o.nextEnc <= 0) { o.nextEnc = ri(45, 75); if (rnd() < 0.4) encounter(); } if (!o.enc) { if (Math.hypot(P.x - o.x, P.z - o.z) <= LEASH) moveNpc(o, dt); else if (R.animHero) R.animHero(o.h, 0, dt, false); } }   /* 2026-10-19 作者：你離開圈圈，委託人就停下來等你 */
         o.h.g.position.set(o.x, 0, o.z); o.ring.position.set(o.x, 0.06, o.z); o.tag.position.set(o.x, 2.3, o.z);
         const d = Math.hypot(P.x - o.x, P.z - o.z);
         if (d > LEASH) { o.cd = Math.max(0, o.cd - dt); if (o.cd <= 0) hm.fbLoss += dt; } else o.cd = Math.min(LEASH_CD, o.cd + dt);
