@@ -70,7 +70,9 @@
     p.x += dr * e[0] + du * e[4]; p.y += dr * e[1] + du * e[5]; p.z += dr * e[2] + du * e[6]; cam.updateMatrixWorld();
     // 天空、倒影不畫
     const L = W.town && W.town.L, sky = L && L.sky, sv = sky && sky.visible; if (sky) sky.visible = false;
-    try { r.setRenderTarget(S.rt); r.clear(); r.render(W.scene, cam); } finally { if (sky) sky.visible = sv; }
+    // 雪、雨的點是照螢幕像素算大小的：畫在小畫布上再放大會大 s 倍（2026-10-20 作者：雪還是太大顆了）——畫的時候除回去
+    const su = L && L.snow && L.snow.material && L.snow.material.uniforms && L.snow.material.uniforms.size, sz0 = su && su.value; if (su) su.value = sz0 / s * 0.75;   // 小畫布上大約 2 格
+    try { r.setRenderTarget(S.rt); r.clear(); r.render(W.scene, cam); } finally { if (sky) sky.visible = sv; if (su) su.value = sz0; }
     // 發光
     S.bright.uniforms.t.value = S.rt.texture; pass(S.bright, S.a);
     for (let k = 0; k < 2; k++) { S.blur.uniforms.t.value = S.a.texture; S.blur.uniforms.d.value.set((k + 1) / rw, 0); pass(S.blur, S.b); S.blur.uniforms.t.value = S.b.texture; S.blur.uniforms.d.value.set(0, (k + 1) / rh); pass(S.blur, S.a); }
