@@ -8,7 +8,7 @@
 // 放在 citykit*.js、ckperf*.js、cktopcam.js 後面（最外層的 CK.render）。
 (function (R) {
   const CK = R.CK, W = R.W, T = () => THREE; if (!CK || !CK.render) return;
-  const PIXCITY = { huangling: 1, jishan: 1, hosu: 1, yuebei: 1 };   // 2026-10-20：吉山、奉主也套（東鶴先不動）
+  const PIXCITY = { huangling: 1, jishan: 1, hosu: 1, yuebei: 1, futing: 1, xijian: 1, nanlong: 1, woqi: 1, zhengyuan: 1, banbei: 1, bannan: 1, gusen: 1 };   // 2026-10-20：吉山、奉主也套（東鶴先不動）
   const LS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { } return null; };
   const want = id => { const v = LS('tfl-ckpix-' + id); return v ? v === '1' : !!PIXCITY[id]; };
   const active = () => { const tw = W.town; return !!(tw && tw.ck && !tw.room && W.scene && W.scene.userData.hq && want(tw.ck)); };

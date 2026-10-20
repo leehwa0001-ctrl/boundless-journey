@@ -22,7 +22,8 @@
     forest: { tint: [0.95, 1.05, 0.92], lift: [0.01, 0.022, 0.01], sat: 1.06, expo: 1.02, bloom: 0.45, th: 0.88 },
     interior: { tint: [1.05, 1.0, 0.93], lift: [0.02, 0.014, 0.01], sat: 1.06, expo: 1.04, bloom: 0.42, th: 0.9 }   // 室內（interiorfx.js）：暖一點
   };
-  const gradeKey = run => { if (W.inside && W.inside.ifx) return 'interior'; if (!run) return 'base'; if (run.env && GRADE[run.env]) return run.env; const b = run.biome; return b === 'lava' ? 'volcano' : b && GRADE[b] ? b : 'base'; };   // 招牌景色（ruinsites.js）會把自己的色溫加進這張表
+  const gradeKey = run => { if (W.inside && W.inside.ifx) return 'interior'; if (!run) return 'base'; const sg = R.RUIN_SIG && run.site && R.RUIN_SIG[run.site.id]; if (sg && GRADE[sg] && GRADE[sg].force) return sg;   // 招牌景色標了 force 的：蓋過特殊環境的色溫（霧港、渦流灣……）
+    if (run.env && GRADE[run.env]) return run.env; const b = run.biome; return b === 'lava' ? 'volcano' : b && GRADE[b] ? b : 'base'; };   // 招牌景色（ruinsites.js）會把自己的色溫加進這張表
   R.RUIN_GRADE = GRADE;
   // ---------- 畫質 ----------
   const gfx = () => { const o = R.S && R.S.opts; if (o && o.ruinGfx != null) return o.ruinGfx; return R.touch ? 0 : 1; };
