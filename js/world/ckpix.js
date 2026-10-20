@@ -118,6 +118,36 @@
     }
     if (PL.m.parent !== W.scene) W.scene.add(PL.m);
     PL.m.material.opacity = 0.55 * k; PL.m.visible = k > 0.02;
+    winSpill(tw, k);
+  };
+  // ---------- 窗戶的光灑到外面的地上（晚上；照 tw.D.foot 每棟房子的外框，四邊各一條從牆邊往外淡掉的光） ----------
+  // 2026-10-20 作者：晚上的感覺對——繼續做窗戶的光灑出來。暖的（燈泡）、冷的（日光燈）照房子隨機；每一面亮度不一樣，有的面是暗的。
+  let WS = null;
+  const winSpill = (tw, k) => {
+    const D = tw.D, TH = T(); if (!D || !D.foot) return;
+    if (!WS || WS.tw !== tw) {
+      if (WS && WS.m && WS.m.parent) WS.m.parent.remove(WS.m);
+      const hash = (a, b) => { const s = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453; return s - Math.floor(s); };
+      const list = [];
+      D.foot.forEach(f => { if (f.poly || !f.r || f.kind === 'skip' || (f.h || 0) < 2.5) return; const [x0, z0, x1, z1] = f.r, w = x1 - x0, d = z1 - z0; if (w < 2 || d < 2 || w > 90 || d > 90) return;
+        const warm = hash(x0, z0) < 0.62;
+        [[0, z1, (x0 + x1) / 2, w, 0], [0, z0, (x0 + x1) / 2, w, Math.PI], [1, x1, (z0 + z1) / 2, d, Math.PI / 2], [1, x0, (z0 + z1) / 2, d, -Math.PI / 2]].forEach(([vert, at, mid, len, ry], i) => {
+          const lit = hash(at + i, mid); if (lit < 0.3) return;   // 這一面的窗都是暗的
+          const ext = 2.2, x = vert ? at + (ry > 0 ? ext / 2 : -ext / 2) : mid, z = vert ? mid : at + (ry === 0 ? ext / 2 : -ext / 2);
+          list.push({ x, z, len: len * 0.92, ext, ry, warm, I: 0.45 + lit * 0.55 });
+        }); });
+      if (!list.length) { WS = { tw }; return; }
+      const c = document.createElement('canvas'); c.width = 4; c.height = 32; const g = c.getContext('2d'), gr = g.createLinearGradient(0, 0, 0, 32);
+      gr.addColorStop(0, 'rgba(255,255,255,0.9)'); gr.addColorStop(0.45, 'rgba(255,255,255,0.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 4, 32);
+      const geo = new TH.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);   // 貼圖上緣（亮）在 -z：轉 ry 讓亮的那邊貼著牆
+      const m = new TH.InstancedMesh(geo, new TH.MeshBasicMaterial({ map: new TH.CanvasTexture(c), transparent: true, opacity: 0, depthWrite: false, blending: TH.AdditiveBlending, fog: false }), list.length), o = new TH.Object3D(), col = new TH.Color();
+      const cw = new TH.Color('#FFC27A').convertSRGBToLinear(), cc = new TH.Color('#9CC4E8').convertSRGBToLinear();
+      list.forEach((s, i) => { o.position.set(s.x, (CK.heightAt ? CK.heightAt(s.x, s.z) : 0) + 0.05, s.z); o.rotation.set(0, s.ry, 0); o.scale.set(s.len, 1, s.ext); o.updateMatrix(); m.setMatrixAt(i, o.matrix); col.copy(s.warm ? cw : cc).multiplyScalar(s.I); m.setColorAt(i, col); });
+      m.frustumCulled = false; m.renderOrder = 2; W.scene.add(m); WS = { tw, m };
+    }
+    if (!WS.m) return;
+    if (WS.m.parent !== W.scene) W.scene.add(WS.m);
+    WS.m.material.opacity = 0.62 * k; WS.m.visible = k > 0.02;
   };
   // ---------- 點陣貼圖（2026-10-20 作者選 1：把皇嶺做成真的像素城市，不只是濾鏡） ----------
   // 寫實的雜訊貼圖換成手刻的點陣花樣：一個點陣像素＝R.PIX.PX 公尺（跟人物、遺跡同比例），灰階、平均約 1，乘在原本貼圖的平均色上。
@@ -180,7 +210,7 @@
     });
   };
   const r0 = CK.render;
-  CK.render = (...a) => { const on = active(); setFlat(on); if (!on && PL) PL.m.visible = false; return on ? render() : r0(...a); };
+  CK.render = (...a) => { const on = active(); setFlat(on); if (!on && PL) PL.m.visible = false; if (!on && WS && WS.m) WS.m.visible = false; return on ? render() : r0(...a); };
   // ---------- 暫停選單：畫法 ----------
   const tm = R.townMenu;
   if (tm) R.townMenu = (...a) => {
