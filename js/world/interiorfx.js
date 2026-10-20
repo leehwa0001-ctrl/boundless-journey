@@ -5,13 +5,12 @@
 // 3. 小東西：桌上的杯子、盤子、蠟燭，角落的木箱、酒桶，地上的污漬。
 // 4. 調色＋光暈：跟遺跡同一套（ruinfx.js），火、蠟燭、窗戶透出像素格的光暈。
 // - 只在「遺跡畫質」中、高（R.ruinGfx() > 0）的時候加；低畫質跟以前一樣。
-// - 目前只有公會一樓（SAMPLE）；看過覺得對，再套到其他室內、遺跡。
+// - 2026-10-21 作者：照公會分館的風格把其他室內也做一做——所有室內都套（generic：吊燈、桌上的蠟燭和杯子、浮塵）；公會一樓另外有手擺的（furnishGuild）。
 // 放在 interior.js 和所有包 R.interiorHud 的檔案後面（進屋 enterNow 最後會呼叫 R.interiorHud(true)）。
 (function (R) {
   const W = R.W, T = () => THREE;
-  const SAMPLE = { guild: 1 };
   const on = () => !!(R.ruinGfx && R.ruinGfx() > 0 && R.pixelOn && R.pixelOn());
-  R.interiorFxOn = kind => on() && !!SAMPLE[kind];
+  R.interiorFxOn = kind => on() && !!kind;
   // ---------- 共用的貼圖：柔邊的暗影 ----------
   let TX = null;
   const tex = () => {
@@ -57,6 +56,7 @@
       }
     });
     if (ins.kind === 'guild') furnishGuild(ins, { box, cyl, light, flame, mesh, lam, flatQ, HW, HD, WH, TH });
+    else generic(ins, { box, cyl, light, flame, mesh, lam, flatQ, HW, HD, WH, TH });
   };
   // ---------- 公會一樓 ----------
   const furnishGuild = (ins, c) => {
@@ -110,6 +110,26 @@
       });
     }
   };
+  // ---------- 其他室內：照這間房子自己的燈和桌子自動擺 ----------
+  const generic = (ins, c) => {
+    const { box, cyl, light, flame, lam, WH, TH } = c;
+    // 吊燈：每一盞掛在天花板附近的燈（不會閃的）補上看得到的燈籠；跟人在畫面上重疊會淡掉（stepDust）
+    ins.lights.forEach(L => { if (L.flicker || L.l.position.y < 2.3 || L.l.position.y > WH) return; const x = L.l.position.x, z = L.l.position.z, y = Math.min(WH - 0.7, L.l.position.y + 0.2);
+      const ms = [box(0.02, Math.max(0.1, WH - y - 0.2), 0.02, '#2A2018', x, (WH + y + 0.2) / 2, z), box(0.34, 0.06, 0.34, '#3A2A1C', x, y + 0.22, z), box(0.34, 0.06, 0.34, '#3A2A1C', x, y - 0.22, z), box(0.26, 0.38, 0.26, lam('#FFE0A0', { em: '#FFC060', ei: 1.3 }), x, y, z)];
+      ms[3].castShadow = false; ms.forEach(m => { m.material = m.material.clone(); m.material.transparent = true; m.renderOrder = 5; }); ins.ifx.lanterns.push({ x, y, z, ms, op: 1 }); });
+    // 桌子：每一張桌子中間放一根蠟燭（暖光會閃）、旁邊一兩個杯子；同一間最多 6 根蠟燭
+    let n = 0;
+    (R.col.list || []).forEach(b => { if (b.tag !== 'table' || n >= 6) return; const w = b.x1 - b.x0, d = b.z1 - b.z0; if (w < 0.8 || d < 0.8 || w > 6 || d > 6) return; n++;
+      const x = (b.x0 + b.x1) / 2, z = (b.z0 + b.z1) / 2, y = 0.92;
+      cyl(0.06, 0.07, 0.2, '#EDE4D0', x, y + 0.1, z, 6); cyl(0.12, 0.12, 0.03, '#8A6A3A', x, y + 0.015, z, 8); flame(x, y + 0.29, z, 1); light(x, y + 0.35, z, '#FFB060', 0.7, 4.5, true);
+      [[0.35, 0.18, '#C8B89A'], [-0.32, -0.15, '#8A6A4A']].forEach(([dx, dz, col], i) => { if (i && w < 1.4) return; cyl(0.07, 0.065, 0.16, col, x + Math.min(dx, w / 2 - 0.15), y + 0.08, z + Math.min(dz, d / 2 - 0.15), 7); }); });
+    // 浮塵：房間裡慢慢飄的亮點（不用光束，整間淡淡的）
+    const HW = ins.pl.w / 2, HD = ins.pl.d / 2, N = Math.min(40, Math.round(ins.pl.w * ins.pl.d / 8)), arr = new Float32Array(N * 3), seed = [];
+    for (let i = 0; i < N; i++) seed.push([Math.random(), (Math.random() - 0.5) * 2 * HW * 0.9, Math.random() * 6, (Math.random() - 0.5) * 2 * HD * 0.9]);
+    const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(arr, 3)); ins.geos.push(pg);
+    const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 2, sizeAttenuation: false, transparent: true, opacity: 0.4, depthWrite: false, blending: TH.AdditiveBlending }));
+    pts.renderOrder = 4; ins.group.add(pts); ins.ifx.room = { pts, arr, seed, WH };
+  };
   // 灰塵慢慢飄（沿著光束上下、左右晃）
   const stepDust = (ins, dt) => {
     const f = ins.ifx; if (!f) return; f.t = (f.t || 0) + dt;
@@ -119,6 +139,7 @@
       const ppl = [W.P && W.P.h && W.P.h.g].concat((ins.npcs || []).map(n => n.h && n.h.g), (W.town && W.town.allies || []).map(a => a.h && a.h.g)).filter(Boolean).map(g => rect(g.position.x, 0, 2.1, g.position.z, 0.65));
       f.lanterns.forEach(L => { const r = rect(L.x, L.y - 0.35, L.y + 0.35, L.z, 0.3), near = ppl.some(p => p[0] < r[2] && p[2] > r[0] && p[1] < r[3] && p[3] > r[1]), want = near ? 0.18 : 1; if (Math.abs(L.op - want) < 0.01) return; L.op += (want - L.op) * Math.min(1, dt * 8); L.ms.forEach(m => { m.material.opacity = L.op; m.material.depthWrite = L.op > 0.9; }); });
     }
+    if (f.room) { const { arr, seed, WH, pts } = f.room; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.02) % 1; arr[i * 3] = s[1] + Math.sin(f.t * 0.4 + s[2]) * 0.3; arr[i * 3 + 1] = 0.3 + s[0] * (WH - 0.6); arr[i * 3 + 2] = s[3] + Math.cos(f.t * 0.3 + s[2]) * 0.3; } pts.geometry.attributes.position.needsUpdate = true; }
     if (!f.dust.length) return;
     f.dust.forEach(D => { const { arr, seed, wx, wy, wz, fx, fz, nx, nz } = D; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.012) % 1; const t = s[0], px = -nz, pz = nx, wob = Math.sin(f.t * 0.7 + s[2]) * 0.12; arr[i * 3] = wx + (fx - wx) * t + px * (s[1] + wob); arr[i * 3 + 1] = wy * (1 - t) + 0.2 + Math.sin(f.t * 0.5 + s[2] * 2) * 0.15; arr[i * 3 + 2] = wz + (fz - wz) * t + pz * (s[1] + wob); } D.pts.geometry.attributes.position.needsUpdate = true; });
   };
