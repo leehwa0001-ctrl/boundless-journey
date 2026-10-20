@@ -79,10 +79,49 @@
     // 放大
     const U = S.comp.uniforms, night = L ? Math.min(1, L.lampK || 0) : 0, post = CK.post || {};
     U.scale.value = s; U.off.value.set(Math.floor((rw * s - bw) / 2), Math.floor((rh * s - bh) / 2)); U.cN.value = cam.near; U.cF.value = cam.far;
-    U.expo.value = (post.expo || 0.88) * (0.92 + night * 0.2);   // 白天雪地太亮：白天收一點、晚上亮一點 U.bk.value = 0.55 + night * 0.6; U.sat.value = 1.08; U.vig.value = 0.35 + night * 0.15;
+    U.expo.value = (post.expo || 0.88) * (0.84 + night * 0.28);   // 白天雪地太亮：白天收一點、晚上亮一點
+    U.bk.value = 0.12 + night * 1.0;   // 白天幾乎不透光暈（白色斑馬線、計程車不會發光） U.sat.value = 1.08; U.vig.value = 0.35 + night * 0.15;
     pass(S.comp, null);
   };
-  // ---------- 平塗：地面、屋頂、牆這些寫實的雜訊貼圖換成平均色（網點會把雜訊放大成滿地沙點）；有窗戶的外牆、招牌、燈留著 ----------
+  // ---------- 點陣貼圖（2026-10-20 作者選 1：把皇嶺做成真的像素城市，不只是濾鏡） ----------
+  // 寫實的雜訊貼圖換成手刻的點陣花樣：一個點陣像素＝R.PIX.PX 公尺（跟人物、遺跡同比例），灰階、平均約 1，乘在原本貼圖的平均色上。
+  // 照材質原本的 uv 貼（citykit 的 uv＝公尺÷tile），方向跟原本的貼圖一樣（瓦片的溝朝屋簷）。
+  const PN = 24;   // 一張花樣 24×24 像素＝2 公尺
+  const PAT = {
+    kawara: (x, y) => { const r = y % 6, o = Math.floor(y / 6) % 2 ? 2 : 0; return r === 5 ? 118 : r === 0 ? 230 : (x + o) % 4 === 0 ? 176 : 204; },   // 瓦：一排一排（50 公分），每排上緣亮、下緣有影子，溝淡淡的、上下排錯開
+    copper: (x, y, h) => (x % 6 === 0 ? 236 : x % 6 === 1 ? 160 : 202 + (h < 0.06 ? -18 : 0)),   // 銅板屋頂：立起來的接縫
+    corrugated: x => (x % 3 === 0 ? 236 : x % 3 === 1 ? 200 : 158),
+    plaster: (x, y, h) => 206 + (h < 0.04 ? -16 : h > 0.97 ? 12 : 0),
+    concrete: (x, y, h) => (x % 12 === 0 || y % 12 === 0 ? 170 : 206 + (h < 0.05 ? -12 : 0)),
+    wood: (x, y, h) => { const b = Math.floor(y / 3); return y % 3 === 2 ? 132 : 196 + ((b * 7) % 3) * 10 + (h < 0.08 ? -18 : 0); },   // 木板：一塊 25 公分
+    planks: (x, y, h) => { const b = Math.floor(y / 3); return y % 3 === 2 ? 132 : (x + b * 7) % 16 === 0 ? 150 : 196 + ((b * 5) % 3) * 10 + (h < 0.06 ? -16 : 0); },
+    lattice: (x, y) => (x % 4 === 0 || y % 4 === 0 ? 236 : 120),   // 格子窗：白格、暗紙
+    ishigaki: null, ashlar: (x, y) => { const r = Math.floor(y / 4), o = r % 2 ? 4 : 0; return y % 4 === 3 || (x + o) % 8 === 0 ? 132 : y % 4 === 0 ? 228 : 204 + ((r * 3 + Math.floor((x + o) / 8)) % 3) * 8; },
+    brick: (x, y) => { const r = Math.floor(y / 2), o = r % 2 ? 2 : 0; return y % 2 === 1 || (x + o) % 4 === 0 ? 150 : 206 + ((r + Math.floor((x + o) / 4)) % 3) * 8; },
+    pavers: (x, y) => (x % 6 === 0 || y % 6 === 0 ? 160 : 206 + (((Math.floor(x / 6) * 3 + Math.floor(y / 6)) % 3) - 1) * 8),
+    granite: (x, y) => (x % 12 === 0 || y % 12 === 0 ? 156 : y % 12 === 1 ? 222 : 204),
+    asphalt: (x, y, h) => 204 + (h < 0.03 ? -22 : h > 0.985 ? 18 : 0),
+    yard: (x, y, h) => 204 + (h < 0.06 ? -18 : h > 0.95 ? 14 : 0), gravel: (x, y, h) => (h < 0.25 ? 170 : h > 0.8 ? 230 : 204), sand: (x, y, h) => 206 + (h < 0.05 ? -14 : 0), soil: (x, y, h) => 200 + (h < 0.1 ? -20 : h > 0.93 ? 14 : 0),
+    grass: (x, y, h) => (h < 0.12 ? 160 : h > 0.9 ? 236 : 204),   // 草：亮暗兩種草尖點
+    tatami: (x, y) => (y % 12 === 0 ? 150 : x % 2 ? 214 : 198)
+  };
+  // 石垣：大小不一的石塊、深色的縫
+  PAT.ishigaki = (() => { const a = new Uint8Array(PN * PN).fill(120); let sd = 3; const sr = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    for (let y = 0; y < PN;) { const h = 4 + Math.floor(sr() * 3); let x = -Math.floor(sr() * 5); while (x < PN) { const w = 5 + Math.floor(sr() * 4), v = 188 + Math.floor((sr() - 0.5) * 36); for (let j = 1; j < h; j++) for (let i = 1; i < w; i++) { const px = (x + i + PN) % PN, py = y + j; if (py < PN) a[py * PN + px] = j === 1 ? Math.min(240, v + 26) : i === w - 1 ? v - 20 : v; } x += w; } y += h; }
+    return (x, y) => a[y * PN + x]; })();
+  const PTX = {};
+  const patTex = name => {
+    if (PTX[name]) return PTX[name]; const f = PAT[name]; if (!f) return null;
+    const c = document.createElement('canvas'); c.width = c.height = PN; const g = c.getContext('2d'), img = g.createImageData(PN, PN); let sd = 11, sum = 0; const sr = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    for (let y = 0; y < PN; y++) for (let x = 0; x < PN; x++) { const v = Math.max(0, Math.min(255, f(x, y, sr()))), i = (y * PN + x) * 4; img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255; sum += v; }
+    g.putImageData(img, 0, 0);
+    return (PTX[name] = { c, mean: sum / (PN * PN) / 255 });
+  };
+  const texOf = k => { try { const i = k.indexOf('|'), nm = i < 0 ? k : k.slice(0, i), o = Object.assign({}, (CK.MDEF || {})[nm] || {}, i < 0 ? {} : JSON.parse(k.slice(i + 1))); return o.fac ? null : o.tex || null; } catch (e) { return null; } };
+  // 雪：原本是柔和的雜訊斑塊（像素畫法裡變成一塊一塊灰灰的污漬）→ 對齊像素格、邊緣乾淨，雪多的地方整片白
+  const SNOW0 = 'float ckS = ckUp * uSnow * uSnowK * smoothstep(0.25, 0.65, ckN(vWPos.xz * 0.9) * 0.6 + ckN(vWPos.xz * 3.7) * 0.4 + uSnow * 0.5);';
+  const SNOW1 = 'vec2 ckP = floor(vWPos.xz * ' + (1 / (R.PIX ? R.PIX.PX : 1 / 12)).toFixed(1) + ') * ' + (R.PIX ? R.PIX.PX : 1 / 12).toFixed(5) + '; float ckS = step(0.25, ckUp) * step(1.0 - min(1.0, uSnow * uSnowK) * 0.88, ckN(ckP * 0.45) * 0.7 + ckN(ckP * 1.7) * 0.3);';   // 只用雜訊（不加每格亂數：雪少的時候會變成滿地白點）
+  // ---------- 平塗：地面、屋頂、牆這些寫實的雜訊貼圖換成點陣花樣（沒有花樣的換成平均色）；有窗戶的外牆、招牌、燈留著 ----------
   const KEEP = /^(fac|sign|shopLit|winLit|glass|neon|lamp|kiosk|awn|chochin|boat|car|train|tex:)/;
   let flat = false;
   const avgOf = img => { try { const c = document.createElement('canvas'); c.width = c.height = 8; const g = c.getContext('2d'); g.drawImage(img, 0, 0, 8, 8); const d = g.getImageData(0, 0, 8, 8).data; let r = 0, gg = 0, b = 0; for (let i = 0; i < d.length; i += 4) { r += d[i]; gg += d[i + 1]; b += d[i + 2]; } const n = d.length / 4; return new (T().Color)(r / n / 255, gg / n / 255, b / n / 255).convertSRGBToLinear(); } catch (e) { return null; } };
@@ -90,8 +129,18 @@
     if (on === flat) return; flat = on;
     Object.entries(CK.mats || {}).forEach(([k, m]) => {
       if (!m || !m.isMeshStandardMaterial) return; const u = m.userData;
-      if (on) { if (!m.map || KEEP.test(k) || m.transparent || u.pxMap) return; const a = avgOf(m.map.image); if (!a) return; u.pxMap = m.map; u.pxN = m.normalMap; u.pxR = m.roughnessMap; u.pxC = m.color.clone(); m.color.multiply(a); m.map = null; m.normalMap = null; m.roughnessMap = null; m.needsUpdate = true; }
-      else if (u.pxMap) { m.map = u.pxMap; m.normalMap = u.pxN; m.roughnessMap = u.pxR; m.color.copy(u.pxC); delete u.pxMap; delete u.pxN; delete u.pxR; delete u.pxC; m.needsUpdate = true; }
+      // 雪的算法換成像素版（包住 citykit 的 onBeforeCompile；關掉的時候換回來）
+      if (on && u.snowK && !u.pxOBC && m.onBeforeCompile) { const ob = u.pxOBC = m.onBeforeCompile; u.pxKey = m.customProgramCacheKey; m.onBeforeCompile = (sh, r) => { ob(sh, r); sh.fragmentShader = sh.fragmentShader.replace(SNOW0, SNOW1); }; m.customProgramCacheKey = () => 'ckpx'; m.needsUpdate = true; }
+      else if (!on && u.pxOBC) { m.onBeforeCompile = u.pxOBC; m.customProgramCacheKey = u.pxKey; delete u.pxOBC; delete u.pxKey; m.needsUpdate = true; }
+      if (on) {
+        if (!m.map || KEEP.test(k) || m.transparent || u.pxMap) return; const a = avgOf(m.map.image); if (!a) return;
+        u.pxMap = m.map; u.pxN = m.normalMap; u.pxR = m.roughnessMap; u.pxC = m.color.clone(); m.color.multiply(a); m.normalMap = null; m.roughnessMap = null;
+        const pt = patTex(texOf(k)), tile = u.tile || [4, 4], PX = R.PIX ? R.PIX.PX : 1 / 12;
+        if (pt) { const t = new (T().CanvasTexture)(pt.c); t.magFilter = t.minFilter = T().NearestFilter; t.generateMipmaps = false; t.wrapS = t.wrapT = T().RepeatWrapping; t.encoding = T().LinearEncoding; t.repeat.set(tile[0] / (PN * PX), tile[1] / (PN * PX)); m.map = t; m.color.multiplyScalar(1 / pt.mean); u.pxT = t; }
+        else m.map = null;
+        m.needsUpdate = true;
+      }
+      else if (u.pxMap) { if (u.pxT) { u.pxT.dispose(); delete u.pxT; } m.map = u.pxMap; m.normalMap = u.pxN; m.roughnessMap = u.pxR; m.color.copy(u.pxC); delete u.pxMap; delete u.pxN; delete u.pxR; delete u.pxC; m.needsUpdate = true; }
     });
   };
   const r0 = CK.render;
