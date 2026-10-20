@@ -30,7 +30,7 @@
       + ' s += (texture2D(t, vUv + d * 2.0).rgb + texture2D(t, vUv - d * 2.0).rgb) * 0.121; s += (texture2D(t, vUv + d * 3.0).rgb + texture2D(t, vUv - d * 3.0).rgb) * 0.054; s += (texture2D(t, vUv + d * 4.0).rgb + texture2D(t, vUv - d * 4.0).rgb) * 0.016; gl_FragColor = vec4(s, 1.0); }', { t: { value: null }, d: { value: new TH.Vector2() } });
     // 放大：描邊、發光、色調、色階＋網點、暗角；自己換成 sRGB（不用 three 的 encodings）
     S.comp = sm([
-      'uniform sampler2D tC; uniform sampler2D tD; uniform sampler2D tB; uniform vec2 res; uniform float scale; uniform vec2 off; uniform float cN; uniform float cF; uniform float lv; uniform float bk; uniform float expo; uniform float vig; uniform float sat;',
+      'uniform sampler2D tC; uniform sampler2D tD; uniform sampler2D tB; uniform vec2 res; uniform float scale; uniform vec2 off; uniform float cN; uniform float cF; uniform float lv; uniform float bk; uniform float expo; uniform float vig; uniform float sat; uniform float day;',
       'float dep(vec2 p){ float z = texture2D(tD, (p + 0.5) / res).x; return cN * cF / (cF - z * (cF - cN)); }',
       'float bayer(vec2 p){ vec2 q = mod(p, 4.0); int i = int(q.x) + int(q.y) * 4; float m[16]; m[0]=0.;m[1]=8.;m[2]=2.;m[3]=10.;m[4]=12.;m[5]=4.;m[6]=14.;m[7]=6.;m[8]=3.;m[9]=11.;m[10]=1.;m[11]=9.;m[12]=15.;m[13]=7.;m[14]=13.;m[15]=5.;',
       '  float v = 0.0; for (int k = 0; k < 16; k++) { if (k == i) v = m[k]; } return v / 16.0 - 0.47; }',
@@ -41,12 +41,13 @@
       '  float d = dep(p), far = max(max(dep(p + vec2(1.0, 0.0)), dep(p - vec2(1.0, 0.0))), max(dep(p + vec2(0.0, 1.0)), dep(p - vec2(0.0, 1.0))));',
       '  if (far - d > 0.6 + d * 0.012) c *= 0.55;',
       '  c = tone(c); float l = dot(c, vec3(0.299, 0.587, 0.114)); c = mix(vec3(l), c, sat);',
+      '  c *= mix(vec3(1.0), mix(vec3(0.86, 0.94, 1.12), vec3(1.07, 1.0, 0.9), smoothstep(0.12, 0.55, l)), day);',   // 白天：暗面偏藍、亮面偏暖（陽光和陰影分得出來）
       '  vec2 q = (p + 0.5) / res - 0.5; c *= 1.0 - vig * dot(q, q) * 1.6;',
       '  c = pow(clamp(c, 0.0, 1.0), vec3(1.0 / 2.2));',
       '  c = clamp(floor(c * lv + 0.5 + bayer(p) * 0.55) / lv, 0.0, 1.0);',   // 色階收斂＋4×4 網點
       '  gl_FragColor = vec4(c, 1.0);',
       '  gl_FragDepthEXT = texture2D(tD, (p + 0.5) / res).x;',   // 場景的深度寫進螢幕：之後用全解析度畫人物，被前面的東西擋住的地方照樣擋住
-      '}'].join('\n'), { tC: { value: S.rt.texture }, tD: { value: S.rt.depthTexture }, tB: { value: S.a.texture }, res: { value: new TH.Vector2(4, 4) }, scale: { value: 1 }, off: { value: new TH.Vector2() }, cN: { value: 1 }, cF: { value: 100 }, lv: { value: 16 }, bk: { value: 0.9 }, expo: { value: 1 }, vig: { value: 0.4 }, sat: { value: 1.1 } });
+      '}'].join('\n'), { tC: { value: S.rt.texture }, tD: { value: S.rt.depthTexture }, tB: { value: S.a.texture }, res: { value: new TH.Vector2(4, 4) }, scale: { value: 1 }, off: { value: new TH.Vector2() }, cN: { value: 1 }, cF: { value: 100 }, lv: { value: 16 }, bk: { value: 0.9 }, expo: { value: 1 }, vig: { value: 0.4 }, sat: { value: 1.1 }, day: { value: 0 } });
     S.comp.extensions = { fragDepth: true }; S.comp.depthWrite = true;
     S.scene = new TH.Scene(); S.cam = new TH.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     S.quad = new TH.Mesh(new TH.PlaneGeometry(2, 2), S.comp); S.quad.frustumCulled = false; S.scene.add(S.quad);
@@ -85,7 +86,8 @@
     const U = S.comp.uniforms, night = L ? Math.min(1, L.lampK || 0) : 0, post = CK.post || {};
     U.scale.value = s; U.off.value.set(Math.floor((rw * s - bw) / 2), Math.floor((rh * s - bh) / 2)); U.cN.value = cam.near; U.cF.value = cam.far;
     U.expo.value = (post.expo || 0.88) * (0.84 + night * 0.28);   // 白天雪地太亮：白天收一點、晚上亮一點
-    U.bk.value = 0.12 + night * 1.0;   // 白天幾乎不透光暈（白色斑馬線、計程車不會發光） U.sat.value = 1.08; U.vig.value = 0.35 + night * 0.15;
+    U.bk.value = 0.12 + night * 1.0;   // 白天幾乎不透光暈（白色斑馬線、計程車不會發光）
+    U.sat.value = 1.08; U.vig.value = 0.35 + night * 0.15; U.day.value = 1 - night;
     pass(S.comp, null);
     // 人物：全解析度、照場景的深度；鏡頭的範圍跟放大那一道對齊（螢幕只是小畫布中間的一塊）
     try {
@@ -119,6 +121,26 @@
     if (PL.m.parent !== W.scene) W.scene.add(PL.m);
     PL.m.material.opacity = 0.55 * k; PL.m.visible = k > 0.02;
     winSpill(tw, k);
+    snowGlow(tw, L, k);
+  };
+  // ---------- 路燈旁邊的雪花被照亮（晚上；雪的著色器加上離最近 8 盞路燈多近 → 變暖、變亮，亮到會透出光暈） ----------
+  const SN = { p: null };
+  const snowGlow = (tw, L, k) => {
+    const sn = L && L.snow, m = sn && sn.material, TH = T(); if (!m || !m.uniforms) return;
+    if (!m.userData.ckGlow) {
+      m.userData.ckGlow = 1; SN.p = []; for (let i = 0; i < 8; i++) SN.p.push(new TH.Vector3(0, -999, 0));
+      m.uniforms.lampP = { value: SN.p }; m.uniforms.lampK = { value: 0 };
+      m.vertexShader = m.vertexShader.replace('varying float vA;', 'varying float vA; uniform vec3 lampP[8]; uniform float lampK; varying float vG;')
+        .replace('vA = clamp(', 'float g = 0.0; for (int i = 0; i < 8; i++) { g += (1.0 - smoothstep(0.8, 6.5, distance(p.xz, lampP[i].xz))) * (1.0 - smoothstep(4.0, 12.0, abs(p.y - lampP[i].y))); } vG = clamp(g, 0.0, 1.0) * lampK; vA = clamp(');
+      m.fragmentShader = m.fragmentShader.replace('varying float vA;', 'varying float vA; varying float vG; uniform float lampK;')
+        .replace('gl_FragColor = vec4(col, a * vA * 0.9);', 'gl_FragColor = vec4(mix(col * mix(1.0, 0.42, lampK) * vec3(0.85, 0.92, 1.0), vec3(1.7, 0.95, 0.42), vG), min(1.0, a * vA * 0.9 + vG * 0.4));');
+      m.needsUpdate = true;
+    }
+    m.uniforms.lampK.value = k;
+    if (k < 0.02 || !tw.lamps) return;
+    const P = W.P; if (!P) return;
+    const near = tw.lamps.map(q => [q, (q[0] - P.x) ** 2 + (q[1] - P.z) ** 2]).sort((a, b) => a[1] - b[1]).slice(0, 8);
+    SN.p.forEach((v, i) => { const q = near[i]; if (q) v.set(q[0][0], (CK.heightAt ? CK.heightAt(q[0][0], q[0][1]) : 0) + 4.2, q[0][1]); else v.set(0, -999, 0); });
   };
   // ---------- 窗戶的光灑到外面的地上（晚上；照 tw.D.foot 每棟房子的外框，四邊各一條從牆邊往外淡掉的光） ----------
   // 2026-10-20 作者：晚上的感覺對——繼續做窗戶的光灑出來。暖的（燈泡）、冷的（日光燈）照房子隨機；每一面亮度不一樣，有的面是暗的。
@@ -210,7 +232,7 @@
     });
   };
   const r0 = CK.render;
-  CK.render = (...a) => { const on = active(); setFlat(on); if (!on && PL) PL.m.visible = false; if (!on && WS && WS.m) WS.m.visible = false; return on ? render() : r0(...a); };
+  CK.render = (...a) => { const on = active(); setFlat(on); if (!on && PL) PL.m.visible = false; if (!on && WS && WS.m) WS.m.visible = false; if (!on) { const sm = W.town && W.town.L && W.town.L.snow && W.town.L.snow.material; if (sm && sm.uniforms && sm.uniforms.lampK) sm.uniforms.lampK.value = 0; } return on ? render() : r0(...a); };
   // ---------- 暫停選單：畫法 ----------
   const tm = R.townMenu;
   if (tm) R.townMenu = (...a) => {
