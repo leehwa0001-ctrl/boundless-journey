@@ -45,7 +45,9 @@
       '  c = pow(clamp(c, 0.0, 1.0), vec3(1.0 / 2.2));',
       '  c = clamp(floor(c * lv + 0.5 + bayer(p) * 0.55) / lv, 0.0, 1.0);',   // 色階收斂＋4×4 網點
       '  gl_FragColor = vec4(c, 1.0);',
-      '}'].join('\n'), { tC: { value: S.rt.texture }, tD: { value: S.rt.depthTexture }, tB: { value: S.a.texture }, res: { value: new TH.Vector2(4, 4) }, scale: { value: 1 }, off: { value: new TH.Vector2() }, cN: { value: 1 }, cF: { value: 100 }, lv: { value: 10 }, bk: { value: 0.9 }, expo: { value: 1 }, vig: { value: 0.4 }, sat: { value: 1.1 } });
+      '  gl_FragDepthEXT = texture2D(tD, (p + 0.5) / res).x;',   // 場景的深度寫進螢幕：之後用全解析度畫人物，被前面的東西擋住的地方照樣擋住
+      '}'].join('\n'), { tC: { value: S.rt.texture }, tD: { value: S.rt.depthTexture }, tB: { value: S.a.texture }, res: { value: new TH.Vector2(4, 4) }, scale: { value: 1 }, off: { value: new TH.Vector2() }, cN: { value: 1 }, cF: { value: 100 }, lv: { value: 16 }, bk: { value: 0.9 }, expo: { value: 1 }, vig: { value: 0.4 }, sat: { value: 1.1 } });
+    S.comp.extensions = { fragDepth: true }; S.comp.depthWrite = true;
     S.scene = new TH.Scene(); S.cam = new TH.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     S.quad = new TH.Mesh(new TH.PlaneGeometry(2, 2), S.comp); S.quad.frustumCulled = false; S.scene.add(S.quad);
   };
@@ -72,6 +74,9 @@
     const L = W.town && W.town.L, sky = L && L.sky, sv = sky && sky.visible; if (sky) sky.visible = false;
     // 雪、雨的點是照螢幕像素算大小的：畫在小畫布上再放大會大 s 倍（2026-10-20 作者：雪還是太大顆了）——畫的時候除回去
     const su = L && L.snow && L.snow.material && L.snow.material.uniforms && L.snow.material.uniforms.size, sz0 = su && su.value; if (su) su.value = sz0 / s * 0.75;   // 小畫布上大約 2 格
+    // 人物（玩家、路人、隊友）：先不畫進小畫布（換到第 1 層），最後用全解析度畫在上面——不換色、不加網點、素材版的細節不被壓掉
+    const chars = charGroups(); setLayer(chars, 2); const cm = cam.layers.mask; cam.layers.mask = 1;
+    pools(L);
     try { r.setRenderTarget(S.rt); r.clear(); r.render(W.scene, cam); } finally { if (sky) sky.visible = sv; if (su) su.value = sz0; }
     // 發光
     S.bright.uniforms.t.value = S.rt.texture; pass(S.bright, S.a);
@@ -82,6 +87,37 @@
     U.expo.value = (post.expo || 0.88) * (0.84 + night * 0.28);   // 白天雪地太亮：白天收一點、晚上亮一點
     U.bk.value = 0.12 + night * 1.0;   // 白天幾乎不透光暈（白色斑馬線、計程車不會發光） U.sat.value = 1.08; U.vig.value = 0.35 + night * 0.15;
     pass(S.comp, null);
+    // 人物：全解析度、照場景的深度；鏡頭的範圍跟放大那一道對齊（螢幕只是小畫布中間的一塊）
+    try {
+      const ls = sceneLights(); ls.forEach(l => l.layers.enable(1));
+      const bg = W.scene.background, ac = r.autoClear; W.scene.background = null; r.autoClear = false;
+      cam.layers.mask = 2; cam.setViewOffset(rw * s, rh * s, U.off.value.x, rh * s - bh - U.off.value.y, bw, bh);
+      try { r.setRenderTarget(null); r.render(W.scene, cam); } finally { cam.clearViewOffset(); W.scene.background = bg; r.autoClear = ac; }
+    } finally { cam.layers.mask = cm; setLayer(chars, 1); }
+  };
+  // 人物的身體都在這幾個 group 裡（citykit2.js 的 CK.fixSprites 也是這樣找）
+  const charGroups = () => { const tw = W.town, out = []; if (W.P && W.P.h && W.P.h.g) out.push(W.P.h.g); if (tw) [tw.npcs, tw.allies].forEach(L => (L || []).forEach(n => { if (n && n.h && n.h.g) out.push(n.h.g); })); return out; };
+  const setLayer = (gs, mask) => gs.forEach(g => g.traverse(o => { o.layers.mask = mask; }));
+  // 光也要在第 1 層，人物才照得到（換場景的時候重找一次；路燈的點光源是固定那幾盞，只換位置）
+  let LS0 = null, LSc = null;
+  const sceneLights = () => { if (LSc === W.scene && LS0) return LS0; LSc = W.scene; LS0 = []; W.scene.traverse(o => { if (o.isLight) LS0.push(o); }); return LS0; };
+  // ---------- 每一盞路燈在地上鋪一圈暖光（晚上；圓的漸層，放大那一道的網點讓邊緣變成細細的過渡） ----------
+  let PL = null;
+  const pools = L => {
+    const tw = W.town, k = L ? Math.min(1, L.lampK || 0) : 0, TH = T();
+    if (!tw || !tw.lamps || !tw.lamps.length) return;
+    if (!PL || PL.tw !== tw) {
+      if (PL && PL.m.parent) PL.m.parent.remove(PL.m);
+      const c = document.createElement('canvas'); c.width = c.height = 64; const g = c.getContext('2d'), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+      gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.35, 'rgba(255,255,255,0.55)'); gr.addColorStop(0.7, 'rgba(255,255,255,0.16)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64);
+      const tex = new TH.CanvasTexture(c), mat = new TH.MeshBasicMaterial({ color: new TH.Color('#FFA448').convertSRGBToLinear(), map: tex, transparent: true, opacity: 0, depthWrite: false, blending: TH.AdditiveBlending, fog: false });
+      const geo = new TH.PlaneGeometry(1, 1); geo.rotateX(-Math.PI / 2);
+      const m = new TH.InstancedMesh(geo, mat, tw.lamps.length), o = new TH.Object3D();
+      tw.lamps.forEach((p, i) => { o.position.set(p[0], (CK.heightAt ? CK.heightAt(p[0], p[1]) : 0) + 0.06, p[1]); o.scale.set(11, 1, 11); o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
+      m.frustumCulled = false; m.renderOrder = 2; m.userData.noShadow = true; W.scene.add(m); PL = { tw, m };
+    }
+    if (PL.m.parent !== W.scene) W.scene.add(PL.m);
+    PL.m.material.opacity = 0.55 * k; PL.m.visible = k > 0.02;
   };
   // ---------- 點陣貼圖（2026-10-20 作者選 1：把皇嶺做成真的像素城市，不只是濾鏡） ----------
   // 寫實的雜訊貼圖換成手刻的點陣花樣：一個點陣像素＝R.PIX.PX 公尺（跟人物、遺跡同比例），灰階、平均約 1，乘在原本貼圖的平均色上。
@@ -144,7 +180,7 @@
     });
   };
   const r0 = CK.render;
-  CK.render = (...a) => { const on = active(); setFlat(on); return on ? render() : r0(...a); };
+  CK.render = (...a) => { const on = active(); setFlat(on); if (!on && PL) PL.m.visible = false; return on ? render() : r0(...a); };
   // ---------- 暫停選單：畫法 ----------
   const tm = R.townMenu;
   if (tm) R.townMenu = (...a) => {
