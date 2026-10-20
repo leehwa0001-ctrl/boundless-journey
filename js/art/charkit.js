@@ -1,6 +1,6 @@
 // 人物素材的測試版（2026-10-11 作者：這個能套用我們的人物嗎？缺的之後會補，先做個測試版看能不能塞）
 // - 資料：charkit-data.js（tools/charkit-convert.js 從作者的人物編輯器匯出檔轉的；45×45 一格，四個方向，站立、移動、單手揮擊、雙手揮擊）。
-// - 開關：暫停選單「人物：素材版（測試）」，存在瀏覽器（tfl-charkit）；預設關，玩家看到的照舊。
+// - 2026-10-20 作者：舊版人物拿掉——所有人一律用素材版（暫停選單、標題畫面的切換鈕拿掉；以前存在瀏覽器的 tfl-charkit 不再看）。
 // - 怎麼畫：照原本人物圖的排法（6 欄 × 7 列，sprites.js），前四列（正面、背面、朝右、朝左 × 站、走 1、走 2、砍下、舉起、收招）換成素材；
 //   翻滾素材還沒有，沿用原本的圖；倒下、坐著（第 7 列）2026-10-18 起用素材的站姿改出來（坐著＝大腿那幾列拿掉、倒下＝側面轉 90 度）。圖放大成 3 倍（一格 72×90），素材畫成 2 倍、腳底對齊——人物在畫面上一樣高，只是畫得比較細。
 //   顏色照每個人的外觀：身體＝膚色、衣服＝上衣（條紋＝披風色）、褲子＝披風色、頭髮、眼睛；髮型照原本的 hs 對到素材的七種。
@@ -10,8 +10,7 @@
 (function (R) {
   const K = R.CHARKIT; if (!K || !R.makeHeroSprite) return;
   const G = K.grid || 45, FW = 24, FH = 30, COLS = 6, ROWS = 7, S = 3, KS = 2, CW = FW * S, CH = FH * S;
-  const LS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { } return null; };
-  const on = () => LS('tfl-charkit') === '1';
+  const on = () => true;
   R.charkitOn = on;
   // ---------- 解碼（a～j＝0～9，後面的數字＝連續幾格） ----------
   const DEC = new Map();
@@ -132,14 +131,4 @@
   const refresh = () => { const W = R.W, all = []; if (W.P && W.P.h) all.push(W.P.h); [W.town && W.town.npcs, W.town && W.town.allies, W.inside && W.inside.npcs, W.allies].forEach(L => (L || []).forEach(n => { if (n && n.h) all.push(n.h); })); all.forEach(apply); };
   R.charkitRefresh = refresh;
   R.charkitSheet = (o, orig) => sheetFor(o, orig);   // 2026-10-18：建角色、角色頁的預覽也用素材版（charkitfull.js 包 R.heroSheetCanvas）
-  const addBtn = () => {
-    const row = document.querySelector('#r-sheet .row'); if (!row || row.querySelector('#ck-kit')) return;
-    const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ck-kit';
-    b.textContent = '人物：' + (on() ? '素材版（測試）' : '原本');
-    b.title = '用人物編輯器的素材畫人物（測試中：種族、盔甲、武器第一次打開時才載入；翻滾、倒下、坐著還沒有）';
-    b.onclick = () => { LS('tfl-charkit', on() ? null : '1'); refresh(); b.textContent = '人物：' + (on() ? '素材版（測試）' : '原本'); };
-    row.appendChild(b);
-  };
-  const ps = R.pauseSheet; if (ps) R.pauseSheet = (...a) => { const r = ps(...a); try { addBtn(); } catch (e) { } return r; };
-  const tm = R.townMenu; if (tm) R.townMenu = (...a) => { const r = tm(...a); try { addBtn(); } catch (e) { } return r; };
 })(window.R);

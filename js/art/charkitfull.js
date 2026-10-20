@@ -87,23 +87,6 @@
   // 換武器（R.setHeroWeapon 只重畫原本的圖）：素材版開著的時候也換成素材的
   const sw0 = R.setHeroWeapon;
   if (sw0) R.setHeroWeapon = (h, base) => { const r = sw0(h, base); try { if (R.charkitOn && R.charkitOn() && R.spriteLook && h && h.sp) R.spriteLook(h, {}); } catch (e) { console.warn('[charkitfull]', e); } return r; };
-  // 標題畫面左上角「切換人物模型」（2026-10-18 作者）：原本的人物 ↔ 素材版（跟暫停選單那顆一樣，存在瀏覽器）
-  const titleBtn = () => {
-    const t = document.getElementById('title'); if (!t || document.getElementById('t-ckmodel')) return;
-    const st = document.createElement('style');
-    st.textContent = '#t-ckmodel{position:fixed;top:12px;left:12px;z-index:5;font:inherit;font-size:13px;padding:6px 12px;border-radius:6px;border:1px solid rgba(201,161,58,.6);background:rgba(20,16,24,.72);color:#EDE6D6;cursor:pointer}'
-      + '#t-ckmodel small{display:block;font-size:11px;opacity:.75}#t-ckmodel:hover{border-color:#E8C04A}';
-    document.head.appendChild(st);
-    const b = document.createElement('button'); b.type = 'button'; b.id = 't-ckmodel';
-    const label = () => { b.innerHTML = '切換人物模型<small>目前：' + (R.charkitOn() ? '素材版（測試）' : '原本') + '</small>'; };
-    b.onclick = () => {
-      try { if (R.charkitOn()) localStorage.removeItem('tfl-charkit'); else localStorage.setItem('tfl-charkit', '1'); } catch (e) { }
-      if (R.charkitOn()) load();
-      try { R.charkitRefresh && R.charkitRefresh(); } catch (e) { console.warn('[charkitfull]', e); }
-      label(); R.toast && R.toast('人物模型：' + (R.charkitOn() ? '素材版（測試）' : '原本'));
-    };
-    label(); t.appendChild(b);
-  };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', titleBtn); else titleBtn();
+  // 標題畫面左上角的「切換人物模型」拿掉了（2026-10-20 作者：舊版人物拿掉，一律素材版）
   if (R.charkitOn && R.charkitOn()) load();
 })(window.R);
