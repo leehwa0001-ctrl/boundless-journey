@@ -20,9 +20,9 @@
   // 浮塵的樣子：顏色、數量、怎麼飄（vy＋往上、－往下）、亮度
   const DUST = {
     base: { col: '#D8D0C0', n: 40, vy: 0.05, op: 0.45 },
-    volcano: { col: '#FF8A3A', n: 60, vy: 0.9, op: 0.9 },
-    lava: { col: '#FF8A3A', n: 50, vy: 0.8, op: 0.85 },
-    forge: { col: '#FFA040', n: 45, vy: 0.7, op: 0.8 },
+    volcano: { col: '#FF8A3A', n: 22, vy: 0.7, op: 0.65 },   // 2026-10-20 作者：火星調少一點（火山原本的特效就很多）
+    lava: { col: '#FF8A3A', n: 20, vy: 0.65, op: 0.6 },
+    forge: { col: '#FFA040', n: 20, vy: 0.6, op: 0.6 },
     snow: { col: '#F4F8FF', n: 90, vy: -0.7, op: 0.8 },
     deep: { col: '#8AE8F0', n: 50, vy: 0.45, op: 0.6 },
     desert: { col: '#E8D0A0', n: 60, vy: 0.0, op: 0.45, wind: 1.2 },
