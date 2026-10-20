@@ -34,7 +34,7 @@
     const run = W().run, s = sigOf(run);
     if (run && s && !run.env && !run.biomeOrder) run.biomeOrder = [s, s, s, 'cave', 'crystal', 'lava'];
     const r = lf0(f, o);
-    try { if (run && s && (run.biome === s || run.env)) decorate(run, W().F, s); } catch (e) { console.warn('[ruinsites]', e); }
+    try { if (run && s && (run.biome === s || run.env)) { decorate(run, W().F, s); floorSkin(W().F, s); } } catch (e) { console.warn('[ruinsites]', e); }
     return r;
   };
   // 浮島型（征遠舊艦）：景色是 island.js 照每一層的區圖決定的，換掉區圖的景色——最後一層以外都是招牌景色（只有一兩層的：第一層）
@@ -50,6 +50,37 @@
   R.theme = run => { const t = th0(run), s = sigOf(run), b = s && B[s]; if (!b || !(run.env || run.biome === s)) return t; return Object.assign({}, t, { floor: b.floor, wall: b.wall, top: b.top, light: b.light, fog: run.env === 'deep' ? '#0A161C' : b.fog, accent: b.accent }); };
   // 調色：ruinfx.js 照 run.biome 找色溫；特殊環境的遺跡讓它找招牌景色的
   // （ruinfx.js 的 gradeKey 先看 run.env：征遠舊艦是 deep，維持深海的青綠色溫，跟艙燈的暖黃形成冷暖對比）
+  // ---------- 地面的花樣（像素版才有；照 sprites.js 的 R.worldUV 照世界座標貼，一個點陣像素＝1/12 公尺） ----------
+  // factory：鐵格板——兩公尺一塊的鋼板，有的是一條一條的格柵（縫是黑的）、有的是止滑紋鋼板，邊框、鉚釘、鏽斑
+  const SKIN = {};
+  const skinTex = key => {
+    if (SKIN[key]) return SKIN[key];
+    const S = 48, c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d'), img = x.createImageData(S, S);
+    let sd = 7; const sr = () => ((sd = (sd * 16807) % 2147483647) / 2147483647);
+    const P = (px, py, v, r) => { const i = (py * S + px) * 4; img.data[i] = Math.min(255, v * (r || 1)); img.data[i + 1] = Math.min(255, v * (r ? 0.86 : 1)); img.data[i + 2] = Math.min(255, v * (r ? 0.72 : 1)); img.data[i + 3] = 255; };
+    if (key === 'factory') {
+      for (let py = 0; py < S; py++) for (let px = 0; px < S; px++) {
+        const bx = Math.floor(px / 24), by = Math.floor(py / 24), u = px % 24, w = py % 24, grate = (bx + by) % 2 === 0;
+        let v;
+        if (u === 0 || w === 0) v = 96; else if (u === 1 || w === 1) v = 226; else if (u === 23 || w === 23) v = 150;   // 邊框：暗縫、亮邊、暗邊
+        else if ((u === 3 || u === 20) && (w === 3 || w === 20)) v = 236;   // 鉚釘
+        else if (grate) v = (bx ? u : w) % 3 === 0 ? 70 : (w % 8 === 4 && !bx) || (u % 8 === 4 && bx) ? 150 : 205 + (sr() - 0.5) * 10;   // 格柵：一條一條，黑縫
+        else v = ((u + w) % 6 === 0 && (u - w + 48) % 6 === 3) || ((u + w) % 6 === 3 && (u - w + 48) % 6 === 0) ? 228 : 186 + (sr() - 0.5) * 12;   // 止滑紋
+        P(px, py, v, sr() < 0.035 && v > 120 ? 1.25 : 0);   // 零星鏽斑
+      }
+    }
+    x.putImageData(img, 0, 0);
+    const t = new THREE.CanvasTexture(c); t.magFilter = t.minFilter = THREE.NearestFilter; t.generateMipmaps = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.encoding = THREE.LinearEncoding; t.userData.shared = true;
+    return (SKIN[key] = t);
+  };
+  const SKIN_FLOOR = { factory: '#666E78' };   // 貼了花樣以後地板的底色（花樣本身偏暗，底色要亮一點）
+  const floorSkin = (F, key) => {
+    if (!SKIN_FLOOR[key] || !F || !F.group || !R.worldUV || !R.pixTex || !(R.pixelOn && R.pixelOn())) return;
+    const ft = R.pixTex('floor'), fm = F.group.children.find(o => o.isInstancedMesh && o.material && o.material.map === ft); if (!fm) return;
+    const m = R.worldUV(new THREE.MeshLambertMaterial({ map: skinTex(key) }), 48); m.userData.shared = true; fm.material = m;
+    const c = new THREE.Color(), base = new THREE.Color(SKIN_FLOOR[key]);
+    if (fm.instanceColor) { for (let i = 0; i < fm.count; i++) { fm.getColorAt(i, c); c.lerp(base, 0.8); fm.setColorAt(i, c); } fm.instanceColor.needsUpdate = true; }
+  };
   // ---------- 擺東西 ----------
   let G = null;
   const geo = () => G || (G = (() => { const TH = THREE, g = { box: new TH.BoxGeometry(1, 1, 1), cyl: new TH.CylinderGeometry(0.5, 0.5, 1, 8), cyl12: new TH.CylinderGeometry(0.5, 0.5, 1, 12), cone: new TH.ConeGeometry(0.5, 1, 7), sph: new TH.SphereGeometry(0.5, 8, 6), disc: new TH.CircleGeometry(0.5, 10), tor: new TH.TorusGeometry(0.5, 0.14, 5, 10), dod: new TH.DodecahedronGeometry(0.5, 0), oct: new TH.OctahedronGeometry(0.5, 0) }; Object.values(g).forEach(x => { x.userData.shared = true; }); return g; })());
