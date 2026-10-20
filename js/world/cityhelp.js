@@ -150,10 +150,11 @@
       // 車：每條路一個來回
       if (rd.hw >= 3 && L > 60) { const q = rd.hw / 2, p = v ? [[rd.x - q, rd.r[1] + 2], [rd.x - q, rd.r[3] - 2], [rd.x + q, rd.r[3] - 2], [rd.x + q, rd.r[1] + 2]] : [[rd.r[0] + 2, rd.z + q], [rd.r[2] - 2, rd.z + q], [rd.r[2] - 2, rd.z - q], [rd.r[0] + 2, rd.z - q]]; if (!water.some(w => ov(rd.r, w)) || o.carsOnBridge) B.route(p, Math.max(1, Math.round(L / 70)), rd.hw < 4 ? { kinds: ['car'] } : undefined); }
     });
+    const shops = fronts.slice();   // 開店的那幾格（citydress.js 在店門口插旗子）
     // ---- 可以偷的東西：店門口 ----
     for (let k = 0; k < Math.min(o.steals || 4, fronts.length); k++) { const f = fronts.splice(Math.floor(rnd() * fronts.length), 1)[0], r = f.r, x = f.side === 'e' ? r[2] + 0.8 : f.side === 'w' ? r[0] - 0.8 : (r[0] + r[2]) / 2, z = f.side === 's' ? r[3] + 0.8 : f.side === 'n' ? r[1] - 0.8 : (r[1] + r[3]) / 2; B.steal(x, z, pk(['順手拿走店門口的試吃', '摸走店門口零錢盒裡的零錢', '偷拿一個店門口的小東西']), 'shop', () => ({ gold: 2 + Math.floor(Math.random() * 10) }), { time: 1.2 }); }
     void M; void g; void P;
-    return { blocks, HZ, VX };
+    return { blocks, HZ, VX, shops };
   };
   // ---- 每座城都有的房間：公會分館、車站大廳、食堂 ----
   // o：{ p, city, guild:{ name, hint, lines, board }, station:{ name, hint, dest, lines }, food:{ id, name, hint, say, lines, floor } }
