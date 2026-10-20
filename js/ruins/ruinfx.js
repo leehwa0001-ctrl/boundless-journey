@@ -19,14 +19,15 @@
     deep: { tint: [0.86, 1.02, 1.06], lift: [0.0, 0.022, 0.03], sat: 1.06, expo: 1.04, bloom: 0.59, th: 0.80 },
     forge: { tint: [1.1, 0.97, 0.85], lift: [0.03, 0.016, 0.006], sat: 1.08, expo: 1.01, bloom: 0.59, th: 0.82 },
     crystal: { tint: [0.96, 0.95, 1.1], lift: [0.018, 0.012, 0.035], sat: 1.1, expo: 1.02, bloom: 0.68, th: 0.78 },
-    forest: { tint: [0.95, 1.05, 0.92], lift: [0.01, 0.022, 0.01], sat: 1.06, expo: 1.02, bloom: 0.45, th: 0.88 }
+    forest: { tint: [0.95, 1.05, 0.92], lift: [0.01, 0.022, 0.01], sat: 1.06, expo: 1.02, bloom: 0.45, th: 0.88 },
+    interior: { tint: [1.05, 1.0, 0.93], lift: [0.02, 0.014, 0.01], sat: 1.06, expo: 1.04, bloom: 0.42, th: 0.9 }   // 室內（interiorfx.js）：暖一點
   };
-  const gradeKey = run => { if (!run) return 'base'; if (run.env && GRADE[run.env]) return run.env; const b = run.biome; return b === 'lava' ? 'volcano' : b && GRADE[b] ? b : 'base'; };   // 招牌景色（ruinsites.js）會把自己的色溫加進這張表
+  const gradeKey = run => { if (W.inside && W.inside.ifx) return 'interior'; if (!run) return 'base'; if (run.env && GRADE[run.env]) return run.env; const b = run.biome; return b === 'lava' ? 'volcano' : b && GRADE[b] ? b : 'base'; };   // 招牌景色（ruinsites.js）會把自己的色溫加進這張表
   R.RUIN_GRADE = GRADE;
   // ---------- 畫質 ----------
   const gfx = () => { const o = R.S && R.S.opts; if (o && o.ruinGfx != null) return o.ruinGfx; return R.touch ? 0 : 1; };
   R.ruinGfx = gfx;
-  const active = () => { const w = W, run = w.run; return !!(run && w.scene && w.scene.userData.pix && !w.town && gfx() > 0); };
+  const active = () => { const w = W, run = w.run; return !!(w.scene && w.scene.userData.pix && gfx() > 0 && ((run && !w.town) || (w.inside && w.inside.ifx))); };   // 2026-10-20：室內精進的樣品（interiorfx.js）也用
   // ---------- 放大那一道：加調色、發光 ----------
   let patched = false;
   const patch = () => {
