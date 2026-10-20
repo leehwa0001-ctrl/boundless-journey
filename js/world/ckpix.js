@@ -145,8 +145,8 @@
   };
   // ---------- 城裡的店（房間）：牆角暗影、家具底下的暗影、浮塵（跟 interiorfx.js 的公會分館同一個樣子） ----------
   const roomFx = tw => {
-    if (tw.rfx) { const d = tw.rfx.dust; if (d) { const t = (tw.rfx.t += 0.016); for (let i = 0; i < d.seed.length; i++) { const s = d.seed[i]; s[0] = (s[0] + 0.0003) % 1; d.arr[i * 3] = s[1] + Math.sin(t * 0.4 + s[2]) * 0.3; d.arr[i * 3 + 1] = 0.3 + s[0] * (d.h - 0.6); d.arr[i * 3 + 2] = s[3] + Math.cos(t * 0.3 + s[2]) * 0.3; } d.pts.geometry.attributes.position.needsUpdate = true; } return; }
-    const def = tw.room, TH = T(), w = def.w, d = def.d, h = def.h || 3.6, g = tw.group; tw.rfx = { t: 0 }; if (!g) return;
+    if (tw.rfx) { const d = tw.rfx.dust; if (d) { const t = (tw.rfx.t += 0.016); for (let i = 0; i < d.seed.length; i++) { const s = d.seed[i]; s[0] = (s[0] + 0.00016) % 1; d.arr[i * 3] = s[1] + Math.sin(t * 0.2 + s[2]) * 0.1; d.arr[i * 3 + 1] = 0.3 + s[0] * (d.h - 0.6); d.arr[i * 3 + 2] = s[3] + Math.cos(t * 0.15 + s[2]) * 0.1; } d.pts.geometry.attributes.position.needsUpdate = true; } return; }
+    const def = tw.room, TH = T(), w = def.w, d = def.d, h = def.h || 3.6, g = tw.group; tw.rfx = { t: 0 }; if (!g) return; if (R.roomWindows) R.roomWindows(tw);   // 窗戶、白天的光束（roombeams.js）
     const mk = (wd, ht, f) => { const c = document.createElement('canvas'); c.width = wd; c.height = ht; const x = c.getContext('2d'), im = x.createImageData(wd, ht); for (let j = 0; j < ht; j++) for (let i = 0; i < wd; i++) im.data[(j * wd + i) * 4 + 3] = Math.round(255 * f(i / (wd - 1), j / (ht - 1))); x.putImageData(im, 0, 0); return new TH.CanvasTexture(c); };
     const ss = v => v * v * (3 - 2 * v), edge = mk(4, 32, (u, v) => ss(1 - v) * ss(1 - v)), blob = mk(32, 32, (u, v) => { const q = Math.max(Math.abs(u - 0.5), Math.abs(v - 0.5)) * 2; return ss(Math.max(0, 1 - q)) * 1.1; });
     const flat = (map, op, x, z, sx, sz, ry) => { const m = new TH.Mesh(new TH.PlaneGeometry(sx, sz), new TH.MeshBasicMaterial({ color: 0, map, transparent: true, opacity: op, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.rotation.z = ry || 0; m.position.set(x, 0.012, z); m.renderOrder = 1; g.add(m); };
@@ -154,7 +154,7 @@
     (R.col.list || []).forEach(b => { if (b.tag === 'wall' || b.tag === 'npc') return; const bw = b.x1 - b.x0, bd = b.z1 - b.z0; if (bw > w * 0.9 || bd > d * 0.9) return; flat(blob, 0.45, (b.x0 + b.x1) / 2, (b.z0 + b.z1) / 2, bw + 0.7, bd + 0.7); });
     const N = Math.min(40, Math.round(w * d / 8)), arr = new Float32Array(N * 3), seed = []; for (let i = 0; i < N; i++) seed.push([Math.random(), (Math.random() - 0.5) * w * 0.9, Math.random() * 6, (Math.random() - 0.5) * d * 0.9]);
     const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(arr, 3));
-    const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 2, sizeAttenuation: false, transparent: true, opacity: 0.4, depthWrite: false, blending: TH.AdditiveBlending })); pts.frustumCulled = false; pts.renderOrder = 4; g.add(pts); tw.rfx.dust = { pts, arr, seed, h };
+    const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 1, sizeAttenuation: false, transparent: true, opacity: 0.3, depthWrite: false, blending: TH.AdditiveBlending })); pts.frustumCulled = false; pts.renderOrder = 4; g.add(pts); tw.rfx.dust = { pts, arr, seed, h };
   };
   // ---------- 窗戶的光灑到外面的地上（晚上；照 tw.D.foot 每棟房子的外框，四邊各一條從牆邊往外淡掉的光） ----------
   // 2026-10-20 作者：晚上的感覺對——繼續做窗戶的光灑出來。暖的（燈泡）、冷的（日光燈）照房子隨機；每一面亮度不一樣，有的面是暗的。

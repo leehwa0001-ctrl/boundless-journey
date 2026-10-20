@@ -86,25 +86,30 @@
     // 地上的污漬（酒場：吧台前、圓桌旁）
     const stainM = darkMat(tx.blob, 0.22);
     [[9.6, -4.9, 0.9], [11.4, 1.2, 0.7], [12.1, 5.2, 0.6], [-9.0, 3.4, 0.6]].forEach(([x, z, s], i) => flatQ(s * 1.3, s, stainM, x, z, 0.0125 + i * 0.0003, i));
-    // 窗戶照進來的光（白天）：地上一塊光斑＋一道斜的光束＋光裡的灰塵
+    // 窗戶照進來的光：西牆的窗、北牆的窗
+    beams(ins, c, [[-HW + 0.1, 2.9, 4.5, 1, 0], [-4.8, 2.9, -HD + 0.1, 0, 1]]);
+  };
+  // ---------- 窗戶照進來的光（白天）：地上一塊光斑＋一道斜的光束＋光裡的灰塵 ----------
+  // wins：[[窗戶中心 x, y, z, 往屋裡的方向 nx, nz], …]
+  const beams = (ins, c, wins) => {
+    const { flatQ, TH } = c, tx = tex();
     const h = R.S && R.S.hour != null ? R.S.hour : 12, day = h >= 7 && h < 17, dusk = (h >= 16 && h < 18) || (h >= 6 && h < 8);
     if (day || dusk) {
       const col = dusk ? '#FFC890' : '#FFF0D2', a = dusk ? 0.16 : 0.2;
       const beamM = new TH.MeshBasicMaterial({ color: new TH.Color(col).convertSRGBToLinear(), map: tx.beam, transparent: true, opacity: a, depthWrite: false, blending: TH.AdditiveBlending, side: TH.DoubleSide });
       const patchM = new TH.MeshBasicMaterial({ color: new TH.Color(col).convertSRGBToLinear(), map: tx.blob, transparent: true, opacity: a * 1.1, depthWrite: false, blending: TH.AdditiveBlending });
-      // [窗戶中心 x, y, z, 往屋裡的方向 nx, nz]：西牆的窗、北牆的窗
-      [[-HW + 0.1, 2.9, 4.5, 1, 0], [-4.8, 2.9, -HD + 0.1, 0, 1]].forEach(([wx, wy, wz, nx, nz]) => {
-        const reach = 2.6, fx = wx + nx * reach, fz = wz + nz * reach;   // 光斑落在離牆 2.6 公尺的地上
+      wins.forEach(([wx, wy, wz, nx, nz]) => {
+        const reach = Math.min(2.6, wy * 0.95), fx = wx + nx * reach, fz = wz + nz * reach;   // 光斑落在離牆 2.6 公尺的地上
         const p = flatQ(1.5, 2.0, patchM, fx, fz, 0.016, nx ? Math.PI / 2 : 0); p.renderOrder = 2;
         // 光束：從窗戶斜斜地落到光斑（一片立著的面，朝鏡頭那邊看得到）
         const len = Math.hypot(reach, wy), b = new TH.Mesh(new TH.PlaneGeometry(1.3, len), beamM); ins.geos.push(b.geometry);
         const u = new TH.Vector3(-nz, 0, nx), v = new TH.Vector3(wx - fx, wy, wz - fz).normalize(), n = new TH.Vector3().crossVectors(u, v);
         b.quaternion.setFromRotationMatrix(new TH.Matrix4().makeBasis(u, v, n)); b.position.set((wx + fx) / 2, wy / 2, (wz + fz) / 2); b.renderOrder = 3; ins.group.add(b);
         // 灰塵：光束裡慢慢飄的小亮點
-        const N = 18, arr = new Float32Array(N * 3), seed = [];
+        const N = 8, arr = new Float32Array(N * 3), seed = [];
         for (let i = 0; i < N; i++) { const t = Math.random(), s = (Math.random() - 0.5) * 1.1; seed.push([t, s, Math.random() * 6]); }
         const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(arr, 3)); ins.geos.push(pg);
-        const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF4DC').convertSRGBToLinear(), size: 2, sizeAttenuation: false, transparent: true, opacity: 0.55, depthWrite: false, blending: TH.AdditiveBlending }));
+        const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF4DC').convertSRGBToLinear(), size: 1, sizeAttenuation: false, transparent: true, opacity: 0.4, depthWrite: false, blending: TH.AdditiveBlending }));
         pts.renderOrder = 4; ins.group.add(pts);
         ins.ifx.dust.push({ pts, arr, seed, wx, wy, wz, fx, fz, nx, nz });
       });
@@ -127,8 +132,38 @@
     const HW = ins.pl.w / 2, HD = ins.pl.d / 2, N = Math.min(40, Math.round(ins.pl.w * ins.pl.d / 8)), arr = new Float32Array(N * 3), seed = [];
     for (let i = 0; i < N; i++) seed.push([Math.random(), (Math.random() - 0.5) * 2 * HW * 0.9, Math.random() * 6, (Math.random() - 0.5) * 2 * HD * 0.9]);
     const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(arr, 3)); ins.geos.push(pg);
-    const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 2, sizeAttenuation: false, transparent: true, opacity: 0.4, depthWrite: false, blending: TH.AdditiveBlending }));
+    const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 1, sizeAttenuation: false, transparent: true, opacity: 0.3, depthWrite: false, blending: TH.AdditiveBlending }));
     pts.renderOrder = 4; ins.group.add(pts); ins.ifx.room = { pts, arr, seed, WH };
+    // 窗戶（interior.js 的 win：淡藍的玻璃、會微微發光）：在牆上的、最多 3 扇，各照進一道光（2026-10-21 作者：窗戶的光束）
+    const wins = [], p = new TH.Vector3();
+    ins.group.traverse(o => { const m = o.material, gp = o.geometry && o.geometry.parameters; if (!o.isMesh || !m || !m.emissive || !gp || gp.depth > 0.1 || gp.width < 1 || m.color.getHexString() !== '9fbede') return;
+      o.getWorldPosition(p); if (Math.abs(p.z) > HD - 0.6) wins.push([p.x, p.y, p.z - Math.sign(p.z) * 0.1, 0, -Math.sign(p.z)]); else if (Math.abs(p.x) > HW - 0.6) wins.push([p.x - Math.sign(p.x) * 0.1, p.y, p.z, -Math.sign(p.x), 0]); });
+    // 沒有窗戶的房子：在側牆、後牆空著的地方開一兩扇（小鋼珠店、遊樂場、劇場本來就沒窗）
+    if (!wins.length && !NOWIN.test(ins.kind)) addWindows(ins, c, wins);
+    if (wins.length) beams(ins, c, wins.slice(0, 3));
+  };
+  const NOWIN = /^(pachinko|arcade|theater|karaoke|ruin)$/;
+  const addWindows = (ins, c, wins) => {
+    const { box, lam, HW, HD, WH, TH } = c, y = Math.min(2.5, WH - 1.1); if (y < 1.6) return;
+    // 牆上那一塊（窗戶 1.2×1.4 公尺、往屋裡 0.5 公尺）有沒有被家具、招牌擋住；牆本身（又大又薄）不算
+    const bb = new TH.Box3(), boxes = [];
+    ins.group.traverse(o => { if (!o.isMesh || !o.geometry) return; bb.setFromObject(o); const sx = bb.max.x - bb.min.x, sy = bb.max.y - bb.min.y, sz = bb.max.z - bb.min.z; if ((sx > 3 || sz > 3) && Math.min(sx, sz) < 0.9 && sy > 2) return; if (bb.max.y < y - 0.9 || bb.min.y > y + 0.9) return; boxes.push(bb.clone()); });
+    const clear = (x0, x1, z0, z1) => !boxes.some(b => b.max.x > x0 && b.min.x < x1 && b.max.z > z0 && b.min.z < z1);
+    const glass = lam('#CFE0F0', { em: '#9FBEDC', ei: 0.7 }), frame = '#3A2E26', cand = [];
+    // 側牆（西、東）照前後排、後牆（北）照左右排；離門（南牆）遠一點
+    [-0.25, 0.15].forEach(t => { cand.push(['w', t * HD * 2]); cand.push(['e', t * HD * 2]); });
+    [-0.3, 0.3].forEach(t => cand.push(['n', t * HW * 2]));
+    for (const [side, a] of cand) {
+      if (wins.length >= 2) break;
+      const ew = side !== 'n', x = side === 'w' ? -HW + 0.04 : side === 'e' ? HW - 0.04 : a, z = ew ? a : -HD + 0.04;
+      if (ew ? !clear(side === 'w' ? -HW : HW - 0.5, side === 'w' ? -HW + 0.5 : HW, z - 0.8, z + 0.8) : !clear(x - 0.8, x + 0.8, -HD, -HD + 0.5)) continue;
+      if (wins.some(w => Math.hypot(w[0] - x, w[2] - z) < 4)) continue;
+      const g = new TH.Group(); g.position.set(x, y, z); g.rotation.y = ew ? Math.PI / 2 : 0; ins.group.add(g);
+      const add = m => { ins.group.remove(m); m.position.sub(g.position); g.add(m); m.castShadow = false; };
+      add(box(1.2, 1.4, 0.06, glass, x, y, z)); add(box(0.08, 1.4, 0.1, frame, x, y, z)); add(box(1.2, 0.08, 0.1, frame, x, y, z));
+      add(box(1.36, 0.1, 0.16, frame, x, y + 0.75, z)); add(box(1.36, 0.1, 0.2, frame, x, y - 0.75, z));
+      wins.push(side === 'w' ? [x + 0.06, y, z, 1, 0] : side === 'e' ? [x - 0.06, y, z, -1, 0] : [x, y, z + 0.06, 0, 1]);
+    }
   };
   // 灰塵慢慢飄（沿著光束上下、左右晃）
   const stepDust = (ins, dt) => {
@@ -139,9 +174,9 @@
       const ppl = [W.P && W.P.h && W.P.h.g].concat((ins.npcs || []).map(n => n.h && n.h.g), (W.town && W.town.allies || []).map(a => a.h && a.h.g)).filter(Boolean).map(g => rect(g.position.x, 0, 2.1, g.position.z, 0.65));
       f.lanterns.forEach(L => { const r = rect(L.x, L.y - 0.35, L.y + 0.35, L.z, 0.3), near = ppl.some(p => p[0] < r[2] && p[2] > r[0] && p[1] < r[3] && p[3] > r[1]), want = near ? 0.18 : 1; if (Math.abs(L.op - want) < 0.01) return; L.op += (want - L.op) * Math.min(1, dt * 8); L.ms.forEach(m => { m.material.opacity = L.op; m.material.depthWrite = L.op > 0.9; }); });
     }
-    if (f.room) { const { arr, seed, WH, pts } = f.room; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.02) % 1; arr[i * 3] = s[1] + Math.sin(f.t * 0.4 + s[2]) * 0.3; arr[i * 3 + 1] = 0.3 + s[0] * (WH - 0.6); arr[i * 3 + 2] = s[3] + Math.cos(f.t * 0.3 + s[2]) * 0.3; } pts.geometry.attributes.position.needsUpdate = true; }
+    if (f.room) { const { arr, seed, WH, pts } = f.room; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.01) % 1; arr[i * 3] = s[1] + Math.sin(f.t * 0.2 + s[2]) * 0.1; arr[i * 3 + 1] = 0.3 + s[0] * (WH - 0.6); arr[i * 3 + 2] = s[3] + Math.cos(f.t * 0.15 + s[2]) * 0.1; } pts.geometry.attributes.position.needsUpdate = true; }
     if (!f.dust.length) return;
-    f.dust.forEach(D => { const { arr, seed, wx, wy, wz, fx, fz, nx, nz } = D; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.012) % 1; const t = s[0], px = -nz, pz = nx, wob = Math.sin(f.t * 0.7 + s[2]) * 0.12; arr[i * 3] = wx + (fx - wx) * t + px * (s[1] + wob); arr[i * 3 + 1] = wy * (1 - t) + 0.2 + Math.sin(f.t * 0.5 + s[2] * 2) * 0.15; arr[i * 3 + 2] = wz + (fz - wz) * t + pz * (s[1] + wob); } D.pts.geometry.attributes.position.needsUpdate = true; });
+    f.dust.forEach(D => { const { arr, seed, wx, wy, wz, fx, fz, nx, nz } = D; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.006) % 1; const t = s[0], px = -nz, pz = nx, wob = Math.sin(f.t * 0.25 + s[2]) * 0.04; arr[i * 3] = wx + (fx - wx) * t + px * (s[1] + wob); arr[i * 3 + 1] = wy * (1 - t) + 0.2 + Math.sin(f.t * 0.2 + s[2] * 2) * 0.05; arr[i * 3 + 2] = wz + (fz - wz) * t + pz * (s[1] + wob); } D.pts.geometry.attributes.position.needsUpdate = true; });
   };
   // ---------- 接上：進屋（enterNow 最後呼叫 R.interiorHud(true)）、每一格（R.interiorHud(false, dt)） ----------
   const hud0 = R.interiorHud;
