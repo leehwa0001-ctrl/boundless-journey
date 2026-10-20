@@ -4,11 +4,11 @@
 //   描邊（深度差大的邊變暗）、色階收斂（每個顏色只留幾階，中間用 4×4 網點抖動混出來）、亮又鮮豔的東西透出像素格的光暈、暗角。
 // - 鏡頭對齊像素格（走路時不動的東西每一格都落在同樣的像素上，不閃）。
 // - 小畫布要畫的像素少很多，也比較順。水面倒影、天空在這種畫法裡不畫。
-// - 目前只有皇嶺（PIXCITY）；暫停選單「畫法：像素／精緻」切換，存在瀏覽器（tfl-ckpix-城市）。
+// - 皇嶺、吉山、奉主（PIXCITY；東鶴先不動）；暫停選單「畫法：像素／精緻」切換，存在瀏覽器（tfl-ckpix-城市）。
 // 放在 citykit*.js、ckperf*.js、cktopcam.js 後面（最外層的 CK.render）。
 (function (R) {
   const CK = R.CK, W = R.W, T = () => THREE; if (!CK || !CK.render) return;
-  const PIXCITY = { huangling: 1 };
+  const PIXCITY = { huangling: 1, jishan: 1, hosu: 1 };   // 2026-10-20：吉山、奉主也套（東鶴先不動）
   const LS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { } return null; };
   const want = id => { const v = LS('tfl-ckpix-' + id); return v ? v === '1' : !!PIXCITY[id]; };
   const active = () => { const tw = W.town; return !!(tw && tw.ck && !tw.room && W.scene && W.scene.userData.hq && want(tw.ck)); };
@@ -208,7 +208,7 @@
   const texOf = k => { try { const i = k.indexOf('|'), nm = i < 0 ? k : k.slice(0, i), o = Object.assign({}, (CK.MDEF || {})[nm] || {}, i < 0 ? {} : JSON.parse(k.slice(i + 1))); return o.fac ? null : o.tex || null; } catch (e) { return null; } };
   // 雪：原本是柔和的雜訊斑塊（像素畫法裡變成一塊一塊灰灰的污漬）→ 對齊像素格、邊緣乾淨，雪多的地方整片白
   const SNOW0 = 'float ckS = ckUp * uSnow * uSnowK * smoothstep(0.25, 0.65, ckN(vWPos.xz * 0.9) * 0.6 + ckN(vWPos.xz * 3.7) * 0.4 + uSnow * 0.5);';
-  const SNOW1 = 'vec2 ckP = floor(vWPos.xz * ' + (1 / (R.PIX ? R.PIX.PX : 1 / 12)).toFixed(1) + ') * ' + (R.PIX ? R.PIX.PX : 1 / 12).toFixed(5) + '; float ckS = step(0.25, ckUp) * step(1.0 - min(1.0, uSnow * uSnowK) * 0.88, ckN(ckP * 0.45) * 0.7 + ckN(ckP * 1.7) * 0.3);';   // 只用雜訊（不加每格亂數：雪少的時候會變成滿地白點）
+  const SNOW1 = 'vec2 ckP = floor(vWPos.xz * ' + (1 / (R.PIX ? R.PIX.PX : 1 / 12)).toFixed(1) + ') * ' + (R.PIX ? R.PIX.PX : 1 / 12).toFixed(5) + '; float ckS = step(0.25, ckUp) * step(1.0 - min(1.0, uSnow * uSnowK) * 0.88, ckN(ckP * 0.11) * 0.8 + ckN(ckP * 0.5) * 0.2);';   // 只用雜訊（不加每格亂數：雪少的時候會變成滿地白點）
   // ---------- 平塗：地面、屋頂、牆這些寫實的雜訊貼圖換成點陣花樣（沒有花樣的換成平均色）；有窗戶的外牆、招牌、燈留著 ----------
   const KEEP = /^(fac|sign|shopLit|winLit|glass|neon|lamp|kiosk|awn|chochin|boat|car|train|tex:)/;
   let flat = false;

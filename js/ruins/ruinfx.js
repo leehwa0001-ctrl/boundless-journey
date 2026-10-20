@@ -105,4 +105,21 @@
     row.appendChild(b);
   };
   const ps = R.pauseSheet; if (ps) R.pauseSheet = (...a) => { const r = ps(...a); try { addBtn(); } catch (e) { } return r; };
+  // ---------- 跑不動的時候提示降畫質（交接單第 7 步；2026-10-20） ----------
+  // 在遺跡裡、畫質中或高：進去 6 秒以後量 8 秒，平均每格超過 36 毫秒（不到大約 28 fps）就跳一次提示；同一次開遊戲只提示一次。
+  // 暫停、切到別的分頁、開著選單的時候不算。
+  let fm = null, told = false;
+  const tick = now => {
+    requestAnimationFrame(tick);
+    const w = W, run = w.run;
+    if (told || !run || gfx() <= 0 || w.paused || document.hidden || (R.sheetOpen && R.sheetOpen())) { fm = null; return; }
+    if (!fm || fm.run !== run) { fm = { run, t0: now, last: now, acc: 0, n: 0 }; return; }
+    const dt = now - fm.last; fm.last = now; if (dt > 250) { fm.t0 = now; fm.acc = 0; fm.n = 0; return; }   // 卡一大下（載入、換層）不算
+    if (now - fm.t0 < 6000) return;
+    fm.acc += dt; fm.n++;
+    if (fm.acc < 8000) return;
+    const avg = fm.acc / fm.n; fm.acc = 0; fm.n = 0;
+    if (avg > 36) { told = true; if (R.toast) R.toast('畫面有點跟不上：暫停選單的「遺跡畫質」調成' + (gfx() >= 2 ? '中' : '低') + '會比較順。', '#E8C04A'); }
+  };
+  requestAnimationFrame(tick);
 })(window.R);
