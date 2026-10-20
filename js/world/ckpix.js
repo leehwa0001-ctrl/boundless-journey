@@ -48,7 +48,7 @@
       '  gl_FragColor = vec4(c, 1.0);',
       '  gl_FragDepthEXT = texture2D(tD, (p + 0.5) / res).x;',   // 場景的深度寫進螢幕：之後用全解析度畫人物，被前面的東西擋住的地方照樣擋住
       '}'].join('\n'), { tC: { value: S.rt.texture }, tD: { value: S.rt.depthTexture }, tB: { value: S.a.texture }, res: { value: new TH.Vector2(4, 4) }, scale: { value: 1 }, off: { value: new TH.Vector2() }, cN: { value: 1 }, cF: { value: 100 }, lv: { value: 16 }, bk: { value: 0.9 }, expo: { value: 1 }, vig: { value: 0.4 }, sat: { value: 1.1 }, day: { value: 0 } });
-    S.comp.extensions = { fragDepth: true }; S.comp.depthWrite = true;
+    S.comp.extensions = { fragDepth: true }; S.comp.depthWrite = true; S.comp.depthTest = true; S.comp.depthFunc = TH.AlwaysDepth;   // 深度測試關掉的話 WebGL 也不寫深度：人物會畫在屋頂上面
     S.scene = new TH.Scene(); S.cam = new TH.OrthographicCamera(-1, 1, 1, -1, 0, 1);
     S.quad = new TH.Mesh(new TH.PlaneGeometry(2, 2), S.comp); S.quad.frustumCulled = false; S.scene.add(S.quad);
   };
