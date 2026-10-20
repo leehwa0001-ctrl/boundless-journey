@@ -30,7 +30,7 @@
   const darkMat = (map, a) => new (T().MeshBasicMaterial)({ color: 0x000000, map, transparent: true, opacity: a, depthWrite: false });
   // ---------- 主程式：屋子蓋好以後 ----------
   const apply = ins => {
-    if (!ins || ins.ifx || !R.interiorFxOn(ins.kind)) return; ins.ifx = { dust: [] };
+    if (!ins || ins.ifx || !R.interiorFxOn(ins.kind)) return; ins.ifx = { dust: [], lanterns: [] };
     const TH = T(), g = ins.group, sc = ins.scene, tx = tex(), HW = ins.pl.w / 2, HD = ins.pl.d / 2, WH = ins.pl.h;
     const geo = o => { ins.geos.push(o); return o; };
     const mesh = (gm, m, x, y, z) => { const o = new TH.Mesh(geo(gm), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
@@ -73,8 +73,11 @@
     for (let i = 0; i < 4; i++) mug(8.6 + i * 0.5, 1.2, -5.9 + (i % 2) * 0.12, i % 2 ? '#8A6A4A' : '#C8B89A');
     candle(13.4, 1.2, -5.85);
     // 吊燈：原本只有光、看不到燈；補上掛下來的燈籠
-    const lantern = (x, y, z) => { box(0.02, WH - y - 0.2, 0.02, '#2A2018', x, (WH + y + 0.2) / 2, z); box(0.36, 0.06, 0.36, '#3A2A1C', x, y + 0.24, z); box(0.36, 0.06, 0.36, '#3A2A1C', x, y - 0.24, z); const core = box(0.28, 0.42, 0.28, lam('#FFE0A0', { em: '#FFC060', ei: 1.3 }), x, y, z); core.castShadow = false; };
-    [[0, 3.6, -6.2], [-8, 3.6, 3.4], [0, 3.6, 4], [11, 3.4, 0]].forEach(([x, y, z]) => lantern(x, y + 0.3, z));
+    // 2026-10-20 作者：燈籠從上往下看會疊在人物身上——人物走到燈籠附近（畫面上會被蓋住的那一帶）時，那盞燈籠淡掉
+    const lantern = (x, y, z) => { const ms = [box(0.02, WH - y - 0.2, 0.02, '#2A2018', x, (WH + y + 0.2) / 2, z), box(0.36, 0.06, 0.36, '#3A2A1C', x, y + 0.24, z), box(0.36, 0.06, 0.36, '#3A2A1C', x, y - 0.24, z), box(0.28, 0.42, 0.28, lam('#FFE0A0', { em: '#FFC060', ei: 1.3 }), x, y, z)];
+      ms[3].castShadow = false; ms.forEach(m => { m.material = m.material.clone(); m.material.transparent = true; m.renderOrder = 5; }); ins.ifx.lanterns.push({ x, z, ms, op: 1 }); };
+    // 原本的燈 → 燈籠掛的位置（避開一直站著的人：館員、酒場的勇者；光也一起移過去）
+    [[0, -6.2, 1.6, -4.2], [-8, 3.4, -9.5, 3.4], [0, 4, 0, 4], [11, 0, 12.6, -2.6]].forEach(([x0, z0, x, z]) => { const L = ins.lights.find(o => Math.abs(o.l.position.x - x0) < 0.01 && Math.abs(o.l.position.z - z0) < 0.01); if (L) { L.l.position.set(x, 2.9, z); L.x = x; } lantern(x, 2.7, z); });   // 掛低一點（2.7 公尺）：斜著看的時候不會偏到旁邊的人身上
     // 角落：木箱（大廳西南）、酒桶（吧台和暖爐中間）
     const crate = (x, z, s, y) => { box(0.8 * s, 0.8 * s, 0.8 * s, '#7A5A3A', x, (y || 0) + 0.4 * s, z); box(0.84 * s, 0.08, 0.84 * s, '#5A3E28', x, (y || 0) + 0.8 * s - 0.02, z); };
     crate(-13.9, -2.6, 1); crate(-13.0, -2.5, 0.8); crate(-13.8, -2.6, 0.7, 0.8); block(-14.35, -12.55, -3.05, -2.05, 'crate');
@@ -109,7 +112,11 @@
   };
   // 灰塵慢慢飄（沿著光束上下、左右晃）
   const stepDust = (ins, dt) => {
-    const f = ins.ifx; if (!f || !f.dust.length) return; f.t = (f.t || 0) + dt;
+    const f = ins.ifx; if (!f) return; f.t = (f.t || 0) + dt;
+    // 燈籠：人物在燈籠左右 1 公尺、往裡 2 公尺到往外 0.6 公尺之內（從斜上方看會被燈籠蓋住）就淡掉
+    if (f.lanterns.length) { const who = [W.P].concat(W.town && W.town.allies ? W.town.allies.map(a => a.h && a.h.g ? { x: a.h.g.position.x, z: a.h.g.position.z } : a) : []);   // 玩家和隊友（一直站著的人：燈籠本來就掛在他們不會被蓋到的地方）
+      f.lanterns.forEach(L => { const near = who.some(p => p && Math.abs(p.x - L.x) < 1.0 && p.z - L.z > -2 && p.z - L.z < 0.6), want = near ? 0.18 : 1; if (Math.abs(L.op - want) < 0.01) return; L.op += (want - L.op) * Math.min(1, dt * 8); L.ms.forEach(m => { m.material.opacity = L.op; m.material.depthWrite = L.op > 0.9; }); }); }
+    if (!f.dust.length) return;
     f.dust.forEach(D => { const { arr, seed, wx, wy, wz, fx, fz, nx, nz } = D; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.012) % 1; const t = s[0], px = -nz, pz = nx, wob = Math.sin(f.t * 0.7 + s[2]) * 0.12; arr[i * 3] = wx + (fx - wx) * t + px * (s[1] + wob); arr[i * 3 + 1] = wy * (1 - t) + 0.2 + Math.sin(f.t * 0.5 + s[2] * 2) * 0.15; arr[i * 3 + 2] = wz + (fz - wz) * t + pz * (s[1] + wob); } D.pts.geometry.attributes.position.needsUpdate = true; });
   };
   // ---------- 接上：進屋（enterNow 最後呼叫 R.interiorHud(true)）、每一格（R.interiorHud(false, dt)） ----------
