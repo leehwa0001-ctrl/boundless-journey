@@ -84,15 +84,15 @@
       // ---------- 東：軍眷宿舍（晾衣繩） ----------
       const [hx0, hz0, hx1] = CUT.homes;
       for (let i = 0; i < 2; i++) { const z0 = hz0 + 2 + i * 21; B.bld({ r: [hx0 + 2, z0, hx1 - 2, z0 + 11], h: 11.6, style: 'apt', face: 's', col: '#D8D0C0', top: false }); for (let x = hx0 + 6; x < hx1 - 6; x += 8) { P(g.box, M('black'), x + 3, 2.6, z0 + 14, 6, 0.03, 0.03); [-2, 0, 2].forEach(o => P(g.box, M('paint', { col: pk(['#4A5A3A', '#E8E4DC', '#4A5A3A']) }), x + 3 + o, 2.1, z0 + 14, 1.2, 0.9, 0.04)); } }
-      H.fac(B, hx0 - 1, hz0 + 18, C, 'house', '#C8A060');
-      B.talker(hx0 - 1.4, hz0 + 26, -Math.PI / 2, '軍眷的太太', ['「我先生在軍部上班，一個月回家兩次。」', '「晾衣繩上全是制服。分不出是誰的。」']);
+      H.fac(B, hx0 + 1, hz0 + 18, C, 'house', '#C8A060');
+      B.talker(hx0 + 1.2, hz0 + 26, -Math.PI / 2, '軍眷的太太', ['「我先生在軍部上班，一個月回家兩次。」', '「晾衣繩上全是制服。分不出是誰的。」']);
       B.area('軍眷宿舍', CUT.homes);
       // ---------- 西南：公會特劃區（鐵絲網裡的臨時館舍） ----------
       const [gx0, gz0, gx1, gz1] = CUT.guild, gcz = (gz0 + gz1) / 2;
       [[gx0 + 1, gz0 + 1, gx1 - 1, gz0 + 1], [gx0 + 1, gz1 - 1, gx1 - 1, gz1 - 1], [gx0 + 1, gz0 + 1, gx0 + 1, gz1 - 1], [gx1 - 1, gz0 + 1, gx1 - 1, gcz - 4], [gx1 - 1, gcz + 4, gx1 - 1, gz1 - 1]].forEach(([a, b, c, d]) => B.fence(a, b, c, d, 2.4, 'steelD'));
       H.guild(B, [gx0 + 5, gz0 + 6, gx1 - 14, gz1 - 6], 'e', { p: 'ft', name: '公會府廳特劃區', h: 5, style: 'factory', col: '#B8BCB4' });
       B.box(M('concD'), gx1 - 5, 0, gcz - 6, gx1 - 3, 3, gcz - 4.4); B.box(M('concD'), gx1 - 5, 0, gcz + 4.4, gx1 - 3, 3, gcz + 6); B.solid(gx1 - 5, gcz - 6, gx1 - 3, gcz - 4.4, 'deco'); B.solid(gx1 - 5, gcz + 4.4, gx1 - 3, gcz + 6, 'deco');
-      B.talker(gx1 + 1.4, gcz + 7, -Math.PI / 2, '特劃區的衛兵', ['「通行證。……勇者證？好，進去吧。」', '「特劃區裡面不准拍照。」']);
+      B.talker(gx1 - 0.2, gcz + 5, Math.PI / 2, '特劃區的衛兵', ['「通行證。……勇者證？好，進去吧。」', '「特劃區裡面不准拍照。」']);
       B.area('公會特劃區', CUT.guild);
       // ---------- 東南：特劃區食堂 ----------
       const [mx0, mz0, mx1, mz1] = CUT.mess;

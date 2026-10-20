@@ -81,6 +81,7 @@
       const path = pick(paths), k = Math.floor(rnd() * (path.length - 1)), p = path[k], q = path[k + 1], t = 0.15 + rnd() * 0.7, a = Math.atan2(q[0] - p[0], q[1] - p[1]), side = rnd() < 0.5 ? 1 : -1;
       const x = p[0] + (q[0] - p[0]) * t + Math.cos(a) * 1.9 * side, z = p[1] + (q[1] - p[1]) * t - Math.sin(a) * 1.9 * side, x2 = x + Math.sin(a) * 1.1, z2 = z + Math.cos(a) * 1.1;
       if (!free(x, z, 0.4) || !free(x2, z2, 0.4)) continue;
+      if ((D.roads || []).some(rd => [[x, z], [x2, z2]].some(([u, v]) => u > rd.r[0] - 0.5 && u < rd.r[2] + 0.5 && v > rd.r[1] - 0.5 && v < rd.r[3] + 0.5))) continue;   // 不站在車道上（2026-10-21）
       const A = mkNpc(tw, x, z, a, pick(['salary', 'mama', 'student', 'old'])), Bn = mkNpc(tw, x2, z2, a + Math.PI, pick(['salary', 'mama', 'student', 'old']));
       tw.inter.push({ follow: A, x: A.x, z: A.z, r: 2.2, label: '偷聽他們聊天', when: () => A.h.g.visible, act: () => R.townTalk('路邊聊天的人', [pick(gossip), '（說完，兩個人看了你一眼，換了一個話題。）']) });
       S2.pairs.push([A, Bn]); i++;
