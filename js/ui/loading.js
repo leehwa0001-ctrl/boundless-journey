@@ -24,6 +24,17 @@
     hide: () => { if (!el || el.hidden) return; el.classList.add('ld-out'); setTimeout(() => { if (el.classList.contains('ld-out')) el.hidden = true; }, 220); }
   };
   const frame = () => new Promise(r => setTimeout(r, 0));   // 讓瀏覽器畫一格（requestAnimationFrame 在背景分頁不會跑，用 setTimeout）
+  // 真的畫出一格：requestAnimationFrame 之後再 setTimeout（背景分頁 rAF 不跑：60 毫秒後自己走）
+  const paint = () => new Promise(r => { let done = false; const go = () => { if (!done) { done = true; setTimeout(r, 0); } }; requestAnimationFrame(go); setTimeout(go, 60); });
+  // ---------- 跑重的東西（進城、進遺跡、下一層）：先把加載頁放上去、畫出一格，再跑 ----------
+  // 加載頁晚 0.15 秒才淡入（CSS 動畫在畫面卡住的時候照樣跑）：很快就做完的（進店、換房間）根本看不到，不會閃一下。
+  let depth = 0;
+  R.loading.around = (fn, text) => {
+    const e = ensure(); depth++;
+    if (depth === 1) { set(null, text || '讀取中……'); e.classList.add('ld-wait', 'ld-ind'); e.classList.remove('ld-out'); e.hidden = false; }
+    const end = () => { if (--depth > 0) return; e.classList.remove('ld-wait', 'ld-ind'); e.hidden = true; };
+    return paint().then(() => { try { return fn(); } finally { setTimeout(end, 30); } });
+  };
   // ---------- 圖鑑的圖示：分批畫 ----------
   let warmed = false, warming = null, idx = 0;
   // 圖鑑的卡片用 3 倍的圖示；書本的左頁（dexruins.js）用 2 倍，連荒、獰、淵的變種（_v1～_v3，noDex）也要
@@ -64,8 +75,23 @@
   // R.openBest（城裡、別的地方叫的）也一樣
   const ob0 = R.openBest;
   if (ob0) R.openBest = (...a) => { if (warmed || !R.beastIconURL) return ob0(...a); R.loading.show('整理圖鑑中……', 0); frame().then(() => R.warmDex(p => set(p))).then(() => { ob0(...a); R.loading.hide(); }); };
+  // R.fade（進城、進店、睡一晚、下樓梯……都走這裡：先變黑、跑、再亮起來）：黑掉那一刻改成先放加載頁再跑
+  const fd0 = R.fade;
+  if (fd0) R.fade = f => fd0(() => { R.loading.around(f); });
+  // 從標題、遺跡回來進東鶴（R.enterTown 本來就是非同步的：等 3D 引擎載好才進）——東鶴蓋城要好幾秒
+  const et0 = R.enterTown;
+  if (et0) R.enterTown = (...a) => R.loading.around(() => et0(...a), '前往東鶴……').then(p => p);
+  // 進遺跡：委託書的出發、繼續委託、不接委託，繼續探索、狩獵
+  let passRun = false;
+  document.addEventListener('click', e => {
+    const b = e.target && e.target.closest && e.target.closest('#tk-go,#tk-free,#tk-cont,#rs-go,[data-hunt]'); if (!b || passRun) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    R.loading.around(() => { passRun = true; try { b.click(); } finally { passRun = false; } }, '進入遺跡……');
+  }, true);
   const css = document.createElement('style');
-  css.textContent = '#r-loading{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:rgba(8,7,12,.88);transition:opacity .2s}#r-loading[hidden]{display:none}#r-loading.ld-out{opacity:0}'
+  css.textContent = '#r-loading.ld-wait{opacity:0;animation:ldin .2s ease .15s forwards}@keyframes ldin{to{opacity:1}}'
+    + '#r-loading.ld-ind .ld-bar i{width:35%!important;animation:ldbar 1.1s ease-in-out infinite}#r-loading.ld-ind .ld-p{visibility:hidden}@keyframes ldbar{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}'
+    + '#r-loading{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:rgba(8,7,12,.88);transition:opacity .2s}#r-loading[hidden]{display:none}#r-loading.ld-out{opacity:0}'
     + '.ld-box{display:grid;justify-items:center;gap:10px;width:min(320px,80vw);color:#E8DFCF;text-align:center}'
     + '.ld-t{font-family:var(--serif);font-size:20px;letter-spacing:.12em}.ld-p{font-size:12px;color:#8E8496;letter-spacing:.1em}'
     + '.ld-bar{width:100%;height:6px;border-radius:3px;background:#221E2A;overflow:hidden;border:1px solid #352E42}.ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8A1A2A,#C8323A);transition:width .15s}'
