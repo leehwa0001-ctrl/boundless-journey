@@ -10,7 +10,7 @@
   const W = () => R.W;
   const SP = R.SPECIAL_RUIN = { floors: 300, per: 0.04, every: 10,
     bands: [[5, 'hamilia', 12], [30, 'amile', 25], [70, 'mors', 40], [150, 'kesent', 60], [300, 'kaso', 120]] };   // [到第幾層, 分級, IS 換算的層數]
-  const site = { id: 'sp-mugen', map: 'nation', x: 36.55, z: -21.35, kind: 'ruin', grade: 'hamilia', type: 'city', special: 1, floorsFixed: SP.floors, name: '無底迴廊', src: '遊戲',
+  const site = { id: 'sp-mugen', map: 'nation', x: 36.46, z: -21.09, kind: 'ruin', grade: 'hamilia', type: 'city', special: 1, floorsFixed: SP.floors, name: '無底迴廊', src: '遊戲',
     desc: '公會特別告示的「特殊遺跡」。入口看起來只是哈米莉亞級，卻往下長了三百層——越往下，遺跡的等級一路升上去，最底下是卡索級。', status: 'open' };
   if (R.SITES) { for (let i = R.SITES.length - 1; i >= 0; i--) if (/^sp-mugen/.test(R.SITES[i].id)) R.SITES.splice(i, 1); R.SITES.push(site); }
   const bandOf = n => SP.bands.find(b => n <= b[0]) || SP.bands[SP.bands.length - 1];

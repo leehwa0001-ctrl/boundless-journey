@@ -136,8 +136,8 @@
 
   // ---------- 奉主的兩座遺跡 ----------
   const SITES = [
-    { id: 'hs-barracks', map: 'nation', x: 35.27, z: -21.66, kind: 'ruin', grade: 'mors', type: 'maze', name: '奉主・舊兵營遺跡', src: '遊戲', desc: '奉主還是軍事城市的時候的兵營，地底下整片被遺跡吃掉。營房、射擊場、馬廄一層一層往下長，空的甲冑還在操練。', status: 'lock', lx: -70, ly: 6 },
-    { id: 'hs-arsenal', map: 'nation', x: 35.55, z: -21.38, kind: 'ruin', grade: 'kesent', type: 'city', env: 'forge', name: '奉主・兵工廠遺跡', src: '遊戲', desc: '臨海工業區底下的舊兵工廠。入口會自己閉合，只能用傳送水晶投送；熔爐到現在還燒著，造兵器的機關也還在動——地刺、絞肉機、輸送帶。最深處有一套沒有主人的大鎧在等。', status: 'lock', lx: 26, ly: 6 }
+    { id: 'hs-barracks', map: 'nation', x: 34.97, z: -21.71, kind: 'ruin', grade: 'mors', type: 'maze', name: '奉主・舊兵營遺跡', src: '遊戲', desc: '奉主還是軍事城市的時候的兵營，地底下整片被遺跡吃掉。營房、射擊場、馬廄一層一層往下長，空的甲冑還在操練。', status: 'lock', lx: -70, ly: 6 },
+    { id: 'hs-arsenal', map: 'nation', x: 35.76, z: -21.55, kind: 'ruin', grade: 'kesent', type: 'city', env: 'forge', name: '奉主・兵工廠遺跡', src: '遊戲', desc: '臨海工業區底下的舊兵工廠。入口會自己閉合，只能用傳送水晶投送；熔爐到現在還燒著，造兵器的機關也還在動——地刺、絞肉機、輸送帶。最深處有一套沒有主人的大鎧在等。', status: 'lock', lx: 26, ly: 6 }
   ];
   SITES.forEach(s => { if (!R.SITES.find(x => x.id === s.id)) R.SITES.push(s); });
   if (R.syncStatus) try { R.syncStatus(); } catch (e) { }
