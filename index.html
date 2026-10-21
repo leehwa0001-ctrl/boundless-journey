@@ -28,18 +28,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--gold);outl
 /* ---------- 標題 ---------- */
 #title{align-items:center;justify-content:center;padding:24px 16px;background:radial-gradient(90% 70% at 50% 42%,#2A1E2A 0%,var(--bg) 70%);overflow:auto}
 .t-wrap{width:min(760px,100%);display:grid;gap:18px;justify-items:center;text-align:center}
-.t-eye{width:min(300px,62vw);height:auto;filter:drop-shadow(0 0 30px rgba(184,50,42,.35))}
-/* 佩特拉核心的像素立繪（titleart.js）；內容比畫面高的時候不要把最上面切掉 */
-.t-core{width:min(480px,88vw);image-rendering:pixelated;margin:-6px 0 -14px}
 #title{justify-content:flex-start}#title .t-wrap{margin-block:auto}
 .t-kicker{font-size:12px;letter-spacing:.28em;color:var(--dim)}
 .t-name{margin:0;font-family:var(--serif);font-weight:900;font-size:clamp(46px,11vw,96px);letter-spacing:.12em;line-height:1.05}
 .t-name small{display:block;font-size:.3em;letter-spacing:.5em;color:var(--gold);margin-top:10px;font-weight:700}
-.t-sub{margin:0;max-width:36em;color:#D6CCB8;font-size:15px}
-.t-btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
-.t-btns button{min-width:170px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 16px;font-weight:900;font-size:16px;text-align:left}
-.t-btns button small{font-weight:500;font-size:12px;color:var(--dim)}
-.t-btns .pri{background:#5A1E1C;border-color:var(--red)}
 .wip{font-size:12.5px;color:var(--dim);border:1px dashed var(--line);border-radius:8px;padding:6px 12px}
 .bigmap{width:100%;height:auto;display:block;border-radius:8px;image-rendering:pixelated;margin:6px 0}
 .t-toggle{background:transparent;border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:4px 16px;font-weight:700;font-size:13px}
@@ -631,10 +623,8 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <!-- 標題 -->
 <section class="screen" id="title">
   <div class="t-wrap">
-    <div class="t-eye" aria-hidden="true"></div><!-- 佩特拉核心的像素立繪（titleart.js 換成 canvas）；原本的平面 SVG 眼球刪掉了（作者 2026-10-03） -->
     <div class="t-kicker">《艾菲爾斯特——公會特殊討伐令－遺跡》</div>
     <h1 class="t-name">無境之旅<small>昭旭聯合王國・遺跡</small></h1>
-    <p class="t-sub">遺跡是佩特拉核心長出來的「可循環自然建築」。昭旭的島上到處都是。帶著公會的委託下去，把寶箱裡的東西帶回東鶴的鐵匠鋪鑑定——前提是你回得來。</p>
     <div class="t-btns">
       <button type="button" class="pri" id="t-go" hidden>回到東鶴<small></small></button>
       <button type="button" id="t-new">新的冒險<small>抽種族、捏角、登記武器</small></button>
@@ -832,7 +822,6 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/minigames/mjcore.js"></script>
 <script src="js/minigames/mahjong2.js"></script>
 <script src="js/minigames/karaoke.js"></script>
-<script src="js/art/titleart.js"></script>
 <script src="js/ui/battlehud.js"></script>
 <script src="js/life/streetevents.js"></script>
 <script src="js/life/vehicles.js"></script>
@@ -1186,6 +1175,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ruins/coregaze.js"></script><!-- 2026-10-21 看著佩特拉核心：畫面浮出巨大眼球的影子（像 MC 的深海守衛） -->
 <script src="js/core/main.js"></script>
 <script src="js/items/bagrules.js"></script><!-- 2026-10-18 背包放不下就不能拿：商店按鈕先檢查、新裝備自動放進背包、背包有放不下的不能下遺跡（倉庫大改第三階段；放最後面） -->
+<script src="js/ui/loading.js"></script><!-- 2026-10-21 加載頁面（R.loading）；圖鑑的圖示分批先畫，打開不卡 -->
 <script src="js/ruins/runsave.js"></script><!-- 2026-10-21 遺跡裡存檔、下次再來探索（每層自動存一次；Esc「存檔，回到標題」；標題「繼續冒險」問要不要接著探索） -->
 <script src="js/ui/escunify.js"></script><!-- 2026-10-21 Esc 選單分頁、每個畫面同一個樣子（escmenu.js 分好的區塊變成分頁：遊戲／角色／地圖・委託／設定／說明／數值） -->
 <script src="js/ui/title2.js"></script><!-- 2026-10-21 標題畫面整理：大的「繼續冒險」、新的冒險／選擇存檔、一排小連結；存檔收進面板 -->

@@ -20,11 +20,6 @@
     + 'body.touch #r-aware-box{grid-column:1;grid-row:2;width:88px;margin:0}'
     + 'body.touch .ul-btn{bottom:auto!important;top:calc(128px + env(safe-area-inset-top))!important}'
     + '#r-sheet .sheet,#r-sheet>div,.sheet-box{max-height:calc(100vh - 16px);overflow:auto}'
-    // 標題畫面：眼睛放左邊、標題和按鈕放右邊（原本直的排下來，按鈕要捲到很下面）
-    + '#title .t-wrap{display:grid;grid-template-columns:minmax(0,40%) minmax(0,1fr);column-gap:18px;align-items:start}'
-    + '#title .t-eye{grid-column:1;grid-row:1/span 8;width:100%!important;height:auto!important;max-height:82vh;object-fit:contain;position:sticky;top:12px;margin:0!important}'
-    + '#title .t-wrap>:not(.t-eye){grid-column:2;min-width:0}'
-    + '#title .t-name{font-size:clamp(30px,10vh,56px)!important;margin:6px 0 2px!important;line-height:1.05}#title .t-sub{margin:2px 0 8px!important}'
     + '}';
   document.head.appendChild(css);
   // 深度那一格：點一下展開／收起
