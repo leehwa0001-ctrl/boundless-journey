@@ -1,5 +1,5 @@
 // 標題畫面（2026-10-21 作者：主畫面要像真的遊戲主畫面；選「A：城市夜景當背景」）
-// - 背景：三座城的夜景（岳北運河、吉山霓虹十字路口、皇嶺大通；遊戲裡用像素畫法實際拍的 1920×1080，assets/title/），
+// - 背景：最後離開的地點（下面的 PLACE）；沒有的話三座城的夜景（岳北運河、吉山霓虹十字路口、皇嶺大通；遊戲裡用像素畫法實際拍的 1920×1080，assets/title/），
 //   慢慢平移、二十秒換一張（淡入淡出），上面飄雪。左邊壓暗一點讓字看得清楚。
 // - 左邊：標題、直排的選單（繼續冒險／新的冒險／選擇存檔／攤開地圖／遺跡生物圖鑑／種族一覽），↑↓ 選、Enter 確定，滑鼠移上去也會選。
 // - 右下：更新公告的卡片（日期、第一條的開頭、沒點過有紅點）；左下：版本（最新一次更新的日期）。
@@ -9,14 +9,28 @@
 (function (R) {
   const $ = id => document.getElementById(id);
   const SHOTS = ['assets/title/night-yuebei.jpg', 'assets/title/night-jishan.jpg', 'assets/title/night-huangling.jpg'];
+  // 2026-10-21 作者：依離開的地點換背景（存檔裡的 R.S.lastPlace，runsave.js 記的）：遺跡＝佩特拉核心、東鶴＝雪景、皇嶺＝皇城，其他城市＝那座城的夜景。
+  //   最後玩的那一格存檔（R.slot，saves.js 記在 ruins1433-last）沒有 lastPlace（舊存檔、新的冒險）就照原本三張輪流。圖都在 assets/title/（遊戲裡實際拍的 1920×1080）。
+  const PLACE = { ruin: 'ruin-petra', donghe: 'donghe-snow', huangling: 'huangling-castle', jishan: 'night-jishan', yuebei: 'night-yuebei', hosu: 'night-hosu', futing: 'night-futing', xijian: 'night-xijian',
+    nanlong: 'night-nanlong', woqi: 'night-woqi', zhengyuan: 'night-zhengyuan', banbei: 'night-banbei', bannan: 'night-bannan', gusen: 'night-gusen' };
+  const shotsNow = () => {
+    let lp = R.S && R.S.lastPlace;
+    if (!lp) { try { const s = JSON.parse(localStorage.getItem('ruins1433-slot' + (R.slot || 1)) || 'null'); lp = s && s.lastPlace; } catch (e) { } }
+    const f = lp && PLACE[lp.id];
+    return f ? ['assets/title/' + f + '.jpg'] : SHOTS;
+  };
+  const shotsHtml = L => L.map((s, i) => '<div class="t2-shot' + (i ? '' : ' on') + '" style="background-image:url(' + s + ')"></div>').join('');
+  // 標題畫面再出現（回到標題、換存檔）時，最後的地點可能變了：換圖
+  const syncBg = () => { const b = $('t2-bg'); if (!b) return; const L = shotsNow(), k = L.join('|'); if (b.dataset.k === k) return; b.dataset.k = k; b.querySelectorAll('.t2-shot').forEach(x => x.remove()); b.insertAdjacentHTML('afterbegin', shotsHtml(L)); };
   let busy = false, sel = 0;
   // ---------- 背景：夜景＋飄雪 ----------
   const bg = T => {
     if ($('t2-bg')) return;
     const b = document.createElement('div'); b.id = 't2-bg'; b.setAttribute('aria-hidden', 'true');
-    b.innerHTML = SHOTS.map((s, i) => '<div class="t2-shot' + (i ? '' : ' on') + '" style="background-image:url(' + s + ')"></div>').join('') + '<canvas id="t2-snow"></canvas><div class="t2-shade"></div>';
+    const L0 = shotsNow(); b.dataset.k = L0.join('|');
+    b.innerHTML = shotsHtml(L0) + '<canvas id="t2-snow"></canvas><div class="t2-shade"></div>';
     T.prepend(b);
-    let k = 0; setInterval(() => { if (T.hidden) return; const s = b.querySelectorAll('.t2-shot'); s[k].classList.remove('on'); k = (k + 1) % s.length; s[k].classList.add('on'); }, 20000);
+    let k = 0; setInterval(() => { if (T.hidden) return; const s = b.querySelectorAll('.t2-shot'); if (s.length < 2) return; k = Math.min(k, s.length - 1); s[k].classList.remove('on'); k = (k + 1) % s.length; s[k].classList.add('on'); }, 20000);
     // 雪：一格一格的小白點，慢慢往下飄、左右晃
     const cv = $('t2-snow'), g = cv.getContext('2d'), N = 90, fl = [];
     const size = () => { cv.width = Math.ceil(cv.clientWidth / 3); cv.height = Math.ceil(cv.clientHeight / 3); };
@@ -38,7 +52,7 @@
     const T = $('title'), wrap = T && T.querySelector('.t-wrap'), btns = T && T.querySelector('.t-btns'); if (!wrap || !btns || busy) return;
     busy = true;
     try {
-      T.classList.add('t2'); bg(T);
+      T.classList.add('t2'); bg(T); syncBg();
       const go = $('t-go'), nw = $('t-new'), news = $('t-news');
       if (go && go.firstChild && go.firstChild.nodeType === 3 && go.firstChild.textContent !== '繼續冒險') go.firstChild.textContent = '繼續冒險';
       let pick = $('t2-pick'); if (!pick) { pick = document.createElement('button'); pick.type = 'button'; pick.id = 't2-pick'; pick.innerHTML = '選擇存檔<small>三格存檔・匯出、匯入</small>'; pick.onclick = () => open(true); }
