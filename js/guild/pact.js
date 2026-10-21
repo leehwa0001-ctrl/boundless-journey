@@ -91,7 +91,7 @@
         if (pts) {
           run.pact = { sel, pts };
           if (sel.time && run.task) run.task.limitH = Math.ceil(run.task.limitH / 2);
-          if (sel.more && run.task && run.task.kind === 'hunt') run.task.need = Math.round(run.task.need * 1.5);
+          if (sel.more && run.task && run.task.kind === 'hunt' && !(run.site && run.site.outdoor)) run.task.need = Math.round(run.task.need * 1.5);   // 2026-10-21：狩獵場的獵物是固定的（熊 1、豬 3），增量會讓完成度最多 67%
           setTimeout(() => R.toast && R.toast('加注條款 ' + pts + ' 點：' + Object.keys(sel).map(k => T[k][1]).join('、'), '#FF9A6A'), 4200);
         }
       }

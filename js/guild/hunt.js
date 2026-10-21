@@ -191,7 +191,12 @@
   R.extract = how => {
     const run = W().run, s = S(); if (!run || run.done || !run.site || run.site.id !== ID) return ex0(how);
     const k = run.huntKills || {}, got = Math.min(k.minobear || 0, NEED.minobear) + Math.min(k.yoroiboar || 0, NEED.yoroiboar), extra = Math.max(0, (k.minobear || 0) - NEED.minobear) + Math.max(0, (k.yoroiboar || 0) - NEED.yoroiboar);
-    run.kills = got; const r = ex0(how);
+    run.kills = got;
+    // 2026-10-21 修正：委託報酬只有「走完」才付（run.js），走完要看到最深處的房間——狩獵場的空地都改成了 fight，永遠走不完，狩獵委託一直是 0 費拉。
+    // 狩獵委託：指定的獵物都打到了、人在山腰，就算走完（報酬、加注加付都照遺跡的算法）。考核不付報酬。
+    const Fh = W().F; if (!run.exam && got >= NEED.minobear + NEED.yoroiboar && Fh && run.floor === run.floors - 1) { const rm = Fh.rooms.find(x => x.type !== 'start' && x.type !== 'stairs'); if (rm) { rm.type = 'deep'; rm.visited = true; rm.cleared = true; } }
+    const r = ex0(how);
+    if (run.exam) { const box = $('r-sheet'); if (box) box.querySelectorAll('p').forEach(p => { if (p.innerHTML.includes('公會的委託報酬')) p.innerHTML = p.innerHTML.replace(/公會的委託報酬：[^<]*/, '狩獵考核不付報酬（合格兩次升冒險段）'); }); }
     const t = s.tasks && s.tasks[s.tasks.length - 1]; if (t && t.day === s.day && !t.hunt) { t.hunt = 1; t.exam = run.exam ? 1 : 0; t.site = run.exam ? '狩獵考核' : '狩獵委託'; if (extra) t.s[3] = Math.max(1, t.s[3] - 12 * extra); R.save(); }
     return r;
   };
