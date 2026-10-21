@@ -546,7 +546,7 @@
   // ---------- 接上：在精緻城市的時候換成這個檔案的 ----------
   const ts0 = R.townStep; R.townStep = dt => (R.inCity3D() ? step(dt) : ts0(dt));
   const th0 = R.townHud; R.townHud = (f, dt) => (R.inCity3D() ? hud(f, dt) : th0(f, dt));
-  const tm0 = R.townMenu; R.townMenu = (...a) => (R.inCity3D() ? menu() : tm0(...a));
+  (R.TOWN_MENUS = R.TOWN_MENUS || []).unshift({ when: () => R.inCity3D(), open: menu });   // 2026-10-21：接在 town.js 的 R.townMenu 最底層（原本包在外面，別的檔案加的按鈕都不見）
   const bm0 = R.bigMap; R.bigMap = (...a) => (R.inCity3D() && !W.run ? bigMap() : bm0(...a));
   const dm0 = R.drawTownMinimap; R.drawTownMinimap = (x, s) => (R.inCity3D() ? drawMini(x, s) : dm0(x, s));
   const db0 = R.drawTownBig; if (db0) R.drawTownBig = (x, s) => (R.inCity3D() ? null : db0(x, s));

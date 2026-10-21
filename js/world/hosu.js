@@ -665,7 +665,7 @@
   // ---------- 接上：在奉主的時候換成這個檔案的 ----------
   const ts0 = R.townStep; R.townStep = dt => (W.town && W.town.hosu ? step(dt) : ts0(dt));
   const th0 = R.townHud; R.townHud = (f, dt) => (W.town && W.town.hosu ? hud(f, dt) : th0(f, dt));
-  const tm0 = R.townMenu; R.townMenu = (...a) => (W.town && W.town.hosu ? menu() : tm0(...a));
+  (R.TOWN_MENUS = R.TOWN_MENUS || []).unshift({ when: () => !!(W.town && W.town.hosu), open: menu });   // 2026-10-21：接在 town.js 的 R.townMenu 最底層
   const bm0 = R.bigMap; R.bigMap = (...a) => (W.town && W.town.hosu && !W.run ? bigMap() : bm0(...a));
   const dm0 = R.drawTownMinimap; R.drawTownMinimap = (x, s) => (W.town && W.town.hosu ? drawMini(x, s) : dm0(x, s));
   const db0 = R.drawTownBig; R.drawTownBig = (x, s) => (W.town && W.town.hosu ? null : db0(x, s));

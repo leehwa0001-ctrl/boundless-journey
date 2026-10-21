@@ -771,7 +771,9 @@
   // 附近可以互動的東西
   R.townNear = () => { const P = W.P; let best = null, bd = 1e9; W.town.inter.forEach(it => { const ix = it.follow ? it.follow.x : it.x, iz = it.follow ? it.follow.z + 1.1 : it.z; const d = Math.hypot(ix - P.x, iz - P.z); if (d < it.r && d < bd && (!it.when || it.when())) { bd = d; best = it; } }); return best; };
   R.townInteract = () => { if (W.P && W.P.sit) { W.P.sit = false; W.P.h.sit = false; return; } const it = W.inside ? R.interiorNear() : R.townNear(); if (it) it.act(); };
+  // 2026-10-21：精緻城市、奉主的選單接在最底層（R.TOWN_MENUS），技能書、被動、裝備外觀這些包在外面加按鈕的，每座城都看得到
   R.townMenu = () => {
+    const alt = (R.TOWN_MENUS || []).find(m => m.when()); if (alt) return alt.open();
     R.sheet('<h2>東鶴</h2><p class="note">' + (R.today ? R.esc(R.dateLabel()) : '') + '</p><p class="note">' + (R.touch ? '左搖桿移動・「跑步」開關・右上角的箭頭轉動視角・靠近門口或人點提示就能互動' : 'WASD 移動・按住 Shift 跑步・空白鍵進門或說話・Q／E 轉視角・滾輪拉近拉遠・Tab 地圖') + '</p><p class="note">舊城的北門外是外濠和國道一號；站前大通往北是東鶴站、站前廣場、拱廊商店街和德克斯凡百貨。站西通過了平交道是北口，再往北過霜溪是北山礦坑、霜溪石窟。國道往西過新大橋是河西和城西遺跡；東邊是官廳街、新商區。更遠的遺跡，到東鶴站搭魔導電車，或到國道邊的驛站搭車。</p>',
       '<div class="row"><button type="button" class="btn pri" id="tm-x">繼續</button>' + (R.questLog ? '<button type="button" class="btn" id="tm-log">手上的委託</button>' : '') + (R.newsSheet ? '<button type="button" class="btn" id="tm-news">瓦版</button>' : '') + (R.S.hood ? '<button type="button" class="btn" id="tm-hood">' + (R.S.hoodOn ? '拿下兜帽' : '戴上兜帽') + '</button>' : '') + '<button type="button" class="btn" id="tm-map">攤開地圖</button><button type="button" class="btn" id="tm-title">存檔，回到標題</button></div>');
     $('tm-x').onclick = R.closeSheet; $('tm-map').onclick = () => { R.closeSheet(); W.paused = true; R.openMap('donghe', 'dh-town'); };
