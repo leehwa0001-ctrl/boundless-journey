@@ -410,7 +410,7 @@
     if (R.inCity3D && R.inCity3D()) { R.closeSheet(); return; }
     const city = byId(id); if (!city) return;
     const g = st(), visited = Object.keys(g.visit || {}).length;
-    const ruin = (R.SITES || []).filter(s => s.kind === 'ruin' && Math.hypot((s.x || 0) - ((R.SITES.find(x => x.id === id) || {}).x || 0), (s.z || 0) - ((R.SITES.find(x => x.id === id) || {}).z || 0)) < 0.55);
+    const ruin = (R.SITES || []).filter(s => s.kind === 'ruin' && (R.RUIN_CITY && R.RUIN_CITY[s.id] ? R.RUIN_CITY[s.id] === id : Math.hypot((s.x || 0) - ((R.SITES.find(x => x.id === id) || {}).x || 0), (s.z || 0) - ((R.SITES.find(x => x.id === id) || {}).z || 0)) < 0.55));   // 2026-10-21：照 ruincity.js 的表
     R.sheet('<p class="kicker">' + esc(city.role) + '・' + esc(city.tag) + '</p><h2>' + esc(city.name) + '</h2><p>' + esc(city.blurb) + '</p>'
       + '<p class="note">費拉 ' + S().gold + '・已造訪城市 ' + visited + '／' + CITIES.length + '・觀光章 ' + stampCount() + '／' + allStamps() + '</p>'
       + (ruin.length ? '<p class="note">附近遺跡：' + ruin.map(r => esc(r.name) + (r.status === 'lock' ? '（未開放）' : '')).join('、') + '——回東鶴公會或驛站接委託出發。</p>' : '')
