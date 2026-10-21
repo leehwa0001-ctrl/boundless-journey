@@ -154,6 +154,7 @@
   R.hurtPlayer = (raw, src, o) => { if (on('glass') && R.dmgRedAdd) R.dmgRedAdd(-[0, 0.3, 0.6][on('glass')]); return hp1(raw, src, o); };   // 減傷係數（dmgred.js）
   const dg1 = R.dodge;
   R.dodge = () => { const P = W().P; if (P && on('nodash') && !P.pactNodash && P.dodgeCdMax) { P.pactNodash = 1; P.dodgeCdMax *= 2; } return dg1(); };
+  R.pactHealK = () => (on('heal') ? 0.5 : 1);   // 不經過 R.healP 的回復（營火、泉水）也照「回復減半」
   const hl0 = R.healP;
   R.healP = (v, quiet) => hl0(v * (on('heal') ? 0.5 : 1) * (1 + tb('heal')), quiet);
   const dr0 = R.drink;
@@ -185,7 +186,7 @@
       const pp = pact(), g = run.grade.id;
       if (full || comp >= 60) pp.best[g] = Math.max(pp.best[g] || 0, p.pts);
       if (full) { pp.bestFull = pp.bestFull || {}; pp.bestFull[g] = Math.max(pp.bestFull[g] || 0, p.pts); }
-      if (comp >= 60) award('first');
+      if (comp >= 60 && p.pts > 0) award('first');   // 2026-10-21：繼續委託沒帶條款時 run.pact＝{ pts: 0 }，不算
       // 2026-10-04 作者：用孤單跟禁藥闖很多次也沒拿到——層數加深以後「走完」太難，改成委託做到六成以上回來就算（滿注的稱號還是要走完）
       if (full || comp >= 60) {
         if (p.pts >= 10) award('ten'); if (p.pts >= 20) award('twenty');

@@ -99,8 +99,8 @@
     }
     if (free && run) { run.free = 1; setTimeout(() => R.toast && R.toast('沒有接委託：這一趟沒有委託報酬，也不會打成績', '#C8B88A'), 2600); return r; }
     if (run && !run.task && run.site && run.site.id === id && (run.site.kind === 'ruin' || run.site.kind === 'hunt') && id !== 'kanko') {
-      const sp = R.taskSpec(run.site); run.task = Object.assign({ t: 0, props: 0, deepest: 0 }, sp);
-      setTimeout(() => R.toast && R.toast(sp.kind === 'patrol' ? '委託：巡查到第 ' + sp.floors + ' 層・時限 ' + sp.limitH + ' 小時' : '委託：討伐 ' + sp.need + ' 隻・時限 ' + sp.limitH + ' 小時', '#E8C04A'), 2600);
+      const sp = R.taskSpec(run.site), tk = run.task = Object.assign({ t: 0, props: 0, deepest: 0 }, sp);   // 提示照 run.task（加注「急件」「增量」改過以後的數字）
+      setTimeout(() => R.toast && R.toast(tk.kind === 'patrol' ? '委託：巡查到第 ' + tk.floors + ' 層・時限 ' + tk.limitH + ' 小時' : '委託：討伐 ' + tk.need + ' 隻・時限 ' + tk.limitH + ' 小時', '#E8C04A'), 2600);
     }
     return r;
   };

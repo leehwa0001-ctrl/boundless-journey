@@ -129,7 +129,7 @@
   };
   const spring = s => {
     if (s.used) { R.toast('泉水已經乾了。'); return; }
-    const P = W().P; s.used = true; P.hp = Math.min(P.hpMax, P.hp + P.hpMax * 0.5); P.mp = Math.min(P.mpMax, P.mp + P.mpMax * 0.5);   /* 2026-10-05 作者：泉水回一半，不是回滿 */ if (P.st) Object.keys(P.st).forEach(k => { P.st[k] = 0; }); P.slowT = 0; P.blindT = 0;
+    const P = W().P; s.used = true; P.hp = Math.min(P.hpMax, P.hp + P.hpMax * 0.5 * (R.pactHealK ? R.pactHealK() : 1)); P.mp = Math.min(P.mpMax, P.mp + P.mpMax * 0.5);   /* 2026-10-05 作者：泉水回一半，不是回滿 */ if (P.st) Object.keys(P.st).forEach(k => { P.st[k] = 0; }); P.slowT = 0; P.blindT = 0;
     s.a.w.material.opacity = 0.2; s.a.L.intensity = 0.2; R.fx('ring', P.x, 0.1, P.z, { r: 2, color: '#7AC8FF' }); R.toast('喝了泉水：生命、魔力回復一半。', '#7AC8FF'); R.sfx && R.sfx('drink');
   };
   const merchant = s => {

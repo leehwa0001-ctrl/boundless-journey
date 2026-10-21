@@ -142,7 +142,7 @@
     const w = W(), P = w.P, L2 = inside(), ch = chord(), k = F.eff * (P && P.adv === 'drummer' ? 1.5 : 1) * (F.c.has('jl') ? 2 : 1);
     if (F.objs[0]) F.objs[0].material.opacity = 1;
     L2.forEach(e => hit(e, F.pw * 0.12 * k));
-    if (P && inF(P)) { if (ch === 'min') P.hp = Math.min(P.hpMax || P.hp, P.hp + (P.hpMax || 0) * 0.01 * F.eff); if (ch === 'ele') P.mp = Math.min(P.mpMax, P.mp + 1); }
+    if (P && inF(P)) { if (ch === 'min' && P.hpMax) R.healP(P.hpMax * 0.01 * F.eff, true); /* 2026-10-21：走 R.healP（加注「回復減半」） */ if (ch === 'ele') P.mp = Math.min(P.mpMax, P.mp + 1); }
   };
   const fiB = R.fire;
   if (fiB) R.fire = o => { const s = fiB(o); try { if (F && !F.mage && o && o._bd) beat(); } catch (e) { } return s; };

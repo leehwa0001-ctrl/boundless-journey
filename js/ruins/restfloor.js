@@ -31,7 +31,7 @@
     if (C.used) { R.toast('營火已經快熄了。這一層休息過了。'); return; }
     const awake = (w.enemies || []).some(e => !e.dead && !e.dormant && e.aggro && !(e.def && e.def.ai === 'luck') && Math.hypot(e.x - P.x, e.z - P.z) < 12);
     if (awake) { R.toast('附近有遺跡生物在動，靜不下來。', '#FF9A6A'); return; }
-    C.used = true; P.hp = Math.min(P.hpMax, P.hp + P.hpMax * 0.4); P.mp = Math.min(P.mpMax, P.mp + P.mpMax * 0.4);
+    C.used = true; P.hp = Math.min(P.hpMax, P.hp + P.hpMax * 0.4 * (R.pactHealK ? R.pactHealK() : 1)); P.mp = Math.min(P.mpMax, P.mp + P.mpMax * 0.4);
     (w.allies || []).forEach(a => { if (a.downed) { a.downed = false; if (R.setDown) R.setDown(a.h, false); a.hp = Math.max(a.hp || 0, (a.hpMax || 100) * 0.4); } else if (a.hpMax) a.hp = Math.min(a.hpMax, a.hp + a.hpMax * 0.4); });
     C.fl.scale.setScalar(0.5); C.fl2.scale.setScalar(0.5); C.L.intensity = 0.5;
     if (R.sanAdd) R.sanAdd(8);   // 2026-10-08 作者：營火回一點理智（約 8）
