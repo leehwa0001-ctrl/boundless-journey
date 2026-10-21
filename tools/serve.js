@@ -4,7 +4,7 @@
 //   另外：POST /__snap?f=名字.png 會把收到的圖存到 tools/snaps/（自動測試截圖用，snaps 不要 commit）
 const http = require('http'), fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..'), port = +process.argv[2] || 5182, snaps = path.join(__dirname, 'snaps');
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 http.createServer((req, res) => {
   const p = decodeURIComponent(req.url.split('?')[0]);
   if (req.method === 'POST' && p === '/__snap') {
