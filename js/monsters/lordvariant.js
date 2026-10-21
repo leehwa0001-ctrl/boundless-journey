@@ -257,19 +257,21 @@
   // 有環境的遺跡（火山、凍原、沙漠、深海、熔爐）裡出現的領主體，會變成那個環境的變種：名字前面多環境的名號、染上環境的顏色、
   // 多一個環境的被動和一招環境招式（每 8～10 秒），怕的、耐的屬性也跟著變。本來就住在那個環境的（凍原的霜冠鹿、火山的熔顎蜥……）不變。
   // 跟異變可以同時有（例：霜凍・棘背狼【千棘狼王】）。
+  // 2026-10-19 作者：克森特級以上，環境的招出現快 2 倍、持續 2 倍（漩渦、火柱、冰柱、沙暴、致盲……）
+  const KK = () => { const run = W().run; return run && run.grade && (run.grade.lv || 0) >= 4 ? 2 : 1; };
   const ENV_V = R.LORD_ENV = {
     volcano: { n: '爆炎', col: '#FF5A1A', native: ['lavajaw'], weak: 'frost', resist: 'fire',
       d: '身上燒著火：走過的地方留下熔岩；每隔一陣子在你身邊連炸幾下火柱。怕冰（×1.3），火燒不太動（×0.5）。',
-      tick: e => B.trail(e, { t: 0.6, kind: 'lava', life: 5 }), move: e => B.rain(e, { n: 4, r: 1.8, col: '#FF5A1A', k: 1.2, zone: 4 }) },
+      tick: e => B.trail(e, { t: 0.6, kind: 'lava', life: 5 * KK() }), move: e => B.rain(e, { n: 4, r: 1.8, col: '#FF5A1A', k: 1.2, zone: 4 * KK() }) },
     snow: { n: '霜凍', col: '#9AD8FF', native: ['frostdeer'], weak: 'fire', resist: 'frost',
       d: '身上結著冰：靠近牠會被凍得變慢；每隔一陣子從地面冒出一圈冰柱。怕火（×1.3），冰凍不太動（×0.5）。',
-      aura: (e, P, dt) => { if (dist(P, e) < BR(e) + 4) P.slowT = Math.max(P.slowT || 0, 0.4); }, move: e => B.rings(e, { n: 2, col: '#9AD8FF', k: 1.1, slow: 2 }) },
+      aura: (e, P, dt) => { if (dist(P, e) < BR(e) + 4) P.slowT = Math.max(P.slowT || 0, 0.4); }, move: e => B.rings(e, { n: 2, col: '#9AD8FF', k: 1.1, slow: 2 * KK() }) },
     desert: { n: '暴風沙', col: '#D8B86A', native: ['sandwhale'], weak: 'shock', resist: 'fire',
       d: '捲著沙暴：每隔一陣子颳一陣沙——看不清楚、被往外吹；沙裡的蒺藜扎腳。怕雷（×1.3），火不太有用（×0.5）。',
-      move: e => { targets().forEach(t => { if (t === W().P) t.blindT = Math.max(t.blindT || 0, 2.2); const dd = dist(t, e); if (dd < BR(e) + 10 && !(t.iframe > 0)) { const a = angTo(e, t); t.x += Math.sin(a) * 3; t.z += Math.cos(a) * 3; R.collide && R.collide(t, 0.42); } }); R.fx('poof', e.x, 1, e.z, { color: '#D8B86A', n: 30 }); B.rain(e, { n: 3, r: 1.5, col: '#C8A86A', k: 1, slow: 1.5 }); } },
+      move: e => { targets().forEach(t => { if (t === W().P) t.blindT = Math.max(t.blindT || 0, 2.2 * KK()); const dd = dist(t, e); if (dd < BR(e) + 10 && !(t.iframe > 0)) { const a = angTo(e, t); t.x += Math.sin(a) * 3; t.z += Math.cos(a) * 3; R.collide && R.collide(t, 0.42); } }); R.fx('poof', e.x, 1, e.z, { color: '#D8B86A', n: 30 }); B.rain(e, { n: 3, r: 1.5, col: '#C8A86A', k: 1, slow: 1.5 }); } },
     deep: { n: '深淵', col: '#3A8AAA', native: ['kraken'], weak: 'shock', resist: 'frost',
       d: '身上淌著深海的水：每隔一陣子捲起漩渦把人往牠那裡拉，同時噴墨（看不清楚）。怕雷（×1.3），冰不太有用（×0.5）。',
-      move: e => { B.pull(e, { r: 10, t: 2.2, s: 3, col: '#3A8AAA', quiet: 1 }); targets().forEach(t => { if (t === W().P && dist(t, e) < BR(e) + 12) t.blindT = Math.max(t.blindT || 0, 1.5); }); } },
+      move: e => { B.pull(e, { r: 10, t: 2.2 * KK(), s: 3, col: '#3A8AAA', quiet: 1 }); targets().forEach(t => { if (t === W().P && dist(t, e) < BR(e) + 12) t.blindT = Math.max(t.blindT || 0, 1.5 * KK()); }); } },
     forge: { n: '鍛鐵', col: '#C8A060', native: ['muhyo'], weak: 'frost', resist: 'fire', armor: 0.15,
       d: '身上鑲了兵工廠的鐵板：護甲更厚（+15%）；每隔一陣子叫熔爐砲擊你站的地方。怕冰（×1.3），火燒不太動（×0.5）。',
       move: e => B.rain(e, { n: 5, r: 2, col: '#FF8A3A', k: 1.3, gap: 300 }) }
@@ -306,7 +308,7 @@
         if (v.aura) v.aura(e, P, dt);
         if (v.tick) { e.envTk = (e.envTk || 0) - dt; if (e.envTk <= 0 && e.moving !== false) { e.envTk = 0.6; v.tick(e); } }
         e.envT -= dt; if (e.envT > 0 || dist(P, e) > 22 || (e.vBusy > 0)) return;
-        e.envT = 8 + rnd() * 2; R.fx('ring', e.x, 0.1, e.z, { r: BR(e) + 1.5, color: v.col }); v.move(e);
+        e.envT = (8 + rnd() * 2) / KK(); R.fx('ring', e.x, 0.1, e.z, { r: BR(e) + 1.5, color: v.col }); v.move(e);
       });
     } catch (err) { console.warn('[lordenv]', err); }
     return r;

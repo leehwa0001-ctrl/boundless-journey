@@ -57,6 +57,9 @@
     if (e.id === 'minobear' && off > 2.2) { if (rnd() < 0.4) R.num(e.x, 1.8 * e.def.size + 0.9, e.z, '卡在樹枝裡', ''); return dmg * 0.5; }
     return dmg;
   };
+  // 野獸打到你：記下來（之後打倒牠算自衛，不算多殺）
+  const hpW = R.hurtPlayer;
+  R.hurtPlayer = (raw, src, o) => { if (src && src.def && src.def.wild && raw > 0) src.wildHit = true; return hpW(raw, src, o); };
   // 野獸沒有魔力水晶：打倒時掉毛皮、額甲、肉
   let wildKill = false;
   const dm0 = R.dropMat;
@@ -66,7 +69,7 @@
     const was = e && !e.dead, wild = was && e.def && e.def.wild; wildKill = !!wild;
     let r; try { r = ke0(e, by); } finally { wildKill = false; }
     if (wild && e.dead) {
-      const run = W().run; if (run) { run.huntKills = run.huntKills || {}; run.huntKills[e.id] = (run.huntKills[e.id] || 0) + 1; }
+      const run = W().run; if (run) { run.huntKills = run.huntKills || {}; run.huntKills[e.id] = (run.huntKills[e.id] || 0) + 1; if (e.wildHit) { run.huntDefend = run.huntDefend || {}; run.huntDefend[e.id] = (run.huntDefend[e.id] || 0) + 1; } }
       if (e.id === 'minobear') { R.dropMat('bearfur', 1, e.x, e.z); R.dropMat('meat', 2, e.x + 0.6, e.z); } else if (e.id === 'yoroiboar') { R.dropMat('boarplate', 1, e.x, e.z); R.dropMat('boarmeat', 1, e.x + 0.6, e.z); } else if (e.def.wildDrop) e.def.wildDrop(e);   /* 雪蛛（huntspider.js）之類的：自己的掉落 */
       if (run && run.exam && NEED[e.id]) setTimeout(() => R.toast && R.toast('專員：「' + e.def.name + '，一頭。」他在本子上記了一筆。', '#C8D4DC'), 600);
     }
@@ -190,8 +193,14 @@
   const ex0 = R.extract;
   R.extract = how => {
     const run = W().run, s = S(); if (!run || run.done || !run.site || run.site.id !== ID) return ex0(how);
-    const k = run.huntKills || {}, got = Math.min(k.minobear || 0, NEED.minobear) + Math.min(k.yoroiboar || 0, NEED.yoroiboar), extra = Math.max(0, (k.minobear || 0) - NEED.minobear) + Math.max(0, (k.yoroiboar || 0) - NEED.yoroiboar);
-    run.kills = got; const r = ex0(how);
+    // 多殺扣環境分（2026-10-21 作者：放寬）：先衝過來打到你的那幾頭算自衛，不算多殺
+    const k = run.huntKills || {}, dv = run.huntDefend || {}, got = Math.min(k.minobear || 0, NEED.minobear) + Math.min(k.yoroiboar || 0, NEED.yoroiboar), over = id => Math.max(0, Math.max(0, (k[id] || 0) - NEED[id]) - (dv[id] || 0)), extra = over('minobear') + over('yoroiboar');
+    run.kills = got;
+    // 2026-10-21 修正：委託報酬只有「走完」才付（run.js），走完要看到最深處的房間——狩獵場的空地都改成了 fight，永遠走不完，狩獵委託一直是 0 費拉。
+    // 狩獵委託：指定的獵物都打到了、人在山腰，就算走完（報酬、加注加付都照遺跡的算法）。考核不付報酬。
+    const Fh = W().F; if (!run.exam && got >= NEED.minobear + NEED.yoroiboar && Fh && run.floor === run.floors - 1) { const rm = Fh.rooms.find(x => x.type !== 'start' && x.type !== 'stairs'); if (rm) { rm.type = 'deep'; rm.visited = true; rm.cleared = true; } }
+    const r = ex0(how);
+    if (run.exam) { const box = $('r-sheet'); if (box) box.querySelectorAll('p').forEach(p => { if (p.innerHTML.includes('公會的委託報酬')) p.innerHTML = p.innerHTML.replace(/公會的委託報酬：[^<]*/, '狩獵考核不付報酬（合格兩次升冒險段）'); }); }
     const t = s.tasks && s.tasks[s.tasks.length - 1]; if (t && t.day === s.day && !t.hunt) { t.hunt = 1; t.exam = run.exam ? 1 : 0; t.site = run.exam ? '狩獵考核' : '狩獵委託'; if (extra) t.s[3] = Math.max(1, t.s[3] - 12 * extra); R.save(); }
     return r;
   };

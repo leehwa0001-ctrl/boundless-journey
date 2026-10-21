@@ -79,7 +79,7 @@
     if (ch && R.dropMat) R.dropMat('crystal', 1 + run.grade.lv, ch.x + 1.2, ch.z + 0.9);
     if (R.fx) R.fx('spawn', ch ? ch.x : pz.r.x, 0.1, ch ? ch.z : pz.r.z, { color: '#B8E07A' });
   };
-  const fail = (pz, msg) => { const run = W.run; run.aware = Math.min(100, run.aware + 8); R.toast(msg, '#E07A5A'); if (R.shake) R.shake(0.2); };
+  const fail = (pz, msg) => { const run = W.run; if (R.addAware) R.addAware(8, 'puzzle'); else run.aware = Math.min(100, run.aware + 8); /* 2026-10-21：走 R.addAware（加注「敏感」、滿了會引起反應） */ R.toast(msg, '#E07A5A'); if (R.shake) R.shake(0.2); };
 
   // ---------- 蓋謎題房 ----------
   const build = (scene, run, F, r) => {

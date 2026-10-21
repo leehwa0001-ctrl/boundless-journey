@@ -35,6 +35,8 @@
     const list = KEYS.slice().sort(() => rnd() - 0.5).slice(0, n);
     // 不合的組合：會自己隱形、鑽地的生物不給護盾、閃現（牠們有自己的一套）
     const ai = e.def.ai || ''; if (/burrow|sinkhole|wellhand|wyrm|hooktail|dropper|tentacle|sentry|turret/.test(ai)) for (let i = 0; i < list.length; i++) if (list[i] === 'blink' || list[i] === 'shield') list[i] = 'armored';
+    // 2026-10-19 作者：荊棘（打牠會被反彈）摩爾斯級以上才出現
+    if ((run.grade.lv || 1) < 3) for (let i = 0; i < list.length; i++) if (list[i] === 'thorns') { const alt = KEYS.filter(k => k !== 'thorns' && !list.includes(k)); list[i] = alt.length ? pick(alt) : 'armored'; }
     apply(e, [...new Set(list)]);
     return e;
   };

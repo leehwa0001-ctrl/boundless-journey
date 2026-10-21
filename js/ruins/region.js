@@ -117,7 +117,7 @@
     e.calls = e.calls || 0; const want = f < 0.25 ? 3 : f < 0.5 ? 2 : f < 0.75 ? 1 : 0;
     if (want > e.calls) { e.calls++; R.banner && R.banner('無主大鎧舉起了軍配', '「出陣」——遺甲足輕從地底爬了出來'); for (let i = 0; i < 2; i++) { const ang = rnd() * Math.PI * 2, [x, z] = R.nearestFloor ? R.nearestFloor(e.x + Math.sin(ang) * 3.5, e.z + Math.cos(ang) * 3.5) : [e.x, e.z]; R.fx('spawn', x, 0, z, {}); later(() => { const n = R.spawnEnemy('ashigaru', x, z, e.room, { aggro: true, noAffix: true }); if (n) n.summoned = true; }, 500); } }
     // 外殼崩落：一半以下，護甲變薄、變快
-    if (!e.bare && f < 0.5) { e.bare = true; e.def = Object.assign({}, e.def, { armor: 0.15 }); e.speed = (e.def.speed || 2.6) * 1.4; R.banner && R.banner('無主大鎧的外殼崩落了', '護甲變薄——但是更快、更兇'); R.fx('boom', e.x, 1, e.z, { r: 3.5, color: '#4A4A5A' }); R.shake && R.shake(0.4); }
+    if (!e.bare && f < 0.5) { e.bare = true; e.def = Object.assign({}, e.def, { armor: 0.15 }); e.speed = (e.def.speed || 2.6) * 1.4 * (e.pactSpd || 1); R.banner && R.banner('無主大鎧的外殼崩落了', '護甲變薄——但是更快、更兇'); R.fx('boom', e.x, 1, e.z, { r: 3.5, color: '#4A4A5A' }); R.shake && R.shake(0.4); }
     const fk = e.bare ? 1.25 : 1;
     if (e.dash) { const s = e.dash; s.t += dt; const k = Math.min(1, s.t / 0.45); const x = s.x0 + (s.x1 - s.x0) * k, z = s.z0 + (s.z1 - s.z0) * k; e.x = x; e.z = z; if (R.collide) R.collide(e, e.def.size * 0.5); targets().forEach(t => { if (!s.hit.includes(t) && Math.hypot(t.x - e.x, t.z - e.z) < 1.8) { s.hit.push(t); hitT(t, e.dmg * 1.3 * fk, e, { knock: 0.8 }); } }); if (k >= 1) e.dash = null; return true; }
     if (e.busy > 0) { e.busy -= dt; return false; }

@@ -16,7 +16,7 @@
   const mat = (col, em) => new (T().MeshLambertMaterial)(Object.assign({ color: col }, em ? { emissive: em, emissiveIntensity: 0 } : {}));
   const ring = (scene, x, z, r0, r1, col, op) => { const m = new (T().Mesh)(new (T().RingGeometry)(r0, r1, 24), new (T().MeshBasicMaterial)({ color: col, transparent: true, opacity: op, depthWrite: false, side: T().DoubleSide })); m.rotation.x = -Math.PI / 2; m.position.set(x, 0.06, z); scene.add(m); return m; };
   const say = (title, line) => { R.sheet('<p class="kicker">' + R.esc(title) + '</p><p class="hand">' + R.esc(line) + '</p>', '<div class="row"><button type="button" class="btn pri" id="pz2-x">知道了</button></div>'); document.getElementById('pz2-x').onclick = R.closeSheet; };
-  const fail = (pz, msg, n) => { const run = W.run; run.aware = Math.min(100, run.aware + (n || 4)); R.toast(msg, '#E07A5A'); if (R.shake) R.shake(0.15); };
+  const fail = (pz, msg, n) => { const run = W.run; if (R.addAware) R.addAware(n || 4, 'puzzle'); else run.aware = Math.min(100, run.aware + (n || 4)); /* 2026-10-21：走 R.addAware */ R.toast(msg, '#E07A5A'); if (R.shake) R.shake(0.15); };
   // 解開：和 puzzle.js 的 solve 一樣（寶箱放進 F.chests、封印消失、掉魔力水晶）
   const solve = pz => {
     if (pz.solved) return; pz.solved = true;

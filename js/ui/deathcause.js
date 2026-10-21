@@ -31,6 +31,8 @@
   const pd0 = R.onPlayerDown;
   R.onPlayerDown = (...a) => {
     const run = W().run, s = R.S;
+    // 2026-10-19：不是被打倒的（自己放棄、太累……）不要顯示好幾秒前最後打到你的怪
+    if (run && !run.done) { if (run.gaveUp) run.lastHit = { who: '自己放棄了這一趟', dmg: 99999 }; else if (!run.lastHit) run.lastHit = { who: '不是被打倒的（這一趟沒有受過傷）', dmg: 99999 }; else if (run.lastHit && run.lastHit.dmg < 99999 && (run.t || 0) - (run.lastHit.t || 0) > 3) run.lastHit = { who: '不是被打倒的（最後一次受傷是 ' + Math.round((run.t || 0) - (run.lastHit.t || 0)) + ' 秒前）', dmg: 99999 }; }
     if (run && !run.done && run.lastHit) {
       const h = run.lastHit; run.deathCause = h.who + (h.dmg < 9999 ? '：最後一下 ' + h.dmg + ' 點傷害' : '');
       if (s) { s.deathLog = (s.deathLog || []).concat([{ day: s.day, site: run.site.name, floor: R.floorLabel ? R.floorLabel(run) : '第 ' + (run.floor + 1) + ' 層', cause: h.who }]).slice(-20); }

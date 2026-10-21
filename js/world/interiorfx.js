@@ -1,0 +1,188 @@
+// 室內畫面精進（2026-10-20 作者：玩家喜歡公會分館裡的風格，在那個風格上精進；先拿公會一樓試一次）
+// 同一個畫風（簡單的方塊、點陣貼圖、人物清楚），多加四樣：
+// 1. 光：桌上的蠟燭、吊燈有燈具也有一圈暖光（會輕微閃）；白天窗戶照進一道斜的光，光裡飄著灰塵；屋裡的底光壓暗一點，讓暖光跳出來。
+// 2. 牆角變暗（烤好的，不吃效能）：牆根、家具底下鋪一層淡淡的暗影（照碰撞盒的位置自動鋪）。
+// 3. 小東西：桌上的杯子、盤子、蠟燭，角落的木箱、酒桶，地上的污漬。
+// 4. 調色＋光暈：跟遺跡同一套（ruinfx.js），火、蠟燭、窗戶透出像素格的光暈。
+// - 只在「遺跡畫質」中、高（R.ruinGfx() > 0）的時候加；低畫質跟以前一樣。
+// - 2026-10-21 作者：照公會分館的風格把其他室內也做一做——所有室內都套（generic：吊燈、桌上的蠟燭和杯子、浮塵）；公會一樓另外有手擺的（furnishGuild）。
+// 放在 interior.js 和所有包 R.interiorHud 的檔案後面（進屋 enterNow 最後會呼叫 R.interiorHud(true)）。
+(function (R) {
+  const W = R.W, T = () => THREE;
+  const on = () => !!(R.ruinGfx && R.ruinGfx() > 0 && R.pixelOn && R.pixelOn());
+  R.interiorFxOn = kind => on() && !!kind;
+  // ---------- 共用的貼圖：柔邊的暗影 ----------
+  let TX = null;
+  const tex = () => {
+    if (TX) return TX; const TH = T();
+    const mk = (w, h, f) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'), img = g.createImageData(w, h); for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const a = f(x / (w - 1), y / (h - 1)), i = (y * w + x) * 4; img.data[i] = img.data[i + 1] = img.data[i + 2] = 0; img.data[i + 3] = Math.round(255 * Math.max(0, Math.min(1, a))); } g.putImageData(img, 0, 0); const t = new TH.CanvasTexture(c); t.userData.shared = true; return t; };
+    const ss = x => x * x * (3 - 2 * x);
+    TX = {
+      blob: mk(32, 32, (u, v) => { const d = Math.max(Math.abs(u - 0.5), Math.abs(v - 0.5)) * 2; return ss(Math.max(0, 1 - d)) * 1.15; }),   // 方形柔邊（家具底下）
+      edge: mk(4, 32, (u, v) => ss(1 - v)),   // 一邊深一邊淡（牆根）
+      beam: (() => { const t = mk(8, 32, (u, v) => ss(Math.min(1, v * 1.6)) * ss(Math.min(1, (1 - v) * 4)) * ss(1 - Math.abs(u - 0.5) * 2) * 1.4); return t; })()
+    };
+    // 光束、光斑要的是白色、透明度漸層
+    [TX.beam].forEach(t => { const g = t.image.getContext('2d'), d = g.getImageData(0, 0, t.image.width, t.image.height); for (let i = 0; i < d.data.length; i += 4) { d.data[i] = d.data[i + 1] = d.data[i + 2] = 255; } g.putImageData(d, 0, 0); t.needsUpdate = true; });
+    return TX;
+  };
+  const darkMat = (map, a) => new (T().MeshBasicMaterial)({ color: 0x000000, map, transparent: true, opacity: a, depthWrite: false });
+  // ---------- 主程式：屋子蓋好以後 ----------
+  const apply = ins => {
+    if (!ins || ins.ifx || !R.interiorFxOn(ins.kind)) return; ins.ifx = { dust: [], lanterns: [] };
+    const TH = T(), g = ins.group, sc = ins.scene, tx = tex(), HW = ins.pl.w / 2, HD = ins.pl.d / 2, WH = ins.pl.h;
+    const geo = o => { ins.geos.push(o); return o; };
+    const mesh = (gm, m, x, y, z) => { const o = new TH.Mesh(geo(gm), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; g.add(o); return o; };
+    const kit = R.INTERIOR_KIT, lam = kit && kit.lam ? kit.lam : c => new TH.MeshLambertMaterial({ color: c });
+    const box = (w, h, d, c, x, y, z) => mesh(new TH.BoxGeometry(w, h, d), typeof c === 'string' ? lam(c) : c, x, y, z);
+    const cyl = (r0, r1, h, c, x, y, z, n) => mesh(new TH.CylinderGeometry(r0, r1, h, n || 8), typeof c === 'string' ? lam(c, { tex: 0 }) : c, x, y, z);
+    const light = (x, y, z, col, I, dist, flicker) => { const l = new TH.PointLight(new TH.Color(col).convertSRGBToLinear(), I, dist, 1.8); l.position.set(x, y, z); sc.add(l); ins.lights.push({ l, I, x, flicker }); return l; };
+    const flame = (x, y, z, s) => { const f = mesh(new TH.ConeGeometry(0.06 * s, 0.2 * s, 5), lam('#FFB04A', { em: '#FF8A2A', ei: 1.4 }), x, y, z); f.castShadow = false; ins.flames.push(f); return f; };
+    // 1. 底光壓暗、原本的燈亮一點（暖光才跳得出來）
+    sc.children.forEach(o => { if (o.isHemisphereLight) o.intensity *= 0.62; if (o.isDirectionalLight) o.intensity *= 0.7; });
+    ins.lights.forEach(L => { L.I *= L.flicker ? 1.05 : 1.3; L.l.intensity = L.I; L.l.decay = 1.8; });   // 暖爐本來就夠亮（加太多會把吧台老闆的臉照成一片橘）
+    // 2. 牆角變暗：照碰撞盒鋪（牆的兩側長邊、家具底下）
+    const flatQ = (w, d, m, x, z, y, ry) => { const o = new TH.Mesh(geo(new TH.PlaneGeometry(w, d)), m); o.rotation.x = -Math.PI / 2; if (ry) o.rotation.z = ry; o.position.set(x, y, z); o.renderOrder = 1; g.add(o); return o; };
+    const edgeM = darkMat(tx.edge, 0.42), blobM = darkMat(tx.blob, 0.5);
+    let k = 0;
+    (R.col.list || []).forEach(c => {
+      const w = c.x1 - c.x0, d = c.z1 - c.z0, y = 0.011 + (k++ % 20) * 0.0004;
+      if (c.tag === 'wall') {
+        const W0 = 0.85;   // 牆根的暗影往屋裡伸 85 公分
+        if (w >= d) { if (c.z1 > -HD - 0.2 && c.z1 < HD) flatQ(w, W0, edgeM, (c.x0 + c.x1) / 2, c.z1 + W0 / 2, y); if (c.z0 < HD + 0.2 && c.z0 > -HD) flatQ(w, W0, edgeM, (c.x0 + c.x1) / 2, c.z0 - W0 / 2, y, Math.PI); }
+        else { if (c.x1 < HW && c.x1 > -HW - 0.2) flatQ(d, W0, edgeM, c.x1 + W0 / 2, (c.z0 + c.z1) / 2, y, Math.PI / 2); if (c.x0 > -HW && c.x0 < HW + 0.2) flatQ(d, W0, edgeM, c.x0 - W0 / 2, (c.z0 + c.z1) / 2, y, -Math.PI / 2); }
+      } else if (/^(table|bench|desk|bar|shelf|stool|pot|board|fire|stairs|crate|barrel)$/.test(c.tag)) {
+        const m = 0.38; flatQ(w + m * 2, d + m * 2, blobM, (c.x0 + c.x1) / 2, (c.z0 + c.z1) / 2, y);
+      }
+    });
+    if (ins.kind === 'guild') furnishGuild(ins, { box, cyl, light, flame, mesh, lam, flatQ, HW, HD, WH, TH });
+    else generic(ins, { box, cyl, light, flame, mesh, lam, flatQ, HW, HD, WH, TH });
+  };
+  // ---------- 公會一樓 ----------
+  const furnishGuild = (ins, c) => {
+    const { box, cyl, light, flame, mesh, lam, flatQ, HW, HD, WH, TH } = c, tx = tex();
+    const block = (x0, x1, z0, z1, tag) => R.addBox(x0, x1, z0, z1, tag);
+    const candle = (x, y, z) => { cyl(0.06, 0.07, 0.2, '#EDE4D0', x, y + 0.1, z, 6); cyl(0.12, 0.12, 0.03, '#8A6A3A', x, y + 0.015, z, 8); flame(x, y + 0.29, z, 1); light(x, y + 0.35, z, '#FFB060', 0.8, 4.5, true); };
+    const mug = (x, y, z, col) => { cyl(0.07, 0.065, 0.16, col || '#C8B89A', x, y + 0.08, z, 7); };
+    const plate = (x, y, z) => { cyl(0.16, 0.14, 0.025, '#B8B0A0', x, y + 0.012, z, 10); };
+    // 長桌（大廳）：杯子、盤子、蠟燭
+    [[-9.5, 1.2], [-9.5, 5.6]].forEach(([x, z], i) => { const y = 0.92; candle(x + 0.2, y, z); mug(x - 0.8, y, z - 0.3); mug(x + 0.9, y, z + 0.35, '#8A6A4A'); plate(x - 0.3, y, z + 0.35); if (i) { plate(x + 0.6, y, z - 0.35); mug(x - 0.95, y, z + 0.3); } });
+    // 圓桌（酒場）：蠟燭
+    [[10, 0.5], [12.8, 4.5], [9.2, 5.8]].forEach(([x, z]) => candle(x - 0.15, 0.91, z - 0.25));
+    // 吧台上：杯子一排、一根蠟燭
+    for (let i = 0; i < 4; i++) mug(8.6 + i * 0.5, 1.2, -5.9 + (i % 2) * 0.12, i % 2 ? '#8A6A4A' : '#C8B89A');
+    candle(13.4, 1.2, -5.85);
+    // 吊燈：原本只有光、看不到燈；補上掛下來的燈籠
+    // 2026-10-20 作者：燈籠從上往下看會疊在人物身上——在畫面上跟人重疊的時候，那盞燈籠淡掉（stepDust）
+    const lantern = (x, y, z) => { const ms = [box(0.02, WH - y - 0.2, 0.02, '#2A2018', x, (WH + y + 0.2) / 2, z), box(0.36, 0.06, 0.36, '#3A2A1C', x, y + 0.24, z), box(0.36, 0.06, 0.36, '#3A2A1C', x, y - 0.24, z), box(0.28, 0.42, 0.28, lam('#FFE0A0', { em: '#FFC060', ei: 1.3 }), x, y, z)];
+      ms[3].castShadow = false; ms.forEach(m => { m.material = m.material.clone(); m.material.transparent = true; m.renderOrder = 5; }); ins.ifx.lanterns.push({ x, y, z, ms, op: 1 }); };
+    // 原本的燈 → 燈籠掛的位置（避開一直站著的人：館員、酒場的勇者；光也一起移過去）
+    [[0, -6.2, 2.8, -4.2], [-8, 3.4, -9.5, 3.4], [0, 4, 0, 4], [11, 0, 12.6, -2.6]].forEach(([x0, z0, x, z]) => { const L = ins.lights.find(o => Math.abs(o.l.position.x - x0) < 0.01 && Math.abs(o.l.position.z - z0) < 0.01); const y = L ? L.l.position.y : 3.6; if (L) { L.l.position.x = x; L.l.position.z = z; L.x = x; } lantern(x, y + 0.3, z); });   // 高度照原本的燈（作者：掛低有點奇怪）
+    // 角落：木箱（大廳西南）、酒桶（吧台和暖爐中間）
+    const crate = (x, z, s, y) => { box(0.8 * s, 0.8 * s, 0.8 * s, '#7A5A3A', x, (y || 0) + 0.4 * s, z); box(0.84 * s, 0.08, 0.84 * s, '#5A3E28', x, (y || 0) + 0.8 * s - 0.02, z); };
+    crate(-13.9, -2.6, 1); crate(-13.0, -2.5, 0.8); crate(-13.8, -2.6, 0.7, 0.8); block(-14.35, -12.55, -3.05, -2.05, 'crate');
+    const barrel = (x, z) => { cyl(0.38, 0.34, 0.95, '#6A4A2E', x, 0.475, z, 10); [0.2, 0.75].forEach(y => cyl(0.395, 0.395, 0.05, '#3A2A1C', x, y, z, 10)); };
+    barrel(14.45, -5.15); barrel(14.35, -4.35); block(13.95, 14.85, -5.55, -3.95, 'barrel');
+    // 地上的污漬（酒場：吧台前、圓桌旁）
+    const stainM = darkMat(tx.blob, 0.22);
+    [[9.6, -4.9, 0.9], [11.4, 1.2, 0.7], [12.1, 5.2, 0.6], [-9.0, 3.4, 0.6]].forEach(([x, z, s], i) => flatQ(s * 1.3, s, stainM, x, z, 0.0125 + i * 0.0003, i));
+    // 窗戶照進來的光：西牆的窗、北牆的窗
+    beams(ins, c, [[-HW + 0.1, 2.9, 4.5, 1, 0], [-4.8, 2.9, -HD + 0.1, 0, 1]]);
+  };
+  // ---------- 窗戶照進來的光（白天）：地上一塊光斑＋一道斜的光束＋光裡的灰塵 ----------
+  // wins：[[窗戶中心 x, y, z, 往屋裡的方向 nx, nz], …]
+  const beams = (ins, c, wins) => {
+    const { flatQ, TH } = c, tx = tex();
+    const h = R.S && R.S.hour != null ? R.S.hour : 12, day = h >= 7 && h < 17, dusk = (h >= 16 && h < 18) || (h >= 6 && h < 8);
+    if (day || dusk) {
+      const col = dusk ? '#FFC890' : '#FFF0D2', a = dusk ? 0.16 : 0.2;
+      const beamM = new TH.MeshBasicMaterial({ color: new TH.Color(col).convertSRGBToLinear(), map: tx.beam, transparent: true, opacity: a, depthWrite: false, blending: TH.AdditiveBlending, side: TH.DoubleSide });
+      const patchM = new TH.MeshBasicMaterial({ color: new TH.Color(col).convertSRGBToLinear(), map: tx.blob, transparent: true, opacity: a * 1.1, depthWrite: false, blending: TH.AdditiveBlending });
+      wins.forEach(([wx, wy, wz, nx, nz]) => {
+        const reach = Math.min(2.6, wy * 0.95), fx = wx + nx * reach, fz = wz + nz * reach;   // 光斑落在離牆 2.6 公尺的地上
+        const p = flatQ(1.5, 2.0, patchM, fx, fz, 0.016, nx ? Math.PI / 2 : 0); p.renderOrder = 2;
+        // 光束：從窗戶斜斜地落到光斑（一片立著的面，朝鏡頭那邊看得到）
+        const len = Math.hypot(reach, wy), b = new TH.Mesh(new TH.PlaneGeometry(1.3, len), beamM); ins.geos.push(b.geometry);
+        const u = new TH.Vector3(-nz, 0, nx), v = new TH.Vector3(wx - fx, wy, wz - fz).normalize(), n = new TH.Vector3().crossVectors(u, v);
+        b.quaternion.setFromRotationMatrix(new TH.Matrix4().makeBasis(u, v, n)); b.position.set((wx + fx) / 2, wy / 2, (wz + fz) / 2); b.renderOrder = 3; ins.group.add(b);
+        // 灰塵：光束裡慢慢飄的小亮點
+        const N = 8, arr = new Float32Array(N * 3), seed = [];
+        for (let i = 0; i < N; i++) { const t = Math.random(), s = (Math.random() - 0.5) * 1.1; seed.push([t, s, Math.random() * 6]); }
+        const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(arr, 3)); ins.geos.push(pg);
+        const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF4DC').convertSRGBToLinear(), size: 1, sizeAttenuation: false, transparent: true, opacity: 0.4, depthWrite: false, blending: TH.AdditiveBlending }));
+        pts.renderOrder = 4; ins.group.add(pts);
+        ins.ifx.dust.push({ pts, arr, seed, wx, wy, wz, fx, fz, nx, nz });
+      });
+    }
+  };
+  // ---------- 其他室內：照這間房子自己的燈和桌子自動擺 ----------
+  const generic = (ins, c) => {
+    const { box, cyl, light, flame, lam, WH, TH } = c;
+    // 吊燈：每一盞掛在天花板附近的燈（不會閃的）補上看得到的燈籠；跟人在畫面上重疊會淡掉（stepDust）
+    ins.lights.forEach(L => { if (L.flicker || L.l.position.y < 2.3 || L.l.position.y > WH) return; const x = L.l.position.x, z = L.l.position.z, y = Math.min(WH - 0.7, L.l.position.y + 0.2);
+      const ms = [box(0.02, Math.max(0.1, WH - y - 0.2), 0.02, '#2A2018', x, (WH + y + 0.2) / 2, z), box(0.34, 0.06, 0.34, '#3A2A1C', x, y + 0.22, z), box(0.34, 0.06, 0.34, '#3A2A1C', x, y - 0.22, z), box(0.26, 0.38, 0.26, lam('#FFE0A0', { em: '#FFC060', ei: 1.3 }), x, y, z)];
+      ms[3].castShadow = false; ms.forEach(m => { m.material = m.material.clone(); m.material.transparent = true; m.renderOrder = 5; }); ins.ifx.lanterns.push({ x, y, z, ms, op: 1 }); });
+    // 桌子：每一張桌子中間放一根蠟燭（暖光會閃）、旁邊一兩個杯子；同一間最多 6 根蠟燭
+    let n = 0;
+    (R.col.list || []).forEach(b => { if (b.tag !== 'table' || n >= 6) return; const w = b.x1 - b.x0, d = b.z1 - b.z0; if (w < 0.8 || d < 0.8 || w > 6 || d > 6) return; n++;
+      const x = (b.x0 + b.x1) / 2, z = (b.z0 + b.z1) / 2, y = 0.92;
+      cyl(0.06, 0.07, 0.2, '#EDE4D0', x, y + 0.1, z, 6); cyl(0.12, 0.12, 0.03, '#8A6A3A', x, y + 0.015, z, 8); flame(x, y + 0.29, z, 1); light(x, y + 0.35, z, '#FFB060', 0.7, 4.5, true);
+      [[0.35, 0.18, '#C8B89A'], [-0.32, -0.15, '#8A6A4A']].forEach(([dx, dz, col], i) => { if (i && w < 1.4) return; cyl(0.07, 0.065, 0.16, col, x + Math.min(dx, w / 2 - 0.15), y + 0.08, z + Math.min(dz, d / 2 - 0.15), 7); }); });
+    // 浮塵：房間裡慢慢飄的亮點（不用光束，整間淡淡的）
+    const HW = ins.pl.w / 2, HD = ins.pl.d / 2, N = Math.min(40, Math.round(ins.pl.w * ins.pl.d / 8)), arr = new Float32Array(N * 3), seed = [];
+    for (let i = 0; i < N; i++) seed.push([Math.random(), (Math.random() - 0.5) * 2 * HW * 0.9, Math.random() * 6, (Math.random() - 0.5) * 2 * HD * 0.9]);
+    const pg = new TH.BufferGeometry(); pg.setAttribute('position', new TH.BufferAttribute(arr, 3)); ins.geos.push(pg);
+    const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 1, sizeAttenuation: false, transparent: true, opacity: 0.3, depthWrite: false, blending: TH.AdditiveBlending }));
+    pts.renderOrder = 4; ins.group.add(pts); ins.ifx.room = { pts, arr, seed, WH };
+    // 窗戶（interior.js 的 win：淡藍的玻璃、會微微發光）：在牆上的、最多 3 扇，各照進一道光（2026-10-21 作者：窗戶的光束）
+    const wins = [], p = new TH.Vector3();
+    ins.group.traverse(o => { const m = o.material, gp = o.geometry && o.geometry.parameters; if (!o.isMesh || !m || !m.emissive || !gp || gp.depth > 0.1 || gp.width < 1 || m.color.getHexString() !== '9fbede') return;
+      o.getWorldPosition(p); if (Math.abs(p.z) > HD - 0.6) wins.push([p.x, p.y, p.z - Math.sign(p.z) * 0.1, 0, -Math.sign(p.z)]); else if (Math.abs(p.x) > HW - 0.6) wins.push([p.x - Math.sign(p.x) * 0.1, p.y, p.z, -Math.sign(p.x), 0]); });
+    // 沒有窗戶的房子：在側牆、後牆空著的地方開一兩扇（小鋼珠店、遊樂場、劇場本來就沒窗）
+    if (!wins.length && !NOWIN.test(ins.kind)) addWindows(ins, c, wins);
+    if (wins.length) beams(ins, c, wins.slice(0, 3));
+  };
+  const NOWIN = /^(pachinko|arcade|theater|karaoke|ruin)$/;
+  const addWindows = (ins, c, wins) => {
+    const { box, lam, HW, HD, WH, TH } = c, y = Math.min(2.5, WH - 1.1); if (y < 1.6) return;
+    // 牆上那一塊（窗戶 1.2×1.4 公尺、往屋裡 0.5 公尺）有沒有被家具、招牌擋住；牆本身（又大又薄）不算
+    const bb = new TH.Box3(), boxes = [];
+    ins.group.traverse(o => { if (!o.isMesh || !o.geometry) return; bb.setFromObject(o); const sx = bb.max.x - bb.min.x, sy = bb.max.y - bb.min.y, sz = bb.max.z - bb.min.z; if ((sx > 3 || sz > 3) && Math.min(sx, sz) < 0.9 && sy > 2) return; if (bb.max.y < y - 0.9 || bb.min.y > y + 0.9) return; boxes.push(bb.clone()); });
+    const clear = (x0, x1, z0, z1) => !boxes.some(b => b.max.x > x0 && b.min.x < x1 && b.max.z > z0 && b.min.z < z1);
+    const glass = lam('#CFE0F0', { em: '#9FBEDC', ei: 0.7 }), frame = '#3A2E26', cand = [];
+    // 側牆（西、東）照前後排、後牆（北）照左右排；離門（南牆）遠一點
+    [-0.25, 0.15].forEach(t => { cand.push(['w', t * HD * 2]); cand.push(['e', t * HD * 2]); });
+    [-0.3, 0.3].forEach(t => cand.push(['n', t * HW * 2]));
+    for (const [side, a] of cand) {
+      if (wins.length >= 2) break;
+      const ew = side !== 'n', x = side === 'w' ? -HW + 0.04 : side === 'e' ? HW - 0.04 : a, z = ew ? a : -HD + 0.04;
+      if (ew ? !clear(side === 'w' ? -HW : HW - 0.5, side === 'w' ? -HW + 0.5 : HW, z - 0.8, z + 0.8) : !clear(x - 0.8, x + 0.8, -HD, -HD + 0.5)) continue;
+      if (wins.some(w => Math.hypot(w[0] - x, w[2] - z) < 4)) continue;
+      const g = new TH.Group(); g.position.set(x, y, z); g.rotation.y = ew ? Math.PI / 2 : 0; ins.group.add(g);
+      const add = m => { ins.group.remove(m); m.position.sub(g.position); g.add(m); m.castShadow = false; };
+      add(box(1.2, 1.4, 0.06, glass, x, y, z)); add(box(0.08, 1.4, 0.1, frame, x, y, z)); add(box(1.2, 0.08, 0.1, frame, x, y, z));
+      add(box(1.36, 0.1, 0.16, frame, x, y + 0.75, z)); add(box(1.36, 0.1, 0.2, frame, x, y - 0.75, z));
+      wins.push(side === 'w' ? [x + 0.06, y, z, 1, 0] : side === 'e' ? [x - 0.06, y, z, -1, 0] : [x, y, z + 0.06, 0, 1]);
+    }
+  };
+  // 灰塵慢慢飄（沿著光束上下、左右晃）
+  const stepDust = (ins, dt) => {
+    const f = ins.ifx; if (!f) return; f.t = (f.t || 0) + dt;
+    // 燈籠：在畫面上跟任何一個人（玩家、隊友、屋裡的人）重疊就淡掉——照鏡頭把燈籠、人的上下左右投影到畫面比
+    if (f.lanterns.length && W.camera) {
+      const cam = W.camera, v = f.v || (f.v = new (T().Vector3)()), rect = (x, y0, y1, z, hw) => { v.set(x - hw, y0, z).project(cam); const ax = v.x, ay = v.y; v.set(x + hw, y1, z).project(cam); return [Math.min(ax, v.x), Math.min(ay, v.y), Math.max(ax, v.x), Math.max(ay, v.y)]; };
+      const ppl = [W.P && W.P.h && W.P.h.g].concat((ins.npcs || []).map(n => n.h && n.h.g), (W.town && W.town.allies || []).map(a => a.h && a.h.g)).filter(Boolean).map(g => rect(g.position.x, 0, 2.1, g.position.z, 0.65));
+      f.lanterns.forEach(L => { const r = rect(L.x, L.y - 0.35, L.y + 0.35, L.z, 0.3), near = ppl.some(p => p[0] < r[2] && p[2] > r[0] && p[1] < r[3] && p[3] > r[1]), want = near ? 0.18 : 1; if (Math.abs(L.op - want) < 0.01) return; L.op += (want - L.op) * Math.min(1, dt * 8); L.ms.forEach(m => { m.material.opacity = L.op; m.material.depthWrite = L.op > 0.9; }); });
+    }
+    if (f.room) { const { arr, seed, WH, pts } = f.room; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.01) % 1; arr[i * 3] = s[1] + Math.sin(f.t * 0.2 + s[2]) * 0.1; arr[i * 3 + 1] = 0.3 + s[0] * (WH - 0.6); arr[i * 3 + 2] = s[3] + Math.cos(f.t * 0.15 + s[2]) * 0.1; } pts.geometry.attributes.position.needsUpdate = true; }
+    if (!f.dust.length) return;
+    f.dust.forEach(D => { const { arr, seed, wx, wy, wz, fx, fz, nx, nz } = D; for (let i = 0; i < seed.length; i++) { const s = seed[i]; s[0] = (s[0] + dt * 0.006) % 1; const t = s[0], px = -nz, pz = nx, wob = Math.sin(f.t * 0.25 + s[2]) * 0.04; arr[i * 3] = wx + (fx - wx) * t + px * (s[1] + wob); arr[i * 3 + 1] = wy * (1 - t) + 0.2 + Math.sin(f.t * 0.2 + s[2] * 2) * 0.05; arr[i * 3 + 2] = wz + (fz - wz) * t + pz * (s[1] + wob); } D.pts.geometry.attributes.position.needsUpdate = true; });
+  };
+  // ---------- 接上：進屋（enterNow 最後呼叫 R.interiorHud(true)）、每一格（R.interiorHud(false, dt)） ----------
+  const hud0 = R.interiorHud;
+  if (hud0) R.interiorHud = (force, dt) => {
+    const r = hud0(force, dt);
+    try { const ins = W.inside; if (ins) { if (force) apply(ins); else if (dt) stepDust(ins, dt); } } catch (e) { console.warn('[interiorfx]', e); }
+    return r;
+  };
+})(window.R);

@@ -356,17 +356,39 @@
 
   // ---------- 後巷的黑市：被別人撿走的好裝備（後巷的斗篷商那裡；people.js 的 R.personExtras） ----------
   const bmList = () => { const s = S(); return (s.blackMarket || []).filter(x => x.from <= (s.day || 0)); };
+  // 2026-10-19 作者：黑市除了自己被撿走的裝備，也可以買其他的——每天換一批「遺跡裡撿來的」貨（稀有以上，大多是自己職業能用的），價錢是賣價的四倍（神話 ×1.5）
+  const BM_W = [0, 0, 55, 33, 10, 2];
+  const bmStock = () => {
+    const s = S(), day = s.day || 0;
+    if (!s.bmStock || s.bmStock.day !== day) {
+      const lv = Math.max(5, s.classes && s.classes[s.cls] ? s.classes[s.cls].lv || 5 : 5), list = [], n = 4 + Math.floor(Math.random() * 3);
+      const pk = a => a[Math.floor(Math.random() * a.length)];
+      for (let i = 0; i < n; i++) {
+        const rarity = R.wpick(BM_W), r = Math.random(), ilvl = Math.max(1, lv + Math.floor(Math.random() * 7) - 3);
+        const it = r < 0.6 ? R.makeItem({ kind: 'weapon', base: Math.random() < 0.75 ? pk(R.weaponsFor(s.cls)) : pk(Object.keys(R.WEAPONS)), ilvl, rarity, identified: true })
+          : r < 0.88 ? R.makeItem({ kind: 'armor', base: pk(Object.keys(R.ARMOR)), ilvl, rarity, identified: true })
+          : R.makeItem({ kind: 'charm', base: 'charm', ilvl, rarity, identified: true });
+        const raw = Math.round(R.sellPrice(it) * (rarity >= 5 ? 1.5 : 4) / 10) * 10;
+        list.push({ it, price: R.cost ? R.cost(raw, 'service') : raw });
+      }
+      s.bmStock = { day, list };
+    }
+    return s.bmStock.list;
+  };
   const bmSheet = () => {
     const s = S(), L = bmList();
     R.sheet('<p class="kicker">後巷</p><h2>黑市的貨</h2><p>斗篷商掀開一塊布：「遺跡裡撿來的，來路別問。……看你的眼神，這些是你的？那就算你便宜一點。」</p>'
-      + (L.length ? '<div class="recipes">' + L.map((x, i) => '<div class="recipe"><b style="color:' + R.rarityColor(x.it) + '">' + esc(R.itemName(x.it)) + '</b><small>' + esc((R.itemLines ? R.itemLines(x.it) : []).join('・')) + '</small><button type="button" class="btn pri" data-bm="' + i + '"' + (s.gold < x.price ? ' disabled' : '') + '>買回來（' + x.price + ' 費拉）</button></div>').join('') + '</div>' : '<p class="note">今天沒有貨。</p>'),
+      + '<h3>你被撿走的東西</h3>' + (L.length ? '<div class="recipes">' + L.map((x, i) => '<div class="recipe"><b style="color:' + R.rarityColor(x.it) + '">' + esc(R.itemName(x.it)) + '</b><small>' + esc((R.itemLines ? R.itemLines(x.it) : []).join('・')) + '</small><button type="button" class="btn pri" data-bm="' + i + '"' + (s.gold < x.price ? ' disabled' : '') + '>買回來（' + x.price + ' 費拉）</button></div>').join('') + '</div>' : '<p class="note">今天沒有貨。</p>'),
       '<div class="row"><button type="button" class="btn" id="bm-x">走了</button></div>');
+    const box = document.querySelector('#bm-x') && document.querySelector('#bm-x').closest('.row'), K = bmStock();
+    if (box) { const d = document.createElement('div'); d.innerHTML = '<h3>今天的貨（每天換）</h3><p class="note">「別人從遺跡帶出來的。不保證來路，保證是真貨。」</p>' + (K.length ? '<div class="recipes">' + K.map((x, i) => '<div class="recipe"><b style="color:' + R.rarityColor(x.it) + '">' + esc(R.itemName(x.it)) + '</b><small>' + esc((R.itemLines ? R.itemLines(x.it) : []).join('・')) + '</small><button type="button" class="btn pri" data-bk="' + i + '"' + (s.gold < x.price ? ' disabled' : '') + '>買（' + x.price.toLocaleString() + ' 費拉）</button></div>').join('') + '</div>' : '<p class="note">今天的貨賣完了，明天再來。</p>'); box.parentNode.insertBefore(d, box); }
+    document.querySelectorAll('[data-bk]').forEach(b => { b.onclick = () => { const K2 = bmStock(), x = K2[+b.dataset.bk]; if (!x || s.gold < x.price) return; s.gold -= x.price; s.stash.push(x.it); s.bmStock.list = K2.filter(y => y !== x); R.save(); R.sfx && R.sfx('coin'); R.toast('買了：' + R.itemName(x.it) + '（放進倉庫）', '#E8C04A'); bmSheet(); }; });
     $('bm-x').onclick = R.closeSheet;
     document.querySelectorAll('[data-bm]').forEach(b => { b.onclick = () => { const x = bmList()[+b.dataset.bm]; if (!x || s.gold < x.price) return; s.gold -= x.price; s.stash.push(x.it); s.blackMarket = s.blackMarket.filter(y => y !== x); R.save(); R.sfx && R.sfx('coin'); R.toast('買回來了：' + R.itemName(x.it) + '（放進倉庫）', '#E8C04A'); bmSheet(); }; });
   };
   R.personExtras = R.personExtras || [];
   R.personExtras.push({
-    html: id => { if (id !== 'hooder') return ''; const n = bmList().length; return n ? '<button type="button" class="btn" id="bm-open">黑市的貨（' + n + ' 件）</button>' : ''; },
+    html: id => { if (id !== 'hooder') return ''; const n = bmList().length; return '<button type="button" class="btn" id="bm-open">黑市' + (n ? '（你的東西 ' + n + ' 件）' : '') + '</button>'; },
     bind: id => { const b = $('bm-open'); if (b && id === 'hooder') b.onclick = bmSheet; }
   });
 

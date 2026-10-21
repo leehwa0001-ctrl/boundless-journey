@@ -70,6 +70,7 @@
   };
   // ---------- 城堡的大廳 ----------
   const hall = (F, r) => {
+    if (r.arena) return;   // 2026-10-19：有自己房間的領主體（lordarena.js）不蓋城堡大廳
     const T = THREE, t = F.tile, g = new T.Group(), gold = new T.MeshLambertMaterial({ color: '#C8A040', emissive: '#6A4A10', emissiveIntensity: 0.5 }), white = new T.MeshLambertMaterial({ color: '#E8E4DA' });
     const floorAt = (x, z) => { const tx = t.tX(x), tz = t.tZ(z); for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const k = t.id(tx + dx, tz + dz); if (t.T[k] !== 1 || t.RM[k] !== r.i) return false; } return true; };
     const doors = (r.doors || []).map(k => { const tx = k % t.nx, tz = (k - tx) / t.nx; return [t.cX(tx), t.cZ(tz)]; }), nearDoor = (x, z) => doors.some(([a, b]) => Math.hypot(a - x, b - z) < 3.2);
@@ -124,7 +125,7 @@
   const hitT = (t, dmg, e, o) => (t.ally ? R.hurtAlly(t, dmg, e, o) : R.hurtPlayer(dmg, e, o));
   AI.l_spikewolf = (e, P, d, a, sp, dt, walk, H) => {
     e.yaw = a; e.rageT = (e.rageT || 0) + dt;
-    if (e.rageT > 12) { e.rageT = 0; e.fero = Math.min(1.6, (e.fero || 1) + 0.08); e.speed = (e.def.speed || 4.6) * e.fero * (e.lpRage ? 1.2 : 1); R.num && R.num(e.x, 3, e.z, '越來越兇', 'hurt'); }
+    if (e.rageT > 12) { e.rageT = 0; e.fero = Math.min(1.6, (e.fero || 1) + 0.08); e.speed = (e.def.speed || 4.6) * e.fero * (e.lpRage ? 1.2 : 1) * (e.pactSpd || 1); R.num && R.num(e.x, 3, e.z, '越來越兇', 'hurt'); }
     const fk = e.fero || 1;
     if (e.leap) { const s = e.leap; s.t += dt; const k = Math.min(1, s.t / 0.55); e.x = s.x0 + (s.x1 - s.x0) * k; e.z = s.z0 + (s.z1 - s.z0) * k; e.m.g.position.y = Math.sin(k * Math.PI) * 2.2; if (k >= 1) { e.leap = null; e.m.g.position.y = 0; R.fx('boom', e.x, 0.3, e.z, { r: 2.4, color: '#3A3A44' }); R.shake && R.shake(0.35); targets().forEach(t => { if (Math.hypot(t.x - e.x, t.z - e.z) < 2.4) hitT(t, e.dmg * 1.5 * fk, e, { knock: 0.6 }); }); } return true; }
     if (e.busy > 0) { e.busy -= dt; return false; }

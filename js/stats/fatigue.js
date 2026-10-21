@@ -90,7 +90,7 @@
   const hourly = (hrs, hour) => {
     T().clock += hrs;
     const late = hour != null && hour % 24 < 5 ? 50 : 0;
-    spend(hrs * (100 * (bagCheck() ? 1.25 : 1) * envMul() + late));
+    spend(hrs * (100 * (bagCheck() ? 1.25 : 1) * envMul() + late) * (W().run && !W().town ? 0.5 : 1));   // 2026-10-19：遺跡、狩獵場裡每小時的消耗減半（原本邊打邊跑十分鐘就倒）
   };
   // ---------- 遺跡裡 ----------
   let fxT = 0, lastV = null;
@@ -107,16 +107,25 @@
         while (acc.mp >= 300) { acc.mp -= 300; spend(5); }
         while (acc.st >= 250) { acc.st -= 250; spend(5); }
         patch(P);
+        warn(get());
         if (get() <= MIN) downInRuin();
       }
       fxT -= dt; if (fxT <= 0) { fxT = 0.25; fx(); }
     } catch (e) { console.warn('[fatigue]', e); }
   };
+  // 2026-10-19 作者：滿血突然倒下像 bug——快不行的時候跳大的警告，倒下時講清楚原因
+  let warned = 0;
+  const warn = v => {
+    const lv = v <= -450 ? 2 : v <= -300 ? 1 : 0; if (lv <= warned) { if (v > -250) warned = 0; return; } warned = lv;
+    R.banner && R.banner(lv === 2 ? '快撐不住了！' : '好想睡……', '疲憊值 ' + fmt(v) + '（到 −500 會直接倒下，跟血量無關）。' + (lv === 2 ? '馬上喝提神藥、吃乾糧、找營火，或是趕快回地面。' : '找營火休息、喝提神藥或吃乾糧可以回復。'));
+  };
   const downInRuin = () => {
     const w = W(), P = w.P; if (!P || P.dead || w.run.done) return;
     R.toast && R.toast('眼皮再也撐不開了……（疲乏-不行了：倒下）', '#F06A6A');
-    set(MAX() * 0.3); P.hp = 0;
+    set(MAX() * 0.3); P.hp = 0; w.run.lastHit = { who: '疲憊值降到 −500（太累倒下，不是被打倒的）', dmg: 99999 };   // 死因（deathcause.js）：不然會顯示好幾分鐘前最後打到你的怪
     try { R.onPlayerDown(); } catch (e) { console.warn('[fatigue]', e); }
+    warned = 0;
+    setTimeout(() => { R.banner && R.banner('因為太累倒下了', '疲憊值降到 −500：不是被打倒的。下次記得在營火休息、帶提神藥或乾糧。'); }, 1200);
   };
   // 普攻（物理武器）
   const at0 = R.attack;

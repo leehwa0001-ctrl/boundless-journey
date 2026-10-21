@@ -91,7 +91,7 @@
         if (pts) {
           run.pact = { sel, pts };
           if (sel.time && run.task) run.task.limitH = Math.ceil(run.task.limitH / 2);
-          if (sel.more && run.task && run.task.kind === 'hunt') run.task.need = Math.round(run.task.need * 1.5);
+          if (sel.more && run.task && run.task.kind === 'hunt' && !(run.site && run.site.outdoor)) run.task.need = Math.round(run.task.need * 1.5);   // 2026-10-21：狩獵場的獵物是固定的（熊 1、豬 3），增量會讓完成度最多 67%
           setTimeout(() => R.toast && R.toast('加注條款 ' + pts + ' 點：' + Object.keys(sel).map(k => T[k][1]).join('、'), '#FF9A6A'), 4200);
         }
       }
@@ -105,7 +105,7 @@
     const e = se0(id, x, z, room, o), p = cur(); if (!e || !p || e.def.human) return e;
     let hk = [1, 1.5, 2][p.sel.hp || 0], dk = [1, 1.4, 1.8][p.sel.dmg || 0], sk = p.sel.speed ? 1.25 : 1;
     if (p.sel.elite && !e.def.boss && !e.def.elite) { hk *= 1.6; dk *= 1.2; sk *= 1.1; e.pactElite = 1; }
-    e.hp *= hk; e.hpMax *= hk; e.dmg *= dk; e.speed *= sk;
+    e.hp *= hk; e.hpMax *= hk; e.dmg *= dk; e.speed *= sk; e.pactSpd = sk;   // pactSpd：別的地方照原始速度重算時要再乘（lordfloor.js、region.js）
     // 群聚：一層開始放遺跡生物的時候，一半的機會多放一隻一樣的
     if (swarming && on('swarm') && !e.def.boss && !e.def.elite && !cloning && Math.random() < 0.5) {
       cloning = true; try { const [cx, cz] = R.nearestFloor ? R.nearestFloor(x + (Math.random() - 0.5) * 2.4, z + (Math.random() - 0.5) * 2.4) : [x, z]; const c = R.spawnEnemy(id, cx, cz, room, o); if (c && e.dormant) { c.dormant = true; c.aggro = false; } } finally { cloning = false; }
@@ -151,9 +151,10 @@
   if (ah1) R.allyHit = (e, dmg, by) => { if (e) { const run = W().run; e.hitAt = run ? run.t : 0; } return ah1(e, dmg, by); };
   // 易傷、鈍足
   const hp1 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => { if (on('glass') && R.dmgRedAdd) R.dmgRedAdd(-[0, 0.3, 0.6][on('glass')]); return hp1(raw, src, o); };   // 減傷係數（dmgred.js）
+  R.hurtPlayer = (raw, src, o) => hp1(on('glass') && raw > 0 ? raw * (1 + [0, 0.3, 0.6][on('glass')]) : raw, src, o);   // 2026-10-21 作者：易傷不會被吃掉——不算進減傷係數（上限 75%），直接乘在受到的傷害上
   const dg1 = R.dodge;
   R.dodge = () => { const P = W().P; if (P && on('nodash') && !P.pactNodash && P.dodgeCdMax) { P.pactNodash = 1; P.dodgeCdMax *= 2; } return dg1(); };
+  R.pactHealK = () => (on('heal') ? 0.5 : 1);   // 不經過 R.healP 的回復（營火、泉水）也照「回復減半」
   const hl0 = R.healP;
   R.healP = (v, quiet) => hl0(v * (on('heal') ? 0.5 : 1) * (1 + tb('heal')), quiet);
   const dr0 = R.drink;
@@ -185,7 +186,7 @@
       const pp = pact(), g = run.grade.id;
       if (full || comp >= 60) pp.best[g] = Math.max(pp.best[g] || 0, p.pts);
       if (full) { pp.bestFull = pp.bestFull || {}; pp.bestFull[g] = Math.max(pp.bestFull[g] || 0, p.pts); }
-      if (comp >= 60) award('first');
+      if (comp >= 60 && p.pts > 0) award('first');   // 2026-10-21：繼續委託沒帶條款時 run.pact＝{ pts: 0 }，不算
       // 2026-10-04 作者：用孤單跟禁藥闖很多次也沒拿到——層數加深以後「走完」太難，改成委託做到六成以上回來就算（滿注的稱號還是要走完）
       if (full || comp >= 60) {
         if (p.pts >= 10) award('ten'); if (p.pts >= 20) award('twenty');
