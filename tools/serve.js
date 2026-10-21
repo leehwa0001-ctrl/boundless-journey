@@ -6,7 +6,9 @@ const http = require('http'), fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..'), port = +process.argv[2] || 5182, snaps = path.join(__dirname, 'snaps');
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml' };
 http.createServer((req, res) => {
-  const p = decodeURIComponent(req.url.split('?')[0]);
+  let p = decodeURIComponent(req.url.split('?')[0]);
+  if (p === '/test') { res.writeHead(301, { Location: '/test/' }); return res.end(); }
+  if (p.startsWith('/test/')) p = p.slice(5);   // 測試版（testmode.js）：本機就用同一份檔案
   if (req.method === 'POST' && p === '/__snap') {
     const f = (new URL(req.url, 'http://x').searchParams.get('f') || 'snap.png').replace(/[^\w.-]/g, '_');
     if (!fs.existsSync(snaps)) fs.mkdirSync(snaps);

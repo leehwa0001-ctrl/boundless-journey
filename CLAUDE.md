@@ -9,6 +9,10 @@
    **線上版只有一個網址：https://leehwa0001-ctrl.github.io/taofaling-1433/**（GitHub Pages，repo：https://github.com/leehwa0001-ctrl/taofaling-1433 ，公開）。
    改完、commit 之後 `git push`，GitHub Actions 會自動把 `index.html` 包成完整的網頁發布（`.github/workflows/pages.yml`，一兩分鐘後生效）。兩個帳號的 Claude、Codex 都一樣，**不用再發布到 claude.ai 的 Artifact**。
    舊的 Artifact 網址（S18gM8…、PNpsZN37…）不再更新；玩家在舊網址的標題畫面「匯出存檔」，到新網址「匯入存檔」就能接著玩（savecode.js）。
+   **更新先上測試版，作者說「合併」才上正式版（2026-10-21 作者）**：
+   - 做完的更新先合進 `test` 分支（作者說「測試」）。GitHub Actions 會把它發布在 https://leehwa0001-ctrl.github.io/taofaling-1433/test/ （測試版；`.github/workflows/test-deploy.yml` → `pages.yml`）。
+   - 作者在遊戲主畫面用方向鍵輸入 ↑↑↓↓←←→→ 切到測試版，再輸入一次回正式版（`js/core/testmode.js`）。測試版的存檔跟正式版分開。
+   - 作者測好、說「合併」，才把更新合進 `main`（正式版），之後把 `main` 合回 `test`。**不要直接 push 到 `main`。**
 1. **輪流改，不要同時改。** 開工前先 `git status`、`git log -3` 看看別人剛改了什麼；收工前 commit。
 2. **commit 訊息用繁體中文**，寫清楚改了什麼、為什麼。例如：`遺跡：斷尾型改成封住房間前後的出入口`。
 3. **一次只做一件事。** 大改動（例如重寫某個系統）先跟作者確認。
