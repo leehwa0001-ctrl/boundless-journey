@@ -32,6 +32,11 @@
       // 其他按鈕：一排小字的連結（標題右邊的小字拿掉，滑鼠移上去看得到）
       btns.classList.add('t2-links');
       [...btns.querySelectorAll('button')].forEach(b => { if (b === go || b === nw || b === pick) return; const sm = b.querySelector('small'); if (sm && sm.textContent && !b.title) b.title = sm.textContent; b.classList.add('t2-link'); });
+      // 更新公告的紅點（2026-10-21 作者：紅點加回連結旁邊）：news.js 的紅點在公告自己跳出來的時候就拿掉了；這裡留到玩家自己點「更新公告」為止
+      const nb = $('t-news');
+      if (nb) { const sm = nb.querySelector('small'), ver = sm ? sm.textContent : ''; let clicked = ''; try { clicked = localStorage.getItem('tfl-news-click') || ''; } catch (e) { }
+        const dot = nb.querySelector('.news-dot'); if (ver && clicked !== ver && !dot) { const d = document.createElement('span'); d.className = 'news-dot'; nb.insertBefore(d, sm); } else if (clicked === ver && dot) dot.remove();
+        if (!nb.dataset.t2) { nb.dataset.t2 = 1; nb.addEventListener('click', () => { try { localStorage.setItem('tfl-news-click', ver); } catch (e) { } const d = nb.querySelector('.news-dot'); if (d) d.remove(); }); } }
       // 存檔、存檔轉移：收進面板
       let panel = $('t2-saves'); if (!panel) { panel = document.createElement('div'); panel.id = 't2-saves'; panel.className = 't2-saves'; panel.hidden = true; panel.innerHTML = '<div class="t2-saves-head"><b>選擇存檔</b><button type="button" class="t2-back" id="t2-back">返回</button></div>'; wrap.appendChild(panel); panel.querySelector('#t2-back').onclick = () => open(false); }
       ['t-slots', 't-transfer'].forEach(id => { const el = $(id); if (el && el.parentNode !== panel) panel.appendChild(el); });

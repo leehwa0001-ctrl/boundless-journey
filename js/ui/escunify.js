@@ -32,7 +32,7 @@
       const sec = (k, name) => { let s = w.querySelector('.eu-sec-' + k); if (!s) { s = document.createElement('section'); s.className = 'em-sec eu-sec-' + k; s.innerHTML = '<h4>' + name + '</h4><div class="em-btns"></div>'; w.appendChild(s); } return s; };
       const mapS = sec('map', '地圖・委託'), helpS = sec('help', '說明'), statS = sec('stat', '角色總數值');
       w.querySelectorAll('.em-game .em-btns > button').forEach(b => { if (MAPRE.test(b.textContent)) mapS.querySelector('.em-btns').appendChild(b); });
-      w.querySelectorAll('.em-game .em-btns > button, .em-other .em-btns > button').forEach(b => { const t = b.textContent; if (/教學/.test(t)) helpS.querySelector('.em-btns').appendChild(b); else if (/畫法|像素版|精緻版/.test(t)) { const sc = w.querySelector('.em-s-screen .em-btns'); if (sc) sc.appendChild(b); } });
+      w.querySelectorAll('.em-game .em-btns > button, .em-other .em-btns > button, .em-char .em-btns > button').forEach(b => { const t = b.textContent; if (/教學/.test(t)) helpS.querySelector('.em-btns').appendChild(b); else if (/畫法|像素版|精緻版/.test(t)) { const sc = w.querySelector('.em-s-screen .em-btns'); if (sc) sc.appendChild(b); } });
       const here = where();
       [...sh.querySelectorAll(':scope > p, p.note, details')].forEach(n => { if (n.closest('.em-wrap') || n.closest('.eu-head') || n.closest('.cs-box')) return; if (n.textContent.trim() === here) { n.remove(); return; } helpS.appendChild(n); });   // 跟標題一樣的那一行（遺跡的暫停選單）拿掉
       const cs = sh.querySelector('.cs-box'); if (cs && !cs.closest('.eu-sec-stat')) statS.appendChild(cs);
