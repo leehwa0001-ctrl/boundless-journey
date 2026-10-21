@@ -1,0 +1,16 @@
+# 測試者模式：test 分支有更新 → 叫 pages.yml（在 main 上）重新發布，正式版和測試版（test/）一起包
+# 直接從 test 分支發布會被 GitHub Pages 的環境保護擋下（只准 main），所以用 workflow_dispatch 交給 main 那邊跑。
+name: 測試版更新後重新發布
+on:
+  push:
+    branches: [test]
+permissions:
+  actions: write
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 叫 pages.yml 重新發布
+        run: gh workflow run pages.yml --ref main -R "$GITHUB_REPOSITORY"
+        env:
+          GH_TOKEN: ${{ github.token }}

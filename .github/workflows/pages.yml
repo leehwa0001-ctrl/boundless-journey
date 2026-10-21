@@ -1,4 +1,4 @@
-# 發布到 GitHub Pages：每次 push 到 main 就自動更新線上版
+# 發布到 GitHub Pages：每次 push 到 main 就自動更新線上版（test 分支有更新時，test-deploy.yml 也會叫這裡重新發布）
 # index.html 是給 Claude Artifact 用的「頁面內容」（沒有 <!doctype>、<head>），這裡先包成完整的網頁再發布。
 name: 發布到 GitHub Pages
 on:
@@ -20,19 +20,29 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: 包成完整的網頁
+      # 2026-10-21 作者：測試者模式——test 分支（作者說「測試」放進去的更新）發布在 test/，作者說「合併」才進 main（正式版）
+      - name: 拿測試版（test 分支；還沒有的話測試版＝正式版）
+        uses: actions/checkout@v4
+        with:
+          ref: test
+          path: _testsrc
+        continue-on-error: true
+      - name: 包成完整的網頁（正式版放最上層、測試版放 test/）；每個 script 加上版本號（內容改了網址就變，瀏覽器不會用舊的快取）
         run: |
-          mkdir -p _site
-          cp emblem.png flag.webp _site/
-          cp -R js _site/   # 2026-10-14：程式照負責的事分資料夾放在 js/ 底下
-          cp -R assets _site/
-          {
-            printf '%s\n' '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'
-            cat index.html
-            printf '%s\n' '</body></html>'
-          } > _site/index.html
-      - name: 每個 script 加上版本號（內容改了網址就變，瀏覽器不會用舊的快取）
-        run: node tools/bust.js _site/index.html
+          build() {
+            src="$1"; out="$2"; mkdir -p "$out"
+            cp "$src/emblem.png" "$src/flag.webp" "$out/"
+            cp -R "$src/js" "$out/"   # 2026-10-14：程式照負責的事分資料夾放在 js/ 底下
+            cp -R "$src/assets" "$out/"
+            {
+              printf '%s\n' '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'
+              cat "$src/index.html"
+              printf '%s\n' '</body></html>'
+            } > "$out/index.html"
+            node "$src/tools/bust.js" "$out/index.html"
+          }
+          build . _site
+          if [ -f _testsrc/index.html ]; then build _testsrc _site/test; else build . _site/test; fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
