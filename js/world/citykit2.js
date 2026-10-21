@@ -456,7 +456,7 @@
   function hud(force, dt) {
     slowT += dt || 0; if (!force && slowT < 0.2) return; slowT = 0;
     const P = W.P, s = S(), tw = W.town, name = areaAt(P.x, P.z), date = R.shortDate ? R.shortDate() : '', clk = (R.timeLabel ? R.timeLabel() : '') + '・' + (R.weatherNow ? R.weatherNow() : '');
-    if (name + date + clk !== lastLbl || force) { lastLbl = name + date + clk; $('r-where').innerHTML = '<b>' + esc(tw.city.name) + (name !== tw.city.name ? '・' + esc(name) : '') + '</b><small>' + esc(date) + '　' + esc(R.clsName(s.cls)) + ' Lv ' + s.classes[s.cls].lv + '</small><small id="r-clock">' + esc(clk) + '</small>'; }
+    if (name + date + clk !== lastLbl || force) { lastLbl = name + date + clk; $('r-where').innerHTML = '<b>' + esc(tw.city.name) + (name !== tw.city.name && !tw.room ? '・' + esc(name) : '') + '</b><small>' + esc(date) + '　' + esc(R.clsName(s.cls)) + ' Lv ' + s.classes[s.cls].lv + '</small><small id="r-clock">' + esc(clk) + '</small>'; }
     $('r-town').innerHTML = '<span>費拉 <b>' + s.gold + '</b></span><span>回復藥 <b>' + s.potions.hp + '</b></span><span>魔力藥 <b>' + s.potions.mp + '</b></span>' + (R.crimeHud ? R.crimeHud() : '');   // 通緝、視線條、警戒（props.js、vigilance.js；ckcrime.js 接上）
     const it = R.townNear(); $('r-prompt').hidden = !it; if (it) $('r-prompt').innerHTML = '<kbd>' + (R.touch ? '互動' : '空白') + '</kbd>' + esc(it.label);
     const wp = $('r-wp'); if (wp) wp.hidden = true;
@@ -550,7 +550,7 @@
   const bm0 = R.bigMap; R.bigMap = (...a) => (R.inCity3D() && !W.run ? bigMap() : bm0(...a));
   const dm0 = R.drawTownMinimap; R.drawTownMinimap = (x, s) => (R.inCity3D() ? drawMini(x, s) : dm0(x, s));
   const db0 = R.drawTownBig; if (db0) R.drawTownBig = (x, s) => (R.inCity3D() ? null : db0(x, s));
-  const ta0 = R.townArea; R.townArea = () => (R.inCity3D() ? W.town.city.name + '・' + areaAt(W.P.x, W.P.z) : ta0());
+  const ta0 = R.townArea; R.townArea = () => (R.inCity3D() ? (W.town.room ? W.town.city.name : W.town.city.name + '・' + areaAt(W.P.x, W.P.z)) : ta0());   // 店裡的城名已經帶店名（2026-10-21：不要重複）
   const en0 = R.enterTownNow; R.enterTownNow = (...a) => { if (W.town && W.town.L) { try { W.town.L.pm.dispose(); if (W.town.L.env) W.town.L.env.dispose(); } catch (e) { } } if (R.SEE) R.SEE.r.value = 2.5; return en0(...a); };
   const gh0 = R.goHosu; if (gh0) R.goHosu = (...a) => gh0(...a);
 
