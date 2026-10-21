@@ -1,4 +1,4 @@
-// 可以翻閱的書（2026-10-18 作者：東鶴書房 x=4.7 z=-3.9 新增一本可閱讀的書，內容是作者給的圖）
+// 可以翻閱的書（2026-10-18 作者）：通用的閱讀器，目前沒有放任何書
 // - R.BOOKS[id] = { title, sub, pages: [{ img, cap? }] }：一頁一張圖（assets/books/<id>/），打開書的時候才載入那一頁的圖。
 // - R.openBook(id, where)：打開；← → 翻頁、Esc 或「闔上書」關掉；點圖可以放大看。
 // - 書放在哪裡：interiors2.js 的書店 furnish 裡 c.inter(...) 呼叫 R.openBook。
@@ -44,5 +44,5 @@
     document.body.appendChild(el); window.addEventListener('keydown', key, true); draw();
   };
   R.bookOpen = () => !!el; R.closeBook = close;
-  // 書的內容各自一個檔案（例如 book-beast.js 的《獸的誘惑》），刪掉那個檔案就沒有那本書
+  // 書的內容各自一個檔案，刪掉那個檔案就沒有那本書
 })(window.R = window.R || {});
