@@ -45,6 +45,7 @@
     document.getElementById('r-modal').hidden = true; W.paused = false; R.input.keys = {}; R.input.fire = false;
     R.loadFloor(0, { fresh: true });
   };
+  R.startRunBase = R.startRun;   // 2026-10-21：遺跡裡存檔、下次繼續（runsave.js）用原本這一版重開一趟，不經過委託書、背包檢查這些包在外面的
   // 每秒回魔：術士、牧師 3.5，其他 2，加上回魔詞綴、天賦（角色總數值的「每秒回魔」也用這個）
   R.mpRegenOf = P => (P.cls === 'mage' || P.cls === 'priest' ? 3.5 : 2) + (P.mpRegen || 0);
   R.loadFloor = (f, o) => {
