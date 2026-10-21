@@ -9,11 +9,45 @@
 (function (R) {
   const $ = id => document.getElementById(id);
   // ---------- 加載頁 ----------
+  // 小佩特拉核心（2026-10-21 作者：小佩特拉有點醜）：點陣畫——有明暗的眼球、血絲、紅色虹膜和直的瞳孔、兩邊的骨翼和翼膜。
+  // 眼球、虹膜、左右翼各是一層，用 CSS 動（翅膀拍、眼睛左右看、整顆上下浮）——畫面卡住的時候動畫照樣跑。
+  let PT = null;
+  const parts = () => {
+    if (PT) return PT;
+    const cv = (w, h, f, flip) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); if (flip) { g.translate(w, 0); g.scale(-1, 1); } const px = (x, y, col) => { g.fillStyle = col; g.fillRect(x, y, 1, 1); }; f(px, g); return c.toDataURL(); };
+    const line = (px, x0, y0, x1, y1, col) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) px(Math.round(x0 + (x1 - x0) * i / n), Math.round(y0 + (y1 - y0) * i / n), col); };
+    const ball = cv(22, 22, px => {
+      for (let y = 0; y < 22; y++) for (let x = 0; x < 22; x++) {
+        const dx = x - 10.5, dy = y - 10.5, d = Math.hypot(dx, dy); if (d > 10.6) continue;
+        const lit = (-dx - dy) / 15;   // 光從左上來
+        px(x, y, d > 9.7 ? '#4A2A2C' : lit > 0.45 ? '#FFF6EC' : lit > 0.05 ? '#EFE2D6' : lit > -0.45 ? '#D9C6B8' : '#B89A8E');
+      }
+      // 血絲：從邊上往裡長
+      [[[2, 9], [5, 10], [6, 8]], [[3, 15], [6, 14], [7, 16]], [[17, 4], [15, 6], [14, 5]], [[19, 13], [16, 13], [15, 15]], [[9, 19], [10, 16]], [[12, 2], [12, 4], [10, 5]]].forEach(v => { for (let i = 1; i < v.length; i++) line(px, v[i - 1][0], v[i - 1][1], v[i][0], v[i][1], i === 1 ? '#B8363C' : '#D46A6A'); });
+    });
+    const iris = cv(12, 12, px => {
+      for (let y = 0; y < 12; y++) for (let x = 0; x < 12; x++) { const d = Math.hypot(x - 5.5, y - 5.5); if (d > 5.8) continue; px(x, y, d > 4.9 ? '#3A0810' : d > 3.6 ? '#9A1C2A' : d > 2.4 ? '#C8343E' : '#E0505A'); }
+      for (let y = 2; y <= 9; y++) { px(5, y, '#100406'); px(6, y, '#100406'); } px(5, 1, '#3A0810'); px(6, 10, '#3A0810');
+      px(8, 3, '#FFFFFF'); px(8, 4, '#FFD8D8');   // 反光點在右上，離瞳孔遠一點（不要看起來像「1」）
+    });
+    const drawWing = (px, g) => {
+      const J = [27, 11], tips = [[2, 1], [0, 7], [1, 13], [5, 19], [12, 21]];
+      // 翼膜：骨頭和骨頭之間塗暗紅
+      g.fillStyle = '#5A2630'; g.beginPath(); g.moveTo(J[0], J[1]); tips.forEach(t => g.lineTo(t[0] + 2, t[1] + (t[1] < 11 ? 1 : -1))); g.closePath(); g.fill();
+      for (let i = 0; i < tips.length - 1; i++) { const a = tips[i], b = tips[i + 1]; line(px, a[0] + 2, a[1] + 1, (a[0] + b[0]) / 2 + 5, (a[1] + b[1]) / 2, '#3A1820'); }
+      // 骨頭：亮的一條＋下面一條暗的
+      tips.forEach(t => { line(px, J[0], J[1] + 1, t[0], t[1] + 1, '#8A7A70'); line(px, J[0], J[1], t[0], t[1], '#F0E6DA'); px(t[0], t[1], '#2A2020'); });
+      px(J[0], J[1], '#F0E6DA'); px(J[0] - 1, J[1], '#F0E6DA'); px(J[0] - 1, J[1] - 1, '#D8CABC');
+    };
+    const wing = cv(28, 22, drawWing), wingR = cv(28, 22, drawWing, true);   // 右翼：整張左右翻過來畫
+    return (PT = { ball, iris, wing, wingR });
+  };
+  const petra = () => { const t = parts(); return '<div class="ld-petra" aria-hidden="true"><img class="ld-wl" src="' + t.wing + '" alt=""><img class="ld-wr" src="' + t.wingR + '" alt=""><div class="ld-ball"><img src="' + t.ball + '" alt=""><img class="ld-iris" src="' + t.iris + '" alt=""></div></div>'; };
   let el = null;
   const ensure = () => {
     if (el) return el;
     el = document.createElement('div'); el.id = 'r-loading'; el.hidden = true; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<div class="ld-box"><div class="ld-eye" aria-hidden="true"><i></i></div><b class="ld-t">讀取中</b><div class="ld-bar"><i></i></div><small class="ld-p"></small></div>';
+    el.innerHTML = '<div class="ld-box">' + petra() + '<b class="ld-t">讀取中</b><div class="ld-bar"><i></i></div><small class="ld-p"></small></div>';
     document.body.appendChild(el);
     return el;
   };
@@ -93,10 +127,14 @@
     + '#r-loading.ld-ind .ld-bar i{width:35%!important;animation:ldbar 1.1s ease-in-out infinite}#r-loading.ld-ind .ld-p{visibility:hidden}@keyframes ldbar{0%{transform:translateX(-100%)}100%{transform:translateX(290%)}}'
     + '#r-loading{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:rgba(8,7,12,.88);transition:opacity .2s}#r-loading[hidden]{display:none}#r-loading.ld-out{opacity:0}'
     + '.ld-box{display:grid;justify-items:center;gap:10px;width:min(320px,80vw);color:#E8DFCF;text-align:center}'
+    + '.ld-petra{position:relative;width:180px;height:72px;image-rendering:pixelated;filter:drop-shadow(0 0 14px rgba(200,50,58,.4))}.ld-petra img{position:absolute;image-rendering:pixelated}'
+    + '.ld-wl,.ld-wr{width:84px;height:66px;top:2px}.ld-wl{right:50%;margin-right:22px;transform-origin:100% 50%;animation:ldflap 1.6s ease-in-out infinite}.ld-wr{left:50%;margin-left:22px;transform-origin:0 50%;animation:ldflapr 1.6s ease-in-out infinite}'
+    + '.ld-ball{position:absolute;left:50%;top:3px;width:66px;height:66px;margin-left:-33px;animation:ldbob 2.2s ease-in-out infinite}.ld-ball>img:first-child{width:66px;height:66px;left:0;top:0}'
+    + '.ld-iris{width:30px;height:30px;left:18px;top:18px;animation:ldiris 3s steps(1,end) infinite}'
+    + '@keyframes ldflap{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(12deg)}}@keyframes ldflapr{0%,100%{transform:rotate(4deg)}50%{transform:rotate(-12deg)}}'
+    + '@keyframes ldbob{0%,100%{transform:translateY(-3px)}50%{transform:translateY(3px)}}'
+    + '@keyframes ldiris{0%{transform:translate(-10px,0)}30%{transform:translate(0,4px)}55%{transform:translate(10px,-3px)}80%{transform:translate(0,0)}}'
     + '.ld-t{font-family:var(--serif);font-size:20px;letter-spacing:.12em}.ld-p{font-size:12px;color:#8E8496;letter-spacing:.1em}'
     + '.ld-bar{width:100%;height:6px;border-radius:3px;background:#221E2A;overflow:hidden;border:1px solid #352E42}.ld-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#8A1A2A,#C8323A);transition:width .15s}'
-    + '.ld-eye{width:44px;height:44px;border-radius:50%;background:#EDE0D6;display:grid;place-items:center;box-shadow:0 0 18px rgba(200,50,58,.45);animation:ldlook 2.4s ease-in-out infinite}'
-    + '.ld-eye i{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle,#140A0C 0 35%,#8A1A2A 40% 100%);animation:ldiris 2.4s ease-in-out infinite}'
-    + '@keyframes ldlook{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}@keyframes ldiris{0%,100%{transform:translateX(-7px)}50%{transform:translateX(7px)}}';
   document.head.appendChild(css);
 })(window.R);
