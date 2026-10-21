@@ -26,13 +26,16 @@
       sh.classList.add('eu-menu');
       // 標題：在哪裡＋日期
       let head = sh.querySelector(':scope > .eu-head'); if (!head) { head = document.createElement('div'); head.className = 'eu-head'; sh.prepend(head); const x = sh.querySelector('.cx-x'); if (x) sh.prepend(x); }
-      head.innerHTML = '<p class="kicker">' + (W.run ? '暫停' : '選單') + '</p><h2>' + esc(where()) + '</h2><p class="note">' + esc(R.dateLabel ? R.dateLabel() : '') + '</p>';
+      // 2026-10-21 修：沒變就不要動 DOM——每動一次，escmenu.js 的 MutationObserver 就重排、又叫醒這裡，一秒重畫一百多次，滑鼠按下去到放開之間按鈕就被換掉，按不了
+      const hh = '<p class="kicker">' + (W.run ? '暫停' : '選單') + '</p><h2>' + esc(where()) + '</h2><p class="note">' + esc(R.dateLabel ? R.dateLabel() : '') + '</p>';
+      if (head.dataset.h !== hh) { head.innerHTML = hh; head.dataset.h = hh; }
       [...sh.querySelectorAll(':scope > h2, :scope > .kicker, :scope > p.kicker')].forEach(h => h.remove());
       // 區塊：地圖・委託、說明、數值（都放在 .em-wrap 裡面）
       const sec = (k, name) => { let s = w.querySelector('.eu-sec-' + k); if (!s) { s = document.createElement('section'); s.className = 'em-sec eu-sec-' + k; s.innerHTML = '<h4>' + name + '</h4><div class="em-btns"></div>'; w.appendChild(s); } return s; };
       const mapS = sec('map', '地圖・委託'), helpS = sec('help', '說明'), statS = sec('stat', '角色總數值');
-      w.querySelectorAll('.em-game .em-btns > button').forEach(b => { if (MAPRE.test(b.textContent)) mapS.querySelector('.em-btns').appendChild(b); });
-      w.querySelectorAll('.em-game .em-btns > button, .em-other .em-btns > button, .em-char .em-btns > button').forEach(b => { const t = b.textContent; if (/教學/.test(t)) helpS.querySelector('.em-btns').appendChild(b); else if (/畫法|像素版|精緻版/.test(t)) { const sc = w.querySelector('.em-s-screen .em-btns'); if (sc) sc.appendChild(b); } });
+      const mv = (b, to) => { if (to && b.parentNode !== to) to.appendChild(b); };
+      w.querySelectorAll('.em-game .em-btns > button').forEach(b => { if (MAPRE.test(b.textContent)) mv(b, mapS.querySelector('.em-btns')); });
+      w.querySelectorAll('.em-game .em-btns > button, .em-other .em-btns > button, .em-char .em-btns > button').forEach(b => { const t = b.textContent; if (/教學/.test(t)) mv(b, helpS.querySelector('.em-btns')); else if (/畫法|像素版|精緻版/.test(t)) mv(b, w.querySelector('.em-s-screen .em-btns')); });
       const here = where();
       [...sh.querySelectorAll(':scope > p, p.note, details')].forEach(n => { if (n.closest('.em-wrap') || n.closest('.eu-head') || n.closest('.cs-box')) return; if (n.textContent.trim() === here) { n.remove(); return; } helpS.appendChild(n); });   // 跟標題一樣的那一行（遺跡的暫停選單）拿掉
       const cs = sh.querySelector('.cs-box'); if (cs && !cs.closest('.eu-sec-stat')) statS.appendChild(cs);
@@ -43,10 +46,11 @@
       let tabs = w.querySelector(':scope > .eu-tabs'); if (!tabs) { tabs = document.createElement('div'); tabs.className = 'eu-tabs'; tabs.setAttribute('role', 'tablist'); } if (w.firstChild !== tabs) w.prepend(tabs);
       // 同名的按鈕只留一個（快速移動、回報穿模、觀光手冊有兩個檔案各加一次）
       const seen = new Set(); w.querySelectorAll('.em-sec button').forEach(b => { const t = b.textContent.trim(); b.hidden = !!t && seen.has(t); if (t) seen.add(t); });
-      tabs.innerHTML = '';
       const pages = TABS.filter(([k]) => [...w.querySelectorAll(PAGE[k])].some(filled));
       if (!pages.some(p => p[0] === cur)) cur = 'game';
-      pages.forEach(([k, name]) => { const t = document.createElement('button'); t.type = 'button'; t.className = 'eu-tab' + (k === cur ? ' on' : ''); t.textContent = name; t.dataset.k = k; t.setAttribute('role', 'tab'); t.setAttribute('aria-selected', k === cur ? 'true' : 'false'); t.onclick = () => { cur = k; apply(); }; tabs.appendChild(t); });
+      const sig = pages.map(p => p[0]).join(',');
+      if (tabs.dataset.sig !== sig) { tabs.dataset.sig = sig; tabs.innerHTML = ''; pages.forEach(([k, name]) => { const t = document.createElement('button'); t.type = 'button'; t.className = 'eu-tab'; t.textContent = name; t.dataset.k = k; t.setAttribute('role', 'tab'); t.onclick = () => { cur = k; apply(); }; tabs.appendChild(t); }); }
+      tabs.querySelectorAll('.eu-tab').forEach(t => { const o = t.dataset.k === cur; t.classList.toggle('on', o); t.setAttribute('aria-selected', o ? 'true' : 'false'); });
       const on = new Set(w.querySelectorAll(PAGE[cur]));
       w.querySelectorAll('.em-sub').forEach(x => { x.hidden = !x.querySelector('button:not([hidden]), input'); });   // 搬進來的按鈕（畫法）要看得到
       w.querySelectorAll(':scope > .em-sec').forEach(s => { s.hidden = false; s.classList.toggle('eu-off', !on.has(s) || !filled(s)); });
@@ -57,9 +61,13 @@
   };
   // escmenu.js 排完（MutationObserver＋20 毫秒）、pauselayout.js 的 setTimeout 之後再套
   const later = () => { [0, 40, 120, 300].forEach(t => setTimeout(apply, t)); };
-  ['townMenu', 'pauseSheet'].forEach(n => { const f0 = R[n]; if (f0) R[n] = (...a) => { const r = f0(...a); later(); return r; }; });
+  // 打開的時候馬上排好（先叫 escmenu.js 排區塊，再變分頁），不要讓舊的樣子先閃一下
+  ['townMenu', 'pauseSheet'].forEach(n => { const f0 = R[n]; if (f0) R[n] = (...a) => { const r = f0(...a); try { if (R.escMenuOrganize) R.escMenuOrganize(); apply(); } catch (e) { } later(); return r; }; });
   // 選單開著的時候，有按鈕被加進來或換字（開關），也再套一次（escmenu.js 會先把新按鈕排進區塊）
-  const start = () => { const sh = $('r-sheet'); if (!sh) return setTimeout(start, 300); let t = null; new MutationObserver(() => { if (busy || !sh.querySelector('.em-wrap')) return; clearTimeout(t); t = setTimeout(apply, 60); }).observe(sh, { childList: true, subtree: true }); };
+  // MutationObserver 的回呼在畫面重畫之前跑：在這裡直接排，pauselayout.js 晚一點拆成三欄、escmenu.js 晚一點補的按鈕都不會先被看到（apply 沒變就不動 DOM，不會一直互相叫醒）
+  const start = () => { const sh = $('r-sheet'); if (!sh) return setTimeout(start, 300);
+    new MutationObserver(() => { if (!busy && sh.querySelector('.em-wrap') && sh.classList.contains('eu-menu')) apply(); }).observe(sh, { childList: true, subtree: true });
+    new MutationObserver(() => { if (!busy && sh.classList.contains('ps-lay') && sh.querySelector('.em-wrap')) apply(); }).observe(sh, { attributes: true, attributeFilter: ['class'] }); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   const sh0 = R.sheet; R.sheet = (...a) => { const sh = $('r-sheet'); if (sh) sh.classList.remove('eu-menu'); return sh0(...a); };
   document.addEventListener('keydown', e => {
