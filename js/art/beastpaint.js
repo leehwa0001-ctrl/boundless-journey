@@ -6009,7 +6009,11 @@
   const GENF = { mx: 0.14, my: 0.24, bones: {}, anims: Object.assign({}, GENS.anims, {
       idle: [B({}, 0, 0), B({}, 0, -1), B({}, 0, -2, 0, 1.02), B({}, 0, -1)],
       move: [B({}, 0, -1, -3), B({}, 0, -3, 0, 1.02), B({}, 0, -1, 3), B({}, 0, 0, 0, 0.98)] }) };
-  const rigOf = id => RIG[id] || (isPix(id) ? (R.ENEMIES[baseOf(id)] && R.ENEMIES[baseOf(id)].fly ? GENF : GENS) : GEN);
+  // 街上的：腳踏車只輕輕上下（不歪、不壓扁）；貓狗走路小小地起伏
+  const GENB = { mx: 0.06, my: 0.08, bones: {}, anims: { idle: [B({})], move: [B({}, 0, 0), B({}, 0, 0), B({}, 0, -1), B({}, 0, 0)], atk: [B({})], hurt: [B({})] } };
+  const GENT = { mx: 0.1, my: 0.12, bones: {}, anims: { idle: [B({}, 0, 0, 0, 1), B({}, 0, 0, 0, 0.98)], move: [B({}, 0, -1, -1), B({}, 0, 0), B({}, 0, -1, 1), B({}, 0, 0)], atk: [B({})], hurt: [B({})] } };
+  const TOWN = id => (/^cyc[0-9]/.test(id) ? GENB : /^(cat|dog)[0-9]|^(crow|pigeon)/.test(id) ? GENT : null);
+  const rigOf = id => RIG[id] || TOWN(id) || (isPix(id) ? (R.ENEMIES[baseOf(id)] && R.ENEMIES[baseOf(id)].fly ? GENF : GENS) : GEN);
   // ---------- 變形 ----------
   const mk = (piv, dx, dy, deg, sy) => { const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), k = sy || 1; return (x, y) => { const ux = x - piv[0], uy = (y - piv[1]) * k; return [c * ux - s * uy + piv[0] + dx, s * ux + c * uy + piv[1] + dy]; }; };
   const segD = (x, y, [ax, ay], [bx, by]) => { const vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy))); return Math.hypot(x - ax - vx * t, y - ay - vy * t); };
