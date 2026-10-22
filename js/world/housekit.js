@@ -8,6 +8,7 @@
 // - 前院：房子往後退一點，前面一道矮的磚牆（門口留開口）＋門柱上的信箱、一兩叢灌木。
 // - 店面（style 'shop'、七公尺以下、沒有霓虹的）：一樓縮進去的店面玻璃、柱、招牌的帶子、布雨遮或瓦的庇；二樓住家的窗；
 //   屋頂是斜的（切妻、寄棟）或「看板建築」（正面一道高的立面藏住屋頂）。整塊地照舊是店（門、互動的位置不變）。便利商店照舊。
+// - 照舊用方塊的：o.plain（呼叫的地方自己加屋頂、裝飾）、roof: 'flat'；城市指定的 roofMat、roof（hip／gable）照用。
 // - 碰撞、地圖的輪廓照每一塊量體（B.solid、D.foot）。地塊太小、太大、有店名的、轉了奇怪角度的框，照舊用原本的方塊。
 // 放在 citykit*.js 後面（包住 CK.extendBuilder，所有用 B.bld 的城市都換）。
 (function (R) {
@@ -44,7 +45,7 @@
       const GAP = 0.6, X0 = LX0 + GAP, X1 = LX1 - GAP, Z0 = LZ0 + GAP, Z1 = LZ1 - sb, w = X1 - X0, d = Z1 - Z0;
       const col = o.col && WALLS.indexOf(o.col) >= 0 ? o.col : pk(WALLS), wall = M('plaster', { col }), wall2 = M('plaster', { col: pk(WALLS) });
       const trim = rnd() < 0.5 ? M('white') : M('woodB'), frameM = M('metal', { col: pk(['#E8E6E0', '#3A3C40', '#8A8C8E', '#5A4A3E']) }), glass = M('glass'), lit = winOn();
-      const roofM = o.roofMat && /^(kawara|hRoof)/.test(o.roofMat) ? o.roofMat : pk(ROOFS), mir = rnd() < 0.5 ? -1 : 1;
+      const roofM = o.roofMat && /^(kawara|hRoof|mossRoof|copper)/.test(o.roofMat) ? o.roofMat : pk(ROOFS), mir = rnd() < 0.5 ? -1 : 1;   // 城市指定的瓦（渦旗的紅瓦、古森的青苔）照用
       const foot = [];   // 量體（碰撞、地圖輪廓）
       const two = rnd() < 0.4 ? M('plaster', { col: pk(DARK) }) : null;
       // 一面牆上的盒子：face 's'＝+z（前）、'n'＝-z、'e'＝+x、'w'＝-x；c＝牆的位置；沿著牆 a0～a1；o0～o1＝往外凸多少
@@ -147,7 +148,7 @@
       if (fl >= 2) kinds.push('skirt', 'skirt');
       if (w >= 7) kinds.push('L');
       kinds.push('modern');
-      const kind = pk(kinds), roofType = rnd() < 0.55 ? 'gable' : 'hip';
+      const kind = pk(kinds), roofType = o.roof === 'hip' || o.roof === 'gable' ? o.roof : rnd() < 0.55 ? 'gable' : 'hip';
       const mx = a => mir > 0 ? a : -a;   // 左右對調
       if (kind === 'L' && w >= 6.5 && d >= 6) {
         // 主屋（一側，整個深度）＋側翼（另一側，往後退）
@@ -307,7 +308,8 @@
     const shopT = o => { const ew = o.face === 'e' || o.face === 'w', w = Math.abs(o.r[2] - o.r[0]), d = Math.abs(o.r[3] - o.r[1]); return track(o, ew ? d : w, ew ? w : d, () => shop(o), 1.3); };
     const bld0 = B.bld;
     B.bld = o => {
-      if (o && o.style === 'house' && !o.name && !o.shop && !o.chimney && !o.vsign && R.CK.houseNew !== false && o.r) {
+      // plain：呼叫的地方自己加屋頂、門廊、青苔（洋館、神社、道場、公會、車站……），照舊用方塊；roof: 'flat'（封後巷的牆、平頂的小屋）也照舊
+      if (o && o.style === 'house' && !o.plain && o.roof !== 'flat' && !o.name && !o.shop && !o.chimney && !o.vsign && R.CK.houseNew !== false && o.r) {
         const w = Math.abs(o.r[2] - o.r[0]), d = Math.abs(o.r[3] - o.r[1]);
         if (Math.min(w, d) >= 5 && Math.max(w, d) <= 26 && (o.h || 6) <= 10) { const fr = B.Bt.getFrame(); try { return houseT(o); } catch (e) { console.warn('[housekit]', e); if (fr) B.Bt.setFrame(fr.x, fr.z, fr.a); else B.Bt.setFrame(null); } }
       }

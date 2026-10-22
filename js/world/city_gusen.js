@@ -19,7 +19,7 @@
     build(B) {
       const M = CK.M, g = B.g, P = B.part, rr = B.rr, pk = B.pk, rnd = B.rnd, TH = THREE;
       const moss = (x0, z0, x1, z1, h) => B.roof((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, { type: 'gable', y: h, h: Math.min(x1 - x0, z1 - z0) * 0.3, o: 0.5, mat: 'mossRoof', ry: (x1 - x0) >= (z1 - z0) ? 0 : Math.PI / 2 });
-      const wood = (r, h, face, col) => { B.bld({ r, h, style: 'house', face, col: col || '#8A6A4A', top: false }); moss(r[0], r[1], r[2], r[3], h); };
+      const wood = (r, h, face, col) => { B.bld({ r, h, style: 'house', face, col: col || '#8A6A4A', top: false, plain: 1 }); moss(r[0], r[1], r[2], r[3], h); };
       B.water([[-170, RZ[0]], [170, RZ[0]], [170, RZ[1]], [-170, RZ[1]]], { level: -1.4, bank: 'ishi', name: '古森川' });
       H.grid(B, {
         city: C, bounds: [-150, -140, 150, 150], cuts: Object.values(CUT).concat([[-150, RZ[0], 150, RZ[1]]]),

@@ -239,7 +239,7 @@
   // ---- 觀光局：小小的木造洋館 ----
   function tourism(B, r) {
     const M = CK.M, [x0, z0, x1, z1] = r;
-    B.bld({ r, h: 7, style: 'house', face: 'e', col: '#E4DCC8', top: false });
+    B.bld({ r, h: 7, style: 'house', face: 'e', col: '#E4DCC8', top: false, plain: 1 });
     B.roof((x0 + x1) / 2, (z0 + z1) / 2, x1 - x0, z1 - z0, { type: 'gable', y: 7, h: 2.6, o: 0.5, mat: 'copper' });
     B.sign('蘭斯－波旁觀光局', 'e', x1, (z0 + z1) / 2, 4.6, { size: 0.45, bg: '#2A4A3A', fg: '#F4ECD8', box: 1 });
     B.inter(x1 + 1.4, (z0 + z1) / 2, 2.2, '蘭斯－波旁觀光局（地圖送很多）', () => az().fac('yuebei', 'tour'), '#5A8AC8');

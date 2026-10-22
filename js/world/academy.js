@@ -176,7 +176,7 @@
   // ---------- 門：包住城的 build ----------
   const DOORS = {
     huangling: B => { H.door(B, 110, -30.2, 'hl_academy', '走進魔力學院分院（溫室）', '#5AE8C8', 0); },
-    xijian: B => { const x = 136, z = 22.6; B.sign('魔力學院分院', 's', z - 0.6, x, 3.2, { size: 0.42, bg: '#1A2238', fg: '#E8E0C8' }); H.door(B, x, z + 0.8, 'xj_academy', '走進魔力學院分院', '#7AC8E8', 0); },
+    xijian: B => { const x = 136, z = 26.6;   /* 2026-10-22：西見的大學範圍改對（z 從 2 開始），大樓的南牆在 26 */ B.sign('魔力學院分院', 's', z - 0.6, x, 3.2, { size: 0.42, bg: '#1A2238', fg: '#E8E0C8' }); H.door(B, x, z + 0.8, 'xj_academy', '走進魔力學院分院', '#7AC8E8', 0); },
     nanlong: B => { const x = 97, z = -21.4; B.sign('魔力學院', 's', z - 0.6, x, 3.2, { size: 0.42, bg: '#1A2238', fg: '#E8E0C8' }); H.door(B, x, z + 0.8, 'nl_academy', '走進湍遊國際大學・魔力學院', '#C8A060', 0); }
   };
   const C0 = CK.cities;

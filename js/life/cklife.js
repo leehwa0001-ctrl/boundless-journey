@@ -53,6 +53,8 @@
     // 2026-10-22 修：貓狗常被放在圍起來的院子、房子之間的窄縫裡（看得到、走不過去摸）——門口的點要能直直走到最近的路人路線
     const segs = []; (tw.walkers || []).forEach(n => { const P = n.path || []; for (let i = 1; i < P.length; i++) segs.push([P[i - 1], P[i]]); });
     const reachable = p => { let best = null, bd = 14; segs.forEach(([a, b]) => { const dx = b[0] - a[0], dz = b[1] - a[1], L = dx * dx + dz * dz, t = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / L)) : 0, q = [a[0] + dx * t, a[1] + dz * t], d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d < bd) { bd = d; best = q; } }); if (!best) return false; const n = Math.ceil(bd / 0.4); for (let k = 1; k < n; k++) { const x = p[0] + (best[0] - p[0]) * k / n, z = p[1] + (best[1] - p[1]) * k / n; if (!free(x, z, 0.3)) return false; } return true; };
+    // 離路人路線多近（屋台不要擺在路線上）
+    const nearWalk = (x, z, d) => segs.some(([a, c]) => { const dx = c[0] - a[0], dz = c[1] - a[1], L = dx * dx + dz * dz, t = L ? Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L)) : 0; return Math.hypot(a[0] + dx * t - x, a[1] + dz * t - z) < d; });
     const doorOk = () => { const p = doorstep(); return p && free(p[0], p[1]) && (!segs.length || reachable(p)) ? p : null; };
     if (homes.length) {
       for (let i = 0; i < (E.blizzard ? 4 : 10); i++) { const p = spot(doorOk, 30); if (!p) continue; const id = 'cat' + (i % 4); L.pets.push({ kind: 'cat', m: add(id, p[0], p[1]), id, x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 6, rot: rnd() * 6.28 }); }
@@ -95,7 +97,8 @@
     // ---- 街頭藝人、屋台（廣場） ----
     { const p = spot(() => [plaza[0] + 7 + (rnd() - 0.5) * 4, plaza[1] + (rnd() - 0.5) * 4], 10); if (p) { const n = mkNpc(tw, p[0], p[1], Math.PI, 'old'); S2.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { R.townTalk('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); if (R.SL && R.SL.shamisen) R.SL.shamisen(); R.townTalk('街頭藝人', [pick(['「謝謝。這一段是〈雪路〉。」', '「天冷，手指不太聽話。再聽一段？」', '「這把三味線是我師父留下來的。」'])]); } }); } }
     const cart = (x, z, name, col, menu) => {
-      if (!free(x, z, 1.4)) return; const TH = THREE, g = new TH.Group(), lam = c2 => CK.mat('yatai|' + c2, { tex: 'wood', col: c2 });
+      { const cand = [[0, 0], [0, 3], [0, -3], [3, 0], [-3, 0], [0, 6], [0, -6], [6, 0], [-6, 0]].map(([a, b]) => [x + a, z + b]), p = cand.find(([a, b]) => free(a, b, 1.4) && !nearWalk(a, b, 2.2)) || cand.find(([a, b]) => free(a, b, 1.4)); if (!p) return; x = p[0]; z = p[1]; }   // 先找附近不在路人路線上的位置，找不到才擺原位
+      const TH = THREE, g = new TH.Group(), lam = c2 => CK.mat('yatai|' + c2, { tex: 'wood', col: c2 });
       const box = (w, h, d, m, ox, oy, oz) => { const o = new TH.Mesh(new TH.BoxGeometry(w, h, d), m); o.position.set(ox, oy, oz); o.castShadow = true; g.add(o); return o; };
       box(2.4, 1.0, 1.0, lam('#6A4A30'), 0, 0.5, 0); box(2.6, 0.08, 1.3, lam('#8A6A44'), 0, 1.04, 0.1); [-1.15, 1.15].forEach(o => box(0.08, 1.3, 0.08, lam('#4A3424'), o, 1.65, 0.45)); box(2.7, 0.08, 0.7, lam('#3A2A1C'), 0, 2.3, 0.4);
       const cl = CK.mat('noren|' + col, { tex: 'paint', col, rough: 0.9 }); [-0.9, -0.3, 0.3, 0.9].forEach(o => box(0.56, 0.42, 0.03, cl, o, 2.04, 0.76));

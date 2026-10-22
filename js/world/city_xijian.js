@@ -7,7 +7,8 @@
 (function (R) {
   const CK = R.CK, S = () => R.S; if (!CK || !CK.H) return;
   const H = CK.H, az = () => R.azuki, C = 'xijian', COAST = -70;
-  const CUT = { port: [-150, -70, 150, -52], beach: [-150, -40, -86.5, -14], wh1: [-73.5, -40, -10, -14], wh2: [10, -40, 73.5, -14], guild: [86.5, -40, 150, -14], consul: [-150, -2, -86.5, 40.5], yokan1: [-73.5, -2, -46.5, 40.5], yokan2: [-73.5, 47.5, -46.5, 88], uni: [86.5, -2, 150, 40.5], tank: [86.5, 47.5, 150, 88], fish: [10, 47.5, 33.5, 68], station: [-46, 100, 46, 150] };
+  // 2026-10-22 修：地標的範圍要在路（半寬）＋人行道外面——中通、洋館通、站前通原本少算了路的半寬，領事館的牆、洋館、刺身店伸進人行道
+  const CUT = { port: [-150, -70, 150, -52], beach: [-150, -40, -86.5, -14], wh1: [-73.5, -40, -10, -14], wh2: [10, -40, 73.5, -14], guild: [86.5, -40, 150, -14], consul: [-150, 2, -86.5, 37.5], yokan1: [-73.5, 2, -46.5, 37.5], yokan2: [-73.5, 50.5, -46.5, 84], uni: [86.5, 2, 150, 37.5], tank: [86.5, 50.5, 150, 84], fish: [10, 50.5, 33.5, 68], station: [-46, 100, 46, 150] };
   CK.define({
     id: C, name: '西見', seed: 1878, stationName: '西見站', fog: 1.3, sea: true,
     land: [[-1000, COAST], [1000, COAST], [1000, 980], [-1000, 980]],
@@ -74,7 +75,7 @@
         H.sight(B, x1 + 1.4, cz, C, 'xj_consul'); H.fac(B, x1 + 1.4, cz - 8, C, 'consul', '#9AA0A8');
         B.talker(x1 - 0.2, cz + 9, -Math.PI / 2, '領事館的衛兵', ['「……預約？沒有的話，請在外面。」', '「這面牆，是會戰以後蓋的。」']);
         B.area('艾美利亞領事館', CUT.consul); B.label('艾美利亞領事館', (x0 + x1) / 2, cz); }
-      [CUT.yokan1, CUT.yokan2].forEach(r => { const [x0, z0, x1, z1] = r; for (let z = z0 + 1; z + 11 <= z1 - 1; z += 13) { const col = pk(['#E8DCC4', '#D8E0E4', '#E8D0C0', '#F0ECE0']); B.bld({ r: [x0 + 1, z, x1 - 4, z + 11], h: 8, style: 'house', face: 'e', col, top: false }); B.roof((x0 + x1 - 3) / 2, z + 5.5, x1 - x0 - 5, 11, { type: 'hip', y: 8, h: 3, o: 0.6, mat: pk(['copper', 'kawara']) }); P(g.box, M('white'), x1 - 3.1, 3.6, z + 5.5, 1.8, 0.2, 6.6); [-1, 1].forEach(s => { P(g.cyl8, M('white'), x1 - 2.4, 1.8, z + 5.5 + s * 2.8, 0.35, 3.6, 0.35); B.solid(x1 - 2.6, z + 5.3 + s * 2.8, x1 - 2.2, z + 5.7 + s * 2.8, 'deco'); }); }
+      [CUT.yokan1, CUT.yokan2].forEach(r => { const [x0, z0, x1, z1] = r, n = Math.max(1, Math.round((z1 - z0 - 2) / 13)), L = Math.min(11, (z1 - z0 - 2 - (n - 1) * 2) / n); for (let k = 0; k < n; k++) { const z = z0 + 1 + k * (L + 2), hl = L / 2, col = pk(['#E8DCC4', '#D8E0E4', '#E8D0C0', '#F0ECE0']); B.bld({ r: [x0 + 1, z, x1 - 4, z + L], h: 8, style: 'house', face: 'e', col, top: false, plain: 1 }); B.roof((x0 + x1 - 3) / 2, z + hl, x1 - x0 - 5, L, { type: 'hip', y: 8, h: 3, o: 0.6, mat: pk(['copper', 'kawara']) }); P(g.box, M('white'), x1 - 3.1, 3.6, z + hl, 1.8, 0.2, Math.min(6.6, L - 1)); [-1, 1].forEach(s => { const pz = z + hl + s * Math.min(2.8, hl - 0.8); P(g.cyl8, M('white'), x1 - 2.4, 1.8, pz, 0.35, 3.6, 0.35); B.solid(x1 - 2.6, pz - 0.2, x1 - 2.2, pz + 0.2, 'deco'); }); }   /* 2026-10-22：範圍改對以後短了，洋館照長度平均排（每排一樣三棟） */
         B.area('洋館街', r); });
       B.label('洋館街', -60, 44);
       // ---------- 東：西見海洋大學 ----------

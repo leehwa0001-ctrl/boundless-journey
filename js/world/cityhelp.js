@@ -29,7 +29,7 @@
   // o：{ p（房間的前綴）, name, w, d, h, col, style（brick／glass／wood）, roof（材質，沒有＝平頂）, bg, fg, tt（時刻表）}
   H.station = (B, o) => {
     const M = CK.M, g = B.g, P = B.part, cx = o.cx || 0, z0 = o.z0 || 124, w = o.w || 70, d = o.d || 22, h = o.h || 10, x0 = cx - w / 2, x1 = cx + w / 2;
-    B.bld({ r: [x0, z0, x1, z0 + d], h, style: o.style || 'brick', face: 'n', col: o.col || '#A0503A', top: false });
+    B.bld({ r: [x0, z0, x1, z0 + d], h, style: o.style || 'brick', face: 'n', col: o.col || '#A0503A', top: false, plain: 1 });
     if (o.roof) B.roof(cx, z0 + d / 2, w, d, { type: 'hip', y: h, h: Math.min(6, d * 0.3), o: 0.6, mat: o.roof });
     B.box(M('steelD'), cx - 4.4, 0.3, z0 - 0.3, cx - 3.8, 4.4, z0 + 0.2); B.box(M('steelD'), cx + 3.8, 0.3, z0 - 0.3, cx + 4.4, 4.4, z0 + 0.2); B.box(M('steelD'), cx - 4.4, 4.0, z0 - 0.3, cx + 4.4, 4.4, z0 + 0.2);
     B.box(M('winLit'), cx - 3.75, 0.3, z0 - 0.12, cx + 3.75, 3.95, z0 - 0.06);
@@ -45,7 +45,7 @@
   // ---- 公會分館（石造、綠旗、招牌、門） ----
   H.guild = (B, r, face, o) => {
     const M = CK.M, [x0, z0, x1, z1] = r, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, h = o.h || 12;
-    B.bld({ r, h, style: o.style || 'brick', face, col: o.col || '#D0C8B8', top: false });
+    B.bld({ r, h, style: o.style || 'brick', face, col: o.col || '#D0C8B8', top: false, plain: 1 });
     if (o.roof) B.roof(cx, cz, x1 - x0, z1 - z0, { type: 'hip', y: h, h: Math.min(x1 - x0, z1 - z0) * 0.22, o: 0.5, mat: o.roof });
     const at = { s: [cx, z1 + 1.6, 0], n: [cx, z0 - 1.6, Math.PI], e: [x1 + 1.6, cz, Math.PI / 2], w: [x0 - 1.6, cz, -Math.PI / 2] }[face];
     const fx = { s: [x0 + 1.2, z1 + 1], n: [x0 + 1.2, z0 - 1], e: [x1 + 1, z0 + 1.2], w: [x0 - 1, z0 + 1.2] }[face];
