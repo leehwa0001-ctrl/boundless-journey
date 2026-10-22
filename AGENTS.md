@@ -6,7 +6,8 @@
 ## 協作的規矩（Claude Code 和 Codex 共用這個資料夾）
 
 0. **專案的資料夾：`C:\Users\user\Documents\無境之旅`**（有 git）。不要再改其他地方的複本（例如 Claude 的暫存資料夾）。
-   **線上版只有一個網址：https://leehwa0001-ctrl.github.io/taofaling-1433/**（GitHub Pages，repo：https://github.com/leehwa0001-ctrl/taofaling-1433 ，公開）。
+   **線上版只有一個網址：https://leehwa0001-ctrl.github.io/boundless-journey/**（GitHub Pages，repo：https://github.com/leehwa0001-ctrl/boundless-journey ，公開）。
+   2026-10-22 作者：網址不能再叫 1433——repo 從 taofaling-1433 改名成 boundless-journey，舊網址不要再寫進任何地方。（多人連線伺服器  在作者的 Cloudflare 帳號，要作者自己改；兌換碼的雜湊鹽  不能改，改了舊兌換碼會失效；存檔的 localStorage 鍵  也不能改。）
    改完、commit 之後 `git push`，GitHub Actions 會自動把 `index.html` 包成完整的網頁發布（`.github/workflows/pages.yml`，一兩分鐘後生效）。兩個帳號的 Claude、Codex 都一樣，**不用再發布到 claude.ai 的 Artifact**。
    舊的 Artifact 網址（S18gM8…、PNpsZN37…）不再更新；玩家在舊網址的標題畫面「匯出存檔」，到新網址「匯入存檔」就能接著玩（savecode.js）。
 1. **輪流改，不要同時改。** 開工前先 `git status`、`git log -3` 看看別人剛改了什麼；收工前 commit。
