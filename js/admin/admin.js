@@ -17,7 +17,7 @@
     const s = S(); if (!s) return;
     s.admin = 1; s.gold = (s.gold || 0) + 9999999;
     s.potions = s.potions || {}; s.potions.hp = (s.potions.hp || 0) + 999; s.potions.mp = (s.potions.mp || 0) + 999;
-    s.mats = s.mats || {}; Object.keys(R.MATS).forEach(k => { s.mats[k] = Math.max(s.mats[k] || 0, 999); });
+    s.mats = s.mats || {}; Object.keys(R.MATS).forEach(k => { if (k !== 'anygem') s.mats[k] = Math.max(s.mats[k] || 0, 999); });   /* anygem：配方用的「任一種領主源晶」，不是真的素材 */
     s.packs = s.packs || { sack: 1 }; Object.keys(R.PACKS || {}).forEach(k => { s.packs[k] = Math.max(s.packs[k] || 0, 1); });
     s.xpBooks = (s.xpBooks || 0) + 99; s.raceTickets = (s.raceTickets || 0) + 9999;
     if (R.giveRaceSelect) ['SR', 'SSR', 'UR'].forEach(t => R.giveRaceSelect(t, 5));

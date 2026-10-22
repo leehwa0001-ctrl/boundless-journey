@@ -34,7 +34,7 @@
     if (!c) return '序號不對。';
     if (c.unban) { if (!(S.banUntil > S.day)) return '勇者證現在沒有停權。'; S.banUntil = 0; R.save(); return null; }
     S.redeemed = S.redeemed || {};
-    if (S.redeemed[h]) return '這個序號這個存檔已經兌換過了。';
+    if (S.redeemed[h] && !c.admin) return '這個序號這個存檔已經兌換過了。';   // 2026-10-22 作者：管理員號的序號可以一直用（遊戲更新後再兌換一次，補上新的東西）
     S.redeemed[h] = S.day || 1;
     if (c.gold) S.gold += c.gold;
     if (c.potions) { S.potions = S.potions || {}; Object.keys(c.potions).forEach(k => { S.potions[k] = (S.potions[k] || 0) + c.potions[k]; }); }
@@ -98,7 +98,7 @@
     const S = R.S;
     if (c.unban) { if (!(S.banUntil > S.day)) return '勇者證現在沒有停權。'; S.banUntil = 0; R.save(); return null; }
     S.redeemed = S.redeemed || {};
-    if (S.redeemed[h]) return '這個序號這個存檔已經兌換過了。';
+    if (S.redeemed[h] && !c.admin) return '這個序號這個存檔已經兌換過了。';   // 2026-10-22 作者：管理員號的序號可以一直用（遊戲更新後再兌換一次，補上新的東西）
     S.redeemed[h] = S.day || 1;
     if (c.gold) S.gold += c.gold;
     if (c.potions) { S.potions = S.potions || {}; Object.keys(c.potions).forEach(k => { S.potions[k] = (S.potions[k] || 0) + c.potions[k]; }); }
