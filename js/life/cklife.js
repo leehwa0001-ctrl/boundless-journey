@@ -50,10 +50,14 @@
     const homes = (D.foot || []).filter(f => f.r && /house|machiya|wafu|apt/.test(f.kind || ''));
     const doorstep = () => { const f = pick(homes), r = f.r, e = Math.floor(rnd() * 4), t = 0.2 + rnd() * 0.6; return e === 0 ? [r[0] + (r[2] - r[0]) * t, r[3] + 1.6] : e === 1 ? [r[0] + (r[2] - r[0]) * t, r[1] - 1.6] : e === 2 ? [r[2] + 1.6, r[1] + (r[3] - r[1]) * t] : [r[0] - 1.6, r[1] + (r[3] - r[1]) * t]; };
     const spot = (fn, tries) => { for (let k = 0; k < (tries || 14); k++) { const p = fn(); if (p && free(p[0], p[1])) return p; } return null; };
+    // 2026-10-22 修：貓狗常被放在圍起來的院子、房子之間的窄縫裡（看得到、走不過去摸）——門口的點要能直直走到最近的路人路線
+    const segs = []; (tw.walkers || []).forEach(n => { const P = n.path || []; for (let i = 1; i < P.length; i++) segs.push([P[i - 1], P[i]]); });
+    const reachable = p => { let best = null, bd = 14; segs.forEach(([a, b]) => { const dx = b[0] - a[0], dz = b[1] - a[1], L = dx * dx + dz * dz, t = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / L)) : 0, q = [a[0] + dx * t, a[1] + dz * t], d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d < bd) { bd = d; best = q; } }); if (!best) return false; const n = Math.ceil(bd / 0.4); for (let k = 1; k < n; k++) { const x = p[0] + (best[0] - p[0]) * k / n, z = p[1] + (best[1] - p[1]) * k / n; if (!free(x, z, 0.3)) return false; } return true; };
+    const doorOk = () => { const p = doorstep(); return p && free(p[0], p[1]) && (!segs.length || reachable(p)) ? p : null; };
     if (homes.length) {
-      for (let i = 0; i < (E.blizzard ? 4 : 10); i++) { const p = spot(doorstep); if (!p) continue; const id = 'cat' + (i % 4); L.pets.push({ kind: 'cat', m: add(id, p[0], p[1]), id, x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 6, rot: rnd() * 6.28 }); }
-      for (let i = 0; i < 4; i++) { const p = spot(doorstep); if (!p) continue; const id = 'dog' + ((i + 1) % 4); L.pets.push({ kind: 'dog', mode: 'chain', m: add(id, p[0], p[1]), id, x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 4, rot: rnd() * 6.28, barkT: 0 }); }
-      for (let i = 0; i < 2; i++) { const p = spot(doorstep); if (!p) continue; L.pets.push({ kind: 'dog', mode: 'stray', m: add('dog' + (i ? 1 : 3), p[0], p[1]), id: 'dog' + (i ? 1 : 3), x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 4, rot: rnd() * 6.28, barkT: 0 }); }
+      for (let i = 0; i < (E.blizzard ? 4 : 10); i++) { const p = spot(doorOk, 30); if (!p) continue; const id = 'cat' + (i % 4); L.pets.push({ kind: 'cat', m: add(id, p[0], p[1]), id, x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 6, rot: rnd() * 6.28 }); }
+      for (let i = 0; i < 4; i++) { const p = spot(doorOk, 30); if (!p) continue; const id = 'dog' + ((i + 1) % 4); L.pets.push({ kind: 'dog', mode: 'chain', m: add(id, p[0], p[1]), id, x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 4, rot: rnd() * 6.28, barkT: 0 }); }
+      for (let i = 0; i < 2; i++) { const p = spot(doorOk, 30); if (!p) continue; L.pets.push({ kind: 'dog', mode: 'stray', m: add('dog' + (i ? 1 : 3), p[0], p[1]), id: 'dog' + (i ? 1 : 3), x: p[0], z: p[1], hx: p[0], hz: p[1], st: 'sit', t: rnd() * 4, rot: rnd() * 6.28, barkT: 0 }); }
     }
     // ---- 散步的狗：跟著路人 ----
     const walkers = (tw.walkers || []).filter(n => !n.guard);

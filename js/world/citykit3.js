@@ -446,6 +446,7 @@
       const ox = Math.cos(ang) * n.lane * dir, oz = -Math.sin(ang) * n.lane * dir;
       n.x = x + ox; n.z = z + oz; n.h.g.visible = !far;
       if (far) return;
+      { const o = { x: n.x, z: n.z }; R.collide(o, 0.28); n.x = o.x; n.z = o.z; }   // 2026-10-22 看得到的才推開：路燈柱、橋的欄杆、站著的人擋在路線上就繞過去，不會穿過去
       n.h.g.position.set(n.x, CK.heightAt(n.x, n.z), n.z); n.h.g.rotation.y = dir > 0 ? ang : ang + Math.PI; R.animHero(n.h, blocked ? 0 : n.sp, dt, false);
     });
     // 車：前面有人或車就停

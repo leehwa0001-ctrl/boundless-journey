@@ -329,7 +329,7 @@
       (C.FAC.busStop || []).forEach(([sx, sy]) => B.busStop(WX(sx), WZ(sy), 0, '東鶴巴士'));
       // ---------- 街上的東西 ----------
       C.roads.filter(rd => rd.kind === 'main' || rd.kind === 'sub').forEach(rd => {
-        const k = RK[rd.kind], off = (k[0] / 2 + k[1] * 0.3) * S, pts = rd.pts.map(w2);
+        const k = RK[rd.kind], off = (k[0] / 2 + k[1] * 0.12) * S, pts = rd.pts.map(w2);   // 2026-10-22 路燈靠路緣（原本 0.3：路人走在人行道中間、左右 0.6 公尺，靠這一側的會穿過燈柱）
         let acc = 0; for (let i = 1; i < pts.length; i++) { const a = pts[i - 1], b = pts[i], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1) continue; const ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L; for (let t = (24 - acc % 24) % 24; t < L; t += 24) { const sd = (Math.floor((acc + t) / 24) % 2) ? 1 : -1, x = a[0] + ux * t - uz * off * sd, z = a[1] + uz * t + ux * off * sd; if (CK.streetDist(x, z, B.D.lines)[1] < k[0] * S / 2 + 0.3) continue; B.lamp(x, z, Math.atan2(uz * sd, -ux * sd)); } acc += L; }
       });
       // ---------- 路人、車 ----------

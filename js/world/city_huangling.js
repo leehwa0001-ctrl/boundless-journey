@@ -166,8 +166,8 @@
       // 電車（車站南邊，東西向）
       B.rail([[-700, 176], [700, 176]], { col: '#E8E4DC', stripe: '#C8402A', cars: 6, v: 16 });
       // ---------- 說話的人 ----------
-      // 可以偷的東西（ckcrime.js）
-      B.steal(38.6, 18, '從土產店門口的籃子摸走一盒點心', 'souvenir', () => ({ gift: Math.random() < 0.5 ? 'dorayaki' : 'dango', n: 1 }), { time: 1.2 });
+      // 可以偷的東西（ckcrime.js）；2026-10-22 土產店的籃子從 38.6 移到 40.8（原本在店的牆裡面，走不到）
+      B.steal(40.8, 18, '從土產店門口的籃子摸走一盒點心', 'souvenir', () => ({ gift: Math.random() < 0.5 ? 'dorayaki' : 'dango', n: 1 }), { time: 1.2 });
       B.steal(-40, 75.6, '偷拿漬物店門口的醃蘿蔔（換點零錢）', 'pickle', () => ({ gold: 3 + Math.floor(Math.random() * 8) }), { time: 1.0 });
       B.steal(-12.6, 98, '撬開路邊的募款箱', 'charity', () => ({ gold: 8 + Math.floor(Math.random() * 20) }), { time: 2.0, max: 1 });
       B.talker(-3, 126, Math.PI, '剛下車的觀光客', ['「我從東鶴來的。皇嶺的路是棋盤，比東鶴好認多了。」', '「向日塔要排隊嗎？我想看日落。」', '「車站的天花板是玻璃的，好像走進溫室。」']);
