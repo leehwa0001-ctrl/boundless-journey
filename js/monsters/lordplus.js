@@ -54,7 +54,7 @@
       const run = W().run, s = S(), g = e && GEAR[e.id];
       if (was && e.dead && run && g && isLord(e.def)) {
         s.lordGot = s.lordGot || {}; const first = !s.lordGot[e.id];
-        if (first || rnd() < 0.35) {
+        if (first || rnd() < 0.12) {   /* 2026-10-22：之後改成用素材打造（lordmats.js），掉落從 35% 降到 12% */
           s.lordGot[e.id] = (s.lordGot[e.id] || 0) + 1;
           const it = R.makeItem({ kind: 'armor', base: g[1], ilvl: Math.max(1, ((run.grade.lv || 1) - 1) * 2 + (run.depthK && run.depthK !== 1 ? Math.round(run.floor * run.depthK) : run.floor) + 3), rarity: 4, identified: true }); it.lord = e.id;   // 2026-10-19 修正：原本用實際層數（層數變多的遺跡會越打越高級）——改成跟寶箱一樣換算回原本的層數
           setTimeout(() => { if (W().run === run) { R.dropItem(it, e.x, e.z + 1); R.banner && R.banner('掉了專屬裝備', '【領主】' + g[0] + '：' + g[3]); } }, 900);

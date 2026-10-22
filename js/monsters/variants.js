@@ -18,7 +18,8 @@
     if (!/^#[0-9a-fA-F]{6}/.test(c)) return c; let [r, g, b] = hex(c); const L = (r * 0.3 + g * 0.59 + b * 0.11);
     if (t === 1) return toHex([r * 0.82 + 22, g * 0.72, b * 0.7]);
     if (t === 2) return toHex([L * 0.25 + r * 0.45 + 18, L * 0.25 + g * 0.35, L * 0.2 + b * 0.35]);
-    return toHex([L * 0.22 + 26, L * 0.12 + 10, L * 0.3 + 40]);
+    // 2026-10-22 作者：淵看不出是誰——保留原本的顏色、花紋，整體壓暗、帶一點紫（原本整隻變成單一的深紫）
+    return toHex([r * 0.6 + L * 0.06 + 22, g * 0.5 + L * 0.04 + 6, b * 0.62 + L * 0.08 + 38]);
   };
   R.VARIANT_TIER = TIER; R.variantShade = shade;   // beastpaint.js 的手點新圖也照這套改（顏色、紅眼、刺、淵的紫光邊）
   const FREE = 'ZYQXVUWT'.split('');

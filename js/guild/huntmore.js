@@ -47,6 +47,8 @@
   const hp0 = R.hurtPlayer;
   R.hurtPlayer = (raw, src, o) => (src && src.def && src.def.harmless ? undefined : hp0(raw, src, o));
 
+  // 圖鑑：野獸的掉落（每一頭都會掉）
+  R.dexWildDrops = id => { const w = WILD[id]; if (!w) return ''; return '<h4 class="dx-h">掉落素材</h4><p>' + w.drop.map(([m, n]) => (R.matIconTag ? R.matIconTag(m, 'chip') : '') + R.esc((R.MATS[m] || {}).name || m) + ' ×' + n + '（100%）').join('、') + '</p>'; };
   // ---------- 狩獵場 ----------
   const GROUNDS = [
     { id: 'tk-autumnwood', name: '東鶴近郊・枯木林', short: '枯木林', ground: '#8A7A5A', trees: 'bare', fog: '#C8BEA8', floors: ['林緣', '林間'], desc: '東鶴郊外的落葉林。深秋，地上鋪滿枯葉。', beasts: ['plainwolf', 'branchstag', 'snowhare'] },

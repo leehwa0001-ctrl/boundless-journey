@@ -297,6 +297,7 @@
       + (R.dexStats ? R.dexStats(id) : '') + '<p class="note">' + (n ? '打倒過 ' + n + ' 隻（包括變種）' : '還沒打倒過') + '</p>'
       + (vs.length ? '<h4 class="dx-h">分級變種</h4><div class="dx-vlist">' + [base].concat(vs).map((v, i) => { const k = killsOf(v); return '<div class="dx-var' + (k ? '' : ' dim') + '">' + (icon(v) ? '<img src="' + icon(v) + '" alt="">' : '') + '<span>' + (i ? '「' + VT[i][0] + '」' : '本體・') + esc(E()[v].name) + '<small>' + (k ? '打倒 ' + k : '還沒打倒過') + (i ? '・' + VT[i][1].split('｜')[1] : '') + '</small></span></div>'; }).join('') + '</div>' : '')
       + (R.lordVariantDex ? R.lordVariantDex(base) : '')
+      + (R.dexDrops ? R.dexDrops(base) : '')   // 2026-10-22 掉落機率（lordmats.js、huntmore.js）
       + (where.length ? '<h4 class="dx-h">出現的遺跡</h4><div class="dr-where">' + where.map(s => '<button type="button" class="dr-site sm" data-drgo="' + s.id + '" style="--rc:' + colOf(s) + '"><b>' + esc(s.name) + '</b><small>' + esc(G(s.grade).name) + ((R.siteMain ? R.siteMain(s) : []).includes(base) ? '・常見' : '') + '</small></button>').join('') + '</div>' : '')
       + back;
   };

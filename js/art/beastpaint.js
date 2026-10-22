@@ -5931,6 +5931,7 @@
     const T = R.VARIANT_TIER[t], P2 = {}, O2 = {}, eyes = def.eyes || '';
     Object.keys(pal).forEach(k => { P2[k] = eyes.includes(k) ? T.eye : R.variantShade(pal[k], t); });
     P2['^'] = T.spike;
+    if (t >= 3 && pal.Z) P2.Z = '#7A3AD8';   // 新點陣圖（beastpix.js）的外框：淵是紫色的光邊
     Object.keys(ol).forEach(k => { O2[k] = k === 'bare' ? ol[k] : t >= 3 ? ['#8A4AE8', '#5A2AA8'] : ol[k].map(c => R.variantShade(c, t)); });
     const W = def.w, H = def.h, g = Array.from({ length: H }, () => Array(W).fill(''));
     L.forEach(([y, x, s]) => { if (y < 0 || y >= H) return; for (let i = 0; i < s.length; i++) if (s[i] !== ' ' && x + i >= 0 && x + i < W) g[y][x + i] = s[i]; });
