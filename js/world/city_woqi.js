@@ -39,6 +39,8 @@
       H.sight(B, -88, -55.4, C, 'wq_market'); H.fac(B, -100, -55.4, C, 'market', '#7AC8E8');
       B.inter(-76, -55.4, 2.4, '海魚市集・幫忙喊價', () => az().act(C), '#E8A03A');
       [-30, 10, 80].forEach(x => { B.bridge(x - 2.5, -96, x + 2.5, COAST + 0.5, { deck: 0.3, mat: 'planks', rail: false }); for (let z = -94; z < COAST; z += 6) [-2.5, 2.5].forEach(dx => P(g.cyl8, M('woodB'), x + dx, -1.2, z, 0.4, 2.6, 0.4)); });
+      // 2026-10-22 棧橋兩邊停著插銀色旗子的漁船（shipkit.js；設定寫了、原本沒有放）
+      [-30, 10, 80].forEach((x, i) => [-1, 1].forEach(sd => B.ship('fishing', x + sd * 5.2, -78 - (i + (sd > 0 ? 1 : 0)) % 2 * 9, Math.PI / 2, { y: -1.2, L: 9 + (i % 2), col: pk(['#E8E4DC', '#2E7A6A', '#2A5A9A', '#C83A2A']), flag: '#C8D0D8', solid: false })));
       [[-23, -86], [17, -82], [3, -90], [87, -86]].forEach(([x, z]) => { P(g.box, M('paint', { col: pk(['#E8E4DC', '#2E7A6A', '#C83A2A']) }), x, -1.0, z, 3, 1.2, 8.5); P(g.box, M('white'), x, 0.2, z + 1.5, 2.2, 1.4, 2.4); P(g.cyl8, M('steelD'), x, 2.4, z - 1.6, 0.1, 4.8, 0.1); });
       for (let x = -142; x <= 142; x += 18) if (x < RV[0] - 2 || x > RV[1] + 2) H.gas(B, x, -54.8);
       // 渦流：海灣裡一圈銀色的魚群在繞

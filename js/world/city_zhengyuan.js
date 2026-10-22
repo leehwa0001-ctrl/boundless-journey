@@ -31,17 +31,14 @@
       // ---------- 北：港、武聖號 ----------
       B.plaza(-100, COAST, 52, -46, 'asph', { noCurb: true });
       const sx = -24, sz = -78, gray = M('paint', { col: '#6A7078' }), gray2 = M('paint', { col: '#7A8088' });
-      P(g.box, gray, sx, -0.2, sz, 84, 4.4, 13); P(g.box, M('paint', { col: '#8A2A2A' }), sx, -2.6, sz, 84.2, 1, 13.2);
-      P(g.cone, gray, sx - 46, -0.2, sz, 13, 8, 4.4, 0, 0, Math.PI / 2);
-      P(g.box, gray2, sx + 4, 4.2, sz, 26, 4.4, 9); P(g.box, gray2, sx + 6, 8.6, sz, 10, 4.4, 7); P(g.box, gray2, sx + 6, 12.4, sz, 5, 3.2, 5); P(g.cyl8, M('steelD'), sx + 6, 17, sz, 0.5, 6, 0.5);
-      P(g.cyl, gray2, sx - 4, 7.4, sz, 3, 6, 3); P(g.cyl, gray2, sx + 16, 7.4, sz, 2.6, 5, 2.6);
-      [[-26, 1], [-14, 1], [26, -1]].forEach(([dx, dir]) => { P(g.cyl24, M('paint', { col: '#5A6068' }), sx + dx, 2.8, sz, 6.4, 1.8, 6.4); [-1.1, 0, 1.1].forEach(o => P(g.cyl8, M('steelD'), sx + dx - dir * 6, 3.2, sz + o, 0.7, 9, 0.7, 0, 0, Math.PI / 2)); });
+      // 2026-10-22 船重做（shipkit.js）：武聖號（船首朝西）
+      B.ship('warship', sx, sz, Math.PI, { y: -1.2, L: 92, col: '#6A7078', top: '#7A8088', funnel: '#7A8088', anti: '#8A2A2A', solid: false }); void gray; void gray2;
       B.sign('武聖號', 'n', sz - 6.6, sx - 30, 1.4, { size: 1.2, bg: '#2A2A2A', fg: '#F4ECD8' });
       B.bridge(sx + 18, sz + 6.5, sx + 22, COAST + 0.5, { deck: 0.3, rise: 0, mat: 'planks', rail: true, railMat: 'steelD' });
       for (let x = -96; x <= 46; x += 18) H.gas(B, x, -46.8);
       B.talker(sx + 26, -50, Math.PI, '武聖號的導覽員', ['「甲板上可以走，船艙底下的那一層不開放。」', '「它再次下海那天，整座城放假。」']);
       // 舊艦遺址（岸外，半沉）＋看得到的岸邊
-      P(g.box, M('paint', { col: '#4A5058' }), 30, -2.5, -100, 10, 6, 30, 0.25, 0.9, 0.12); P(g.box, M('paint', { col: '#5A5048' }), 28, 1.2, -96, 5, 4, 8, 0.25, 0.9, 0.2);
+      B.ship('warship', 30, -100, -Math.PI / 2 + 0.9, { y: -1.2, L: 52, col: '#4A5058', top: '#5A5048', funnel: '#5A5048', anti: '#3A3028', wreck: true, solid: false });   // 半沉的舊艦（往一邊傾、沉了一半）
       B.plaza(36, -82, 46, COAST, 'gran', { noCurb: true }); B.fence(36.4, -81.6, 45.6, -81.6, 1.1, 'steelD');
       B.inter(41, -78, 2.6, '觀光景點：舊艦遺址（觀光章）', () => az().stamp(C, 'zy_wreck'), '#E8C04A').sight = 'zy_wreck';
       B.inter(41, -68, 2.4, '舊艦遺址（岸邊・公會的監看站）', () => az().fac(C, 'wreck'), '#9AA0A8');
@@ -55,7 +52,7 @@
       // ---------- 東北：造船廠、軍港 ----------
       { const [x0, z0, x1, z1] = CUT.yard; B.zone(CUT.yard, 'gravel', 0.02);
         B.box(M('concD'), x0 + 10, 0, z0 + 6, x0 + 46, 0.6, z1 - 4);
-        P(g.box, M('paint', { col: '#8A6A5A' }), x0 + 28, 5, (z0 + z1) / 2 + 4, 14, 10, 44); P(g.cone, M('paint', { col: '#8A6A5A' }), x0 + 28, 5, (z0 + z1) / 2 - 22, 14, 8, 10, -Math.PI / 2, 0, 0);
+        { const hg = CK.hullGeo(54, 14, 5.5, 4.4, { bow: 0.26, sheer: 1.2 }); P(hg, M('paint', { col: '#8A6A5A' }), x0 + 28, 4.6, (z0 + z1) / 2 - 1, 1, 1, 1, 0, Math.PI / 2, 0, { uv: 'keep' }); }   // 船台上蓋到一半的船殼（船首朝北）
         for (let z = z0 + 14; z <= z1 - 8; z += 8) [-1, 1].forEach(sd => P(g.box, M('steelD'), x0 + 28 + sd * 9, 8, z, 0.4, 16, 0.4));
         B.solid(x0 + 10, z0 + 6, x0 + 46, z1 - 4, 'house');
         P(g.box, M('paint', { col: '#C83A2A' }), x0 + 60, 24, (z0 + z1) / 2, 4, 48, 4); P(g.box, M('paint', { col: '#C83A2A' }), x0 + 50, 49, (z0 + z1) / 2, 60, 3, 3); P(g.box, M('concD'), x0 + 76, 47, (z0 + z1) / 2, 8, 6, 5);

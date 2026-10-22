@@ -103,8 +103,7 @@
       for (let x = X0 + 1; x < xe; x += 2.2) [za + 0.3, zb - 0.3].forEach(z => P(g.cyl8, M('black'), x, 0.35, z, 0.25, 0.4, 0.25));
       for (let x = X0 + 1; x < xe; x += 3) [za + 0.2, zb - 0.2].forEach(z => P(g.cyl8, M('woodD'), x, -0.9, z, 0.3, 1.6, 0.3));
       [[X0 + 5, za - 1.4, ['#3A6A9A', '#C8A040'][i]], [X0 + 9.5, zb + 1.4, ['#9A968E', '#3A8A5A'][i]]].forEach(([x, z, col]) => {
-        const bt = new TH.Group(); mesh(g.box, own(col), 0, 0.35, 0, 5.2, 0.9, 1.9, bt); const bow = mesh(g.cone8, own(col), 3.3, 0.35, 0, 1.3, 1.6, 0.9, bt); bow.rotation.z = -Math.PI / 2;
-        mesh(g.box, own('#B4B0A8'), -0.9, 1.3, 0, 1.5, 1.2, 1.3, bt); mesh(g.cyl8, M('steelD'), 0.8, 2, 0, 0.12, 2.6, 0.12, bt); mesh(g.plane, own('#C8323A', { side: 2 }), 1.15, 3.1, 0, 0.7, 0.4, 1, bt);
+        const bt = CK.makeShip('fishing', { col, L: 7.5 + i });   // 2026-10-22 船重做（shipkit.js）
         bt.position.set(x, -1.2, z); bt.rotation.y = rnd() < 0.5 ? 0 : Math.PI; B.group.add(bt); boats.push({ bt, ph: rnd() * 6 });
       });
     });
@@ -165,11 +164,7 @@
       });
       tw.anim.push((dt, t) => { const on = Math.floor(t * 1.2) % 2 === 0; blink.forEach(L => { L.visible = on; }); });
       // 大貨輪（靠在埠頭北邊）
-      B.frame(a + 95, c - 9, 0, () => {
-        B.box(own('#2A2A30'), -48, -3.9, -7.5, 48, 3.1, 7.5); B.box(own('#8A2A2A'), -48.1, -3.9, -7.6, 48.1, -2.5, 7.6); P(g.prism, own('#2A2A30'), 53.5, -0.4, 0, 15, 7, 11, 0, Math.PI / 2, 0);
-        B.box(M('white'), -45, 3.1, -6.5, -35, 11, 6.5); B.box(M('glass'), -44.5, 9, 6.5, -35.5, 10.2, 6.6); P(g.cyl, M('red'), -44, 13, 0, 2.4, 5, 2.4);
-        for (let x = -30; x < 44; x += 6.4) for (let zz = -5.4; zz <= 5.4; zz += 2.7) { const hh = 1 + Math.floor(rnd() * 2); for (let k = 0; k < hh; k++) P(g.box, M('corr', { col: CC[Math.floor(rnd() * CC.length)] }), x, 4.4 + k * 2.62, zz, 6, 2.6, 2.44); }
-      });
+      B.ship('cargo', a + 95, c - 9, 0, { y: -1.2, L: 100, col: '#2A2A30', funnel: '#C8323A', stripe: '#F2F0EA', boxes: CC, seed: 3, solid: false });   // 2026-10-22 船重做（shipkit.js）
       // 港務局（港區的入口）
       B.bld({ r: [a + 2, c + 23, a + 12, c + 31], h: 10, style: 'office', face: 'n', col: '#C8C4BC', name: '東鶴港務局', signCol: ['#2E3A48', '#FFFFFF'] });   // 原本在 c+2～c+10，壓在國道一號通進港區的路口
       tw.inter.forEach(it => { if (/^東鶴港務局/.test(lbl(it))) { it.x = a + 7; it.z = c + 21.5; } });
@@ -185,18 +180,14 @@
     // 客船埠頭：航站、往北州的渡輪
     { const [a, c, , d] = hr('ferry'), m = (c + d) / 2;
       B.bld({ r: [a + 5.8, m - 8, a + 27.8, m + 8], h: 7, style: 'glass', face: 's', col: '#9AB8C8', name: '東鶴港客船航站', signCol: ['#2E5A8A', '#FFFFFF'] });
-      B.frame(a + 75.8, c - 7, 0, () => {
-        B.box(M('white'), -32, -2, -5.5, 32, 3, 5.5); B.box(M('blue'), -32.1, -2, -5.6, 32.1, -1, 5.6); P(g.prism, M('white'), 36.4, 0.5, 0, 11, 5, 9, 0, Math.PI / 2, 0);
-        B.box(M('white'), -26, 3, -5, 18, 6, 5); B.box(M('white'), -23, 6, -4.5, 7, 8.8, 4.5); B.box(M('glass'), -22, 7.1, 4.5, 6, 8.1, 4.6);
-        B.box(M('blue'), -16, 8.8, -1.7, -12, 12.6, 1.7); B.box(M('red'), -16.05, 12.2, -1.75, -11.95, 13, 1.75);
-      }); }
+      B.ship('ferry', a + 77.8, c - 7, 0, { y: -1.2, L: 68, col: '#F2F0EA', stripe: '#2E5A9A', funnel: '#2E5A9A', solid: false }); }   // 2026-10-22 船重做（shipkit.js）：往北州的渡輪
     // 中央埠頭：兩棟紅磚倉庫
     { const [a, c, , d] = hr('mid'), m = (c + d) / 2;
       [a + 22.8, a + 58.8].forEach(x => B.bld({ r: [x - 14, m - 9, x + 14, m + 9], h: 8, style: 'brick', face: 's', col: '#9A4A36', roof: 'flat' })); }
     // 拖船（港灣裡繞圈）、外海等著進港的貨輪
     const tugs = [];
-    [[X0 + 200, -20, 16, 0.12], [X0 + 170, -78, 12, -0.16]].forEach(([cx, cz, r, sp]) => { const t = new TH.Group(); mesh(g.box, own('#C8323A'), 0, 0.4, 0, 9, 1.8, 4, t); mesh(g.box, M('white'), -1, 2.2, 0, 3.4, 2, 3, t); mesh(g.box, own('#2A2A30'), -1.6, 3.9, 0, 0.8, 1.6, 0.8, t); B.group.add(t); tugs.push({ t, cx, cz, r, sp, a: rnd() * 6 }); });
-    B.frame(X0 + 330, -30, 0.3, () => { B.box(own('#3A4A5A'), -55, -4, -8.5, 55, 5, 8.5); B.box(M('white'), -52, 5, -7.5, -40, 14, 7.5); });
+    [[X0 + 200, -20, 16, 0.12], [X0 + 170, -78, 12, -0.16]].forEach(([cx, cz, r, sp]) => { const t = CK.makeShip('tug', { col: '#C8323A', funnel: '#2A2A30', stripe: '#F2F0EA' }); B.group.add(t); tugs.push({ t, cx, cz, r, sp, a: rnd() * 6 }); });
+    B.ship('cargo', X0 + 330, -30, 0.3, { y: -1.2, L: 112, col: '#3A4A5A', funnel: '#2E5A9A', seed: 9, solid: false });   // 外海等著進港的貨輪
     tw.anim.push((dt, t) => {
       boats.forEach(o => { o.bt.position.y = -1.2 + Math.sin(t * 1.1 + o.ph) * 0.08; o.bt.rotation.z = Math.sin(t * 0.9 + o.ph) * 0.04; });
       tugs.forEach(o => { o.a += dt * o.sp; o.t.position.set(o.cx + Math.cos(o.a) * o.r, -1.2 + Math.sin(t * 1.3 + o.r) * 0.06, o.cz + Math.sin(o.a) * o.r); o.t.rotation.y = -o.a + (o.sp > 0 ? 0 : Math.PI); });

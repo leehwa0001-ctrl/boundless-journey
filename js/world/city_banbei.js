@@ -45,7 +45,7 @@
       B.sign('板北渡輪港', 'w', 72, 10, 7.4, { size: 0.7, bg: '#1A2A4A', fg: '#F4E8C8', box: 1, lit: 1 });
       H.fac(B, 69.6, 10, C, 'ferry', '#7AC8E8');
       B.bridge(SEA - 0.5, 24, 128, 32, { deck: 0.3, mat: 'planks', rail: true, railMat: 'steelD' });
-      P(g.box, M('white'), 126, -0.6, 48, 10, 4, 30); P(g.box, M('white'), 126, 3.4, 51, 8, 4, 16); P(g.box, M('glassL'), 126, 4.4, 42.9, 7, 1.2, 0.1); P(g.cyl8, M('paint', { col: '#2E4A8A' }), 126, 7.6, 54, 1.4, 4, 1.4);
+      B.ship('ferry', 126, 48, Math.PI / 2, { y: -1.2, L: 34, W: 10, col: '#F2F0EA', stripe: '#2E4A8A', funnel: '#2E4A8A', solid: false });   // 2026-10-22 船重做（shipkit.js）：往岳北的夜船（船首朝北）
       B.sign('夜船・往岳北', 'w', 121, 52, 5.6, { size: 0.6, bg: '#1A2A4A', fg: '#F4E8C8', box: 1, lit: 1 });
       H.sight(B, 89, 28, C, 'bb_ferry');
       // 公會（山手通南邊）

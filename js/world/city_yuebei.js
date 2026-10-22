@@ -126,7 +126,7 @@
     [0, -84, 84].forEach(x => B.bridge(x - 5, CANAL[0] - 0.5, x + 5, CANAL[1] + 0.5, { rise: 0.7, deck: 0.14, mat: 'gran', railMat: 'black', rail: true }));
     for (let x = -138; x <= 138; x += 24) { if (Math.abs(x) < 8 || Math.abs(Math.abs(x) - 84) < 8) continue; gas(x, CANAL[1] + 0.9); gas(x + 12, CANAL[0] - 0.9); }
     // 運河上的小船（觀光船）
-    [[-46, -28], [58, -28]].forEach(([x, z]) => { P(g.box, M('woodD'), x, -1.35, z, 6, 0.7, 2.2); P(g.box, M('white'), x - 0.6, -0.75, z, 3.2, 0.9, 1.8); P(g.box, M('verm'), x - 0.6, -0.25, z, 3.4, 0.12, 2.0); });
+    [[-46, -28], [58, -28]].forEach(([x, z]) => B.ship('boat', x, z, 0, { y: -1.6, L: 7, col: '#5A3A2A', top: '#C83A2A', stripe: '#E8C060', solid: false }));   // 2026-10-22 船重做（shipkit.js）
     // 對岸的石造倉庫（山牆朝河、瓦屋頂、拱形的鐵門）
     for (let x = -144; x < 140; x += 22) {
       if (Math.abs(x + 11) < 12 || Math.abs(x + 11 - 84) < 12 || Math.abs(x + 11 + 84) < 12) { continue; }
@@ -149,7 +149,7 @@
     // 棧橋（伸進海裡）
     [-90, -20, 50, 110].forEach(x => { B.bridge(x - 3, -110, x + 3, COAST + 0.5, { deck: 0.3, rise: 0, mat: 'planks', rail: false }); for (let z = -108; z < COAST; z += 6) [-3, 3].forEach(dx => P(g.cyl8, M('woodB'), x + dx, -1.2, z, 0.4, 2.6, 0.4)); });
     // 漁船（停在棧橋旁邊）
-    [[-82, -96], [-28, -100], [58, -94], [102, -102]].forEach(([x, z], i) => { const c = pk(['#2E4A8A', '#8A2A2A', '#E8E4DC', '#3A6A4A']); P(g.box, M('paint', { col: c }), x, -1.0, z, 3.2, 1.2, 9); P(g.box, M('white'), x, 0.2, z + 1.5, 2.4, 1.6, 2.6); P(g.box, M('glassL'), x, 0.6, z + 0.3, 2.2, 0.6, 0.1); P(g.cyl8, M('steelD'), x, 1.8, z - 1, 0.12, 3.6, 0.12); if (i % 2) P(g.sph, M('lamp'), x, 3.6, z - 1, 0.3, 0.3, 0.3); });
+    [[-82, -96], [-28, -100], [58, -94], [102, -102]].forEach(([x, z]) => B.ship('fishing', x, z, Math.PI / 2, { y: -1.2, L: 10, col: pk(['#2E4A8A', '#8A2A2A', '#E8E4DC', '#3A6A4A']), solid: false }));   // 2026-10-22 船重做（shipkit.js）：藍殼蟹漁船（船首朝北）
     // 蟹籠（堆成牆）、魚箱
     for (let i = 0; i < 26; i++) { const x = rr(-140, 140), z = rr(-78, -71); if (Math.abs(x + 90) < 5 || Math.abs(x + 20) < 5 || Math.abs(x - 50) < 5 || Math.abs(x - 110) < 5) continue; const c = pk(['#2A5A9A', '#E8782A', '#3A3A44', '#2E7A6A']), n = 1 + Math.floor(rnd() * 3); for (let j = 0; j < n; j++) P(g.box, M('paint', { col: c }), x, 0.45 + j * 0.9, z, 1.4, 0.88, 1.0, 0, rnd() * 0.3, 0); B.solid(x - 0.8, z - 0.6, x + 0.8, z + 0.6, 'deco'); }
     // 燈塔（東邊的堤防盡頭）

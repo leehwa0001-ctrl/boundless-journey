@@ -40,9 +40,7 @@
       H.fac(B, 65, -54, C, 'fish', '#7AC8E8');
       B.talker(56, -60, 0, '拍賣場的魚販', ['「鯖魚箱子比人高。清晨來，聲音比汽笛大。」', '「港灣刺身定食，去本町通那間吃。」']);
       const sx = 122, sz = -88;
-      P(g.box, M('paint', { col: '#6A7078' }), sx, -0.4, sz, 9, 3.4, 40); P(g.cone, M('paint', { col: '#6A7078' }), sx, -0.4, sz - 23, 9, 6, 3.4, Math.PI / 2, 0, 0);
-      P(g.box, M('paint', { col: '#7A8088' }), sx, 2.8, sz + 4, 6, 3, 12); P(g.box, M('paint', { col: '#7A8088' }), sx, 6, sz + 5, 3.4, 3.4, 5); P(g.cyl8, M('steelD'), sx, 9.5, sz + 5, 0.3, 4, 0.3);
-      [-10, 14].forEach(dz => { P(g.cyl24, M('paint', { col: '#5A6068' }), sx, 1.9, sz + dz, 3.4, 1.4, 3.4); P(g.cyl8, M('steelD'), sx, 2.1, sz + dz + (dz < 0 ? -3 : 3), 0.4, 4, 0.4, Math.PI / 2, 0, 0); });
+      B.ship('warship', sx, sz, Math.PI / 2, { y: -1.2, L: 48, W: 9, col: '#6A7078', top: '#7A8088', funnel: '#7A8088', solid: false });   // 2026-10-22 船重做（shipkit.js）：退役巡洋艦（船首朝北）
       B.bridge(108, -76, 116, COAST + 0.5, { deck: 0.3, mat: 'planks', rail: true, railMat: 'steelD' });
       H.fac(B, 112, -60, C, 'ship', '#9AA0A8');
       B.area('西見港', [-150, -100, 150, -52]); B.label('西見港', -10, -64);

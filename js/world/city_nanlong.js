@@ -35,9 +35,7 @@
       B.plaza(-150, COAST, 150, -56, 'asph', { noCurb: true });
       [-40, -10, 20, 110].forEach(x => { [-1, 1].forEach(sd => P(g.box, M('paint', { col: '#E8A03A' }), x + sd * 5, 10, -66, 1, 20, 1)); P(g.box, M('paint', { col: '#E8A03A' }), x, 20.5, -71, 1.4, 1.4, 24); B.solid(x - 5.5, -66.5, x - 4.5, -65.5, 'deco'); B.solid(x + 4.5, -66.5, x + 5.5, -65.5, 'deco'); B.lampAt(x, -66); });
       for (let i = 0; i < 18; i++) { const x = -54 + (i % 9) * 8.5 + (i % 9 > 5 ? 50 : 0), z = i < 9 ? -72 : -63, n = 1 + Math.floor(rnd() * 3), c = pk(['#2E5A8A', '#C83A2A', '#3A7A4A', '#E8A03A', '#5A5A62', '#E8E4DC']); if (RIV.some(r => x > r[0] - 5 && x < r[2] + 5)) continue; for (let j = 0; j < n; j++) P(g.box, M('corr', { col: c }), x, 1.3 + j * 2.6, z, 7.6, 2.6, 2.6); B.solid(x - 3.8, z - 1.3, x + 3.8, z + 1.3, 'deco'); }
-      P(g.box, M('paint', { col: '#2A3A5A' }), -10, -0.6, -92, 70, 5, 11); P(g.box, M('paint', { col: '#8A2A2A' }), -10, -2.6, -92, 70.2, 1.2, 11.2);
-      P(g.box, M('white'), 18, 4.6, -92, 9, 6, 9); P(g.box, M('glassL'), 18, 6.6, -96.6, 8, 1, 0.1); P(g.cyl8, M('paint', { col: '#C83A2A' }), 18, 9.6, -92, 1.6, 4, 1.6);
-      for (let i = 0; i < 8; i++) P(g.box, M('corr', { col: pk(['#2E5A8A', '#C83A2A', '#3A7A4A', '#E8A03A']) }), -40 + i * 6.5, 3.2, -92, 6, 2.6, 9);
+      B.ship('cargo', -10, -92, Math.PI, { y: -1.2, L: 72, W: 11, col: '#2A3A5A', funnel: '#C83A2A', boxes: ['#2E5A8A', '#C83A2A', '#3A7A4A', '#E8A03A'], seed: 5, solid: false });   // 2026-10-22 船重做（shipkit.js）：國際貨輪（船首朝西）
       B.plaza(124, -108, 140, COAST, 'gran', { noCurb: true });
       for (let i = 0; i < 6; i++) P(g.cyl24, M(i % 2 ? 'white' : 'verm'), 132, 1.6 + i * 2.6, -100, 3 - i * 0.18, 2.6, 3 - i * 0.18);
       P(g.cyl24, M('glassL'), 132, 17.6, -100, 2, 1.6, 2); P(g.sph, M('lamp'), 132, 17.6, -100, 1, 1, 1); P(g.cone, M('verm'), 132, 19.2, -100, 2.6, 1.6, 2.6); B.solid(130.4, -101.6, 133.6, -98.4, 'deco'); B.lampAt(132, -100);

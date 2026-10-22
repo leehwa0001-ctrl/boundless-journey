@@ -250,7 +250,8 @@
     B.talker(13.4, 17.8, -Math.PI / 2, '招福橋上的觀光客', ['「來奉主一定要在這裡學那個人偶舉手！」', '「燈籠堀晚上比白天漂亮十倍。」', '「我從吉山來的，吉山沒有這麼吵。」']);
     // 遊覽船：兩艘，各在兩座橋之間來回（不從橋底下過）
     const hullM = CK.mat('boatHull', { col: '#E8E4DC', rough: 0.6, snow: 0 }), cabM = CK.mat('boatCab', { col: '#3A5A8A', rough: 0.5, snow: 0 }), lampM = CK.mat('boatLamp', { col: '#FFE8B0', em: '#FFD88A', ei: 1.2, snow: 0 });
-    const mk = () => { const bt = new TH.Group(), h = new TH.Mesh(g.box, hullM); h.scale.set(9, 0.9, 3); h.position.y = 0.3; bt.add(h); const c = new TH.Mesh(g.box, cabM); c.scale.set(5, 1.2, 2.4); c.position.y = 1.35; bt.add(c); for (let i = -3; i <= 3; i += 2) { const l = new TH.Mesh(g.sph, lampM); l.scale.setScalar(0.35); l.position.set(i, 2.2, 0); bt.add(l); } bt.traverse(o => { o.castShadow = true; }); return bt; };
+    // 2026-10-22 船重做（shipkit.js）：篷子的觀光船＋篷子上一串燈籠
+    const mk = () => { const bt = CK.makeShip('boat', { L: 9, col: '#E8E4DC', top: '#3A5A8A', stripe: '#C8402A' }); for (let i = -3; i <= 3; i += 2) { const l = new TH.Mesh(g.sph, lampM); l.scale.setScalar(0.35); l.position.set(i, 3.0, 0); bt.add(l); } bt.traverse(o => { o.castShadow = true; }); void hullM; void cabM; return bt; };
     [[-85, -53], [95, SEA_X - 2]].forEach(([a, b], i) => { const bt = { g: mk(), lo: a + 5.5, hi: b - 5.5, x: i ? b - 6 : a + 6, d: i ? -1 : 1 }; B.group.add(bt.g); tw.anim.push((dt, t) => { bt.x += bt.d * 3 * dt; if (bt.x > bt.hi) { bt.x = bt.hi; bt.d = -1; } else if (bt.x < bt.lo) { bt.x = bt.lo; bt.d = 1; } bt.g.position.set(bt.x, -1.6 + 0.1 + Math.sin(t * 1.4 + i) * 0.05, 28); bt.g.rotation.y = bt.d > 0 ? 0 : Math.PI; }); });
     B.steal(-26.6, 17.2, '摸走章魚燒攤子上的零錢罐', 'stall', () => ({ gold: 5 + Math.floor(Math.random() * 14) }), { time: 1.3, max: 1 });
   }
@@ -344,9 +345,7 @@
       P(g.box, M('steelD'), x, 18, 118, 0.1, 14, 0.1);
     });
     sight(B, 110, 100.6, 'port', '奉主港（起重機）');
-    { const sx = 78, sz = 112; B.box(M('paint', { col: '#2A2A34' }), sx, -1.6, sz, sx + 72, 5, sz + 13); B.box(M('paint', { col: '#8A2A24' }), sx, -1.6, sz, sx + 72, 0.2, sz + 13); B.box(M('white'), sx + 58, 5, sz + 2, sx + 70, 13, sz + 11); B.box(M('glass'), sx + 58.5, 10.5, sz + 1.9, sx + 69.5, 12, sz + 11.1);
-      for (let k = 0; k < 8; k++) P(g.box, M('corr', { col: B.pk(CC) }), sx + 6 + k * 6.4, 6.3, sz + 6.5, 6, 2.6, 9);
-      B.chimney(sx + 64, sz + 6.5, 18, { r: 0.9 }); }
+    B.ship('cargo', 114, 118.5, Math.PI, { y: -1.6, L: 72, W: 13, col: '#2A2A34', funnel: '#2A2A34', boxes: CC, seed: 11, solid: false });   // 2026-10-22 船重做（shipkit.js）：貨船（船首朝西）
     B.box(M('concD'), -172, -0.4, QUAY - 0.5, SEA_X, 0.12, QUAY);
     for (let x = -168; x < SEA_X; x += 10) P(g.cyl8, M('black'), x, 0.4, QUAY - 1, 0.5, 0.6, 0.5);
     B.talker(100, 74, 0, '港口的工人', ['「從這裡出港的船，一半開往德克斯凡。」', '「這櫃重量對不上，先別吊。把單子拿來，我再核一次。」', '「起重機的駕駛座離地二十五公尺，冬天的風會把人吹透。」']);
