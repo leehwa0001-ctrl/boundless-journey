@@ -4,6 +4,7 @@
 // - 郵筒 B.mailbox：紅色的圓筒＋圓頂、投信口、白色的標示牌（碰撞照舊）。
 // - 自動販賣機 B.vend：原本的本體和「買熱飲」的互動照舊，外面加上：上面發光的招牌帶、展示窗裡一排一排的飲料、投幣口、退幣鈕、出貨口的框、側面的散熱孔。
 // - 公車站 B.busStop：原本的照舊，再加站牌的柱子和圓牌、屋頂的簷板、時刻表板。
+// - 樹 B.tree：杉樹（變細的樹幹、一層層的葉團、尖頂）、圓樹（根部外擴、分枝、深淺兩種綠）重做，其他種類照原本的。
 // 參數都跟原本一樣（citykit3.js）。放在 citykit*.js 後面（包住 CK.extendBuilder）。
 (function (R) {
   const CK = R.CK; if (!CK || !CK.extendBuilder) return;
@@ -66,6 +67,29 @@
         [-1, 1].forEach(s => { for (let k = 0; k < 4; k++) { const [px, pz] = at(x, z, ry, -0.2 + k * 0.12, s * 0.48); P(g.box, M('black'), px, 1.5, pz, 0.02, 0.2, 0.06, 0, ry, 0); } });   // 散熱孔
       } catch (e) { console.warn('[streetkit]', e); }
       return it;
+    };
+    // ---------- 樹：杉樹、圓樹重做（其他照原本的） ----------
+    // 杉樹：往上變細的樹幹、一層一層不規則的葉團（每層幾團、往外伸）、尖的樹頂；圓樹：根部外擴的樹幹、看得到的分枝、深淺兩種綠的葉團
+    const tree0 = B.tree, rr = B.rr;
+    const leafD = () => CK.mat('leafGreenD', { tex: 'grass', col: '#6E8A5E', rough: 0.95, snow: 1.3 });
+    B.tree = (x, z, kind, s) => {
+      if (kind !== 'cedar' && kind !== 'round') return tree0(x, z, kind, s);
+      s = s || 1; const fr = B.Bt.getFrame(), [wx, wz] = B.toWorld(x, z), y = CK.heightAt(wx, wz);
+      B.Bt.setFrame(null);
+      try {
+        if (kind === 'cedar') {
+          P(taper('ct', 0.16, 0.36), M('bark'), wx, y + 4.2 * s, wz, s, 8.4 * s, s);
+          P(taper('cf', 0.4, 0.6), M('bark'), wx, y + 0.25 * s, wz, s, 0.5 * s, s);   // 根部
+          for (let i = 0; i < 6; i++) { const yy = y + (2.6 + i * 1.25) * s, R0 = (2.6 - i * 0.36) * s, n = 5 - Math.floor(i / 2); for (let k = 0; k < n; k++) { const a = k * 6.28 / n + i * 0.9 + rr(0, 0.5), r = R0 * rr(0.45, 0.7); P(g.ico, M('leafCedar'), wx + Math.sin(a) * r, yy + rr(-0.2, 0.2) * s, wz + Math.cos(a) * r, R0 * 0.9, 0.9 * s, R0 * 0.9, 0, a, 0); } P(g.ico, M('leafCedar'), wx, yy + 0.2 * s, wz, R0 * 1.1, 1.0 * s, R0 * 1.1); }
+          P(g.cone8, M('leafCedar'), wx, y + 10.4 * s, wz, 1.0 * s, 2.2 * s, 1.0 * s);
+        } else {
+          P(taper('rt', 0.2, 0.32), M('bark'), wx, y + 1.4 * s, wz, s, 2.8 * s, s); P(taper('rf', 0.32, 0.55), M('bark'), wx, y + 0.2 * s, wz, s, 0.4 * s, s);
+          const nb = 4; for (let i = 0; i < nb; i++) { const a = i * 6.28 / nb + rr(0, 0.8), L = rr(1.2, 1.7) * s, tilt = rr(0.6, 0.9), bx = wx + Math.sin(a) * Math.sin(tilt) * L / 2, bz = wz + Math.cos(a) * Math.sin(tilt) * L / 2, by = y + 2.6 * s + Math.cos(tilt) * L / 2; P(g.cyl8, M('bark'), bx, by, bz, 0.14 * s, L, 0.14 * s, 0, a - Math.PI / 2, -tilt); }
+          for (let i = 0; i < 9; i++) { const a = i * 0.8 + rr(0, 0.6), r = i ? rr(0.7, 1.7) * s : 0, m = i % 3 ? M('leafGreen') : leafD(); P(g.ico, m, wx + Math.sin(a) * r, y + (3.3 + rr(-0.4, 1.1)) * s, wz + Math.cos(a) * r, rr(1.6, 2.4) * s, rr(1.4, 2.0) * s, rr(1.6, 2.4) * s, 0, a, 0); }
+        }
+        R.addBox(wx - 0.3 * s, wx + 0.3 * s, wz - 0.3 * s, wz + 0.3 * s, 'tree');
+      } catch (e) { console.warn('[streetkit] tree', e); }
+      finally { if (fr) B.Bt.setFrame(fr.x, fr.z, fr.a); else B.Bt.setFrame(null); }
     };
     // ---------- 公車站：原本的＋站牌、簷板、時刻表 ----------
     const bus0 = B.busStop;
