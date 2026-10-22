@@ -13,7 +13,7 @@
   CK.extendBuilder = B => {
     eb0(B);
     const M = CK.M, g = B.g, P = B.part, BOX = B.box, rnd = B.rnd, pk = B.pk;
-    const META = { office: [3, 3.5], apt: [3.6, 2.9], glass: [3, 3.6], brick: [3.4, 4.2] };
+    const META = { office: [3, 3.5], apt: [3.6, 2.9], glass: [3, 3.6], brick: [3.4, 4.2], factory: [4, 6] };
     const deco = (o, res) => {
       const st = o.style, [x0, z0, x1, z1] = o.r, h = (res && res.h) || o.h || 12, f = o.face || 's';
       const faces = { s: [z1, x0, x1], n: [z0, x0, x1], e: [x1, z0, z1], w: [x0, z0, z1] };
@@ -51,6 +51,16 @@
         ['s', 'n', 'e', 'w'].forEach(fc => { const [, a, b] = faces[fc]; for (let y = fh; y < h - 0.5; y += fh) fb(fc, a, b, y - 0.22, y + 0.12, 0, 0.05, dark); });
         if (h > 14 && o.top !== false) { const ins = Math.min(2, w * 0.15, d * 0.15); BOX(M('glass'), x0 + ins, h, z0 + ins, x1 - ins, h + 3.2, z1 - ins); BOX(CK.mat('bkCrown', { col: '#DDEEFF', em: '#BBDDFF', ei: 0, lamp: true, snow: 0 }), x0 + ins - 0.05, h + 3.0, z0 + ins - 0.05, x1 - ins + 0.05, h + 3.3, z1 - ins + 0.05); }
         if (!named && !plain) { const [, a, b] = faces[f], m = (a + b) / 2; fb(f, m - 3, m + 3, 3.4, 3.6, 0, 2.4, dark); }
+      } else if (st === 'factory' && !plain) {
+        // 倉庫（矮）：低斜度的浪板屋頂、捲門；工廠（高）：鋸齒的採光屋頂、排氣口、管線架
+        const corr = M('corr', { col: pk(['#8A929A', '#9AA0A6', '#7A8A8A', '#A89A8A']) }), [c, a, b] = faces[f], sg = f === 's' || f === 'e' ? 1 : -1, along = f === 's' || f === 'n';
+        if (h < 8) { const ridgeX = w >= d, rw = ridgeX ? w : d, rd = ridgeX ? d : w; B.roof((x0 + x1) / 2, (z0 + z1) / 2, rw, rd, { type: 'gable', y: h + 0.05, h: rd * 0.1, o: 0.4, mat: 'corr', under: 'steelD', edge: 'steelD', ridge: false, gableMat: 'corr', ry: ridgeX ? 0 : Math.PI / 2 }); }
+        else { const n = Math.max(2, Math.round((along ? d : w) / 5)), seg = (along ? d : w) / n; for (let k = 0; k < n; k++) { const t0 = (along ? z0 : x0) + seg * k; if (along) { P(g.box, M('glassL'), (x0 + x1) / 2, h + 1.05, t0 + seg - 0.2, w - 0.4, 2.0, 0.08); P(g.box, corr, (x0 + x1) / 2, h + 1.0, t0 + seg * 0.5 - 0.1, w - 0.4, 0.12, seg * 1.08, -0.38, 0, 0); } else { P(g.box, M('glassL'), t0 + seg - 0.2, h + 1.05, (z0 + z1) / 2, 0.08, 2.0, d - 0.4); P(g.box, corr, t0 + seg * 0.5 - 0.1, h + 1.0, (z0 + z1) / 2, seg * 1.08, 0.12, d - 0.4, 0, 0, 0.38); } }
+          for (let k = 0; k < 3; k++) P(g.cyl8, M('metal'), x0 + w * (0.25 + k * 0.25), h + 2.6, z0 + d * 0.5, 0.7, 1.0, 0.7);
+          const pz = (z0 + z1) / 2; [0, 1].forEach(j => P(g.cyl8, M('steelD'), x0 - 0.5, 2.5 + j * 0.8, pz, 0.35, d * 0.8, 0.35, Math.PI / 2, 0, 0)); }
+        // 捲門、卸貨平台、棧板（正面）
+        const nd = Math.max(1, Math.min(4, Math.floor((b - a) / 7))); for (let k = 0; k < nd; k++) { const p = a + (b - a) * (k + 0.5) / nd; fb(f, p - 1.8, p + 1.8, 0.2, Math.min(h - 1, 4.4), 0, 0.06, M('corr', { col: pk(['#C8C8C0', '#D8B040', '#5A7A9A']) })); fb(f, p - 2.0, p + 2.0, Math.min(h - 1, 4.4), Math.min(h - 1, 4.4) + 0.4, 0, 0.3, M('steelD')); }
+        // 卸貨平台、棧板不放：會凸到人行道上（擋路、擋住門口的互動）
       } else if (st === 'brick') {
         const stone = M('ashlar'), white = M('cream');
         if (h > 5) for (let y = 1.3 + fh; y < h - 1; y += fh) ring(y - 0.1, y + 0.12, 0.08, stone);   // 腰帶
