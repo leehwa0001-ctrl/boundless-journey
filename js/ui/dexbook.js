@@ -185,6 +185,16 @@
 
   // ---------- 樣子 ----------
   const INK = '#24160C', PAPER = '#D7B37A', PAPER2 = '#C49A5E', GOLD = '#E2B65C';
+  // 2026-10-22 作者：圖鑑的背景（質感）再精細一點——紙的纖維和斑點、更細的木紋和木節、封面的皮革紋（都是 SVG 的雜訊，畫一次就好）
+  const svg = (w, h, body) => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '">' + body + '</svg>') + '")';
+  const noise = (id, bf, oct, seed, mat) => '<filter id="' + id + '" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="' + bf + '" numOctaves="' + oct + '" seed="' + seed + '" stitchTiles="stitch"/><feColorMatrix values="' + mat + '"/></filter>';
+  const FIBER = svg(300, 300, noise('f', '.9 .55', 4, 3, '0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .9 -.32') + '<rect width="300" height="300" filter="url(#f)"/>');
+  const STAIN = svg(520, 520, noise('s', '.012', 3, 8, '0 0 0 0 .45 0 0 0 0 .28 0 0 0 0 .1 0 0 0 1.6 -.78') + '<rect width="520" height="520" filter="url(#s)"/>');
+  const GRAIN = svg(480, 480, noise('g', '.004 .22', 4, 5, '0 0 0 0 .16 0 0 0 0 .08 0 0 0 0 .03 0 0 0 1.25 -.42') + '<rect width="480" height="480" filter="url(#g)"/>');
+  const KNOT = svg(900, 700, '<g fill="none" stroke="rgba(30,14,4,.35)" stroke-width="2"><ellipse cx="180" cy="220" rx="16" ry="34"/><ellipse cx="180" cy="220" rx="9" ry="20"/><ellipse cx="640" cy="520" rx="12" ry="28"/><ellipse cx="640" cy="520" rx="6" ry="15"/></g><g fill="rgba(30,14,4,.5)"><ellipse cx="180" cy="220" rx="4" ry="8"/><ellipse cx="640" cy="520" rx="3" ry="6"/></g>');
+  const LEATHER = svg(200, 200, noise('l', '.45', 3, 11, '0 0 0 0 .05 0 0 0 0 .03 0 0 0 0 .12 0 0 0 1.4 -.5') + '<rect width="200" height="200" filter="url(#l)"/>');
+  const PAGE_L = STAIN + ',' + FIBER + ',linear-gradient(90deg,' + PAPER2 + ' 0,' + PAPER + ' 6%,' + PAPER + ' 88%,#A87E46 100%)';
+  const PAGE_R = STAIN + ',' + FIBER + ',linear-gradient(270deg,' + PAPER2 + ' 0,' + PAPER + ' 6%,' + PAPER + ' 88%,#A87E46 100%)';
   const css = document.createElement('style');
   css.textContent = [
     // 桌子：木板＋木紋
@@ -241,7 +251,7 @@
     '#bestiary.bk-on .dx-count{font-family:"LXGW WenKai TC",var(--serif);color:#F2C66A;font-size:17px;text-shadow:0 2px 0 #6A4420}#bestiary.bk-on .dx-count b{color:#FFE29A}',
     '#bestiary.bk-on .dx-left .dx-tabs:not(.dx-gtabs) .dx-tab{border:3px solid ' + INK + ';background:#B08A56;color:#3A2414}#bestiary.bk-on .dx-left .dx-tabs:not(.dx-gtabs) .dx-tab.on{background:#E9CF9C}',
     // 右頁：深色的框（撕紙邊、四角的括弧）
-    '#bestiary.bk-on .dx-right{color:#D9B58A;padding:44px 50px 36px 46px;background:' + PANEL_BG + ',linear-gradient(270deg,' + PAPER2 + ' 0,' + PAPER + ' 6%,' + PAPER + ' 88%,#B08850 100%)}',
+    '#bestiary.bk-on .dx-right{color:#D9B58A;padding:44px 50px 36px 46px;background:' + PANEL_BG + ',' + PAGE_R + '}',
     '#bestiary.bk-on .dx-right p,#bestiary.bk-on .dx-right li{color:#D9B58A;line-height:1.6}#bestiary.bk-on .dx-right .note{color:#B79A7A}#bestiary.bk-on .dx-right b{color:#F2D49A}',
     '#bestiary.bk-on .dx-right .dx-h{font-family:"LXGW WenKai TC",var(--serif);color:' + GOLD + ';font-size:16px;border-bottom:1px solid rgba(226,182,92,.3);padding-bottom:3px;margin:14px 0 6px}',
     // 名字的布條（燕尾）
@@ -266,7 +276,20 @@
     '.bk-leaf.back .bk-face::after{background:linear-gradient(270deg,rgba(40,20,6,.9),rgba(40,20,6,.2) 60%,rgba(255,240,210,.25))}',
     '.bk-face{box-shadow:0 8px 16px rgba(0,0,0,.35)}',   // 不能用 filter：filter 會把 3D 壓平，背面就透出來
     '@property --sh{syntax:"<number>";inherits:true;initial-value:0}',
-    '@media (prefers-reduced-motion:reduce){.bk-leaf{display:none}}'
+    '@media (prefers-reduced-motion:reduce){.bk-leaf{display:none}}',
+    // 2026-10-22 修：瘦高的圖示（高過格子）會凸出框外——圖示一律縮進格子裡
+    '.dr-th img,.dx-th img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;min-width:0;min-height:0}',
+    // 2026-10-22 質感：桌子（細木紋＋木節＋木板接縫的亮邊）、紙（纖維＋斑點）、封面（皮革紋＋縫線）
+    '#bestiary.bk-on{background:' + KNOT + ',' + GRAIN + ',repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 234px,rgba(255,220,170,.10) 234px 235px,rgba(24,12,4,.6) 235px 239px,rgba(255,220,170,.06) 239px 240px),linear-gradient(180deg,#7A4E2C,#5A371E) #6B4426}',
+    '#bestiary.bk-on::before{opacity:.22}',
+    '#bestiary.bk-on .dx-left{background:' + PAGE_L + '}',
+    '#bestiary.bk-on .dx-book{background:' + LEATHER + ',linear-gradient(180deg,#5A4D9A,#3F3474)}',
+    '#bestiary.bk-on .dx-book::before{content:"";position:absolute;inset:6px;border:2px dashed rgba(220,200,255,.28);border-radius:10px;pointer-events:none}',
+    // 格子：深色的木框裡淡淡的光、選到的那格更亮
+    '#bestiary.bk-on .dr-th:not(.dr-empty),#bestiary.bk-on .dx-th{background:radial-gradient(circle at 50% 40%,#5A3A22,#2E1C10 75%)}',
+    // 書頁的厚度：頁緣一條一條的線
+    '#bestiary.bk-on .dx-left{box-shadow:-3px 3px 0 -1px #C9A46C,-5px 5px 0 -1px #B08A54,-7px 7px 0 -1px #C9A46C,-9px 9px 0 -2px ' + INK + '}',
+    '#bestiary.bk-on .dx-right{box-shadow:3px 3px 0 -1px #C9A46C,5px 5px 0 -1px #B08A54,7px 7px 0 -1px #C9A46C,9px 9px 0 -2px ' + INK + '}'
   ].join('\n');
   document.head.appendChild(css);
 })(window.R);

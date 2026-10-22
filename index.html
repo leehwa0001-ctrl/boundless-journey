@@ -621,6 +621,10 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 </style>
 
 <!-- 標題 -->
+<!-- 2026-10-22 開機畫面：程式還沒跑完以前先蓋住（不然會先看到 HTML 裡的舊標題畫面閃一下）；title2.js 排好新的標題就淡出 -->
+<style>#title:not(.t2) .t-wrap{visibility:hidden}#boot{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0B0910;color:#C9B891;font-family:"Noto Serif TC",serif;transition:opacity .45s}#boot.out{opacity:0;pointer-events:none}#boot b{font-size:clamp(28px,5vw,46px);letter-spacing:.3em;color:#E8D49A;text-shadow:0 0 18px rgba(232,180,90,.25)}#boot i{width:160px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,#B8322A,transparent) 0 0/60% 100% no-repeat,#241C2C;animation:bootbar 1.2s linear infinite}@keyframes bootbar{from{background-position:-100% 0,0 0}to{background-position:220% 0,0 0}}</style>
+<div id="boot" aria-hidden="true"><b>無境之旅</b><i></i></div>
+<script>setTimeout(function(){var b=document.getElementById("boot");if(b){b.classList.add("out");setTimeout(function(){b.remove()},500)}},15000)</script>
 <section class="screen" id="title">
   <div class="t-wrap">
     <div class="t-kicker">《艾菲爾斯特——公會特殊討伐令－遺跡》</div>

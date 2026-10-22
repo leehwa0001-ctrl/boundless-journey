@@ -217,7 +217,7 @@ window.R = window.R || {};
   // 名字是公會東鶴分館的圖鑑取的（看牠們的樣子和習性），不用民間傳說的名字。「礦殼」「佩特拉核心」是公會正式文件裡的名字（《遺跡》第一章第五節）。
   R.ENEMIES = {
     kousaku: { name: '礦殼', ref: '公會文件', hp: 50, dmg: 10, speed: 2.5, xp: 7, size: 0.85, ai: 'chase', armor: 0.35, ore: 1, color: '#6E5A4A', eye: '#FFD24A',
-      desc: '背上長著水晶或礦石的類甲蟲生物，會群聚成礦脈的樣子。殺死之後可以「掘礦」。' },
+      desc: '扁平的圓頂殼像一塊會走動的岩層，背上長著水晶或礦石，會群聚成礦脈的樣子。殺死之後可以「掘礦」。' },   // 2026-10-22 作者：不能再叫「類甲蟲生物」
     kamaitachi: { name: '三連貂', ref: '', hp: 20, dmg: 7, speed: 6.4, xp: 5, size: 0.55, ai: 'trio', color: '#C9D6E0', eye: '#7FE0FF',
       desc: '三隻一組出現：第一隻把人絆倒，第二隻用前肢的鐮刀劃開傷口，第三隻替同伴療傷。先打第三隻。' },
     onibi: { name: '游焰', ref: '', hp: 16, dmg: 9, speed: 3.2, xp: 6, size: 0.5, ai: 'kite', shoot: 0.55, fly: 1, color: '#7FD8FF', eye: '#FFFFFF',

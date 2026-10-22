@@ -53,6 +53,7 @@
     busy = true;
     try {
       T.classList.add('t2'); bg(T); syncBg();
+      { const bt = $('boot'); if (bt && !bt.dataset.out) { bt.dataset.out = 1; requestAnimationFrame(() => bt.classList.add('out')); setTimeout(() => bt.remove(), 600); } }   // 2026-10-22 開機畫面（index.html）：新標題排好了才淡出
       const go = $('t-go'), nw = $('t-new'), news = $('t-news');
       if (go && go.firstChild && go.firstChild.nodeType === 3 && go.firstChild.textContent !== '繼續冒險') go.firstChild.textContent = '繼續冒險';
       let pick = $('t2-pick'); if (!pick) { pick = document.createElement('button'); pick.type = 'button'; pick.id = 't2-pick'; pick.innerHTML = '選擇存檔<small>三格存檔・匯出、匯入</small>'; pick.onclick = () => open(true); }
