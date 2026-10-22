@@ -81,7 +81,7 @@
       const L = o.L || 64, W = o.W || 11, D = 4.5, Dr = 2.5;
       add(hull(L, W, D, Dr, { bow: 0.24, sheer: 1.2, part: 'above' }), 'hull', 0, 0, 0); add(hull(L, W, D, Dr, { bow: 0.24, sheer: 1.2, part: 'below' }), 'anti', 0, 0, 0);
       box('stripe', 0, D - 1.3, 0, L * 0.92, 0.6, W + 0.05); box('stripe', 0, D - 0.4, 0, L * 0.92, 0.15, W + 0.05);
-      for (let x = -L * 0.42; x < L * 0.3; x += 1.6) [1, -1].forEach(s => add(g.cyl8, 'glass', x, D - 2.4, s * (W / 2 + 0.01), 0.45, 0.06, 0.45, Math.PI / 2, 0, 0));   // 舷窗
+      for (let x = -L * 0.42; x < L * 0.3; x += 1.6) [1, -1].forEach(s => add(g.cyl8, 'glass', x, D - 2.4, s * (W / 2 + 0.01), 0.45, 0.06, 0.45, 0, Math.PI / 2, Math.PI / 2));   // 舷窗
       const deckY = [D, D + 2.6, D + 5.2], len = [L * 0.66, L * 0.5, L * 0.32], x0s = [-L * 0.42, -L * 0.38, -L * 0.3];
       deckY.forEach((y, k) => { const x0 = x0s[k], x1 = x0 + len[k], w = W - 1 - k * 0.8; box('top', (x0 + x1) / 2, y + 1.3, 0, len[k], 2.6, w); wins(x0 + 0.6, x1 - 0.8, y + 1.5, w / 2 + 0.01, 1.0); box('glass', x1 - 0.02, y + 1.5, 0, 0.05, 1.0, w - 1); rail(x0, x1 + 1.5, y + 2.6, w / 2 - 0.1); });
       box('top', x0s[2] + len[2] - 3, D + 8.4, 0, 3, 0.6, W + 1.2);   // 艦橋的兩翼
@@ -103,24 +103,64 @@
       [L * 0.0, L * 0.2].forEach(x => { cyl('crane', x, D + 4, W / 2 - 1.5, 0.45, 8); add(g.box, 'crane', x + 3.5, D + 7.5, W / 2 - 1.5, 9, 0.4, 0.4, 0, 0, 0.35); });
       cyl('mast', L / 2 - 8, D + 4, 0, 0.15, 7); box('hull', L / 2 - 6, D + 0.6, 0, 6, 1.2, W - 3);
     } else if (kind === 'warship') {
-      const L = o.L || 90, W = o.W || 12, D = 4.5, Dr = 3.5;
-      add(hull(L, W, D, Dr, { bow: 0.3, sheer: 1.6, part: 'above' }), 'hull', 0, 0, 0); add(hull(L, W, D, Dr, { bow: 0.3, sheer: 1.6, part: 'below' }), 'anti', 0, 0, 0);
+      // 2026-10-22 作者：軍艦精細度不夠——照戰列艦重做（防雷突出部、舷窗、木甲板、舷側副砲、四座三聯裝砲塔、寶塔式艦橋、測距儀、探照燈、
+      // 往後傾的大煙囪、前後桅和吊索、小艇和吊艇架、防空機槍、艦尾的吊車和水上飛機、艦首旗竿和錨鏈、艦尾軍旗）
+      const L = o.L || 90, W = o.W || 12, D = 4.5, Dr = 3.5, hg = hull(L, W, D, Dr, { bow: 0.3, sheer: 1.6, part: 'above' });
+      add(hg, 'hull', 0, 0, 0); add(hull(L, W, D, Dr, { bow: 0.3, sheer: 1.6, part: 'below' }), 'anti', 0, 0, 0);
+      const dk = x => hg.userData.deck((x + L / 2) / L), hw = x => hg.userData.halfW((x + L / 2) / L);
+      const zc = (x, y, z, r, h, m) => add(g.cyl8, m, x, y, z, r * 2, h, r * 2, 0, Math.PI / 2, Math.PI / 2);   // 軸朝 z 的圓柱（先繞 z、再轉 90°：船轉方向也對）
+      const xc = (x, y, z, r, h, m, n) => add(n || g.cyl8, m, x, y, z, r * 2, h, r * 2, 0, 0, Math.PI / 2);      // 軸朝 x 的圓柱
+      const strut = (x0, y0, x1, y1, z, r, m) => { const dx = x1 - x0, dy = y1 - y0; add(g.cyl8, m, (x0 + x1) / 2, (y0 + y1) / 2, z, r * 2, Math.hypot(dx, dy), r * 2, 0, 0, Math.atan2(-dx, dy)); };
+      // 防雷突出部、水線的深色帶、舷窗
+      [1, -1].forEach(sd => box('hull', 0, 0.2, sd * (W / 2 + 0.05), L * 0.58, 1.6, 0.5));
       box('dark', 0, D - 0.12, 0, L * 0.94, 0.12, W + 0.02);
-      // 艦橋：階梯狀往上
-      const bx = L * 0.12; [[12, 3, W - 2], [9, 2.6, W - 3], [6, 2.4, W - 4.5], [4, 2, W - 6]].forEach(([l, h, w], k) => { const y = D + [0, 3, 5.6, 8][k]; box('top', bx - k * 0.6, y + h / 2, 0, l, h, w); wins(bx - k * 0.6 - l / 2 + 0.5, bx - k * 0.6 + l / 2 - 0.5, y + h * 0.6, w / 2 + 0.01, 0.4, 'dark'); });
-      box('glass', bx + 0.2, D + 9.2, 0, 2.2, 0.6, W - 6.1);
-      // 三腳桅、雷達
-      [[0, 0.6], [-1.2, -0.5], [1.2, -0.5]].forEach(([z, dx]) => add(g.cyl8, 'top', bx - 2 + dx, D + 14, z, 0.36, 9, 0.36, z ? (z > 0 ? -0.12 : 0.12) : 0, 0, dx > 0 ? 0.05 : -0.05));
-      box('top', bx - 2, D + 18.5, 0, 2.4, 0.4, 2.4); box('dark', bx - 2, D + 19.4, 0, 0.3, 1.2, 3.2); cyl('top', bx - 2, D + 20.6, 0, 0.08, 2.2);
-      // 煙囪
-      [-L * 0.06, -L * 0.15].forEach(x => { add(g.cyl8, 'top', x, D + 6, 0, 3.0, 8, 2.2); cyl('dark', x, D + 10.1, 0, 1.25, 0.3); });
-      // 砲塔：前二後一（砲塔＋兩根砲管）
-      const turret = (x, y, dir) => { add(g.cyl24, 'top', x, y + 0.8, 0, 4.2, 1.6, 4.2); box('top', x + dir * 1.0, y + 0.8, 0, 3.0, 1.5, 3.6); [-0.6, 0.6].forEach(z => cyl('dark', x + dir * 4.4, y + 1.0, z, 0.2, 5.6, 0, Math.PI / 2)); };
-      turret(L * 0.3, D, 1); turret(L * 0.2, D + 1.6, 1); box('top', L * 0.2, D + 0.8, 0, 5, 1.6, 5);
-      turret(-L * 0.3, D, -1);
-      [-L * 0.02, L * 0.06].forEach(x => [1, -1].forEach(s => { box('top', x, D + 3.6, s * (W / 2 - 1.6), 1.6, 0.8, 1.6); cyl('dark', x + 1.5, D + 3.7, s * (W / 2 - 1.6), 0.08, 2, 0, Math.PI / 2); }));   // 副砲
-      add(g.cyl8, 'dark', L / 2 - 4, D + 0.3, W * 0.3, 0.8, 0.12, 0.8, Math.PI / 2, 0, 0); add(g.cyl8, 'dark', L / 2 - 4, D + 0.3, -W * 0.3, 0.8, 0.12, 0.8, Math.PI / 2, 0, 0);   // 錨的孔
-      cyl('mast', -L * 0.32, D + 6, 0, 0.12, 8); rail(-L * 0.45, L * 0.42, D, W / 2 - 0.1);
+      for (let x = -L * 0.42; x < L * 0.36; x += 1.6) [1, -1].forEach(sd => { const z = sd * (hw(x) + 0.01); zc(x, dk(x) - 1.3, z, 0.16, 0.06, 'dark'); });
+      // 木甲板：照舷弧一段一段鋪
+      for (let k = 0; k < 14; k++) { const x0 = -L * 0.46 + L * 0.88 * k / 14, x1 = -L * 0.46 + L * 0.88 * (k + 1) / 14, xm = (x0 + x1) / 2; box('deckwood', xm, dk(xm) + 0.04, 0, x1 - x0 + 0.02, 0.06, Math.max(0.5, hw(xm) * 2 - 0.5)); }
+      // 舷側的副砲：一排砲郭＋砲管
+      for (let k = 0; k < 6; k++) { const x = -L * 0.16 + k * L * 0.065; [1, -1].forEach(sd => { box('top', x, dk(x) - 0.75, sd * (hw(x) - 0.1), 1.1, 0.8, 0.6); zc(x, dk(x) - 0.75, sd * (hw(x) + 0.9), 0.1, 2.0, 'dark'); }); }
+      // 主砲塔：砲座、圓弧的正面、斜的頂、三根砲管和砲口罩、測距儀的耳朵
+      const turret = (x, y, dir) => {
+        add(g.cyl24, 'top', x, y + 0.5, 0, 5.0, 1.0, 5.0);
+        box('top', x - dir * 0.5, y + 1.9, 0, 3.6, 1.8, 4.2); add(g.cyl24, 'top', x + dir * 1.3, y + 1.9, 0, 4.2, 1.8, 4.2);
+        box('top', x - dir * 0.2, y + 2.85, 0, 3.8, 0.15, 3.8);
+        [-1, 1].forEach(s2 => zc(x - dir * 1.6, y + 2.5, s2 * 2.2, 0.28, 0.8, 'top'));
+        [-1.0, 0, 1.0].forEach(z => { xc(x + dir * 5.4, y + 2.0, z, 0.2, 7.2, 'dark'); xc(x + dir * 3.5, y + 2.0, z, 0.34, 0.6, 'dark'); });
+      };
+      turret(L * 0.33, dk(L * 0.33), 1); add(g.cyl24, 'top', L * 0.22, dk(L * 0.22) + 0.9, 0, 5.4, 1.8, 5.4); turret(L * 0.22, dk(L * 0.22) + 1.8, 1);
+      turret(-L * 0.33, dk(-L * 0.33), -1); add(g.cyl24, 'top', -L * 0.22, dk(-L * 0.22) + 0.9, 0, 5.4, 1.8, 5.4); turret(-L * 0.22, dk(-L * 0.22) + 1.8, -1);
+      // 寶塔式艦橋：甲板室＋一層一層的平台（欄杆）＋艦橋窗＋最上面的測距儀
+      const bx = L * 0.1, by = dk(bx);
+      box('top', bx - 2, by + 1.6, 0, 14, 3.2, W - 2.6); [1, -1].forEach(sd => { for (let x = bx - 8; x < bx + 4.5; x += 1.4) zc(x, by + 2.0, sd * ((W - 2.6) / 2 + 0.01), 0.15, 0.05, 'dark'); });
+      add(g.cyl8, 'top', bx, by + 12, 0, 1.6, 18, 1.6);
+      [[3.2, 9, 6.5], [6.0, 7.5, 5.5], [8.6, 6.4, 4.6], [11.2, 5.4, 4.0], [13.6, 4.2, 3.4], [15.8, 3.4, 2.8]].forEach(([y, l, w], k) => {
+        box('top', bx, by + y, 0, l, 0.25, w); [w / 2, -w / 2].forEach(z => box('rail', bx, by + y + 0.5, z, l, 0.06, 0.05)); [l / 2, -l / 2].forEach(xx => box('rail', bx + xx, by + y + 0.5, 0, 0.05, 0.06, w));
+        if (k % 2 === 1) { box('top', bx + 0.4, by + y + 1.0, 0, l * 0.55, 1.6, w * 0.7); box('glass', bx + 0.4 + l * 0.275 + 0.01, by + y + 1.3, 0, 0.05, 0.5, w * 0.62); }
+      });
+      box('top', bx, by + 17.6, 0, 1.6, 1.2, 1.6); box('top', bx, by + 18.5, 0, 0.6, 0.6, 6.0); [3, -3].forEach(z => zc(bx, by + 18.5, z, 0.42, 0.5, 'top'));   // 測距儀
+      [[1, 2.4], [-1, 2.4], [1, -2.4], [-1, -2.4]].forEach(([xx, z]) => { add(g.cyl8, 'top', bx + xx * 2.4, by + 9.4, z, 0.9, 0.7, 0.9); xc(bx + xx * 2.4 + 0.4, by + 9.4, z, 0.36, 0.1, 'lens'); });   // 探照燈
+      // 大煙囪（往後傾）＋蒸汽管
+      const fx = -L * 0.04, fy = dk(fx);
+      add(g.cyl8, 'top', fx, fy + 5.5, 0, 4.0, 9, 2.8, 0, 0, 0.12); add(g.cyl8, 'dark', fx - 0.55, fy + 10.1, 0, 3.6, 0.6, 2.5, 0, 0, 0.12); add(g.cyl8, 'top', fx - 0.6, fy + 10.5, 0, 4.2, 0.25, 3.0, 0, 0, 0.12);
+      [-0.9, 0.9].forEach(z => add(g.cyl8, 'mast', fx - 1.9, fy + 6, z, 0.24, 9, 0.24, 0, 0, 0.12));
+      // 後桅（三腳）、橫桁、吊索
+      const mx = -L * 0.14, my = dk(mx);
+      [[0, 0.4], [-1.4, -0.5], [1.4, -0.5]].forEach(([z, dx]) => strut(mx + dx * 2.2, my, mx, my + 12, z * 0.7, 0.2, 'top'));
+      box('top', mx, my + 10, 0, 1.8, 0.2, 5.0); box('mast', mx, my + 12, 0, 0.12, 0.12, 6.0);
+      strut(bx, by + 19, L / 2 - 3, dk(L / 2 - 3) + 1.4, 0, 0.03, 'mast'); strut(bx, by + 19, mx, my + 12, 0, 0.03, 'mast'); strut(mx, my + 12, -L / 2 + 3, dk(-L / 2 + 3) + 1.2, 0, 0.03, 'mast');
+      // 小艇和吊艇架、防空機槍
+      [[-L * 0.09, 1], [-L * 0.09, -1], [-L * 0.17, 1], [-L * 0.17, -1]].forEach(([x, sd]) => { add(hull(5.2, 1.6, 0.6, 0.5, { bow: 0.4 }), 'boat', x, dk(x) + 1.2, sd * (W / 2 - 1.4)); strut(x - 1.8, dk(x), x - 1.8, dk(x) + 2.4, sd * (W / 2 - 0.5), 0.07, 'mast'); strut(x + 1.8, dk(x), x + 1.8, dk(x) + 2.4, sd * (W / 2 - 0.5), 0.07, 'mast'); });
+      [[bx - 6, 1], [bx - 6, -1], [bx + 3.5, 1], [bx + 3.5, -1], [fx - 3, 1], [fx - 3, -1]].forEach(([x, sd]) => { const y = dk(x) + 3.4, z = sd * (W / 2 - 1.8); add(g.cyl8, 'top', x, y + 0.3, z, 1.0, 0.6, 1.0); [-0.15, 0.15].forEach(zz => strut(x, y + 0.5, x + 1.3, y + 1.4, z + zz, 0.05, 'dark')); });
+      // 艦尾：吊車、彈射器、水上飛機、軍旗
+      const sx2 = -L * 0.42, sy = dk(sx2);
+      add(g.cyl8, 'top', sx2 + 2, sy + 2.5, W * 0.25, 0.5, 5, 0.5); strut(sx2 + 2, sy + 4.8, sx2 - 3, sy + 6.2, W * 0.25, 0.14, 'top');
+      box('dark', sx2 + 1, sy + 0.9, -W * 0.15, 10, 0.4, 0.6);   // 彈射器
+      xc(sx2 + 1, sy + 1.9, -W * 0.15, 0.4, 4.6, 'top'); box('top', sx2 + 1.4, sy + 2.1, -W * 0.15, 1.0, 0.08, 6.0); box('top', sx2 - 0.9, sy + 2.0, -W * 0.15, 0.6, 0.06, 2.2); [-1, 1].forEach(z => xc(sx2 + 1, sy + 1.2, -W * 0.15 + z * 1.0, 0.22, 2.6, 'top'));   // 水上飛機（機身、主翼、尾翼、浮筒）
+      add(g.cyl8, 'mast', -L / 2 + 0.6, sy + 3, 0, 0.12, 6, 0.12); add(g.plane, 'flag', -L / 2 + 0.0, sy + 5.3, 0, 1.6, 1.0, 1, 0, 0, 0);
+      // 艦首：旗竿、錨鏈、絞盤
+      add(g.cyl8, 'mast', L / 2 - 1.2, dk(L / 2 - 1.2) + 1.6, 0, 0.1, 3.2, 0.1);
+      [1, -1].forEach(sd => { box('dark', L * 0.43, dk(L * 0.43) + 0.08, sd * 1.1, 4.0, 0.12, 0.25); add(g.cyl8, 'dark', L * 0.4, dk(L * 0.4) + 0.4, sd * 1.1, 0.9, 0.7, 0.9); zc(L / 2 - 4, dk(L / 2 - 4) - 0.4, sd * (hw(L / 2 - 4) + 0.02), 0.4, 0.1, 'dark'); });
+      rail(-L * 0.45, L * 0.42, D, W / 2 - 0.1);
     }
     return out;
   };
@@ -130,7 +170,7 @@
     const box = ['#C8402A', '#2E5A9A', '#E8C040', '#3E7A52', '#E8E4DC', '#7A4A8A', '#D87A3A'];
     const m = { hull: pc('hull', o.col || '#2A2E36', { tex: 'paint' }), anti: pc('anti', o.anti || '#8A2A24', { tex: 'paint', snow: 0 }), top: pc('top', o.top || '#ECEAE4', { tex: 'paint' }), roof: pc('roof', o.roof || '#5A6068'), stripe: pc('stripe', o.stripe || '#2E5A9A'),
       glass: M('glass'), dark: pc('dark', '#202226'), rail: pc('rail', o.railCol || '#E8E4DC', { snow: 0.2 }), mast: M('steelD'), funnel: pc('funnel', o.funnel || o.col || '#2A2E36'), crane: pc('crane', '#D8A030'),
-      boat: pc('boat', '#E8782A'), boatTop: pc('boatTop', '#F2F0EA'), wood: M('woodD'), white: M('white'), fender: pc('fender', '#18181C', { rough: 0.9 }), float: pc('float', '#E8782A'),
+      boat: pc('boat', '#E8782A'), deckwood: pc('deckwood', '#9A7A56', { tex: 'planks' }), lens: CK.mat('ship|lens', { col: '#F4F8FF', em: '#E8F0FF', ei: 0, lamp: true, snow: 0 }), boatTop: pc('boatTop', '#F2F0EA'), wood: M('woodD'), white: M('white'), fender: pc('fender', '#18181C', { rough: 0.9 }), float: pc('float', '#E8782A'),
       flag: CK.mat('ship|flag|' + (o.flag || '#C8323A'), { col: o.flag || '#C8323A', side: 1, snow: 0 }), lampR: CK.mat('ship|lamp', { col: '#FFE8C0', em: '#FFD08A', ei: 0, lamp: true, snow: 0 }) };
     (o.boxes || box).forEach((c, i) => { m['c' + i] = CK.mat('fac|corr|' + c, { tex: 'corrugated', col: c, snow: 0.8 }); });
     return m;
