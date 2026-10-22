@@ -42,14 +42,14 @@
     return g;
   };
 
-  V.carMesh = carMesh; V.MODELS = MODELS; V.box = box; V.lam = lam;   // 巡邏車、路障（pursuit.js）也用
+  V.carMesh = carMesh; V.bikeMesh = bikeMesh; V.MODELS = MODELS; V.box = box; V.lam = lam;   // 巡邏車、路障（pursuit.js）也用
 
   // ---------- 停著的車 ----------
   const blocked = (x, z, r) => R.col.list.some(b => b.on !== false && b.tag !== 'deco' && b.tag !== 'veh' && x > b.x0 - r && x < b.x1 + r && z > b.z0 - r && z < b.z1 + r);
   const freeNear = (x, z, r) => { for (let d = 0; d <= 10; d += 0.5) for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, nx = x + Math.sin(a) * d, nz = z + Math.cos(a) * d; if (!blocked(nx, nz, r)) return [nx, nz]; } return null; };
   const park = (type, model, x, z, yaw, o) => {
     const t = tw(); if (!t) return null; const p = freeNear(x, z, type === 'car' ? 1.6 : 0.6) || [x, z];
-    const g = type === 'car' ? carMesh(model, o && o.col) : bikeMesh(o && o.col); g.position.set(p[0], 0, p[1]); g.rotation.y = yaw || 0; t.group.add(g);
+    const g = type === 'car' ? V.carMesh(model, o && o.col) : V.bikeMesh(o && o.col);   // 2026-10-22 走 V 上面的（vehiclekit.js 換成新的造型） g.position.set(p[0], 0, p[1]); g.rotation.y = yaw || 0; t.group.add(g);
     const v = Object.assign({ type, model, g, x: p[0], z: p[1], yaw: yaw || 0, v: 0 }, o || {}); V.list.push(v);
     v.it = { get x() { return v.x; }, get z() { return v.z; }, r: type === 'car' ? 3 : 1.8, get label() { return type === 'car' ? (v.own ? '上車（開車）' : '開這台車') : '騎上腳踏車'; }, when: () => !V.cur && V.list.includes(v), act: () => mount(v) };
     solid(v); t.inter.push(v.it); return v;
