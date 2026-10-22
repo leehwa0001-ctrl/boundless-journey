@@ -6,6 +6,7 @@
 // - 路上跑的車（CK.makeCar，精緻城市的材質＋合成一塊）、停著能開的車（R.VEH.carMesh，Lambert 材質）共用同一套形狀；
 //   腳踏車（R.VEH.bikeMesh）也換成細管子的車架。
 // - 形狀算一次就記起來（同一種車只建一次幾何）。車頭朝 -z（跟原本一樣）。
+// - 電車（CK.makeTrain）：見下面的說明。
 // 放在 citykit3.js、vehicles.js 後面。
 (function (R) {
   const CK = R.CK;
@@ -16,7 +17,7 @@
     const TH = T(), sh = new TH.Shape(); o = o || {};
     pts.forEach((p, i) => { if (p.arc) sh.absarc(p.arc[0], p.arc[1], p.arc[2], Math.PI, 0, true); else if (i === 0) sh.moveTo(p[0], p[1]); else sh.lineTo(p[0], p[1]); });
     const bv = o.bevel == null ? 0.06 : o.bevel;
-    const g = new TH.ExtrudeGeometry(sh, { depth: Math.max(0.01, w - bv * 2), bevelEnabled: bv > 0, bevelSize: bv, bevelThickness: bv, bevelSegments: 2, curveSegments: 8 });
+    const g = new TH.ExtrudeGeometry(sh, { depth: Math.max(0.01, w - bv * 2), bevelEnabled: bv > 0, bevelSize: bv, bevelThickness: bv, bevelOffset: -bv, bevelSegments: 2, curveSegments: 8 });   // bevelOffset：圓角往內收，外緣剛好在輪廓上（不然會把貼在表面的燈、窗包進去）
     g.rotateY(-Math.PI / 2); g.translate((w - bv * 2) / 2, 0, 0); g.computeVertexNormals();
     return g;
   };
@@ -95,6 +96,62 @@
     // 合成一塊：同一種材質一次畫完（跟 citykit3.js 的 mergeGroup 一樣）
     const merge = grp => { const Bt = CK.batch(); grp.children.slice().forEach(o => { if (!o.isMesh) return; Bt.add(o.geometry, o.material, o.position.x, o.position.y, o.position.z, 1, 1, 1, o.rotation.x, o.rotation.y, o.rotation.z, { uv: 'keep' }); grp.remove(o); }); Bt.flush(grp); return grp; };
     CK.makeCar = (col, kind) => { try { const g = build(kind || 'car', ckMats(col), merge); g.userData.kind = kind || 'car'; return g; } catch (e) { console.warn('[vehiclekit]', e); return mk0(col, kind); } };
+
+    // ---------- 電車（2026-10-22）：斷面擠出來的車身（圓的車頂、側面往裡收）、一扇一扇的窗、三對車門、色帶、
+    // 車頂的冷氣機和集電弓、車底的機器和轉向架、連通道；第一節有車頭（大擋風玻璃、頭燈、行先顯示、排障器），最後一節有尾燈。
+    // 一節 17.6 公尺、車頭朝 -z（citykit3.js 照 18.2 公尺一節排，車頭在 -z）。
+    const mt0 = CK.makeTrain, TL = 17.4;
+    let TG = null;
+    const trainGeo = () => {
+      if (TG) return TG; const TH = T(), sh = new TH.Shape();
+      [[-1.4, 1.0], [1.4, 1.0], [1.45, 1.25], [1.46, 2.95], [1.32, 3.28], [0.82, 3.48], [0, 3.55], [-0.82, 3.48], [-1.32, 3.28], [-1.46, 2.95], [-1.45, 1.25]].forEach((p, k) => k ? sh.lineTo(p[0], p[1]) : sh.moveTo(p[0], p[1]));
+      const g = new TH.ExtrudeGeometry(sh, { depth: TL - 0.16, bevelEnabled: true, bevelSize: 0.08, bevelThickness: 0.08, bevelOffset: -0.08, bevelSegments: 2, curveSegments: 6 });
+      g.translate(0, 0, -(TL - 0.16) / 2); g.computeVertexNormals(); TG = g; return g;
+    };
+    CK.makeTrain = (col, n, o) => {
+      try {
+        o = o || {}; n = n || 4; const TH = T(), cars = [];
+        const body = CK.mat('trainPaint|' + (col || '#E8E4DC'), { col: col || '#E8E4DC', rough: 0.3, metal: 0.5, env: 1.2, snow: 0.35 }), stripe = CK.mat('trainPaint|' + (o.stripe || '#2E5A9A'), { col: o.stripe || '#2E5A9A', rough: 0.3, metal: 0.5, env: 1.2, snow: 0.2 });   // 跑來跑去的電車，雪積得少
+        const pane = CK.mat('trainPane', { col: '#3A4A58', em: '#FFE8C0', ei: 0, rough: 0.08, metal: 0.2, env: 1.4, lamp: true, snow: 0 }), dark = CK.mat('carTrim', { col: '#1C1C20', rough: 0.6, snow: 0.5 }), steel = CK.M('steelD'), metal = CK.M('metal');
+        const head = CK.mat('carHead', { col: '#FFF8E8', em: '#FFF4D8', ei: 0, lamp: true, snow: 0 }), tail = CK.mat('carTail', { col: '#8A1A1A', em: '#FF2A1A', ei: 0.6, neon: true, snow: 0 }), led = CK.mat('trainLed', { col: '#2A1A0A', em: '#FFA030', ei: 1.4, neon: true, snow: 0 });
+        const Bx = (sx, sy, sz) => new TH.BoxGeometry(sx, sy, sz);
+        const DOORS = [-5.6, 0, 5.6], hz = TL / 2;
+        for (let k = 0; k < n; k++) {
+          const grp = new TH.Group(), add = (geo, m, x, y, z, rx, ry, rz) => { const ob = new TH.Mesh(geo, m); ob.position.set(x, y, z); ob.rotation.set(rx || 0, ry || 0, rz || 0); ob.castShadow = true; grp.add(ob); return ob; };
+          add(trainGeo(), body, 0, 0, 0);
+          [-1, 1].forEach(sd => {
+            const x = sd * 1.465;
+            add(Bx(0.02, 0.26, TL - 0.4), stripe, x + sd * 0.002, 1.48, 0);   // 色帶
+            // 窗：門和門之間平均排；兩端（車頭那一端留給駕駛室）
+            const segs = [[-hz + (k === 0 ? 2.6 : 0.8), DOORS[0] - 0.9], [DOORS[0] + 0.9, DOORS[1] - 0.9], [DOORS[1] + 0.9, DOORS[2] - 0.9], [DOORS[2] + 0.9, hz - (k === n - 1 ? 1.4 : 0.8)]];
+            segs.forEach(([z0, z1]) => { const L = z1 - z0, m = Math.max(1, Math.round(L / 1.5)), w = L / m; for (let j = 0; j < m; j++) add(Bx(0.03, 0.82, w - 0.22), pane, x, 2.42, z0 + w * (j + 0.5)); });
+            // 車門：兩扇（中間一條縫），上面有窗
+            DOORS.forEach(z => { add(Bx(0.03, 1.95, 1.34), steel, x - sd * 0.002, 2.0, z); [-1, 1].forEach(h => add(Bx(0.035, 0.75, 0.48), pane, x, 2.4, z + h * 0.32)); add(Bx(0.04, 1.95, 0.03), dark, x, 2.0, z); });
+          });
+          // 車頂：冷氣機、集電弓（第二節）
+          [-4.2, 4.2].forEach(z => { add(Bx(1.7, 0.32, 2.4), metal, 0, 3.66, z); add(Bx(1.5, 0.05, 2.2), dark, 0, 3.83, z); });
+          if (k === (n >= 2 ? 1 : 0)) { const pz = -1.2; add(Bx(1.0, 0.12, 1.0), steel, 0, 3.62, pz); [[-0.5, 0.35], [0.5, -0.35]].forEach(([dz, a]) => add(Bx(0.06, 0.06, 1.25), steel, 0, 3.98, pz + dz * 0.55, a, 0, 0)); [[-0.5, -0.5], [0.5, 0.5]].forEach(([dz, a]) => add(Bx(0.06, 0.06, 1.0), steel, 0, 4.42, pz + dz * 0.45, a, 0, 0)); add(Bx(1.7, 0.05, 0.12), metal, 0, 4.66, pz); }
+          // 車底：機器箱、轉向架（框＋四個輪子）
+          add(Bx(2.3, 0.4, TL - 5.5), dark, 0, 0.78, 0);
+          [-6.2, 6.2].forEach(z => { add(Bx(2.1, 0.32, 2.6), steel, 0, 0.55, z); [-0.95, 0.95].forEach(dz => [-0.74, 0.74].forEach(x => add(new TH.CylinderGeometry(0.43, 0.43, 0.14, 14), dark, x, 0.43, z + dz, 0, 0, Math.PI / 2))); });
+          // 連通道（車頭、最後一節的外側沒有）
+          if (k > 0) add(Bx(1.2, 2.3, 0.5), dark, 0, 2.15, -hz - 0.25);
+          if (k < n - 1) add(Bx(1.2, 2.3, 0.5), dark, 0, 2.15, hz + 0.25);
+          // 車頭：大擋風玻璃（往後倒一點）、頭燈、行先顯示、排障器、連結器
+          if (k === 0) {
+            const fz = -hz - 0.09;
+            add(Bx(2.5, 1.05, 0.05), pane, 0, 2.5, fz + 0.06, 0.12, 0, 0); add(Bx(2.7, 0.08, 0.08), dark, 0, 1.95, fz);
+            add(Bx(1.3, 0.24, 0.05), led, 0, 3.18, fz + 0.05);
+            [-1, 1].forEach(sd => { add(Bx(0.34, 0.2, 0.06), head, sd * 0.95, 1.55, fz); add(Bx(0.18, 0.12, 0.06), tail, sd * 0.95, 1.3, fz); });
+            add(Bx(2.6, 0.5, 0.5), dark, 0, 0.62, fz - 0.15); add(Bx(0.3, 0.25, 0.6), steel, 0, 0.95, fz - 0.4);
+          }
+          // 最後一節：後面的窗、尾燈
+          if (k === n - 1) { const rz = hz + 0.09; add(Bx(2.3, 0.95, 0.05), pane, 0, 2.5, rz - 0.04); [-1, 1].forEach(sd => add(Bx(0.3, 0.18, 0.06), tail, sd * 0.95, 1.5, rz)); add(Bx(2.6, 0.45, 0.4), dark, 0, 0.62, rz + 0.1); }
+          cars.push(merge(grp));
+        }
+        return cars;
+      } catch (e) { console.warn('[vehiclekit] train', e); return mt0(col, n, o); }
+    };
   }
   // ---------- 停著能開的車、腳踏車（vehicles.js） ----------
   const V = R.VEH;
