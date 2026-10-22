@@ -73,15 +73,11 @@
       B.ishigaki(sx0 + 2, sz0 + 1, sx1 - 8, sz1 - 1, 0, 5, { batter: 0.2, sides: 'nse' });
       B.stairs(sx1 - 8, scz - 4, sx1 - 0.5, scz + 4, 'w', 0.12, 5, { mat: 'gran' });
       B.Bt.yOff = 5;
-      B.roof(sx0 + 18, scz, 16, 10, { type: 'irimoya', y: 4.6, h: 2.8, o: 1.2, sori: 0.3, mat: 'copper' });
-      B.box(M('woodB'), sx0 + 11, 0, scz - 4.4, sx0 + 25, 4.6, scz + 4.4); B.box(M('shopLit'), sx0 + 24.95, 0.6, scz - 3, sx0 + 25, 4, scz + 3);
-      for (let i = 0; i < 6; i++) P(g.hemi, M('paint', { col: '#4A5A3A' }), sx0 + 27.5, 0.9, scz - 3.5 + i * 1.4, 0.5, 0.4, 0.5);
-      P(g.box, M('woodB'), sx0 + 27.5, 0.4, scz, 0.8, 0.8, 8.6);
+      B.jinja(sx0 + 18, scz, { w: 10, d: 8, face: 'e', mat: 'copper', name: '軍神社' });   // 2026-10-22 神社重做（shrinekit.js）
       H.sight(B, sx0 + 31, scz, C, 'ft_shrine'); H.fac(B, sx0 + 31, scz + 7, C, 'shrine', '#E8C04A');
       B.Bt.yOff = 0;
       B.torii(sx1 - 4, scz, Math.PI / 2, 5, 4.4, 'black');
-      B.solid(sx0 + 10.6, scz - 4.8, sx0 + 25.4, scz + 4.8, 'house');
-      for (let i = 0; i < 8; i++) B.tree(rr(sx0 + 4, sx0 + 9), rr(sz0 + 3, sz1 - 3), 'cedar', rr(1.1, 1.4));
+      for (let i = 0; i < 8; i++) B.tree(rr(sx0 + 4, sx0 + 9), i % 2 ? rr(sz0 + 3, scz - 6) : rr(scz + 6, sz1 - 3), 'cedar', rr(1.1, 1.4));   // 本殿的玉垣在中間：杉樹種在兩邊
       B.area('軍神社', CUT.shrine); B.label('軍神社', sx0 + 20, sz0 + 4);
       // ---------- 東：軍眷宿舍（晾衣繩） ----------
       const [hx0, hz0, hx1] = CUT.homes;

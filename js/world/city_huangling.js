@@ -566,17 +566,11 @@
     for (let x = -103; x > x1 - 1; x -= 1.9) { const y = CK.heightAt ? 0 : 0; const t = B.torii; void y; t(x, sz, Math.PI / 2, 4.4, 3.6, 'verm'); }
     // 鳥居要站在石階上：上面的那幾座要抬高——用框蓋（直接改 y 比較麻煩：重做一次）
     // 拜殿、本殿
-    const sx = x0 + 22; hall(B, sx, sz, 14, 9, h, 'copper', 4.6);
-    B.solid(sx - 7.6, sz - 5.1, sx + 7.6, sz + 5.1, 'house'); B.foot([sx - 7.6, sz - 5.1, sx + 7.6, sz + 5.1], 'temple', 10);
-    hall(B, x0 + 8, sz, 8, 7, h + 0.6, 'copper', 4);
-    B.solid(x0 + 3.4, sz - 4.1, x0 + 12.6, sz + 4.1, 'house');
-    // 賽錢箱、鈴
-    P(g.box, M('woodD'), sx + 8.2, h + 0.5, sz, 0.9, 0.8, 2.2); B.solid(sx + 7.7, sz - 1.1, sx + 8.7, sz + 1.1, 'deco');
-    P(g.cyl8, M('verm'), sx + 8.0, h + 2.6, sz, 0.06, 2.2, 0.06); P(g.sph, M('gold'), sx + 8.0, h + 3.8, sz, 0.45, 0.45, 0.45);
+    // 2026-10-22 神社重做（shrinekit.js）：拜殿、本殿、賽錢箱、鈴、狛犬一整組；燈籠也放到台地上（原本放在地面的高度，埋在台地裡）
+    const sx = x0 + 22; B.Bt.yOff = h; B.jinja(sx, sz, { w: 9, d: 10, face: 'e', mat: 'copper', temizu: false, name: '山城神社' });
     B.inter(sx + 9.6, sz, 2.4, '觀光景點：山城神社（參拜・觀光章）', () => az().stamp('huangling', 'hl_shrine'), '#E8C04A').sight = 'hl_shrine';
-    // 狛犬、石燈籠、繪馬架、籤
-    [-3.4, 3.4].forEach(dz => { P(g.box, M('ashlar'), x1 - 3, h + 0.5, sz + dz, 1.2, 1.0, 1.2); P(g.ico, M('ashlar'), x1 - 3, h + 1.5, sz + dz, 0.9, 1.2, 0.8); B.solid(x1 - 3.6, sz + dz - 0.6, x1 - 2.4, sz + dz + 0.6, 'deco'); });
-    [x1 - 8, x1 - 14].forEach(x => [-4.5, 4.5].forEach(dz => B.lantern(x, sz + dz, 1)));
+    // 石燈籠、繪馬架、籤
+    [x1 - 8, x1 - 14].forEach(x => [-4.5, 4.5].forEach(dz => B.lantern(x, sz + dz, 1))); B.Bt.yOff = 0;
     P(g.box, M('woodD'), sx - 2, h + 1.2, sz + 7.5, 4, 1.2, 0.2); P(g.box, M('wood'), sx - 2, h + 1.2, sz + 7.4, 3.6, 0.9, 0.1); B.solid(sx - 4, sz + 7.3, sx, sz + 7.7, 'deco');
     B.inter(sx - 2, sz + 6.2, 2, '抽籤（1 費拉）', () => { const s = S(); if (s.gold < 1) { R.toast('錢不夠。'); return; } s.gold -= 1; R.save(); const L = [['大吉', '「萬事如意。旅途平安。」'], ['吉', '「遇到的人會幫你。」'], ['中吉', '「慢慢來。雪會停的。」'], ['小吉', '「別急著下遺跡，先吃飽。」'], ['末吉', '「現在不順，之後會好。」'], ['凶', '「把籤綁在架子上，壞運氣就留在這裡。」']], o = L[Math.floor(Math.random() * L.length)]; R.townTalk('山城神社・籤', ['抽到了「' + o[0] + '」。', o[1]]); });
     // 杉樹林（台地上、後面）

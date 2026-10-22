@@ -147,14 +147,12 @@
   function shrine(B) {
     const M = CK.M, g = B.g, P = B.part, h = 5;
     B.Bt.yOff = h;
-    B.roof(0, -146, 16, 10, { type: 'hip', y: 5, h: 3, o: 1.4, sori: 0.4, mat: 'copper' });
-    B.box(M('woodB'), -7.4, 0, -150.4, 7.4, 5, -141.6); B.box(M('shopLit'), -5, 0.6, -141.62, 5, 4, -141.55);
+    B.jinja(0, -146, { w: 14, d: 8.8, face: 's', mat: 'copper', name: '吉山神社' });   // 2026-10-22 神社重做（shrinekit.js：拜殿、本殿、狛犬、手水舍）
     [-5, 5].forEach(x => { B.lantern(x, -136, 1); });
     B.torii(0, -133, 0, 4.4, 4.2, 'verm');
     P(g.box, M('woodD'), 6, 1.2, -138, 3, 1.2, 0.2);
     B.Bt.yOff = 0;
-    B.solid(-7.8, -151, 7.8, -141, 'house');
-    B.inter(0, -139, 2.4, '吉山神社（參拜、抽籤 1 費拉）', () => { const s = S(); if (s.gold < 1) { R.toast('錢不夠。'); return; } s.gold -= 1; R.save(); const L = [['大吉', '「爐火不熄，平安下班。」'], ['吉', '「齒輪咬得剛好。」'], ['中吉', '「慢慢來，礦脈跑不掉。」'], ['小吉', '「先吃碗拉麵再說。」'], ['末吉', '「現在不順，之後會好。」'], ['凶', '「把籤綁在架子上，壞運氣就留在山上。」']], o = L[Math.floor(Math.random() * L.length)]; R.townTalk('吉山神社・籤', ['抽到了「' + o[0] + '」。', o[1]]); }, '#E8C04A');
+    B.inter(0, -136.6, 2.4, '吉山神社（參拜、抽籤 1 費拉）', () => { const s = S(); if (s.gold < 1) { R.toast('錢不夠。'); return; } s.gold -= 1; R.save(); const L = [['大吉', '「爐火不熄，平安下班。」'], ['吉', '「齒輪咬得剛好。」'], ['中吉', '「慢慢來，礦脈跑不掉。」'], ['小吉', '「先吃碗拉麵再說。」'], ['末吉', '「現在不順，之後會好。」'], ['凶', '「把籤綁在架子上，壞運氣就留在山上。」']], o = L[Math.floor(Math.random() * L.length)]; R.townTalk('吉山神社・籤', ['抽到了「' + o[0] + '」。', o[1]]); }, '#E8C04A');
     for (let i = 0; i < 10; i++) { const x = (i % 2 ? 1 : -1) * B.rr(12, 30), z = B.rr(-160, -132); B.tree(x, z, 'cedar', B.rr(1.1, 1.5)); }   // 樹照台地的高度放（heightAt），不用再抬
   }
   // ---- 山上的「吉山」霓虹大字（鋼架） ----

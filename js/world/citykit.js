@@ -354,12 +354,14 @@
         o = o || {};
         // 2026-10-10 作者：替電腦比較慢的玩家優化——用得少的材質（整批加起來不到 MERGE_V 個頂點）不分區塊、合成一塊（繪製次數少很多）；
         // 透明的照舊分區塊（合成一大塊，前後的排序會亂）
+        // 2026-10-22：長度 0 或 NaN 的法線（厚度 0 的盒子、屋頂的邊）改成朝上——不然打光算出 NaN，泛光一擴散就是畫面上一大塊黑的
+        const fixN = N => { for (let i = 0; i < N.length; i += 3) { const x = N[i], y = N[i + 1], z = N[i + 2], l = x * x + y * y + z * z; if (!(l > 1e-10)) { N[i] = 0; N[i + 1] = 1; N[i + 2] = 0; } } return N; };
         const cat = (G, k) => { let n = 0; G.forEach(A => { n += A[k].length; }); const out = new Float32Array(n); let off = 0; G.forEach(A => { const a = A[k]; for (let i = 0; i < a.length; i++) out[off + i] = a[i]; off += a.length; }); return out; };
         map.forEach((bucket, mat) => {
           const parts = [...bucket.values()].filter(A => A.P.length); let tot = 0; parts.forEach(A => { tot += A.P.length / 3; });
           (tot < (CK.mergeV ? CK.mergeV() : MERGE_V) && !mat.transparent ? [parts] : parts.map(A => [A])).forEach(G => {   /* CK.mergeV：俯瞰的鏡頭門檻低很多（cktopcam.js） */
           if (!G.length) return;
-          const geo = new TH.BufferGeometry(); geo.setAttribute('position', new TH.BufferAttribute(cat(G, 'P'), 3)); geo.setAttribute('normal', new TH.BufferAttribute(cat(G, 'N'), 3)); geo.setAttribute('uv', new TH.BufferAttribute(cat(G, 'U'), 2)); geo.computeBoundingSphere();
+          const geo = new TH.BufferGeometry(); geo.setAttribute('position', new TH.BufferAttribute(cat(G, 'P'), 3)); geo.setAttribute('normal', new TH.BufferAttribute(fixN(cat(G, 'N')), 3)); geo.setAttribute('uv', new TH.BufferAttribute(cat(G, 'U'), 2)); geo.computeBoundingSphere();
           const mesh = new TH.Mesh(geo, mat); mesh.castShadow = !o.noShadow && !mat.userData.noShadow && !mat.transparent && !(mat.emissive && mat.emissiveIntensity > 0 && !mat.userData.win); mesh.receiveShadow = !mat.userData.noReceive; mesh.matrixAutoUpdate = false; mesh.updateMatrix(); par.add(mesh);
           });
         });
