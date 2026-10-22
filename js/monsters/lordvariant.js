@@ -266,7 +266,7 @@
     snow: { n: '霜凍', col: '#9AD8FF', native: ['frostdeer'], weak: 'fire', resist: 'frost',
       d: '身上結著冰：靠近牠會被凍得變慢；每隔一陣子從地面冒出一圈冰柱。怕火（×1.3），冰凍不太動（×0.5）。',
       aura: (e, P, dt) => { if (dist(P, e) < BR(e) + 4) P.slowT = Math.max(P.slowT || 0, 0.4); }, move: e => B.rings(e, { n: 2, col: '#9AD8FF', k: 1.1, slow: 2 * KK() }) },
-    desert: { n: '暴風沙', col: '#D8B86A', native: ['sandwhale'], weak: 'shock', resist: 'fire',
+    desert: { n: '暴風沙', col: '#D8B86A', native: ['sandwhale', 'carrionvulture'], weak: 'shock', resist: 'fire',
       d: '捲著沙暴：每隔一陣子颳一陣沙——看不清楚、被往外吹；沙裡的蒺藜扎腳。怕雷（×1.3），火不太有用（×0.5）。',
       move: e => { targets().forEach(t => { if (t === W().P) t.blindT = Math.max(t.blindT || 0, 2.2 * KK()); const dd = dist(t, e); if (dd < BR(e) + 10 && !(t.iframe > 0)) { const a = angTo(e, t); t.x += Math.sin(a) * 3; t.z += Math.cos(a) * 3; R.collide && R.collide(t, 0.42); } }); R.fx('poof', e.x, 1, e.z, { color: '#D8B86A', n: 30 }); B.rain(e, { n: 3, r: 1.5, col: '#C8A86A', k: 1, slow: 1.5 }); } },
     deep: { n: '深淵', col: '#3A8AAA', native: ['kraken'], weak: 'shock', resist: 'frost',

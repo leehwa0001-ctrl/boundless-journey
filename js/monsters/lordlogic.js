@@ -214,6 +214,22 @@
       (e) => { e.lockT = 1; R.fx('mark', e.x, 0, e.z, { r: e.BR + 4, t: 0.6 }); later(() => { if (e.dead) return; R.fx('ring', e.x, 0.1, e.z, { r: e.BR + 4, color: '#8A8A96' }); hitCircle(e, e.x, e.z, e.BR + 4, 1.2 * (e.fero || 1), { knock: 0.9 }); }, 600); },
       (e) => { e.lockT = 1; e.howl = 6; R.banner && R.banner('棘背狼吼了一聲', '背上的刺變長了——近戰會被刺得更深'); later(() => { if (!e.dead) radial(e, 16, 'arrow', 11, 0.7 * (e.fero || 1), rnd()); }, 500); }
     ] };
+  // 緋喙屍鷲（2026-10-18 作者：沙漠的新領主體）
+  // 特色「食腐」：身邊 14 公尺內有生物倒下（包括牠叫來的屍鴉），撲過去啄食——回 4% 生命、傷害 +10%（8 秒，最多 3 層）。
+  // 招式：羽刃（扇形一排羽毛）、俯衝啄擊（跳起來砸在你站的地方）、沙塵捲翼（往外吹開、看不清楚）、屍鴉（叫三隻來，最好離牠遠一點再打）。
+  D.carrionvulture = { move: 'keep', keep: [2.5, 8], reach: 2.2, every: 3, col: '#C8302A',
+    passive: (e, P, dt) => {
+      const w = W(); if (e._dmg0 == null) e._dmg0 = e.dmg; e.feastSeen = e.feastSeen || new Set();
+      (w.enemies || []).forEach(o => { if (o === e || !o.dead || e.feastSeen.has(o)) return; e.feastSeen.add(o); if (dist(o, e) > e.BR + 14) return; e.hp = Math.min(e.hpMax, e.hp + e.hpMax * 0.04); e.feast = Math.min(3, (e.feast || 0) + 1); e.feastT = 8; msg(e, '啄食屍體（' + e.feast + '）', 'crit'); R.fx('poof', o.x, 0.6, o.z, { color: '#8A1A1A', n: 12 }); });
+      if (e.feastT > 0) { e.feastT -= dt; if (e.feastT <= 0) e.feast = 0; }
+      e.dmg = e._dmg0 * (1 + 0.1 * (e.feast || 0));
+    },
+    moves: [
+      (e, P, de, a) => { e.lockT = 0.8; shoot(e, a, 7, 0.16, 'feather', 13, 0.6); },
+      (e, P) => { e.lockT = 1.6; const x = P.x, z = P.z; R.fx('mark', x, 0, z, { r: e.BR + 0.6, t: 0.8, color: '#C8302A' }); later(() => { if (e.dead) return; jump(e, x, z, 0.6, 7, () => { R.fx('boom', e.x, 0.3, e.z, { r: e.BR + 1, color: '#5E1210' }); hitCircle(e, e.x, e.z, e.BR + 1.2, 1.5, { knock: 0.5 }); }); }, 500); },
+      (e) => { e.lockT = 1; wave(e, 9, 9, 0.9, '#D8B86A', { on: t => { const aa = angTo(e, t); t.x += Math.sin(aa) * 3; t.z += Math.cos(aa) * 3; R.collide && R.collide(t, 0.42); if (t === W().P) t.blindT = Math.max(t.blindT || 0, 1.5); } }); },
+      (e) => { summon(e, R.ENEMIES.ashcrow ? 'ashcrow' : 'karasu', 3, 0.5); R.toast && R.toast('屍鴉從天上落下來了——在緋喙屍鷲旁邊打倒，牠會去吃', '#C8302A'); }
+    ] };
   // 無主大鎧
   D.muhyo = { move: 'chase', reach: 2.4, every: 3, col: '#C8A040', turn: 2.4,
     hurt: (e, raw, o, P) => { let k = 0.7; if (P && Math.abs(wrap(angTo(e, P) - (e.yaw || 0))) > 2.2) k = 1.3; if (e.stance > 0 && P && !o.dot && !o.reflect && !(e.ctrCd > 0)) { e.ctrCd = 1; later(() => { if (e.dead) return; const Q = W().P, a = angTo(e, Q); R.banner && R.banner('居合', '無主大鎧反擊了'); beam(e, a, 8, 1.6, 0.15, 2.2, '#FF5A3A', { knock: 0.7 }); }, 50); } return raw * k; },

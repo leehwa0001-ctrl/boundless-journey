@@ -20,6 +20,7 @@
     if (t === 2) return toHex([L * 0.25 + r * 0.45 + 18, L * 0.25 + g * 0.35, L * 0.2 + b * 0.35]);
     return toHex([L * 0.22 + 26, L * 0.12 + 10, L * 0.3 + 40]);
   };
+  R.VARIANT_TIER = TIER; R.variantShade = shade;   // beastpaint.js 的手點新圖也照這套改（顏色、紅眼、刺、淵的紫光邊）
   const FREE = 'ZYQXVUWT'.split('');
   const mkArt = (base, t) => {
     const A = ART[base]; if (!A || !A.a) return null;

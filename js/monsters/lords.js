@@ -18,6 +18,7 @@
     kraken: L({ name: '領主體・深淵王蛸', hp: 780, dmg: 22, speed: 1.8, size: 2.4, ai: 'l_kraken', armor: 0.15, env: 'deep', color: '#5A2A4A', eye: '#FFD04A', desc: '深海的克森特級遺跡裡的領主體。好幾條觸手一起砸下來，噴墨讓人看不清楚，還會捲起漩渦把人拉過去。' }),
     faceforest: L({ name: '領主體・萬面樹', hp: 900, dmg: 20, speed: 0, size: 2.6, ai: 'l_tree', armor: 0.25, color: '#3A5A2E', eye: '#F2E6C8', desc: '迷宮型的克森特級遺跡最常見的領主體。不會移動；樹根一路竄過來、種子灑滿整間房、從腳下纏住人，還會結出根童。' }),
     bonewyvern: L({ name: '領主體・朽翼龍', hp: 720, dmg: 24, speed: 4, size: 2.4, ai: 'l_wyvern', fly: 1, armor: 0.1, color: '#D8D0C0', eye: '#7FD8FF', desc: '高塔型的克森特級遺跡最常見的領主體。只剩骨頭的飛龍，從高處俯衝、吐出直線的骨焰、搧翅膀把人吹開。' }),
+    carrionvulture: L({ name: '領主體・緋喙屍鷲', hp: 760, dmg: 23, speed: 3.6, size: 2.3, ai: 'l_vulture', armor: 0.12, env: 'desert', color: '#5E1210', eye: '#FFD24A', desc: '沙漠的克森特級遺跡裡的領主體（2026-10-18）。像人一樣站著的巨大屍鷲，光禿的紅頭、垂到地上的黑紅大翅膀。吃倒在沙裡的東西——旁邊有生物倒下，牠會撲過去啄食、回復，越吃越兇。會射出羽刃、從高處俯衝啄擊、搧起沙塵，還會叫屍鴉來。' }),
     thunderape: L({ name: '領主體・雷鳴猿', hp: 760, dmg: 24, speed: 3.8, size: 2.2, ai: 'l_ape', armor: 0.15, color: '#4A4A7A', eye: '#FFE04A', desc: '城區型的克森特級遺跡最常見的領主體。跳起來砸地、叫雷落下、連續揮拳，吼一聲就是一圈震波。' })
   };
   Object.keys(NEW).forEach(id => { R.ENEMIES[id] = NEW[id]; });
@@ -177,7 +178,7 @@
   const gf = R.genFloor;
   R.genFloor = (run, f) => {
     const g = run.grade;
-    if (g.lords) { const envL = ENV_LORD[run.env]; g.lords = envL ? [envL, envL, envL].concat(BASE, ['faceforest', 'bonewyvern', 'thunderape']) : BASE.concat(['faceforest', 'bonewyvern', 'thunderape']); }
+    if (g.lords) { const envL = run.env === 'desert' && rnd() < 0.5 ? 'carrionvulture' : ENV_LORD[run.env];   /* 2026-10-18 作者：沙漠多一隻緋喙屍鷲 */ g.lords = envL ? [envL, envL, envL].concat(BASE, ['faceforest', 'bonewyvern', 'thunderape']) : BASE.concat(['faceforest', 'bonewyvern', 'thunderape']); }
     const F = gf(run, f);
     if (g.lords && !F.last) {
       const have = F.rooms.filter(r => r.type === 'lord').length, cand = F.rooms.filter(r => r.type === 'fight' && r.dist >= 2 && !r.big && !r.zone);   // 大空洞打通的房間不行（zones.js；算清空過，領主不會出現）

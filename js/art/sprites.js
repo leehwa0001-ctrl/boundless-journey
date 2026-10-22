@@ -608,6 +608,7 @@
   R.BEAST_ART = ART;   // 別的檔案可以加自己的點陣圖（townlife.js 的腳踏車、貓狗、鳥）
   const beastSheet = (id, role) => {
     const key = id + (role || ''); if (beastSheets[key]) return beastSheets[key];
+    if (R.beastHDSheet) { const hd = R.beastHDSheet(id, role); if (hd) return (beastSheets[key] = hd); }   // 2026-10-09 手繪的新圖（beastpaint.js）：有就用，不再放大舊圖
     let frames = [];
     if (ART[id]) { const art = ART[id], pal = Object.assign({}, art.pal); if (id === 'kamaitachi') pal.s = { trip: '#3A6ACF', cut: '#C8323A', heal: '#3E9A5A' }[role] || '#C8323A';
       // 帶頭的（送犬的頭目）：毛色更深、眼睛是紅的

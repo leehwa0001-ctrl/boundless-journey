@@ -92,7 +92,7 @@
     const t = F.tile; woodsF = null; if (!t || !F.wallMeshes) return;
     F.wallMeshes.concat(F.ghosts || []).forEach(m => { m.visible = false; });
     const TH = THREE, { nx, nz, T: TT, TS } = t, N = nx * nz;
-    const snow = new TH.Mesh(new TH.PlaneGeometry(nx * TS + 60, nz * TS + 60), new TH.MeshLambertMaterial({ color: '#E4ECF0' }));
+    const snow = new TH.Mesh(new TH.PlaneGeometry(nx * TS + 60, nz * TS + 60), new TH.MeshLambertMaterial({ color: (W().run && W().run.site && W().run.site.ground) || '#E4ECF0' }));
     snow.rotation.x = -Math.PI / 2; snow.position.set(t.X0 + nx * TS / 2, -0.06, t.Z0 + nz * TS / 2); snow.receiveShadow = true; F.group.add(snow);
     // 每一格牆離空地幾格（1 是貼著空地的那一圈）
     const d = new Uint8Array(N); let q = [];
@@ -117,7 +117,9 @@
       for (let k = 0; k < N; k++) { if (!dv[k]) continue; const n = dv[k] <= 2 ? 2 : 1, tx = k % nx, tz = (k - tx) / nx; for (let i = 0; i < n; i++) list.push({ x: t.cX(tx) + (rnd() - 0.5) * TS * 0.8, z: t.cZ(tz) + (rnd() - 0.5) * TS * 0.8, s: 0.9 + rnd() * 0.45, near: dv[k] === 1 }); } }
     // 遠的先畫、近的後畫（同一種大小的樹是一批）
     list.sort((a, b) => a.z - b.z);
-    woodsF = { F, list, near: list.filter(x => x.near), field: R.treeField(list, F.group) };
+    // 2026-10-22 其他狩獵場：落葉的樹、竹林（huntmore.js 的 R.huntTreeField）
+    const site = W().run && W().run.site, tf = site && site.trees && R.huntTreeField ? R.huntTreeField(site.trees, list, F.group) : null;
+    woodsF = { F, list, near: list.filter(x => x.near), field: tf || R.treeField(list, F.group) };
   };
   // 擋在鏡頭和人物中間的樹先藏起來（跟遺跡的牆變矮一樣）
   const woodsStep = () => {
@@ -146,7 +148,7 @@
   const lf0 = R.loadFloor;
   R.loadFloor = (f, o) => {
     const r = lf0(f, o), run = W().run, F = W().F; if (!run || !run.site || !run.site.outdoor || run.site.kind === 'train' || !F) return r;   // 公會的訓練場（training.js）也是戶外，但沒有野獸、考核
-    if (run.exam == null) { run.exam = pending !== 'job'; if (run.exam) hs().tries++; pending = null; }   // 第一層是在 startRun 裡面載入的，這時就要知道是不是考核
+    if (run.exam == null) { run.exam = run.site.id === ID && pending !== 'job';   /* 2026-10-22：其他狩獵場（huntmore.js）沒有考核 */ if (run.exam) hs().tries++; pending = null; }   // 第一層是在 startRun 裡面載入的，這時就要知道是不是考核
     const ab = $('r-aware-box'); if (ab) ab.hidden = true;   // 山裡沒有佩特拉核心
     dress(F);
     // 遺跡生物不會在山裡（福影童、預言犢那種「每層一成五會出現」的也不行）
@@ -157,7 +159,8 @@
     // 野獸：山腳四頭土鎧豬；山腰一頭蓑背熊（最遠的地方）、一頭土鎧豬
     const rooms = F.rooms.filter((x, i) => i > 0 && x.type !== 'stairs').sort((a, b) => (b.dist || 0) - (a.dist || 0));
     const put = (id, room) => { if (!room) return; const [x, z] = R.roomPoint ? R.roomPoint(room, {}) : [room.x, room.z]; R.spawnEnemy(id, x, z, room.i, { quiet: true }); };
-    if (run.floor === 0) rooms.slice(0, 4).forEach(rm => put('yoroiboar', rm));
+    if (run.site.id !== ID) { if (R.huntSpawn) R.huntSpawn(run, F, rooms, put); }   // 其他狩獵場的野獸（huntmore.js）
+    else if (run.floor === 0) rooms.slice(0, 4).forEach(rm => put('yoroiboar', rm));
     else { put('minobear', rooms[0]); put('yoroiboar', rooms[1] || rooms[0]); }
     // 公會的專員：跟在後面記錄，不出手
     if (run.exam) {

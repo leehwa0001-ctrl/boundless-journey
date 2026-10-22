@@ -26,7 +26,8 @@
     faceforest: ['萬面冠', 'head_plume', { regen: 1.5, calm: 0.15 }, '每秒回復生命 +1.5、佩特拉的注意上升 −15%'],
     bonewyvern: ['朽翼護脛', 'legs_wrap', { speed: 0.1, crit: 0.05 }, '移動 +10%、暴擊率 +5%'],
     thunderape: ['雷鳴戰靴', 'feet_war', { stun: 0.15, patk: 0.1 }, '打中時 15% 機率暈眩、物理傷害 +10%'],
-    windelder: ['緋面', 'head_light', { critMult: 0.3, skillCd: 0.1 }, '暴擊傷害 +30%、技能冷卻 −10%']
+    windelder: ['緋面', 'head_light', { critMult: 0.3, skillCd: 0.1 }, '暴擊傷害 +30%、技能冷卻 −10%'],
+    carrionvulture: ['緋喙羽冠', 'head_plume', { regen: 1, dmg: 0.06 }, '每秒回復生命 +1、傷害 +6%']
   };
   R.LORD_GEAR = GEAR;
   const NUM = { speed: (P, v) => { P.speed *= 1 + v; }, dmg: (P, v) => { P.dmgMult *= 1 + v; }, def: (P, v) => { P.def = (P.def || 0) + v; }, mdef: (P, v) => { P.mdef = (P.mdef || 0) + v; }, hp: (P, v) => { P.hpMax = Math.round(P.hpMax * (1 + v)); },
