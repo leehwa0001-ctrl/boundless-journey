@@ -2283,7 +2283,9 @@
   // 街上的：腳踏車只輕輕上下（不歪、不壓扁）；貓狗走路小小地起伏
   const GENB = { mx: 0.06, my: 0.08, bones: {}, anims: { idle: [B({})], move: [B({}, 0, 0), B({}, 0, 0), B({}, 0, -1), B({}, 0, 0)], atk: [B({})], hurt: [B({})] } };
   const GENT = { mx: 0.1, my: 0.12, bones: {}, anims: { idle: [B({}, 0, 0, 0, 1), B({}, 0, 0, 0, 0.98)], move: [B({}, 0, -1, -1), B({}, 0, 0), B({}, 0, -1, 1), B({}, 0, 0)], atk: [B({})], hurt: [B({})] } };
-  const TOWN = id => (/^cyc[0-9]/.test(id) ? GENB : /^(cat|dog)[0-9]|^(crow|pigeon)/.test(id) ? GENT : null);
+  // 飛起來的烏鴉、鴿子：只有一張展翅的圖，用上下壓扁當拍翅
+  const GENW = { mx: 0.1, my: 0.3, bones: {}, anims: { idle: [B({})], move: [B({}, 0, -1, 0, 1), B({}, 0, 0, 0, 0.7), B({}, 0, 1, 0, 0.45), B({}, 0, 0, 0, 0.7)], atk: [B({})], hurt: [B({})] } };
+  const TOWN = id => (/^cyc[0-9]/.test(id) ? GENB : /^(crow|pigeon)fly/.test(id) ? GENW : /^(cat|dog)[0-9]|^(crow|pigeon)/.test(id) ? GENT : null);
   const rigOf = id => RIG[id] || TOWN(id) || (isPix(id) ? (R.ENEMIES[baseOf(id)] && R.ENEMIES[baseOf(id)].fly ? GENF : GENS) : GEN);
   // ---------- 變形 ----------
   const mk = (piv, dx, dy, deg, sy) => { const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), k = sy || 1; return (x, y) => { const ux = x - piv[0], uy = (y - piv[1]) * k; return [c * ux - s * uy + piv[0] + dx, s * ux + c * uy + piv[1] + dy]; }; };
@@ -2552,8 +2554,8 @@
   RIG.carrionvulture = { mx: 0.14, my: 0.22, soft: 8,
     bones: { head: { a: [88, 36], b: [90, 10], r: 9, box: [76, 4, 104, 32] }, wingL: { a: [50, 22], b: [20, 110], r: 14, box: [8, 20, 44, 132] }, wingR: { a: [96, 24], b: [126, 110], r: 14, box: [106, 24, 144, 132] }, legs: { a: [62, 74], b: [62, 126], r: 7 } },
     anims: {
-      idle: breathe(k => ({ head: Z(0, k * 0.4, k), wingL: Z(0, 0, k * 1.2), wingR: Z(0, 0, -k * 1.2) })),
-      move: [B({ legs: Z(0, -2, -6), wingL: Z(0, -2, 4), wingR: Z(0, -2, -4) }, 0, -2), B({ head: Z(1, 1, 3) }, 1, 0), B({ legs: Z(0, -2, 6), wingL: Z(0, -2, 4), wingR: Z(0, -2, -4) }, 0, -2), B({ head: Z(-1, 1, -3) }, -1, 0)],
+      idle: breathe(k => ({ head: Z(0, k * 0.4, k), wingL: Z(0, -k, k * 3), wingR: Z(0, -k, -k * 3) })),
+      move: [B({ legs: Z(0, -2, -6), wingL: Z(-3, -7, 12), wingR: Z(3, -7, -12) }, 0, -3), B({ head: Z(1, 1, 3), wingL: Z(0, -2, 3), wingR: Z(0, -2, -3) }, 1, -1), B({ legs: Z(0, -2, 6), wingL: Z(0, 3, -6), wingR: Z(0, 3, 6) }, 0, 1), B({ head: Z(-1, 1, -3), wingL: Z(0, -2, 3), wingR: Z(0, -2, -3) }, -1, -1)],   // 走路也拍翅：舉高、放下
       m0: [B({ wingL: Z(2, -2, -8), wingR: Z(-2, -2, 8), head: Z(0, 1, 4) }, 0, 1, 0, 0.97), B({ wingL: Z(-3, -3, 12), wingR: Z(3, -3, -12), head: Z(0, -2, -6) }, 0, -1, 0, 1.03), B({})], m0T: [0.3, 0.4, 0.3],   // 羽刃：先收再甩開
       m1: [B({ wingL: Z(-2, -6, 12), wingR: Z(2, -6, -12), legs: Z(0, 2) }, 0, 3, 0, 0.9), B({ wingL: Z(-3, -8, 12), wingR: Z(3, -8, -12) }, 0, -3, 0, 1.06), B({ wingL: Z(-3, 2, 10), wingR: Z(3, 2, -10), head: Z(0, 3, 10) }, 0, 3, 0, 0.94), B({})], m1T: [0.45, 0.65, 0.35, 0.3],   // 俯衝啄擊：蹲低、躍起、啄下去
       m2: [B({ wingL: Z(-3, -6, 12), wingR: Z(3, -6, -12) }, 0, -2), B({ wingL: Z(0, 3, -6), wingR: Z(0, 3, 6) }, 0, 2, 0, 0.96), B({ wingL: Z(-3, -6, 12), wingR: Z(3, -6, -12) }, 0, -2), B({ wingL: Z(0, 3, -6), wingR: Z(0, 3, 6) }, 0, 2, 0, 0.96), B({})], m2T: [0.22, 0.2, 0.22, 0.2, 0.3],   // 沙塵捲翼：大振翅兩下
