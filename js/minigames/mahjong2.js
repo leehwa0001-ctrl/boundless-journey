@@ -195,6 +195,7 @@
     ensureCss(); close(true);
     ROOT = document.createElement('div'); ROOT.id = 'mjs'; ROOT.innerHTML = '<div class="mj-stage" id="mjs-st"></div>'; document.body.appendChild(ROOT);
     if (R.W) R.W.paused = true;
+    ac(); jaVoice();   // 一坐下就先把聲音和語音準備好（第一次出聲才建會慢一拍）
     fit(); window.addEventListener('resize', fit); document.addEventListener('keydown', onKey, true);
   };
   const fit = () => { const st = $('mjs-st'); if (!st) return; const k = Math.min(innerWidth / SW, innerHeight / SH); st.style.transform = 'scale(' + k + ')'; };
@@ -297,9 +298,10 @@
   };
   const ANNPOS = [[640, 640], [900, 388], [640, 150], [380, 388]];
   const CALL = { 吃: 'チー', 碰: 'ポン', 槓: 'カン', 立直: 'リーチ', 自摸: 'ツモ', 榮和: 'ロン' };
+  let JV; const jaVoice = () => { if (JV === undefined) { const vs = window.speechSynthesis ? speechSynthesis.getVoices() : []; if (vs.length) JV = vs.find(v => /^ja/i.test(v.lang)) || null; } return JV || null; };
   const shout = (s, txt) => {
     const sy = window.speechSynthesis; if (!OPT.sound || !sy || !CALL[txt]) return;
-    try { const vs = sy.getVoices(), u = new SpeechSynthesisUtterance(CALL[txt]); u.voice = vs.find(v => /^ja/i.test(v.lang)) || null; u.lang = 'ja-JP'; u.pitch = [1, 0.7, 1.4, 0.9][rel(s)]; u.rate = 1.15; u.volume = 0.9; sy.speak(u); } catch (e) { }
+    try { const u = new SpeechSynthesisUtterance(CALL[txt]); u.voice = jaVoice(); u.lang = 'ja-JP'; u.pitch = [1, 0.7, 1.4, 0.9][rel(s)]; u.rate = 1.35; u.volume = 0.9; sy.cancel(); sy.speak(u); } catch (e) { }   // 2026-10-25 作者：音效有點延遲——不排隊（新的一句直接蓋掉還沒唸完的）
   };
   const ann = (s, txt) => { if (!txt || !ROOT) return; shout(s, txt); const p = ANNPOS[rel(s)], d = document.createElement('div'); d.className = 'mj-ann'; d.textContent = txt; d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px'; $('mjs-st').appendChild(d); setTimeout(() => d.remove(), 1200); };
   const tenpaiDiscards = hand => { const me = V.seats[V.me]; if (hand.length % 3 !== 2) return []; const out = []; const seen = {}; hand.forEach(t => { const id = t >> 2; if (seen[id] == null) seen[id] = MJ.waitsIfDiscard(hand, t, me.melds.length).length > 0; if (seen[id]) out.push(t); }); return out; };
