@@ -362,7 +362,6 @@
     if (R.SEE) R.SEE.r.value = 3.2;
     W.cam.yawT = city.camYaw || 0; R.placeCam(null); fixCam(0); CK.fixSprites();
     applyTime(true);
-    try { W.renderer.compile(W.scene, W.camera); } catch (e) { }
     hud(true);
     ['r-hurt', 'r-blind', 'r-field'].forEach(k => { const v = $(k); if (v) v.style.opacity = 0; });
     const s = S(); s.ck = s.ck || {}; const first = !s.ck[id]; s.ck[id] = (s.ck[id] || 0) + 1; R.save();

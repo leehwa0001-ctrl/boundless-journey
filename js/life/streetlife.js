@@ -104,7 +104,7 @@
   };
   R.SL = { ROLES, GOSSIP, shamisen };   // 精緻城市（cklife.js）也用
   const enter0 = R.enterTownNow;
-  R.enterTownNow = (from, at) => { enter0(from, at); const tw = W.town; if (tw) { try { build(tw); } catch (e) { console.warn('[streetlife]', e); } } };
+  R.enterTownNow = (from, at) => { enter0(from, at); const tw = W.town; if (R.CK && R.CK.harvesting) L = null; else if (tw) { try { build(tw); } catch (e) { console.warn('[streetlife]', e); } } };
   const step0 = R.townStep;
   R.townStep = dt => { step0(dt); step(dt); };
 })(window.R);

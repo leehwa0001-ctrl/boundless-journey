@@ -224,7 +224,7 @@
 
   R.lifeStep = step; R.lifePet = pet;   // 精緻城市（cklife.js）也用同一套
   const etn = R.enterTownNow;
-  R.enterTownNow = (from, at) => { etn(from, at); try { setup(); } catch (e) { console.warn('townlife', e); } };
+  R.enterTownNow = (from, at) => { etn(from, at); if (R.CK && R.CK.harvesting) return; try { setup(); } catch (e) { console.warn('townlife', e); } };
   const ts = R.townStep;
   R.townStep = dt => { ts(dt); step(dt); };
 })(window.R);

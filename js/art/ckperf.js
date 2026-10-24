@@ -27,7 +27,7 @@
     try { r.setRenderTarget(rt); r.compile(sc, cam); } catch (e) { } finally { r.setRenderTarget(rt0); rt.dispose(); } hid.forEach(o => { o.visible = false; });
   };
   const ce0 = CK.enter;
-  CK.enter = (...a) => { const r = ce0(...a); try { if (W.town && W.town.ck) { if (CK.quality() === 0) strip(true); precompile(); } } catch (e) { console.warn('[ckperf]', e); } return r; };
+  CK.enter = (...a) => { const r = ce0(...a); try { if (W.town && W.town.ck) { if (CK.quality() === 0) strip(true); if (!(CK.quality() > 0 && W.town.L && W.town.L.pts)) precompile(); /* 有路燈的時候 ckperf2.js 會編譯（開燈、關燈兩份） */ } } catch (e) { console.warn('[ckperf]', e); } return r; };
   const sq = CK.setQuality;
   CK.setQuality = q => { sq(q); if (!auto) LS('tfl-cityq-user', '1'); applyLight(q); strip(q === 0); if (CK.applyTime) CK.applyTime(true); };
   const check = avg => {
