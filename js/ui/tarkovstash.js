@@ -68,15 +68,16 @@
   // 給鐵匠鋪「立刻裝備」用：換下來的那件放得進格子嗎（放不下會留在暫放區，不會不見）
   R.stashTryPlace = it => { const p = tg().pos[it.id]; return (p && !p.over) || autoPlace(it); };
   // 整理資料：拿掉已經不在倉庫（穿上、賣掉）的位置、補上新東西的位置；第一次（舊存檔）放不下就把倉庫加長
+  // 一件一件放，回傳放不下的；同一種（背包算一種）1×1 的放不下＝已經沒有空格，後面的不用再找（管理員的素材一疊一疊有上萬疊）
+  const placeAll = (list, sz) => { const full = new Set(); return list.filter(it => { const [a, b] = sz(it), k = a * b === 1 ? (isBagThing(it) ? 'bag' : kindOf(it)) : null; if (k && full.has(k)) return true; const ok = autoPlace(it); if (!ok && k) full.add(k); return !ok; }); };
   const reconcile = () => { fresh(); hold++; try { return reconcile1(); } finally { hold--; } };
   const reconcile1 = () => { const g = tg(), items = loose(), ids = new Set(items.map(it => String(it.id))), bag = bagList(), bids = new Set(bag.map(it => String(it.id)));
     Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (bids.has(id)) { if (p.g !== 'bag') delete g.pos[id]; return; } if (!ids.has(id) || (p.g !== 'main' && !g.boxes.some(b => b.id === p.g)) || p.over) delete g.pos[id]; });
-    let full1 = false;   // 1×1 的放不下＝背包沒有空格，後面的不用再找（管理員的素材一疊一疊有上萬疊）
-    BOVER = bag.filter(it => !g.pos[it.id]).sort((a, b) => sizeIn(b, 'bag')[0] * sizeIn(b, 'bag')[1] - sizeIn(a, 'bag')[0] * sizeIn(a, 'bag')[1]).filter(it => { const one = sizeIn(it, 'bag')[0] * sizeIn(it, 'bag')[1] === 1; if (one && full1) return true; const ok = autoPlace(it); if (!ok && one) full1 = true; return !ok; });   // 背包放不下的
+    BOVER = placeAll(bag.filter(it => !g.pos[it.id]).sort((a, b) => sizeIn(b, 'bag')[0] * sizeIn(b, 'bag')[1] - sizeIn(a, 'bag')[0] * sizeIn(a, 'bag')[1]), it => sizeIn(it, 'bag'));   // 背包放不下的
     g.pin = g.pin || {}; Object.keys(g.pin).forEach(id => { if (!ids.has(id) || g.pos[id]) delete g.pin[id]; });
-    const fresh0 = !g.mig; let over = items.filter(it => !g.pos[it.id] && !g.pin[it.id]).sort((a, b) => sizeOf(b)[0] * sizeOf(b)[1] - sizeOf(a)[0] * sizeOf(a)[1]).filter(it => !autoPlace(it));
-    if (fresh0) { while (over.length && g.rows < 200) { g.rows += 1; over = over.filter(it => !autoPlace(it)); } g.mig = 1; }
-    if (!g.mig2) { while (over.length && g.rows < 200) { g.rows += 1; over = over.filter(it => !autoPlace(it)); } g.mig2 = 1; }   // 2026-10-18：一疊一疊的東西第一次放進來，放不下就把倉庫加長（不用花錢）
+    const fresh0 = !g.mig; let over = items.filter(it => !g.pos[it.id] && !g.pin[it.id]).sort((a, b) => sizeOf(b)[0] * sizeOf(b)[1] - sizeOf(a)[0] * sizeOf(a)[1]); over = placeAll(over, sizeOf);
+    if (fresh0) { while (over.length && g.rows < 200) { g.rows += 1; over = placeAll(over, sizeOf); } g.mig = 1; }
+    if (!g.mig2) { while (over.length && g.rows < 200) { g.rows += 1; over = placeAll(over, sizeOf); } g.mig2 = 1; }   // 2026-10-18：一疊一疊的東西第一次放進來，放不下就把倉庫加長（不用花錢）
     return over.concat(items.filter(it => g.pin[it.id] && !g.pos[it.id]));   // 暫放區
   };
   let BOVER = [];
