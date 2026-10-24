@@ -2364,6 +2364,7 @@
   // ---------- 換上動畫圖 ----------
   const apply = (m, A) => {
     const sp = m.sp, geo = sp.m.geometry, p = geo.parameters, prev = m._anim, A0 = prev ? prev.A : null;
+    if (sp.m.material && sp.m.material !== sp.mat) sp.mat = sp.m.material;   // 2026-10-25 作者：召喚師的怪不會動——染色（summoncraft.js、summonsub.js）換了一份材質，動畫要換在畫面上那一份
     const PX = A0 ? p.width / (A0.CW / (A0.cw / A0.fw)) : p.width / A.fw, TILT = A0 ? p.height / ((A0.CH / (A0.cw / A0.fw)) * PX) : p.height / (A.fh * PX), RS = A.cw / A.fw;   // 換第二張動畫圖（異變）：照目前動畫圖的比例算
     const fw = A.CW / RS, fh = A.CH / RS, W0 = fw * PX, H0 = fh * PX * TILT, g2 = new (T3().PlaneGeometry)(W0, H0); g2.translate(0, H0 / 2 - 1 * PX * TILT, 0);
     const t = new (T3().CanvasTexture)(A.c); t.magFilter = t.minFilter = T3().NearestFilter; t.generateMipmaps = false; t.encoding = sp.t.encoding; t.repeat.set(1 / A.N, 1 / 2);
@@ -2387,7 +2388,7 @@
   R.animBeastSprite = (m, id, t, moving) => {
     const S = m && m._anim; if (!S) return an0(m, id, t, moving);
     const A = S.A, an = A.rig.anims;
-    const e = (R.W.enemies || []).find(x => x.m === m);
+    const e = (R.W.enemies || []).find(x => x.m === m) || m.pet;   // 召喚物（classes2b.js）：咬人的時候播攻擊
     const ph = (e && e.variant && e.variant.phase) || 1, spd = SPD[ph] || 1;
     // 形態轉換：播「異變」那一下，然後換成幅度更大的動畫圖
     if (e && e.variant) {
