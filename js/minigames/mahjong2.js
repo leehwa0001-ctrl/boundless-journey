@@ -6,7 +6,19 @@
   const MJ = R.MJ || window.MJCore; if (!MJ) { console.warn('[mahjong2] mjcore.js 沒載入'); return; }
   const $ = id => document.getElementById(id), esc = s => (R.esc ? R.esc(s) : String(s));
   const FEE = 20, PRIZE = [80, 30, 10, 0], MULS = [1, 2, 5, 10];
-  const FOES = ['老闆娘・玉枝', '退休衛兵・權藏', '上班族・新田'];
+  // 2026-10-24 作者：不要只有那幾個 NPC——每一局從這些常客裡抽三個
+  const FOES = ['老闆娘・玉枝', '退休衛兵・權藏', '上班族・新田', '計程車司機・大門', '漁港的阿勝', '女學生・小雪', '和尚・了然', '茶屋的阿菊', '鐵匠學徒・鐵平', '報社記者・早瀨',
+    '藥師・白藤', '常客・六郎', '魔導技師・柯恩', '德克斯凡商人・瑪莎', '冒險者・荒木', '老賭徒・銀次', '站員・森', '花店的小百合', '劇場演員・鳳', '護理師・千鶴',
+    '旅館掌櫃・松本', '巫女・朱音', '碼頭工人・剛', '占卜師・夜見'];
+  // 段位戰（2026-10-24）：新人、九級～一級、初段～九段、雀聖。一局照名次加減段位分，滿了升、段位以上扣到負的會降；
+  //   段位越高對手越少失誤，桌費和獎金的倍率也越高。
+  const RANKS = ['新人'].concat(['九', '八', '七', '六', '五', '四', '三', '二', '一'].map(n => n + '級'), ['初', '二', '三', '四', '五', '六', '七', '八', '九'].map(n => n + '段'), ['雀聖']);
+  const rkNeed = lv => 100 + Math.floor(lv / 5) * 40;
+  const rkMul = lv => (lv < 10 ? 1 : lv < 13 ? 2 : lv < 16 ? 5 : 10);
+  const rkGain = (lv, place) => [60, 25, lv < 4 ? 0 : -10 - lv * 2, lv < 4 ? 0 : -25 - lv * 3][place];
+  const rkErr = lv => Math.max(0, 0.35 - lv * 0.02);   // 電腦打錯牌的機會
+  const rkOf = () => { const m = R.S.mj; m.rk = m.rk || { lv: 0, pt: 0, best: 0 }; return m.rk; };
+  let RANKED = false;
   const SW = 1280, SH = 860;
   const PROD = 'wss://taofaling-1433.1433.workers.dev';
   const serverBase = () => { let v = ''; try { v = localStorage.getItem('tf-net-server') || ''; } catch (e) { } if (!v) v = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? 'ws://localhost:8787' : PROD; return v.trim().replace(/^http(s?):\/\//, 'ws$1://').replace(/\/+$/, ''); };
@@ -284,7 +296,12 @@
     tickTimer();
   };
   const ANNPOS = [[640, 640], [900, 388], [640, 150], [380, 388]];
-  const ann = (s, txt) => { if (!txt || !ROOT) return; const p = ANNPOS[rel(s)], d = document.createElement('div'); d.className = 'mj-ann'; d.textContent = txt; d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px'; $('mjs-st').appendChild(d); setTimeout(() => d.remove(), 1200); };
+  const CALL = { 吃: 'チー', 碰: 'ポン', 槓: 'カン', 立直: 'リーチ', 自摸: 'ツモ', 榮和: 'ロン' };
+  const shout = (s, txt) => {
+    const sy = window.speechSynthesis; if (!OPT.sound || !sy || !CALL[txt]) return;
+    try { const vs = sy.getVoices(), u = new SpeechSynthesisUtterance(CALL[txt]); u.voice = vs.find(v => /^ja/i.test(v.lang)) || null; u.lang = 'ja-JP'; u.pitch = [1, 0.7, 1.4, 0.9][rel(s)]; u.rate = 1.15; u.volume = 0.9; sy.speak(u); } catch (e) { }
+  };
+  const ann = (s, txt) => { if (!txt || !ROOT) return; shout(s, txt); const p = ANNPOS[rel(s)], d = document.createElement('div'); d.className = 'mj-ann'; d.textContent = txt; d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px'; $('mjs-st').appendChild(d); setTimeout(() => d.remove(), 1200); };
   const tenpaiDiscards = hand => { const me = V.seats[V.me]; if (hand.length % 3 !== 2) return []; const out = []; const seen = {}; hand.forEach(t => { const id = t >> 2; if (seen[id] == null) seen[id] = MJ.waitsIfDiscard(hand, t, me.melds.length).length > 0; if (seen[id]) out.push(t); }); return out; };
   const visibleCount = () => { const v = new Array(34).fill(0); V.seats.forEach(o => { o.river.forEach(r => { if (!r.taken) v[r.t >> 2]++; }); o.melds.forEach(m => m.tiles.forEach((t, i) => { if (!(m.type === 'ankan' && (i === 1 || i === 2) && o.i !== V.me)) v[t >> 2]++; })); }); V.doraInd.forEach(i => v[i]++); (V.seats[V.me].hand || []).forEach(t => v[t >> 2]++); return v; };
   const waitHtml = (hand, hoverTile) => {
@@ -362,7 +379,7 @@
     const on = (id, f) => { const b = $(id); if (b) b.onclick = f; };
     on('mjs-x', askLeave); on('mjs-out', () => close()); on('mjs-rule', showRules);
     on('mjs-next', () => { if (MODE === 'off') { MJ.nextHand(OFF.G); offTick(); } else { netSend({ t: 'next' }); const b = $('mjs-next'); if (b) { b.disabled = true; b.textContent = '等其他人…'; } } });
-    on('mjs-again', () => { if (MODE === 'off') { if (R.S.gold < FEE * MUL) { R.toast && R.toast('錢不夠（桌費 ' + FEE * MUL + ' 費拉）。'); return; } R.S.gold -= FEE * MUL; R.save && R.save(); startOffline(MUL, true); } else netSend({ t: 'again' }); });
+    on('mjs-again', () => { if (MODE === 'off') { if (RANKED) MUL = rkMul(rkOf().lv); if (R.S.gold < FEE * MUL) { R.toast && R.toast('錢不夠（桌費 ' + FEE * MUL + ' 費拉）。'); return; } R.S.gold -= FEE * MUL; R.save && R.save(); startOffline(MUL, true); } else netSend({ t: 'again' }); });
   };
   const coarse = () => { try { return matchMedia('(pointer:coarse)').matches; } catch (e) { return false; } };
   const clickTile = t => {
@@ -420,7 +437,7 @@
   // ---------------- 單機 ----------------
   const startOffline = (mul, again) => {
     MUL = mul; rewardDone = false; lastSeq = 0; order = [];
-    const meName = (R.S && R.S.name) || '你', foes = FOES.slice().sort(() => Math.random() - 0.5), me = Math.floor(Math.random() * 4), names = [], bots = [];
+    const meName = (R.S && R.S.name) || '你', lv = RANKED ? rkOf().lv : 0, foes = FOES.slice().sort(() => Math.random() - 0.5).slice(0, 3).map(n => RANKED ? n + '（' + RANKS[Math.max(0, Math.min(RANKS.length - 1, lv + Math.floor(Math.random() * 5) - 2))] + '）' : n), me = Math.floor(Math.random() * 4), names = [], bots = [];
     for (let i = 0, k = 0; i < 4; i++) { names.push(i === me ? meName : foes[k++]); bots.push(i !== me); }
     if (!again || !ROOT) open();
     const G = MJ.newMatch({ names, bots }); MJ.startHand(G);
@@ -434,7 +451,7 @@
     if (V.opts && !offTurn) offTurn = Date.now(); if (!V.opts) offTurn = null;
     render(); rewards();
     if (G.phase === 'result' || G.phase === 'over') return;
-    for (let s = 0; s < 4; s++) { if (s === OFF.me) continue; if (MJ.options(G, s)) { const isClaim = G.phase === 'claim'; offT = setTimeout(() => { const a = MJ.botAct(G, s); if (a) MJ.act(G, s, a); offTick(); }, isClaim ? 260 : 620); return; } }
+    for (let s = 0; s < 4; s++) { if (s === OFF.me) continue; if (MJ.options(G, s)) { const isClaim = G.phase === 'claim'; offT = setTimeout(() => { let a = MJ.botAct(G, s); if (a && RANKED && a.t === 'discard' && !a.riichi && !G.seats[s].riichi && Math.random() < rkErr(rkOf().lv)) { const d = MJ.options(G, s).discard; a = { t: 'discard', tile: d[Math.floor(Math.random() * d.length)] }; } if (a) MJ.act(G, s, a); offTick(); }, isClaim ? 260 : 620); return; } }
     autoPlay();
   };
   // 戰績、稱號、獎金（舊的 R.S.mj 和 R.mjEvent 照用）
@@ -445,7 +462,14 @@
     }
     if (V.phase === 'over' && V.final && !rewardDone) {
       rewardDone = true; const rk = V.final.rank.indexOf(V.me), pr = PRIZE[rk] * (MODE === 'off' ? MUL : 1);
-      S.mj.games++; if (!rk) S.mj.first++; S.gold += pr; R.save && R.save(); R.mjEvent && R.mjEvent('end', { rk, pr, mul: MODE === 'off' ? MUL : 1 });
+      S.mj.games++; if (!rk) S.mj.first++; S.gold += pr;
+      if (MODE === 'off' && RANKED) {
+        const r = rkOf(), g = rkGain(r.lv, rk), was = r.lv; r.pt += g;
+        if (r.pt >= rkNeed(r.lv) && r.lv < RANKS.length - 1) { r.pt -= rkNeed(r.lv); r.lv++; } else if (r.pt < 0) { if (r.lv >= 10) { r.lv--; r.pt = Math.floor(rkNeed(r.lv) / 2); } else r.pt = 0; }
+        r.best = Math.max(r.best || 0, r.lv);
+        setTimeout(() => R.toast && R.toast('段位戰・第 ' + (rk + 1) + ' 名：段位分 ' + (g >= 0 ? '+' : '') + g + (r.lv > was ? '——升到「' + RANKS[r.lv] + '」！' : r.lv < was ? '——降到「' + RANKS[r.lv] + '」' : '（' + RANKS[r.lv] + ' ' + r.pt + '／' + rkNeed(r.lv) + '）'), r.lv > was ? '#E8C04A' : r.lv < was ? '#FF9A6A' : '#CFE8FF'), 600);
+      }
+      R.save && R.save(); R.mjEvent && R.mjEvent('end', { rk, pr, mul: MODE === 'off' ? MUL : 1 });
     }
   };
 
@@ -517,6 +541,7 @@
     const st = S.mj.games ? '你的戰績：' + S.mj.games + ' 場、第一名 ' + S.mj.first + ' 次、和了 ' + S.mj.wins + ' 次' + (S.mj.best ? '、最大 ' + S.mj.best + ' 翻（' + esc(S.mj.bestName) + '）' : '') + '。' : '第一次來？桌上有聽牌提示，不懂可以按「規則與役表」。';
     const last = MULS.includes(S.mj.mul) ? S.mj.mul : 1, party = R.net && R.net.room ? 'P' + String(R.net.room).replace(/[^0-9A-Z]/gi, '').toUpperCase() : '';
     R.sheet('<p class="kicker">繁華街・二樓</p><h2>雀莊「東風」</h2><p class="note">日式立直麻將・四人東風戰（25000 點開始，赤寶牌三張、有食斷、有一發和裏寶牌）。' + st + '</p>'
+      + (() => { const r = rkOf(), m = rkMul(r.lv); return '<h3>段位戰</h3><p class="note">現在：<b>' + RANKS[r.lv] + '</b>（段位分 ' + r.pt + '／' + rkNeed(r.lv) + '' + (r.best > r.lv ? '・最高 ' + RANKS[r.best] : '') + '）。第一名 +60、第二名 +25，三、四名扣分（七級以下不扣）；段位以上扣到負的會降段。段位越高，對手越強、桌費和獎金越高（現在 ×' + m + '）。</p><div class="row"><button type="button" class="btn pri" id="mj-rank"' + (S.gold < FEE * m ? ' disabled' : '') + '>打段位戰（' + FEE * m + ' 費拉）</button></div>'; })()
       + '<h3>和電腦打</h3><p class="note">要賭幾倍？桌費和獎金照倍數算：' + MULS.map(m => '×' + m + ' 桌費 ' + FEE * m + '、第一名 ' + PRIZE[0] * m).join('；') + '。</p>'
       + '<div class="row">' + MULS.map(m => '<button type="button" class="btn' + (m === last ? ' pri' : '') + '" data-mjmul="' + m + '"' + (S.gold < FEE * m ? ' disabled' : '') + '>×' + m + '（' + FEE * m + ' 費拉）</button>').join('') + '</div>'
       + '<h3>線上牌桌</h3><p class="note">和其他玩家同桌（1–4 人，空位由電腦補上；斷線的時候電腦代打，連回來就接手）。洗牌和發牌都在伺服器，看不到別人的牌。桌費 ' + FEE + ' 費拉，獎金照 ×1。</p>'
@@ -525,8 +550,9 @@
     $('mj-no').onclick = R.closeSheet;
     document.querySelectorAll('[data-mjmul]').forEach(b => { b.onclick = () => {
       const m = +b.dataset.mjmul; if (S.gold < FEE * m) { R.toast('錢不夠（桌費 ' + FEE * m + ' 費拉）。'); return; }
-      S.mj.mul = m; S.gold -= FEE * m; R.save && R.save(); R.closeSheet(); startOffline(m);
+      S.mj.mul = m; S.gold -= FEE * m; R.save && R.save(); R.closeSheet(); RANKED = false; startOffline(m);
     }; });
+    $('mj-rank').onclick = () => { const m = rkMul(rkOf().lv); if (S.gold < FEE * m) { R.toast('錢不夠（桌費 ' + FEE * m + ' 費拉）。'); return; } S.gold -= FEE * m; R.save && R.save(); R.closeSheet(); RANKED = true; startOffline(m); };
     const go = code => { R.closeSheet(); startNet(code); };
     $('mj-new').onclick = () => { const L = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let c = ''; for (let i = 0; i < 5; i++) c += L[Math.floor(Math.random() * L.length)]; go(c); };
     if ($('mj-party')) $('mj-party').onclick = () => go(party);
