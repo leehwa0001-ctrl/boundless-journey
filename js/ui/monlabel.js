@@ -12,8 +12,8 @@
     let url = '';
     try {
       const d = R.ENEMIES[id]; if (d && !d.human && R.beastSheetOf) {
-        const sh = R.beastSheetOf(id), c = document.createElement('canvas'); c.width = sh.fw * k; c.height = sh.fh * k;
-        const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(sh.c, 0, 0, sh.fw, sh.fh, 0, 0, c.width, c.height); url = c.toDataURL();
+        const sh = R.beastSheetOf(id), sw = sh.c.width / 2, shh = sh.c.height / 2, k2 = Math.max(1, Math.round(k * sh.fw / sw)), c = document.createElement('canvas'); c.width = sw * k2; c.height = shh * k2;   // 2026-10-22：手點的高解析圖（領主體 2～4 倍）一格是 fw×解析度 個像素——原本只取左上角 fw×fh 再放大，看起來糊糊的
+        const x = c.getContext('2d'); x.imageSmoothingEnabled = false; x.drawImage(sh.c, 0, 0, sw, shh, 0, 0, c.width, c.height); url = c.toDataURL();
       }
     } catch (e) { url = ''; }
     return (icons[key] = url);

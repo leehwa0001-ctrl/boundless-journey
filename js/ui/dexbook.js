@@ -198,8 +198,10 @@
   const css = document.createElement('style');
   css.textContent = [
     // 桌子：木板＋木紋
-    '#bestiary.bk-on{background:#6B4426 repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 236px,rgba(30,16,6,.55) 236px 240px),linear-gradient(180deg,#7A4E2C,#5E3A20);overflow:hidden}',
-    '#bestiary.bk-on::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'240\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.012 .32\' numOctaves=\'3\' seed=\'4\'/%3E%3CfeColorMatrix values=\'0 0 0 0 .2 0 0 0 0 .1 0 0 0 0 .04 0 0 0 1.1 -.35\'/%3E%3C/filter%3E%3Crect width=\'240\' height=\'240\' filter=\'url(%23n)\'/%3E%3C/svg%3E");mix-blend-mode:multiply}',
+    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat;overflow:hidden}',   // 2026-10-22 作者：圖鑑背後沒有質感——換成畫的木桌（羅盤、墨水瓶、蠟燭、地圖）
+    '#bestiary.bk-on .dx-book .dx-left{background-blend-mode:normal,multiply}',
+    '#bestiary.bk-on .dx-book .dx-left{background-image:linear-gradient(90deg,rgba(140,100,50,.55) 0,rgba(0,0,0,0) 6%,rgba(0,0,0,0) 88%,rgba(150,105,55,.6) 100%),url("assets/art/dex/dex-paper.webp");background-size:auto,320px}',
+    '#bestiary.bk-on::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'240\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.012 .32\' numOctaves=\'3\' seed=\'4\'/%3E%3CfeColorMatrix values=\'0 0 0 0 .2 0 0 0 0 .1 0 0 0 0 .04 0 0 0 1.1 -.35\'/%3E%3C/filter%3E%3Crect width=\'240\' height=\'240\' filter=\'url(%23n)\'/%3E%3C/svg%3E");mix-blend-mode:multiply}',
     '#bestiary.bk-on::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(255,200,120,.12),rgba(0,0,0,.5) 85%)}',
     '#bestiary:not(.bk-on) .bk-desk{display:none}.bk-desk{position:absolute;inset:0;pointer-events:none;overflow:hidden}',
     '.bk-p{position:absolute;filter:drop-shadow(0 6px 4px rgba(0,0,0,.35))}',
