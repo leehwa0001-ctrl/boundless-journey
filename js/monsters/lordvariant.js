@@ -103,7 +103,8 @@
     const v = V[id], e = R.ENEMIES[id]; if (!v || !e) return '';
     const esc = x => R.esc(x), ok = seen(id), k = R.lordVariantKills(id), inf = INFO[id] || ['', '', ''];
     const st = k ? '打倒過 ' + k + ' 次' : ok ? '遇見過・還沒打倒' : '還沒遇見';
-    let h = '<h4 class="dx-h">異變（領主變體）</h4><div class="lv-dex' + (ok ? '' : ' unseen') + '" style="--lvc:' + v[1] + '"><b>' + esc(ok ? e.name + '【' + v[0] + '】' : e.name + '【？？？】') + '</b><small>' + st + '</small>';
+    const img = ok && R.BEAST_HD && R.BEAST_HD[id + '_muta'] && R.beastIconURL ? '<img class="lv-img" alt="" src="' + R.beastIconURL(id + '_muta', 2) + '">' : '';
+    let h = '<h4 class="dx-h">異變（領主變體）</h4><div class="lv-dex' + (ok ? '' : ' unseen') + '" style="--lvc:' + v[1] + '">' + img + '<b>' + esc(ok ? e.name + '【' + v[0] + '】' : e.name + '【？？？】') + '</b><small>' + st + '</small>';
     if (!ok) return h + '<p class="note">克森特級以上的遺跡，領主體有機會以「異變」的樣子出現（克森特級 25%、卡索級 45%，最深的那幾層再 +10%）。遇過一次之後，這裡會寫牠跟本體差在哪。</p></div>';
     const ul = l => '<ul class="lv-ul">' + l.map(x => '<li>' + x + '</li>').join('') + '</ul>';
     return h + '<p>' + esc(inf[0]) + '</p>'
@@ -118,7 +119,9 @@
     try {
       const TH = window.THREE; if (!e.m || !e.m.g || !TH) return;
       e.m.g.scale.multiplyScalar(1.3);
-      const sp = e.m.sp; if (sp && sp.mat) { if (sp.mat.color) sp.mat.color.lerp(new TH.Color(col), 0.35); }
+      const sp = e.m.sp, art = e.id + '_muta';
+      if (R.BEAST_HD && R.BEAST_HD[art] && R.beastAnimSwap) R.beastAnimSwap(e.m, art);   // 2026-10-25 作者：異變要有自己的圖（beastpix.js）
+      else if (sp && sp.mat && sp.mat.color) sp.mat.color.lerp(new TH.Color(col), 0.35);
       const ring = new TH.Mesh(new TH.RingGeometry(1.6, 2.1, 32), new TH.MeshBasicMaterial({ color: '#FF2A3A', transparent: true, opacity: 0.55, depthWrite: false, side: TH.DoubleSide, fog: true }));
       ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06; e.m.g.add(ring); e.vRing = ring;
     } catch (err) { }
@@ -250,7 +253,7 @@
     '#r-boss.lv-dual .meter:not(.lv-shell)::before{content:"";position:absolute;left:calc(50% - 1px);top:0;bottom:0;width:2px;background:#FFE08A;z-index:5;opacity:.8}',
     '#r-boss.lv-dual #r-boss-n::after{content:"　兩條血";font-size:11px;color:var(--lvc,#B04AFF)}',
     '.lv-dex{border-left:3px solid var(--lvc);padding:4px 0 4px 10px;margin:4px 0 8px;font-size:12.5px}.lv-dex>b{display:block;font-size:14px;color:var(--lvc)}.lv-dex>small{display:block;opacity:.75}',
-    '.lv-dex.unseen>b{color:inherit;opacity:.7}.lv-dex p{margin:5px 0}.lv-k{font-weight:700;color:var(--gold,#C9A13A);margin:8px 0 2px!important}.lv-ul{margin:2px 0 4px;padding-left:18px}.lv-ul li{margin:2px 0}',
+    '.lv-img{display:block;max-width:180px;width:60%;margin:2px auto 6px;image-rendering:pixelated}.lv-dex.unseen>b{color:inherit;opacity:.7}.lv-dex p{margin:5px 0}.lv-k{font-weight:700;color:var(--gold,#C9A13A);margin:8px 0 2px!important}.lv-ul{margin:2px 0 4px;padding-left:18px}.lv-ul li{margin:2px 0}',
     '.dx-th.lv-mut,.dr-th.lv-mut{border-color:color-mix(in srgb,var(--lvc) 70%,transparent);box-shadow:0 0 6px -1px var(--lvc) inset}.dx-th.lv-mut img,.dr-th.lv-mut img{filter:drop-shadow(0 0 2px var(--lvc)) saturate(1.4)}',
     '.dx-th.lv-mut.dim img,.dr-th.lv-mut.dim img{filter:grayscale(1) brightness(.5)}'
   ].join('\n');

@@ -2286,7 +2286,8 @@
   // 飛起來的烏鴉、鴿子：只有一張展翅的圖，用上下壓扁當拍翅
   const GENW = { mx: 0.1, my: 0.3, bones: {}, anims: { idle: [B({})], move: [B({}, 0, -1, 0, 1), B({}, 0, 0, 0, 0.7), B({}, 0, 1, 0, 0.45), B({}, 0, 0, 0, 0.7)], atk: [B({})], hurt: [B({})] } };
   const TOWN = id => (/^cyc[0-9]/.test(id) ? GENB : /^(crow|pigeon)fly/.test(id) ? GENW : /^(cat|dog)[0-9]|^(crow|pigeon)/.test(id) ? GENT : null);
-  const rigOf = id => RIG[id] || TOWN(id) || (isPix(id) ? (R.ENEMIES[baseOf(id)] && R.ENEMIES[baseOf(id)].fly ? GENF : GENS) : GEN);
+  const rigOf = id => RIG[id] || RIG[String(id).replace(/_muta$/, '')] || TOWN(id) ||   // 異變（beastpix.js 的 id_muta）照本體的姿勢畫，骨架共用
+    (isPix(id) ? (R.ENEMIES[baseOf(id)] && R.ENEMIES[baseOf(id)].fly ? GENF : GENS) : GEN);
   // ---------- 變形 ----------
   const mk = (piv, dx, dy, deg, sy) => { const t = deg * Math.PI / 180, c = Math.cos(t), s = Math.sin(t), k = sy || 1; return (x, y) => { const ux = x - piv[0], uy = (y - piv[1]) * k; return [c * ux - s * uy + piv[0] + dx, s * ux + c * uy + piv[1] + dy]; }; };
   const segD = (x, y, [ax, ay], [bx, by]) => { const vx = bx - ax, vy = by - ay, t = Math.max(0, Math.min(1, ((x - ax) * vx + (y - ay) * vy) / (vx * vx + vy * vy))); return Math.hypot(x - ax - vx * t, y - ay - vy * t); };
@@ -2372,11 +2373,13 @@
   const mb0 = R.makeBeastSprite;
   R.makeBeastSprite = (id, role) => {
     const m = mb0(id, role);
-    if ((isLord(id) && R.BEAST_HD && R.BEAST_HD[id] || isPix(id)) && T3()) { m._animRole = role; build(id, role).then(A => { if (A && m.sp) try { apply(m, A); } catch (e) { console.warn('[beastanim]', e); } }); }
+    if ((isLord(id) && R.BEAST_HD && R.BEAST_HD[id] || isPix(id)) && T3()) { m._animRole = role; build(id, role).then(A => { if (A && m.sp && !m._animId) try { apply(m, A); } catch (e) { console.warn('[beastanim]', e); } }); }
     return m;
   };
   const bv0 = R.beastVariant;
   R.beastVariant = (m, id, role) => { if (!m || !m._anim) return bv0(m, id, role); m._animRole = role; build(id, role, m._anim.A.amp || 1).then(A => { if (A) try { apply(m, A); } catch (e) { } }); };   // 換顏色：動畫圖也照新顏色重做
+  // 換成另一張圖（異變的領主體：lordvariant.js）；之後的動畫圖都照這張做
+  R.beastAnimSwap = (m, id) => { if (!m || !m.sp) return; m._animId = id; build(id, m._animRole, (m._anim && m._anim.A.amp) || 1).then(A => { if (A && m.sp) try { apply(m, A); } catch (e) { console.warn('[beastanim]', e); } }); };
   const wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   // 異變（lordvariant.js）：第二形態動作快 1.25 倍、幅度 ×1.2；第三形態快 1.5 倍、幅度 ×1.4、待機時身體抖動
   const SPD = { 1: 1, 2: 1.25, 3: 1.5 }, AMP = { 1: 1, 2: 1.2, 3: 1.4 };
@@ -2389,7 +2392,7 @@
     // 形態轉換：播「異變」那一下，然後換成幅度更大的動畫圖
     if (e && e.variant) {
       if (S.ph != null && ph > S.ph && A.idx.burst) { S.key = 'burst'; S.atk = 0; S.t0 = t; }
-      if (S.ph !== ph) { S.ph = ph; const want = AMP[ph] || 1; if ((A.amp || 1) !== want && !S.ampBusy) { S.ampBusy = 1; build(id, m._animRole, want).then(B => { S.ampBusy = 0; if (B && m.sp) try { apply(m, B); } catch (er) { } }); } }
+      if (S.ph !== ph) { S.ph = ph; const want = AMP[ph] || 1; if ((A.amp || 1) !== want && !S.ampBusy) { S.ampBusy = 1; build(m._animId || id, m._animRole, want).then(B => { S.ampBusy = 0; if (B && m.sp) try { apply(m, B); } catch (er) { } }); } }
     }
     // 出招：lordlogic.js 每出一招 e.lastMove 會換；異變的招（lordvariant.js）e._vMove 會加一
     if (e && e.lastMove != null && e.lastMove !== S.lm) { if (S.lm !== undefined) { const k = 'm' + e.lastMove; S.key = A.idx[k] ? k : A.idx.atk ? 'atk' : null; if (S.key) { S.atk = 0; S.t0 = t; } } S.lm = e.lastMove; }
