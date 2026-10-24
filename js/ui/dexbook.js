@@ -210,6 +210,7 @@
     '.bk-candle path:first-of-type{animation:bkflame 1.6s ease-in-out infinite;transform-origin:60px 52px}@keyframes bkflame{0%,100%{transform:scale(1,1)}50%{transform:scale(.92,1.08)}}',
     // 版面：書擺在中間，上面那條、說明藏起來
     '#bestiary.bk-on>.bar,#bestiary.bk-on .b-intro{display:none}',
+    '@media (min-width:1000px){#bestiary.bk-on .b-body{padding:max(84px,12vh) max(48px,10vw) max(36px,7vh)!important}}',   // 2026-10-24 作者：木桌沒看到——書縮小一點，四周露出桌面
     '#bestiary.bk-on .b-body{position:relative;z-index:1;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:84px 24px 22px;overflow:hidden;max-width:none}',
     '#bestiary.bk-on #cards{width:min(1240px,100%);height:100%;max-height:820px;display:block}',
     // 書：紫色封面＋兩頁羊皮紙
@@ -282,7 +283,7 @@
     // 2026-10-22 修：瘦高的圖示（高過格子）會凸出框外——圖示一律縮進格子裡
     '.dr-th img,.dx-th img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;min-width:0;min-height:0}',
     // 2026-10-22 質感：桌子（細木紋＋木節＋木板接縫的亮邊）、紙（纖維＋斑點）、封面（皮革紋＋縫線）
-    '#bestiary.bk-on{background:' + KNOT + ',' + GRAIN + ',repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 234px,rgba(255,220,170,.10) 234px 235px,rgba(24,12,4,.6) 235px 239px,rgba(255,220,170,.06) 239px 240px),linear-gradient(180deg,#7A4E2C,#5A371E) #6B4426}',
+    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat}#bestiary.bk-on .bk-desk{display:none}',   // 2026-10-24 作者：木桌沒看到——換成畫的木桌（蠟燭、羅盤、墨水瓶、地圖都在畫裡，原本的向量小物件收起來）
     '#bestiary.bk-on::before{opacity:.22}',
     '#bestiary.bk-on .dx-left{background:' + PAGE_L + '}',
     '#bestiary.bk-on .dx-book{background:' + LEATHER + ',linear-gradient(180deg,#5A4D9A,#3F3474)}',
