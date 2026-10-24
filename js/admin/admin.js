@@ -91,6 +91,13 @@
       (R.LEGENDS || []).forEach(l => { if (!R.WEAPONS[l.base] || s.stash.some(it => it.legend === l.id)) return; try { const it = R.makeItem({ kind: 'weapon', base: l.base, ilvl, rarity: 5, identified: true }); it.legend = l.id; s.stash.push(it); } catch (e) { } });
       R.CLASS_IDS.forEach(c => { const st = s.classes[c]; if (!st) return; st.spBonus = Math.max(st.spBonus || 0, 300); if (R.talentSlots) R.talentSlots(c); st.sp.t.T_slot2 = st.sp.t.T_slot2 || 10; });   // talentSlots：先讓天賦樹做完舊點數的退回，第二格才不會被退掉
     } catch (e) { console.warn('[admin]', e); }
+    // 2026-10-24 作者：解鎖的素材、道具直接放倉庫（背包放不下就不能下遺跡）；藥水背包留 10 瓶
+    if (R.stackAdd) {
+      const mv = (key, keep) => { const n = R.stackCount(key, 'bag') - keep; if (n > 0) { R.stackAdd(key, 'bag', -n); R.stackAdd(key, 'stash', n); } };
+      Object.keys(R.MATS).forEach(k => { if (k !== 'anygem') mv('mat:' + k, 0); });
+      Object.keys(s.gifts || {}).forEach(g => mv('gift:' + g, 0));
+      mv('pot:hp', 10); mv('pot:mp', 10); mv('xpBooks', 0); mv('raceTickets', 0);
+    }
     R.save();
   };
   R.makeAdmin = () => (R.noBagRoute ? R.noBagRoute(mk) : mk());   // 一次幾百件：直接放倉庫，不要每一件都整理一次背包（bagrules.js）
