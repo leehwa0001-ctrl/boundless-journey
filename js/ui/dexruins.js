@@ -86,7 +86,7 @@
     const rg = regionOf(s), own = rg && rg.lords && rg.lords[s.id];
     if (own) return own.filter(id => E()[id]).map(id => [id, '這座遺跡專屬']);
     const ex = exclLords(), out = [], add = (id, why) => { if (id && E()[id] && isLordDef(E()[id]) && !ex.has(id) && !out.some(x => x[0] === id)) out.push([id, why]); };
-    envsOf(s).forEach(e => add(ENV_LORD[e], envName(e) + '環境專屬・最常見'));
+    envsOf(s).forEach(e => { add(ENV_LORD[e], envName(e) + '環境專屬・最常見'); if (e === 'desert') add('carrionvulture', envName(e) + '環境專屬'); });
     const tl = s.type && R.TYPES[s.type] && R.TYPES[s.type].lord; if (tl) add(tl, R.TYPES[s.type].name + '最常見');
     [].concat(G('kesent').lords || [], g.lords || [], ['spikewolf']).forEach(id => add(id, '可能出現'));
     return out;
