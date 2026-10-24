@@ -13,7 +13,7 @@
 // 放在所有內容檔的後面（要讀到全部的武器、防具、素材、技能、稱號）。
 (function (R) {
   const S = () => R.S;
-  R.makeAdmin = () => {
+  const mk = () => {
     const s = S(); if (!s) return;
     s.admin = 1; s.gold = (s.gold || 0) + 9999999;
     s.potions = s.potions || {}; s.potions.hp = (s.potions.hp || 0) + 999; s.potions.mp = (s.potions.mp || 0) + 999;
@@ -93,6 +93,7 @@
     } catch (e) { console.warn('[admin]', e); }
     R.save();
   };
+  R.makeAdmin = () => (R.noBagRoute ? R.noBagRoute(mk) : mk());   // 一次幾百件：直接放倉庫，不要每一件都整理一次背包（bagrules.js）
   // 公會畫面標「管理員」
   const hub0 = R.hub;
   R.hub = (t, f) => {

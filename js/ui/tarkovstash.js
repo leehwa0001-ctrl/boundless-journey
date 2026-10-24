@@ -37,13 +37,13 @@
 
   const S = () => R.S;
   const tg = () => { const s = S(); if (!s.tg || typeof s.tg !== 'object') s.tg = { v: 1, v2: 1, rows: BASE_ROWS, up: 0, boxes: [], pos: {}, bought: {} }; const g = s.tg; if (!g.v2) { g.rows = Math.max((g.rows || 8) + 2, BASE_ROWS); g.v2 = 1; } g.boxes = g.boxes || []; g.pos = g.pos || {}; g.bought = g.bought || {}; g.rows = g.rows || BASE_ROWS; return g; };
-  // 倉庫格裡的東西＝沒穿在身上的裝備＋一疊一疊的東西（一下子會問很多次，記 50 毫秒）
-  let LC = null, LT = 0, BC = null;
-  const loose = () => { const now = performance.now(); if (LC && now - LT < 50) return LC; const eq = R.equippedIds(); LC = (S().stash || []).filter(it => !eq.has(it.id) && !(R.inBag && R.inBag(it.id))).concat(R.stackList ? R.stackList('stash') : []); BC = (R.bagGear ? R.bagGear() : []).concat(R.stackList ? R.stackList('bag') : []); LT = now; return LC; };
+  // 倉庫格裡的東西＝沒穿在身上的裝備＋一疊一疊的東西（一下子會問很多次，記 50 毫秒；整理的時候（hold）一直用同一份——東西多的時候算一次就超過 50 毫秒，每找一個空位都重算會卡死）
+  let LC = null, LT = 0, BC = null, BM = null, hold = 0;
+  const loose = () => { const now = performance.now(); if (LC && (hold || now - LT < 50)) return LC; BM = null; const eq = R.equippedIds(); LC = (S().stash || []).filter(it => !eq.has(it.id) && !(R.inBag && R.inBag(it.id))).concat(R.stackList ? R.stackList('stash') : []); BC = (R.bagGear ? R.bagGear() : []).concat(R.stackList ? R.stackList('bag') : []); LT = now; return LC; };
   const bagList = () => { loose(); return BC || []; };
   const allList = () => loose().concat(bagList());
   const isBagThing = it => !!it && (it.stack ? it.where === 'bag' : !!(R.inBag && R.inBag(it.id)));
-  const fresh = () => { LC = null; BC = null; };
+  const fresh = () => { LC = null; BC = null; BM = null; };
   const itemOf = id => allList().find(it => String(it.id) === String(id)) || (R.isStackId && R.isStackId(id) ? null : R.itemById(id));
   const packDim = () => { const P = R.PACKS && (R.PACKS[S().pack] || R.PACKS.sack); return P ? [P.w, P.h] : [6, 5]; };
   const gridDim = key => { const g = tg(); if (key === 'main') return [COLS, g.rows]; if (key === 'bag') return packDim(); const b = g.boxes.find(x => x.id === key); return b ? [BOX[b.t].iw, BOX[b.t].ih] : [0, 0]; };
@@ -51,7 +51,7 @@
   // 某一格子裡被佔掉的格（ignore：拖曳中的那一件／那個箱子）
   const occ = (key, ignore) => {
     const [w, h] = gridDim(key), m = new Uint8Array(w * h), g = tg(), mark = (x, y, a, b) => { for (let j = y; j < y + b; j++) for (let i = x; i < x + a; i++) if (i >= 0 && j >= 0 && i < w && j < h) m[j * w + i] = 1; };
-    const byId = new Map(allList().map(it => [String(it.id), it]));
+    loose(); const byId = BM || (BM = new Map(allList().map(it => [String(it.id), it])));
     Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (p.g !== key || id === ignore) return; const it = byId.get(id); if (!it) return; const [a, b] = dims(...sizeIn(it, key), p.r); mark(p.x, p.y, a, b); });
     if (key === 'main') g.boxes.forEach(b => { if (b.id === ignore) return; const [a, c] = dims(BOX[b.t].w, BOX[b.t].h, b.r); mark(b.x, b.y, a, c); });
     return { m, w, h };
@@ -68,10 +68,11 @@
   // 給鐵匠鋪「立刻裝備」用：換下來的那件放得進格子嗎（放不下會留在暫放區，不會不見）
   R.stashTryPlace = it => { const p = tg().pos[it.id]; return (p && !p.over) || autoPlace(it); };
   // 整理資料：拿掉已經不在倉庫（穿上、賣掉）的位置、補上新東西的位置；第一次（舊存檔）放不下就把倉庫加長
-  const reconcile = () => {
-    fresh(); const g = tg(), items = loose(), ids = new Set(items.map(it => String(it.id))), bag = bagList(), bids = new Set(bag.map(it => String(it.id)));
+  const reconcile = () => { fresh(); hold++; try { return reconcile1(); } finally { hold--; } };
+  const reconcile1 = () => { const g = tg(), items = loose(), ids = new Set(items.map(it => String(it.id))), bag = bagList(), bids = new Set(bag.map(it => String(it.id)));
     Object.keys(g.pos).forEach(id => { const p = g.pos[id]; if (bids.has(id)) { if (p.g !== 'bag') delete g.pos[id]; return; } if (!ids.has(id) || (p.g !== 'main' && !g.boxes.some(b => b.id === p.g)) || p.over) delete g.pos[id]; });
-    BOVER = bag.filter(it => !g.pos[it.id]).sort((a, b) => sizeIn(b, 'bag')[0] * sizeIn(b, 'bag')[1] - sizeIn(a, 'bag')[0] * sizeIn(a, 'bag')[1]).filter(it => !autoPlace(it));   // 背包放不下的
+    let full1 = false;   // 1×1 的放不下＝背包沒有空格，後面的不用再找（管理員的素材一疊一疊有上萬疊）
+    BOVER = bag.filter(it => !g.pos[it.id]).sort((a, b) => sizeIn(b, 'bag')[0] * sizeIn(b, 'bag')[1] - sizeIn(a, 'bag')[0] * sizeIn(a, 'bag')[1]).filter(it => { const one = sizeIn(it, 'bag')[0] * sizeIn(it, 'bag')[1] === 1; if (one && full1) return true; const ok = autoPlace(it); if (!ok && one) full1 = true; return !ok; });   // 背包放不下的
     g.pin = g.pin || {}; Object.keys(g.pin).forEach(id => { if (!ids.has(id) || g.pos[id]) delete g.pin[id]; });
     const fresh0 = !g.mig; let over = items.filter(it => !g.pos[it.id] && !g.pin[it.id]).sort((a, b) => sizeOf(b)[0] * sizeOf(b)[1] - sizeOf(a)[0] * sizeOf(a)[1]).filter(it => !autoPlace(it));
     if (fresh0) { while (over.length && g.rows < 200) { g.rows += 1; over = over.filter(it => !autoPlace(it)); } g.mig = 1; }
