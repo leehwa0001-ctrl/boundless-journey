@@ -344,12 +344,42 @@
   R.CITY_ACT.gusen = grove;
   R.CITY_FAC['gusen:plant'] = grove;
   R.CITY_FAC['gusen:nature'] = city => R.cityQuestSheet(city);
+  R.CITY_FAC['gusen:tea'] = city => R.cityTrade(city);   // 茶廠直營：就是貨運窗口
+  // 精靈部落：帶古森茶或藥草來，長老給「森之祝福」（藥劑那一格，三天）；你種的樹比砍的多，祝福比較強
+  R.CITY_FAC['gusen:elf'] = city => {
+    const s = S(), c = C2(), M = mats(), green = (c.planted || 0) - (c.cut || 0), strong = green >= 3, tea = c.cargo.tea || 0;
+    R.sheet('<p class="kicker">古森・精靈部落（會客處）</p><h2>會客橋</h2><p>精靈不讓外人進部落，只在會客橋上見面。長老聞了聞你身上的味道：' + (strong ? '「你種的樹比砍的多。森林記得你。」' : green < 0 ? '「你身上有斧頭的味道。」' : '「人類。你來做什麼？」') + '</p><p class="note">帶一箱古森茶，或三份藥草，長老會給你「森之祝福」' + (strong ? '（你種的樹比砍的多 3 棵以上：祝福更強）' : '（在植樹場多種樹，祝福會更強）') + '。你有古森茶 ' + tea + ' 箱、藥草 ' + (M.herb || 0) + ' 份。</p>',
+      '<div class="row"><button type="button" class="btn pri" id="el-t"' + (tea >= 1 ? '' : ' disabled') + '>獻上一箱古森茶</button><button type="button" class="btn" id="el-h"' + ((M.herb || 0) >= 3 ? '' : ' disabled') + '>獻上三份藥草</button><button type="button" class="btn" id="el-x">告辭</button></div>');
+    $('el-x').onclick = R.closeSheet;
+    const bless = () => { const b = strong ? { hp: 0.1, regen: 0.4 } : { hp: 0.06, regen: 0.2 }; drink('森之祝福', b); R.cityRep('gusen', 1); R.save(); R.townTalk('精靈長老', ['長老把手放在你的額頭上，說了一句你聽不懂的話。', '森之祝福：' + tonicText(b) + '（三天，跟藥劑同一格）']); };
+    $('el-t').onclick = () => { if ((c.cargo.tea || 0) < 1) return; c.cargo.tea--; if (!c.cargo.tea) delete c.cargo.tea; bless(); };
+    $('el-h').onclick = () => { if ((M.herb || 0) < 3) return; M.herb -= 3; bless(); };
+  };
+  // 古森木開發公司：古森木材三箱訂做一件木護符（稀有；聲望高了有機會史詩）
+  R.CITY_FAC['gusen:wood'] = city => {
+    const s = S(), c = C2(), have = c.cargo.timber || 0;
+    R.sheet('<p class="kicker">古森・古森木開發公司</p><h2>木造工房</h2><p>「古森木做的護符，戴著不會冷。三箱木材，我們的師傅幫你刻一件。」工錢 50 費拉。</p><p class="note">你的古森木材 ' + have + ' 箱。精靈不太喜歡這家公司——但他們的木工是全國最好的。</p>',
+      '<div class="row"><button type="button" class="btn pri" id="wd-ok"' + (have >= 3 && s.gold >= 50 ? '' : ' disabled') + '>訂做木護符</button><button type="button" class="btn" id="wd-x">好了</button></div>');
+    $('wd-x').onclick = R.closeSheet;
+    $('wd-ok').onclick = () => { if ((c.cargo.timber || 0) < 3 || !pay(50)) return; const pool = Object.keys(R.CHARM2 || {}), base = pool.length ? pool[Math.floor(rnd() * pool.length)] : 'charm', it = R.makeItem({ kind: 'charm', base, ilvl: lvNow(), rarity: rnd() < 0.1 + R.cityRepLv('gusen') * 0.06 ? 3 : 2, identified: true }); if (!it) { S().gold += 50; return; } c.cargo.timber -= 3; if (!c.cargo.timber) delete c.cargo.timber; it.gusen = 1; if (!(R.giveItem && R.giveItem(it))) s.stash.push(it); R.save(); ok('刻好了：' + R.itemName(it)); R.closeSheet(); };
+  };
+  const nm3 = R.itemName; if (nm3) R.itemName = it => (it && it.gusen ? '古森木・' : '') + nm3(it);
+  // 生態平衡公司：野生動物調查（狩獵場的野獸，每一種第一次回報 80 費拉）
+  R.CITY_FAC['gusen:eco'] = city => {
+    const s = S(), c = C2(), K = s.dexKills || {}, wild = Object.keys(R.ENEMIES).filter(id => R.ENEMIES[id].wild && R.ENEMIES[id].name && id !== 'tdummy'), done = c.survey = c.survey || [];
+    const fresh = wild.filter(id => K[id] && !done.includes(id));
+    R.sheet('<p class="kicker">古森・生態平衡公司</p><h2>野生動物調查</h2><p>「狩獵場的野獸數量要記錄下來，太多太少都不好。遇到過、打倒過的種類告訴我們。」第一次回報的種類，一種 80 費拉。</p><p class="note">已經回報：' + (done.length ? done.map(id => esc(R.ENEMIES[id].name)).join('、') : '還沒有') + '（' + done.length + '／' + wild.length + '）</p>',
+      '<div class="row"><button type="button" class="btn pri" id="ec-ok"' + (fresh.length ? '' : ' disabled') + '>回報（' + fresh.length + ' 種，' + fresh.length * 80 + ' 費拉）</button><button type="button" class="btn" id="ec-x">好了</button></div>');
+    $('ec-x').onclick = R.closeSheet;
+    $('ec-ok').onclick = () => { if (!fresh.length) return; fresh.forEach(id => done.push(id)); s.gold += fresh.length * 80; R.cityRep('gusen', fresh.length); R.save(); ok('回報了 ' + fresh.map(id => R.ENEMIES[id].name).join('、') + '：+' + fresh.length * 80 + ' 費拉'); R.closeSheet(); };
+  };
   R.cityQuestReg('gusen', [
     { k: 'gs_plant', name: '自然保護協會：今天的樹苗', desc: '今天在植樹場種下至少一棵樹苗。', pay: 70, need: () => [C2().plantDay === S().day ? 1 : 0, 1], take: () => { } },
     R.cqCargo('gs_elec', 'electro', 2, 250, '精靈部落的燈', '精靈長老想試試「不用火的燈」，2 箱日下森電器。'),
     R.cqCargo('gs_med', 'medicine', 3, 290, '動物園的獸醫', '動物園的獸醫缺藥，3 箱英尼爾斯藥品。'),
     R.cqCargo('gs_fish', 'fishdry', 3, 150, '老街巷的冬糧', '老街巷的人家要 3 箱銀旗魚乾過冬。'),
-    R.cqMat('gs_herb', 'herb', 4, 90, '茶廠的配方', '茶廠要試新的藥草茶，交 4 份藥草。')
+    R.cqMat('gs_herb', 'herb', 4, 90, '茶廠的配方', '茶廠要試新的藥草茶，交 4 份藥草。'),
+    R.cqCargo('gs_steel', 'steel', 2, 200, '木造公司的新鋸台', '古森木開發公司要換鋸台，2 箱征遠鋼材。')
   ]);
 
   const css = document.createElement('style');
