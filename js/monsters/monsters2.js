@@ -62,88 +62,12 @@
   const art = (w, h, draw) => [0, 1].map(fr => { const G = grid(w, h); draw(G, fr); return G.rows(); });
   const add = (id, pal, w, h, draw) => { const [a, b] = art(w, h, draw); ART[id] = { pal, a, b }; };
 
-  add('nopperabo', { h: '#1A1714', s: '#F2E6D8', k: '#3A3048', c: '#E8E0D0', o: '#B83A4A', f: '#E8E0D0' }, 13, 21, (G, fr) => {
-    G.disc(6, 4, 3, 'h'); G.disc(4, 1, 1.5, 'h'); G.ell(7.5, 5, 2.3, 3, 's'); G.p(6, 8, 's');
-    G.rect(3, 9, 7, 9, 'k'); G.line(6, 9, 8, 11, 'c'); G.rect(3, 13, 7, 2, 'o'); G.rect(8, 10, 3, 3, 'k'); G.p(11, 11, 's');
-    if (fr) { G.rect(3, 18, 2, 2, 'f'); G.rect(8, 18, 2, 2, 'f'); } else { G.rect(4, 18, 2, 2, 'f'); G.rect(7, 18, 2, 2, 'f'); }
-  });
-  add('rokuro', { h: '#1A1714', s: '#F2E2D0', k: '#5A3A4A', o: '#C8A040', e: '#C83A3A', m: '#8A2A2A' }, 15, 22, (G, fr) => {
-    G.rect(1, 14, 8, 7, 'k'); G.rect(1, 17, 8, 1, 'o');
-    const pts = fr ? [[5, 14], [5, 10], [7, 7], [9, 5]] : [[5, 14], [6, 10], [8, 7], [10, 4]];
-    for (let i = 1; i < pts.length; i++) { G.line(pts[i - 1][0], pts[i - 1][1], pts[i][0], pts[i][1], 's'); G.line(pts[i - 1][0] + 1, pts[i - 1][1], pts[i][0] + 1, pts[i][1], 's'); }
-    const [hx, hy] = pts[3]; G.disc(hx - 1, hy, 2.6, 'h'); G.ell(hx + 1, hy + 0.3, 1.8, 2.2, 's'); G.p(hx + 1.5, hy, 'e'); G.p(hx + 1.5, hy + 1.6, 'm'); G.line(hx - 3, hy, hx - 3, hy + 6, 'h');
-  });
-  add('tanuki', { a: '#8A6A4A', b: '#E8D8B8', d: '#3A2A1C', e: '#1A1410', n: '#141414' }, 15, 14, (G, fr) => {
-    G.ell(2.5, 9, 2, 3, 'a'); G.p(2, 8, 'd'); G.p(2, 10, 'd');
-    G.ell(7, 9, 4.5, 4, 'a'); G.ell(8, 10, fr ? 3 : 2.5, fr ? 3 : 2.6, 'b');
-    G.disc(11, 4, 2.6, 'a'); G.rect(10, 4, 3, 1, 'd'); G.p(12, 4, 'e'); G.p(9, 1, 'a'); G.p(12, 1, 'a'); G.p(13, 5, 'n');
-    if (fr) { G.p(10, 9, 'a'); G.p(11, 9, 'a'); G.p(4, 13, 'd'); G.p(10, 13, 'd'); } else { G.p(5, 13, 'd'); G.p(9, 13, 'd'); }
-  });
   const fox = (G, fr) => {
     [[1, 1], [0, 5], [1, 10]].forEach(([tx, ty], i) => { const sx = 5, sy = 6 + (i - 1) * 0.5, oy = fr ? (i - 1) : 0; G.line(sx, sy, tx, ty + oy, 't'); G.line(sx, sy + 1, tx + 1, ty + oy + 1, 't'); G.p(tx, ty + oy, 'f'); G.p(tx + 1, ty + oy, 'f'); });
     G.ell(9, 7, 4, 2, 'a'); G.disc(13.5, 5, 2, 'a'); G.p(15, 6, 'a'); G.p(16, 6, 'n'); G.p(12, 2, 'a'); G.p(14, 2, 'a'); G.p(12, 3, 'a'); G.p(14, 3, 'a'); G.p(14, 5, 'e');
     if (fr) { G.rect(6, 9, 1, 2, 'a'); G.rect(12, 9, 1, 2, 'a'); } else { G.rect(7, 9, 1, 2, 'a'); G.rect(11, 9, 1, 2, 'a'); }
   };
-  add('kitsune', { a: '#E8D8C0', t: '#D8C4A8', f: '#B89AFF', n: '#2A1A1A', e: '#7A4ACF' }, 17, 12, fox);
   add('kitsune_ghost', { a: '#C8B8E8', t: '#B8A8D8', f: '#E0D0FF', n: '#4A3A6A', e: '#FFFFFF' }, 17, 12, fox);
-  add('tengu', { w: '#1A1A22', W: '#3A3A48', r: '#E8E4D8', o: '#E8803A', s: '#C8323A', k: '#141414', e: '#FFE08A' }, 17, 18, (G, fr) => {
-    if (fr) { for (let i = 0; i < 4; i++) G.line(8, 8, 1 + i, 13 - i * 0.5, i % 2 ? 'W' : 'w'); } else { for (let i = 0; i < 4; i++) G.line(8, 7, 1 + i, 1 + i * 2, i % 2 ? 'W' : 'w'); }
-    G.rect(6, 7, 5, 7, 'r'); G.p(7, 8, 'o'); G.p(9, 8, 'o'); G.p(8, 10, 'o');
-    G.disc(9, 4, 2.3, 's'); G.line(11, 4, 14, 4, 's'); G.p(8, 1, 'k'); G.p(8, 2, 'k'); G.p(10, 3, 'e');
-    G.rect(7, 14, 1, 3, 'k'); G.rect(9, 14, 1, 3, 'k');
-  });
-  add('nue', { y: '#C8A040', k: '#2A2014', g: '#4A6A3A', d: '#5A3A24', s: '#E8C8A0', e: '#FF3A3A' }, 27, 17, (G, fr) => {
-    const tp = fr ? [[6, 9], [4, 6], [2, 5], [1, 2]] : [[6, 9], [3, 7], [2, 4], [1, 3]];
-    for (let i = 1; i < tp.length; i++) { G.line(tp[i - 1][0], tp[i - 1][1], tp[i][0], tp[i][1], 'g'); G.line(tp[i - 1][0] + 1, tp[i - 1][1], tp[i][0] + 1, tp[i][1], 'g'); }
-    G.p(tp[3][0], tp[3][1] - 1, 'g'); G.p(tp[3][0] + 1, tp[3][1] - 1, 'e');
-    G.ell(13, 9, 7, 3.5, 'y'); for (let x = 8; x <= 18; x += 3) G.ell(13, 9, 7, 3.5, 'k', (px, py) => px === x && py > 6 && py < 12);
-    const lg = fr ? [8, 11, 15, 19] : [9, 10, 16, 18]; lg.forEach(x => G.rect(x, 12, 1, 4, 'y'));
-    G.disc(21, 6, 3, 'd'); G.ell(22.5, 7, 1.8, 1.8, 's'); G.p(22, 6, 'e'); G.p(24, 6, 'e'); G.p(23, 8, 'k');
-  });
-  add('hitotsume', { s: '#F2D8C0', w: '#FFFFFF', e: '#1A1A1A', t: '#E86A7A', k: '#4A6A9A', o: '#C8A040', b: '#8A7A5A' }, 11, 15, (G, fr) => {
-    G.disc(1, 9, 1.6, 'b'); G.disc(5, 4, 3.2, 's'); G.disc(6, 4, 1.6, 'w'); G.p(7, 4, 'e'); G.p(6, 7, 't');
-    G.rect(2, 8, 6, 4, 'k'); G.rect(2, 10, 6, 1, 'o');
-    if (fr) { G.rect(2, 12, 1, 2, 's'); G.rect(7, 12, 1, 2, 's'); } else { G.rect(3, 12, 1, 2, 's'); G.rect(6, 12, 1, 2, 's'); }
-  });
-  add('enenra', { a: '#8A8A92', d: '#5A5A64', l: '#B8B8C0', e: '#FFD04A' }, 17, 12, (G, fr) => {
-    const o = fr ? 1 : 0; G.ell(6 - o, 7, 4, 3, 'a'); G.ell(10, 5 - o * 0.5, 4, 3.5, 'a'); G.ell(13 + o, 7, 3, 2.5, 'a');
-    G.line(3, 10, 14, 10, 'd'); G.line(7, 2, 11, 2, 'l'); G.p(11, 5, 'e'); G.p(13, 5, 'e'); G.line(11, 7, 13, 7, 'd');
-  });
-  add('jinmenju', { t: '#6A4A2E', T: '#4A3220', g: '#4A6A3A', G: '#3A5A2E', f: '#F2E6C8', e: '#2A1A10' }, 21, 25, (G, fr) => {
-    G.rect(8, 13, 5, 10, 't'); G.rect(8, 13, 1, 10, 'T'); G.line(8, 22, 5, 24, 't'); G.line(12, 22, 15, 24, 't'); G.p(10, 23, 't'); G.p(10, 24, 't');
-    const o = fr ? 1 : 0; G.ell(10 + o, 8, 9, 6, 'g'); G.ell(6 + o, 5, 4, 3, 'g'); G.line(2 + o, 12, 18 + o, 12, 'G'); G.line(3 + o, 11, 17 + o, 11, 'G');
-    [[5, 8], [11, 6], [15, 9]].forEach(([x, y]) => { G.rect(x - 1 + o, y - 1, 3, 3, 'f'); G.p(x - 1 + o, y - 1, 'e'); G.p(x + 1 + o, y - 1, 'e'); G.p(x + o, y + (fr ? 1 : 0), 'e'); });
-  });
-  add('raiju', { a: '#5A4ACF', b: '#9A8AFF', y: '#FFE04A', e: '#FFE04A' }, 17, 10, (G, fr) => {
-    G.ell(8, 5, 5, 2, 'a'); G.line(4, 7, 11, 7, 'b'); G.disc(13.5, 4, 1.8, 'a'); G.p(13, 1, 'a'); G.p(14, 1, 'a'); G.p(14, 4, 'e'); G.p(15, 5, 'b');
-    const z = fr ? [[3, 5], [1, 4], [3, 2], [1, 0]] : [[3, 5], [0, 3], [2, 2], [0, 0]]; for (let i = 1; i < z.length; i++) G.line(z[i - 1][0], z[i - 1][1], z[i][0], z[i][1], 'y');
-    if (fr) { G.rect(4, 7, 1, 2, 'a'); G.rect(11, 7, 1, 2, 'a'); } else { G.rect(5, 7, 1, 2, 'a'); G.rect(10, 7, 1, 2, 'a'); }
-  });
-  add('tesso', { a: '#6A6A72', w: '#E8E8F0', e: '#FF5A5A', t: '#D8909A' }, 11, 7, (G, fr) => {
-    G.line(1, 4, 0, fr ? 6 : 5, 't'); G.ell(5, 3.5, 3.5, 2, 'a'); G.disc(8.5, 3, 1.5, 'a'); G.p(10, 4, 'w'); G.p(9, 2, 'e'); G.p(7, 1, 'a');
-    if (fr) { G.p(3, 6, 'a'); G.p(7, 6, 'a'); } else { G.p(4, 6, 'a'); G.p(6, 6, 'a'); }
-  });
-  add('mikoshi', { k: '#2A2A36', K: '#3A3A48', s: '#4A4A58', e: '#FFD04A' }, 13, 27, (G, fr) => {
-    for (let y = 8; y < 27; y++) { const hw = 2.5 + (y - 8) * 0.18; G.rect(Math.round(6.5 - hw), y, Math.round(hw * 2), 1, y % 5 === 0 ? 'K' : 'k'); }
-    const hy = fr ? 3 : 4; G.disc(7, hy, 3, 's'); G.p(8, hy - 1, 'e'); G.p(9, hy - 1, 'e'); if (fr) G.p(7, 7, 's'); G.p(7, 12, 's'); G.p(8, 12, 's');
-  });
-  add('baku', { w: '#E8E4DC', d: '#2A2A30', e: '#E8E4DC' }, 21, 14, (G, fr) => {
-    G.ell(10, 7, 7, 4, 'w'); G.ell(10, 7, 7, 4, 'd', x => x >= 12); G.ell(17, 7, 2.5, 2.5, 'd'); G.line(19, 8, 20, 11, 'd'); G.p(18, 6, 'e');
-    const lg = fr ? [4, 8, 12, 16] : [5, 7, 13, 15]; lg.forEach((x, i) => G.rect(x, 11, 1, 3, i < 2 ? 'w' : 'd'));
-  });
-  add('funa', { a: '#BFD8E8', A: '#9AB8D0', w: '#FFFFFF', e: '#1A2A3A', h: '#1A1714', l: '#8A6A44' }, 11, 15, (G, fr) => {
-    G.line(2, 4, 2, 9, 'h'); G.ell(5, 6, 3.5, 4, 'a'); const o = fr ? 1 : -1; G.line(5, 10, 4 + o, 14, 'A'); G.line(6, 10, 6 + o, 14, 'A');
-    G.p(5, 2, 'w'); G.rect(4, 3, 3, 1, 'w'); G.p(6, 6, 'e'); G.p(7, 6, 'e'); G.line(8, 6, 10, 1, 'l'); G.p(10, 0, 'l'); G.p(9, 0, 'l');
-  });
-  add('kyorinrin', { p: '#F0E8D0', r: '#5A3A24', k: '#2A2A2A', e: '#C83A3A' }, 15, 11, (G, fr) => {
-    G.rect(2, 2, 11, 6, 'p'); G.rect(1, 1, 1, 8, 'r'); G.rect(13, 1, 1, 8, 'r'); G.line(4, 4, 8, 4, 'k'); G.line(4, 6, 7, 6, 'k'); G.p(10, 3, 'e'); G.p(11, 3, 'e');
-    if (fr) G.rect(6, 8, 3, 3, 'p'); else G.rect(5, 8, 3, 2, 'p');
-  });
-  add('okubi', { h: '#1A1714', s: '#F2E6D8', e: '#2A1A1A', r: '#C83A3A', m: '#6A1A1A', w: '#FFFFFF' }, 23, 21, (G, fr) => {
-    G.ell(11, 7, 10, 7, 'h'); G.ell(12, 11.5, 8, 8, 's'); G.rect(5, 4, 14, 2, 'h'); G.rect(4, 6, 2, 8, 'h');
-    G.rect(9, 9, 2, 2, 'e'); G.rect(14, 9, 2, 2, 'e'); G.p(10, 10, 'r'); G.p(15, 10, 'r');
-    if (fr) { G.rect(10, 14, 6, 3, 'm'); G.line(10, 14, 15, 14, 'w'); } else G.line(10, 15, 15, 15, 'm');
-  });
 
   // ---------- 行為（R.AI_X：combat.js 每一格呼叫，回傳這一格有沒有在走） ----------
   const AI = R.AI_X = R.AI_X || {};

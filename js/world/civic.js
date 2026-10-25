@@ -173,17 +173,7 @@
     document.getElementById('dp-roof').onclick = () => { if (!gold(3)) return; R.closeSheet(); R.townTalk('屋頂遊樂園', ['摩天輪慢慢轉到最上面。', '看得到整個東鶴：舊城的城牆、霜溪、北邊的山，還有站前一排一排的屋頂。']); };
     document.getElementById('dp-x').onclick = R.closeSheet;
   };
-  R.pachinko = () => {
-    if (!gold(10)) return;
-    const r = Math.random(), win = r < 0.03 ? 100 : r < 0.15 ? 20 + Math.floor(Math.random() * 21) : r < 0.4 ? 5 + Math.floor(Math.random() * 11) : 0;
-    R.S.gold += win; R.save();
-    R.townTalk('柏青哥「銀河」', win >= 100 ? ['叮叮叮叮——！大當！', '鋼珠一直滾出來。換到 ' + win + ' 費拉。'] : win ? ['鋼珠叮叮噹噹地落下。', '換回 ' + win + ' 費拉。'] : ['一盒鋼珠一下子就打完了。', '旁邊的大叔說：「這台今天不會出啦。」']);
-  };
-  R.ufoCatcher = () => {
-    if (!gold(3)) return;
-    if (Math.random() < 0.22) { const k = ['dango', 'dorayaki', 'rose', 'notebook'][Math.floor(Math.random() * 4)]; if (R.addGift) R.addGift(k, 1); R.save(); R.townTalk('夾娃娃機', ['爪子夾住了……掉進洞裡了！', '裡面不是娃娃，是一份「' + (R.GIFTS && R.GIFTS[k] ? R.GIFTS[k].name : k) + '」的兌換券。去櫃台換了。']); }
-    else R.townTalk('夾娃娃機', ['爪子夾住了……又鬆開了。', '娃娃落回原處，只翻了個面。']);
-  };
+  // 柏青哥、夾娃娃機：pachinko.js、claw.js（2026-10-26：這裡原本擲骰子的版本刪掉了）
   R.sento = () => {
     const s = R.S; if (s.sentoDay === s.day) { R.townTalk('松之湯', ['今天已經泡過了。']); return; } if (!gold(8)) return;
     s.sentoDay = s.day; s.buff = { kind: 'sento', b: { hp: 0.03, regen: 0.2 }, until: s.day }; R.save();

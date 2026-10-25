@@ -47,38 +47,11 @@
     return o;
   };
   const add = (id, pal, w, h, draw) => { if (!R.BEAST_ART) return; const [a, b] = [0, 1].map(fr => { const G = grid(w, h); draw(G, fr); return G.rows(); }); R.BEAST_ART[id] = { pal, a, b }; };
-  add('k_rift', { k: '#1E1428', d: '#3A2A50', c: '#FF4AE0', e: '#FFE0FF', b: '#C8B0E8' }, 18, 18, (G, fr) => {
-    G.ell(8, 10, 4.5, 4.5, 'd'); G.disc(12, 5, 3, 'd'); G.p(13, 4, 'e'); G.p(14, 5, 'c');
-    G.line(5, 8, 8, 12, 'c'); G.line(9, 7, 7, 13, 'c'); G.p(10, 10, 'c');
-    if (fr) G.line(11, 9, 17, 3, 'b'); else G.line(11, 10, 17, 13, 'b'); G.line(11, 11, 16, 8, 'b');
-    if (fr) { G.rect(5, 14, 2, 4, 'k'); G.rect(10, 14, 2, 3, 'k'); } else { G.rect(6, 14, 2, 3, 'k'); G.rect(9, 14, 2, 4, 'k'); }
-  });
   const echo = (G, fr, s) => {
     const c = s / 2; G.ell(c, c - 1, c - 1.5, c - 1.5, 'a'); G.ell(c, c - 1, c - 3.5, c - 3.5, 'b'); G.p(c + 2, c - 2, 'e');
     G.line(c - 2, c + 2, c - 4 + (fr ? 1 : 0), s - 1, 't'); G.line(c + 1, c + 2, c + (fr ? 0 : 1), s - 1, 't');
   };
-  add('k_echo', { a: '#9A7AE8', b: '#E0D0FF', e: '#2A1040', t: '#6A4AC8' }, 16, 16, (G, fr) => echo(G, fr, 16));
   add('k_echo_s', { a: '#9A7AE8', b: '#E0D0FF', e: '#2A1040', t: '#6A4AC8' }, 10, 10, (G, fr) => echo(G, fr, 10));
-  add('k_maw', { k: '#120C18', d: '#2A1A3A', m: '#6A1A5A', w: '#F0E8F0', e: '#FF4AE0', v: '#8A3AFF' }, 26, 22, (G, fr) => {
-    G.ell(13, 12, 12, 9, 'k'); G.ell(12, 10, 9, 6, 'd'); G.line(4, 14, 9, 18, 'v'); G.line(20, 5, 23, 10, 'v');
-    G.ell(17, 13, 6, fr ? 5 : 3.5, 'm'); for (let x = 12; x <= 22; x += 2) { G.p(x, fr ? 9 : 10, 'w'); G.p(x + 1, fr ? 17 : 16, 'w'); }
-    G.disc(8, 7, 1.4, 'e'); G.disc(12, 5, 1.1, 'e'); G.p(5, 10, 'e');
-  });
-  add('k_shade', { s: '#2A3448', a: '#5A6A8A', e: '#9AF0FF' }, 14, 20, (G, fr) => {
-    for (let y = 3; y < 18; y += 2) G.p(fr ? 2 : 3, y, 'a'); for (let y = 4; y < 17; y += 3) G.p(fr ? 4 : 5, y, 'a');
-    G.disc(9, 3, 2.5, 's'); G.rect(7, 6, 5, 8, 's'); G.p(10, 3, 'e'); G.p(11, 3, 'e'); G.line(11, 7, 13, fr ? 10 : 9, 's');
-    if (fr) { G.rect(7, 14, 2, 5, 's'); G.rect(10, 14, 2, 4, 's'); } else { G.rect(8, 14, 2, 4, 's'); G.rect(10, 14, 2, 5, 's'); }
-  });
-  add('k_prism', { b: '#7AD8FF', w: '#F0FCFF', m: '#FF6AE0', d: '#3A8AC8' }, 18, 18, (G, fr) => {
-    for (let y = 0; y < 18; y++) { const hw = Math.round(8 - Math.abs(y - 8.5)); for (let x = 9 - hw; x < 9 + hw; x++) G.p(x, y, x < 9 ? (fr ? 'w' : 'b') : (fr ? 'b' : 'w')); }
-    G.line(9, 1, 9, 16, 'd'); G.line(2, 8, 16, 8, 'd'); G.disc(9, 8.5, 2, 'm');
-  });
-  add('k_hollow', { s: '#4A4E5A', l: '#6A707E', v: '#B04AFF', w: '#C8C8D0', k: '#1A1A22' }, 22, 22, (G, fr) => {
-    G.rect(9, 1, 6, 6, 's'); G.rect(9, 1, 6, 1, 'l'); G.rect(10, 3, 4, 2, 'k'); G.p(12, 3, 'v'); G.p(13, 4, 'v');
-    G.rect(7, 7, 10, 2, 'l'); G.rect(8, 9, 8, 7, 's'); G.rect(10, 10, 4, 4, 'k'); G.p(11, 11, 'v'); G.p(12, 12, 'v');
-    G.line(10, 12, 21, fr ? 10 : 12, 'w'); G.p(21, fr ? 10 : 12, 'l');
-    if (fr) { G.rect(8, 16, 3, 5, 's'); G.rect(13, 16, 3, 4, 's'); } else { G.rect(9, 16, 3, 4, 's'); G.rect(12, 16, 3, 5, 's'); }
-  });
   // 行為（combat.js 的 R.AI_X）
   const AI = R.AI_X = R.AI_X || {};
   AI.krift = (e, P, d, a, sp, dt, walk, H) => {

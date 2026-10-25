@@ -459,47 +459,6 @@
 
   // ---------- 遺跡生物（字串點陣，朝右；朝左用鏡像）----------
   const ART = {
-    kousaku: { pal: { a: '#6E5A4A', b: '#8A7462', d: '#4A3A2E', c: '#8A74FF', C: '#C8B4FF', g: '#A3ACB6', G: '#E0E6EC', l: '#3A2E26', e: '#FFD24A' },
-      a: ['........C.....G.......', '.......cC....gG..C....', '......ccc...ggg.cC....', '.....bbbbbbbbbbbbcc...', '....bbaaaaaaaaaaabb...', '...baaaaaaaaaaaaaaab..', '..baaaaaaaaaaaaaaaaab.', '..daaaaaaaaaaaaaaaaaae', '..ddaaaaaaaaaaaaaaaadd', '...dddddddddddddddddd.', '...l..l..l...l..l..l..', '..l..l..l...l..l..l...'],
-      b: ['........C.....G.......', '.......cC....gG..C....', '......ccc...ggg.cC....', '.....bbbbbbbbbbbbcc...', '....bbaaaaaaaaaaabb...', '...baaaaaaaaaaaaaaab..', '..baaaaaaaaaaaaaaaaab.', '..daaaaaaaaaaaaaaaaaae', '..ddaaaaaaaaaaaaaaaadd', '...dddddddddddddddddd.', '....l..l..l...l..l..l.', '...l..l..l...l..l..l..'] },
-    kamaitachi: { pal: { a: '#C9D6E0', b: '#EEF4F8', d: '#8A9AA6', k: '#DDE6EE', K: '#FFFFFF', e: '#1A6A8A', n: '#2A2A30', s: '#C8323A' },
-      a: ['..............aa..', '.............abae.', 'd...........aaaaan', 'dd.........ssaaa..', '.dd..aaaaaaaasa...', '..daaaaaaaaaaaa.kK', '...aaaaaaaaaaaakK.', '....ddddddddd.kK..', '....a.a....a.a....', '...a...a..a...a...'],
-      b: ['..............aa..', '.............abae.', 'd...........aaaaan', 'dd.........ssaaa..', '.dd..aaaaaaaasa...', '..daaaaaaaaaaaa.kK', '...aaaaaaaaaaaakK.', '....ddddddddd.kK..', '.....a.a..a.a.....', '.....a.a..a.a.....'] },
-    onibi: { pal: { d: '#3A8ACF', f: '#7FD8FF', F: '#E6F8FF', e: '#FFFFFF', p: '#1A3A5A' },
-      a: ['.....d......', '.....fd.....', '....dff.....', '....fFfd....', '...dfFFf.d..', '..dfFFFFfd..', '.dfFFFFFFfd.', '.fFFeFFeFFf.', 'dfFFpFFpFFfd', 'dfFFFFFFFFfd', 'dfFFFFFFFFfd', '.dfFFFFFFfd.', '..dfFFFFfd..', '...ddffdd...'],
-      b: ['......d.....', '.....df.....', '.....ffd....', '....dfFf....', '..d.fFFfd...', '..dfFFFFfd..', '.dfFFFFFFfd.', '.fFFeFFeFFf.', 'dfFFpFFpFFfd', 'dfFFFFFFFFfd', 'dfFFFFFFFFfd', '.dfFFFFFFfd.', '..dfFFFFfd..', '...ddffdd...'] },
-    okuriinu: { pal: { a: '#4A4458', b: '#6A6478', d: '#2E2A38', e: '#E05AFF', n: '#1A1420' },
-      a: ['...............b.b..', '..............aa.aa.', 'd.............aaaae.', 'dd...........aaaaaan', '.dd..........aaaa...', '..aaaaaaaaaaaaaa....', '.baaaaaaaaaaaaaa....', '.aaaaaaaaaaaaaad....', '..dddddddddddddd....', '..a..a......a..a....', '.a...a.....a...a....', '.a....a....a....a...'],
-      b: ['...............b.b..', '..............aa.aa.', 'd.............aaaae.', 'dd...........aaaaaan', '.dd..........aaaa...', '..aaaaaaaaaaaaaa....', '.baaaaaaaaaaaaaa....', '.aaaaaaaaaaaaaad....', '..dddddddddddddd....', '...a.a.......aa.....', '...a.a.......aa.....', '..a..a......a..a....'] },
-    kasa: { pal: { d: '#8A2A1E', r: '#C8503A', R: '#E88A6A', e: '#FFFFFF', p: '#140A0A', t: '#E0323A', w: '#6A4A2E', W: '#8A6A4A' },
-      a: ['.......dd.......', '......drrd......', '.....drRrrd.....', '....drRrrrrd....', '...drRreeerrd...', '..drRreepperrd..', '.drRrreepperrrd.', 'drRrrrreeerrrrrd', 'dddrdddrddrdddrd', 'd..d..dwtd..d..d', '.......wtt......', '.......wt.......', '.......w........', '.......w........', '.......w........', '.......w........', '.......w........', '.......w........', '......WwW.......', '.....WWwWW......'] },
-    chochin: { pal: { d: '#6A3A1A', o: '#F2B45A', O: '#FFE0A0', e: '#FFFFFF', p: '#2A1A10', m: '#8A1A1A', M: '#E04A3A' },
-      a: ['...dddddd...', '..dddddddd..', '.oOOOOOOOOo.', 'oOOOOOOOOOOo', 'dddddddddddd', 'oOOeeOOeeOOo', 'oOOepOOepOOo', 'dddddddddddd', 'oOOOOOOOOOOo', 'oOmmmmmmmmOo', 'dmMMMMMMMMmd', 'oOmmmmmmmmOo', 'oOOOOOOOOOOo', 'dddddddddddd', '.oOOOOOOOOo.', '..dddddddd..', '...dddddd...'],
-      b: ['...dddddd...', '..dddddddd..', '.oOOOOOOOOo.', 'oOOOOOOOOOOo', 'dddddddddddd', 'oOOeeOOeeOOo', 'oOOepOOepOOo', 'dddddddddddd', 'oOOOOOOOOOOo', 'oOOOOOOOOOOo', 'ddmmmmmmmmdd', 'oOOOOOOOOOOo', 'oOOOOOOOOOOo', 'dddddddddddd', '.oOOOOOOOOo.', '..dddddddd..', '...dddddd...'] },
-    gaki: { pal: { a: '#9A6A6A', b: '#B88A8A', d: '#6A4A4A', e: '#FFE0A0', p: '#2A1010' },
-      a: ['....aaaa....', '...aaaaaa...', '...aeaaea...', '...apaapa...', '....aaaa....', '..a.aaaa.a..', '.a.bbbbbb.a.', 'a..bbbbbbb.a', '...bbbbbbb..', '....bbbbb...', '....d...d...', '....d...d...', '...dd...dd..'],
-      b: ['....aaaa....', '...aaaaaa...', '...aeaaea...', '...apaapa...', '....aaaa....', '.a..aaaa..a.', 'a..bbbbbb..a', '...bbbbbbb..', '...bbbbbbb..', '....bbbbb...', '....d..d....', '...d....d...', '..dd....dd..'] },
-    sunakake: { pal: { h: '#E8E0D0', s: '#D8B890', e: '#2A1A10', r: '#B89A6A', R: '#D8BA8A', d: '#8A6A3A' },
-      a: ['....hhhhh.....', '...hhhhhhh....', '...hsssssh....', '...ssesess....', '....sssss.....', '...rrrrrrr.dd.', '..rRRrrrrrrddd', '..rRrrrrrrrddd', '.rRrrrrrrrr.d.', '.rRrrrrrrrr...', '.rRrrrrrrrr...', 'rRrrrrrrrrrr..', 'rRrrrrrrrrrr..', 'rrrrrrrrrrrr..', '.dd.....dd....'] },
-    isonade: { pal: { a: '#2E5A6A', b: '#4A7A8A', B: '#9ACAD8', d: '#1A3A48', e: '#9AFFE0', h: '#DDEEFF' },
-      a: ['...........dd.............', '..........ddd.............', 'h........aaaaaaaaaa.......', 'hh.....aaabbbbbbbbaaaa....', '.hh..aaabbbbbbbbbbbbaaaa..', '..hdaaabbbbbbbbbbbbbbbeaa.', '..ddaaaaaaaaaaaaaaaaaaaaaa', '.hdaaaBBBBBBBBBBBBBBBaaaa.', 'hh...aaaBBBBBBBBBBBBaaa...', 'h.......aaaaaaaaaaaaa.....', '..........d.....d.........'] },
-    yukionna: { pal: { h: '#101014', s: '#F4F8FA', e: '#5FB8FF', w: '#DDE8F0', W: '#FFFFFF', b: '#9AC0E0', o: '#8AB8E8' },
-      a: ['....hhhhh.....', '...hhhhhhh....', '...hsssssh....', '...hsesesh....', '...hssssshh...', '...hhsssshh...', '..hhhwwwwhhh..', '..hwwwWWwwwh..', '.hwwWWWWWwwwh.', '.hwwWWWWWwwwh.', '.hwwoooooowwh.', '..wwWWWWWwww..', '..wwWWbWWwww..', '..wwWWWWbwww..', '..wwWbWWWwww..', '.wwwWWWWWwwww.', '.wwwWWWbWwwww.', '.wwWWbWWWWwww.', 'wwwWWWWWWWwwww', 'wwwwwwwwwwwwww'] },
-    kodama: { pal: { w: '#F2F4EC', g: '#C8CCC0', d: '#9A9E92', k: '#141414' },
-      a: ['....wwww....', '..wwwwwwgg..', '.wwwwwwwwwg.', '.wwkkwwkkwg.', 'wwwkkwwkkwwg', 'wwwwwwwwwwwg', 'wwwwwkkwwwwg', '.wwwwkkwwwg.', '.gwwwwwwwgg.', '..ggggggg...', '....wwww....', '...wwwwwwg..', '...gwwwwg...', '...w.gg.w...', '...ww..ww...'],
-      b: ['.....wwww...', '...wwwwwwgg.', '..wwwwwwwwwg', '..wwkkwwkkwg', '.wwwkkwwkkwg', '.wwwwwwwwwwg', '.wwwwwkkwwwg', '..wwwwkkwwg.', '..gwwwwwwgg.', '...ggggggg..', '....wwww....', '...wwwwwwg..', '...gwwwwg...', '....wggw....', '...ww..ww...'] },
-    ittan: { pal: { w: '#F2F0E8', g: '#CCC8BC', d: '#A09C90', k: '#1A1A1A' },
-      a: ['..........................', '...................wwwwww.', '..ggg.............wwkwkww.', '.gwwwgg.........wwwwwwwww.', 'gwwwwwwgg.....wwwwwwwwwg..', '.ggwwwwwwgggwwwwwwwgggg...', '...ggwwwwwwwwwwwgggg......', '.....ggggwwwwggg..........', '.........gggg.............', '..........................'],
-      b: ['..........................', '...................wwwwww.', '..................wwkwkww.', 'gg..............wwwwwwwww.', 'gwwgg.........wwwwwwwwwg..', '.gwwwwggg...wwwwwwwgggg...', '..ggwwwwwwwwwwwgggg.......', '....gggwwwwwwgg...........', '.......gggggg.............', '..........................'] },
-    kappa: { pal: { g: '#5A8A5A', G: '#7EAE6E', d: '#3A6A3A', y: '#E8C04A', b: '#BFE0F0', B: '#8AB8D0', s: '#7A5A3A', S: '#5A3E26', w: '#FFFFFF', k: '#141414' },
-      a: ['.....BBBBBB.....', '....BbbbbbbB....', '....dBBBBBBd....', '...ddggggggdd...', '...dgggggwwgg...', '..ssggggggwkgy..', '.sSsgggggggggyy.', '.sSsggggggggyy..', '.sSsgGGGgggg....', '.sSsgGGGgggg.g..', '.sSsgGGGggggg...', '.sSsgGGGgggg....', '..ssgGGGgggg....', '...sgGGggggg....', '....gggggg......', '....gg..gg......', '....gg..gg......', '...ggg..ggg.....', '................'],
-      b: ['.....BBBBBB.....', '....BbbbbbbB....', '....dBBBBBBd....', '...ddggggggdd...', '...dgggggwwgg...', '..ssggggggwkgy..', '.sSsgggggggggyy.', '.sSsggggggggyy..', '.sSsgGGGgggg....', '.sSsgGGGgggg.g..', '.sSsgGGGggggg...', '.sSsgGGGgggg....', '..ssgGGGgggg....', '...sgGGggggg....', '....gggggg......', '....gg...gg.....', '...gg.....gg....', '..ggg.....ggg...', '................'] },
-    nozuchi: { pal: { a: '#7A6A4A', b: '#A08E66', d: '#5A4A32', m: '#3A1A10', p: '#C86A5A', t: '#E8E0D0' },
-      a: ['........................', '.......dddddddddd.......', '.....ddaaaaaaaaaadd.....', '....daaaaaaaaaaaaaadmm..', '..ddaaaaaaaaaaaaaaamttm.', '.daaaaaaaaaaaaaaaaamppm.', 'daaaabbbbbbbbbbbbbampp..', '.ddabbbbbbbbbbbbbbamttm.', '...ddbbbbbbbbbbbbbbmmm..', '.....dddbbbbbbbbbbdd....', '........dddddddddd......', '........................'],
-      b: ['........................', '........dddddddddd......', '......ddaaaaaaaaaadd....', '.....daaaaaaaaaaaaaad...', '...ddaaaaaaaaaaaaaaaam..', '..daaaaaaaaaaaaaaaaaamm.', '.daaaabbbbbbbbbbbbbaam..', 'd.dabbbbbbbbbbbbbbbaamm.', '...ddbbbbbbbbbbbbbbbmm..', '.....dddbbbbbbbbbbdd....', '........dddddddddd......', '........................'] },
-    bakeneko: { pal: { a: '#2E2A30', b: '#4A4450', d: '#18141A', e: '#9AFF6A', n: '#E87A9A' },
-      a: ['....................', '.d..d...............', '.ad.ad.........a..a.', '.aa.aa.........aa.aa', '..aa.aa........aaaaa', '...aaaa.......aaeaea', '....aaa.......aaaaan', '.....aaaaaaaaaaaaaa.', '.....abbbbbbbbbaaa..', '.....aaaaaaaaaaaaa..', '......a.a.....a.a...', '......a.a.....a.a...', '.....dd.dd...dd.dd..'],
-      b: ['....................', '..d..d..............', '..ad.ad........a..a.', '..aa.aa........aa.aa', '..aa.aa........aaaaa', '...aaaa.......aaeaea', '....aaa.......aaaaan', '.....aaaaaaaaaaaaaa.', '.....abbbbbbbbbaaa..', '.....aaaaaaaaaaaaa..', '.....a...a...a...a..', '....a.....a.a.....a.', '....dd....dddd....dd'] }
   };
   // 大一點的用程式畫（同樣的像素密度，所以畫大張一點）
   const procArt = (id, fr, role) => {
@@ -508,44 +467,6 @@
     const P = (x, a, b, col) => { x.fillStyle = col; x.fillRect(Math.round(a), Math.round(b), 1, 1); };
     const disk = (x, cx, cy, rx, ry, fn) => { for (let yy = Math.floor(cy - ry); yy <= Math.ceil(cy + ry); yy++) for (let xx = Math.floor(cx - rx); xx <= Math.ceil(cx + rx); xx++) { const nx = (xx - cx) / rx, ny = (yy - cy) / ry, d = nx * nx + ny * ny; if (d <= 1) { const col = fn(nx, ny, d, xx, yy); if (col) P(x, xx, yy, col); } } };
     const line = (x, x0, y0, x1, y1, col, th) => { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)) || 1; for (let i = 0; i <= n; i++) { const a = x0 + (x1 - x0) * i / n, b = y0 + (y1 - y0) * i / n; for (let t = 0; t < (th || 1); t++) P(x, a, b + t, col); } };
-    if (id === 'nurikabe') {
-      const { c, x } = mk(30, 34), fb = fr ? 1 : 0;
-      for (let yy = 0; yy < 28; yy++) for (let xx = 1; xx < 29; xx++) { let col = (xx + yy * 3) % 11 === 0 ? '#7E786A' : '#8A8476'; if (yy === 0 || xx === 1) col = '#A8A294'; if (xx === 28 || yy === 27) col = '#5E584C'; if (srnd() < 0.05) col = '#9A9486'; P(x, xx, yy, col); }
-      [[4, 3, 10, 8], [20, 2, 26, 9], [6, 19, 3, 25], [22, 20, 26, 25], [14, 22, 17, 26]].forEach(([a, b, cc, d]) => line(x, a, b, cc, d, '#5E584C'));
-      [[7, 10], [19, 10]].forEach(([ex, ey], i) => { for (let yy = 0; yy < 3; yy++) for (let xx = 0; xx < 5; xx++) P(x, ex + xx, ey + yy, '#FFF4DC'); P(x, ex + 2, ey + 1, '#FF6A4A'); P(x, ex + 3, ey + 1, '#FF6A4A'); P(x, ex + 2, ey + 2, '#B83A2A'); line(x, ex - 1, ey - 2 + (i ? 1 : 0), ex + 5, ey - 2 + (i ? 0 : 1), '#3A2A22'); });
-      for (let xx = 9; xx < 21; xx++) { P(x, xx, 18, '#3A2A22'); P(x, xx, 19, xx % 3 ? '#3A2A22' : '#E8E0D0'); }
-      [[5, 28], [19, 28]].forEach(([fx, fy], i) => { const up = fb && i === 0 ? 1 : 0; for (let yy = 0; yy < 4 - up; yy++) for (let xx = 0; xx < 6; xx++) P(x, fx + xx, fy + yy, xx === 5 ? '#4A4438' : '#6A6458'); });
-      return c;
-    }
-    if (id === 'wanyudo') {
-      const { c, x } = mk(26, 26), cx = 12.5, cy = 12.5;
-      for (let yy = 0; yy < 26; yy++) for (let xx = 0; xx < 26; xx++) { const dx = xx - cx, dy = yy - cy, d = Math.hypot(dx, dy) / 12.5, a = Math.atan2(dy, dx) + (fr ? 0.39 : 0); let col = null;
-        if (d > 0.84 && d <= 1) col = Math.sin(a * 7) > 0.2 ? '#FFC04A' : Math.sin(a * 7) > -0.4 ? '#FF7A2A' : null; else if (d > 0.66 && d <= 0.84) col = dy < -3 ? '#5A4636' : '#3A2A22'; else if (d > 0.44 && d <= 0.66) col = Math.abs(Math.sin(a * 2)) < 0.22 ? '#5A4A3A' : null; else if (d <= 0.44) col = dy > 2 ? '#A8764E' : '#C98E66';
-        if (col) P(x, xx, yy, col); }
-      P(x, 10, 11, '#1A0A0A'); P(x, 10, 12, '#1A0A0A'); P(x, 15, 11, '#1A0A0A'); P(x, 15, 12, '#1A0A0A'); P(x, 9, 10, '#FFE08A'); P(x, 14, 10, '#FFE08A'); line(x, 10, 15, 15, 15, '#6A1A1A'); line(x, 9, 9, 11, 10, '#3A1A10'); line(x, 14, 10, 16, 9, '#3A1A10');
-      return c;
-    }
-    if (id === 'hyakume') {
-      const { c, x } = mk(28, 28);
-      disk(x, 13.5, 13.5, 13, 13, (nx, ny, d) => (d > 0.86 ? '#8A5A58' : nx + ny > 0.9 ? '#A87A70' : nx + ny < -0.9 ? '#E0B8AE' : '#C89A90'));
-      [[6, 6], [13, 3], [20, 7], [4, 13], [11, 11], [19, 14], [6, 20], [14, 19], [21, 21], [16, 25], [9, 25]].forEach(([ex, ey], i) => { if (Math.hypot(ex + 2 - 13.5, ey + 1 - 13.5) > 11) return; line(x, ex, ey - 1, ex + 4, ey - 1, '#5A2A2A'); if (fr && i % 3 === 0) { line(x, ex, ey + 1, ex + 4, ey + 1, '#5A2A2A'); return; } for (let yy = 0; yy < 3; yy++) for (let xx = 0; xx < 5; xx++) P(x, ex + xx, ey + yy, '#FFFFFF'); P(x, ex + 2, ey + 1, '#B81A2A'); P(x, ex + 1, ey + 1, '#E86A7A'); P(x, ex + 2, ey + 2, '#6A0A18'); });
-      return c;
-    }
-    if (id === 'tsuchigumo') {
-      const { c, x } = mk(64, 42), k = fr ? 2 : 0;
-      [[14, 24, 2, 38 + k], [20, 25, 10, 40 - k], [28, 26, 22, 40 + k], [36, 26, 32, 40 - k], [42, 25, 44, 40 + k], [48, 24, 58, 38 - k], [18, 20, 4, 6 - k], [46, 20, 62, 8 + k]].forEach(([a, b, cc, d]) => { const mx = (a + cc) / 2, my = Math.min(b, d) - 7; line(x, a, b, mx, my, '#2A2420', 2); line(x, mx, my, cc, d, '#2A2420', 2); P(x, mx, my, '#4A423C'); });
-      disk(x, 20, 20, 17, 13, (nx, ny, d) => (d > 0.9 ? '#221C18' : ny < -0.5 && nx < 0 ? '#5A5048' : (Math.round((nx + 1) * 6) + Math.round((ny + 1) * 4)) % 5 === 0 ? '#6A5A48' : '#3A3430'));
-      disk(x, 45, 22, 11, 9, (nx, ny, d) => (d > 0.85 ? '#221C18' : ny < -0.4 ? '#5A524A' : '#4A423C'));
-      [[50, 16], [53, 17], [55, 20], [52, 20], [48, 18], [56, 23]].forEach(([ex, ey]) => { P(x, ex, ey, '#FF5A3A'); P(x, ex + 1, ey, '#FF5A3A'); P(x, ex, ey + 1, '#B82A1A'); P(x, ex + 1, ey + 1, '#B82A1A'); });
-      line(x, 55, 27, 57, 31, '#E8E0D0'); line(x, 58, 26, 60, 30, '#E8E0D0');
-      return c;
-    }
-    if (id === 'omukade') {
-      const { c, x } = mk(72, 26);
-      for (let s = 0; s < 9; s++) { const cx = 6 + s * 6.2, cy = 13 + Math.sin(s * 0.9 + (fr ? 1.2 : 0)) * 2; disk(x, cx, cy, 4.6, 4.6, (nx, ny) => (ny < -0.45 ? '#9A4A36' : ny > 0.5 ? '#4A1A12' : s % 2 ? '#6A2A1E' : '#5A2218')); const lo = fr ? 1 : 0; line(x, cx - 2, cy + 4, cx - 3, cy + 8 - lo, '#E8C860'); line(x, cx + 2, cy + 4, cx + 3, cy + 7 + lo, '#E8C860'); }
-      disk(x, 64, 11, 6.5, 6, (nx, ny) => (ny < -0.4 ? '#9A3E2E' : '#7A2E22')); P(x, 66, 8, '#FFD04A'); P(x, 67, 8, '#FFD04A'); P(x, 66, 9, '#B8901A'); line(x, 68, 5, 71, 0, '#E8C860'); line(x, 66, 5, 67, 0, '#E8C860'); line(x, 69, 14, 71, 17, '#E8C860'); line(x, 68, 16, 69, 19, '#E8C860');
-      return c;
-    }
     if (id === 'petra') {
       // 小的（保留區裡遠遠看到的）用同樣的像素密度重畫，不是整張縮小
       const q = role === 'small' ? 0.6 : 1, Wd = Math.round(116 * q), Hd = Math.round(84 * q), { c, x } = mk(Wd, Hd), up = (fr ? 2 : 0) * q, cx = Wd / 2, cy = 46 * q;
@@ -556,50 +477,6 @@
       for (let v = 0; v < 12; v++) { let a = v / 12 * Math.PI * 2, r = 27 * q; for (let s2 = 0; s2 < 16; s2++) { a += (srnd() - 0.5) * 0.4; r -= 0.9 * q; if (r < 15 * q) break; P(x, cx + Math.cos(a) * r, cy + Math.sin(a) * r, '#B8322A'); } }
       disk(x, cx, cy + 2 * q, 13 * q, 13 * q, (nx, ny, d) => (d < 0.21 ? '#0A0406' : d > 0.8 ? '#5A0A18' : d > 0.5 ? '#7A1424' : '#9A2230'));
       const hs = q < 1 ? 2 : 3; for (let yy = 0; yy < hs; yy++) for (let xx = 0; xx < hs; xx++) P(x, cx - 6 * q + xx, cy - 4 * q + yy, '#FFFFFF');
-      return c;
-    }
-    if (id === 'honemusha') {
-      const { c, x } = mk(22, 28), st = fr ? 1 : 0, bone = '#E8E0CC', sh = '#B8B09C', dk = '#7A725E', R2 = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); };
-      R2(8, 20, 2, 6, bone); R2(12 + st, 20, 2, 6, bone); R2(7, 26, 3, 1, sh); R2(12 + st, 26, 3, 1, sh);
-      R2(8, 18, 6, 2, sh); R2(10, 10, 2, 8, bone); for (let i = 0; i < 4; i++) R2(7, 10 + i * 2, 8, 1, i % 2 ? sh : bone);
-      R2(8, 4, 6, 6, bone); R2(9, 9, 4, 1, sh); R2(12, 6, 1, 1, '#FF5A3A'); R2(10, 6, 1, 1, '#1A1414'); R2(13, 8, 1, 1, dk);
-      R2(7, 2, 8, 3, '#3A3A44'); R2(6, 4, 2, 2, '#3A3A44'); R2(10, 0, 2, 2, '#C9A13A'); R2(7, 2, 8, 1, '#5A5A66');
-      R2(4, 5 - st, 1, 9, '#C8CED6'); R2(3, 14 - st, 3, 1, '#C9A13A'); R2(4, 15 - st, 1, 2, '#3A2A1C'); R2(5, 11, 3, 1, bone);
-      disk(x, 16, 14, 4.5, 5.5, (nx, ny, dd) => (dd > 0.7 ? '#5A3E26' : nx < -0.3 && ny < -0.2 ? '#A8845A' : '#8A6A3A')); R2(15, 13, 2, 2, '#C9A13A');
-      return c;
-    }
-    if (id === 'karasu') {
-      const { c, x } = mk(24, 22), R2 = (a, b, w, h, col) => { x.fillStyle = col; x.fillRect(a, b, w, h); };
-      for (let i = 0; i < 9; i++) { const y0 = fr ? 9 + i * 0.9 : 9 - i * 0.9, len = 7 - Math.abs(i - 4) * 0.5; line(x, 10 - i, y0, 10 - i, y0 + len, i % 3 === 0 ? '#3A3A4A' : '#1E1E26'); }
-      R2(10, 9, 6, 8, '#E8E4D8'); R2(10, 9, 1, 8, '#C8C4B8'); R2(10, 13, 6, 1, '#1E1E26'); R2(12, 10, 1, 1, '#C8323A'); R2(14, 10, 1, 1, '#C8323A');
-      R2(11, 17, 1, 3, '#4A3A2A'); R2(14, 17, 1, 3, '#4A3A2A'); R2(10, 20, 3, 1, '#E8C04A'); R2(13, 20, 3, 1, '#E8C04A');
-      disk(x, 15, 5.5, 3.2, 3.2, (nx, ny) => (ny < -0.4 && nx < 0 ? '#3A3A4A' : '#1E1E26'));
-      R2(18, 5, 3, 2, '#E8C04A'); R2(21, 6, 2, 1, '#C8A03A'); R2(16, 4, 1, 1, '#FFD04A'); R2(13, 1, 4, 2, '#1E1E26'); R2(14, 0, 2, 1, '#1E1E26');
-      return c;
-    }
-    if (id === 'ushioni') {
-      const { c, x } = mk(40, 28), k = fr ? 2 : 0;
-      [[8, 16, 1, 27 - k], [13, 18, 7, 25 + k], [18, 18, 15, 27 - k], [22, 18, 25, 25 + k], [26, 17, 32, 27 - k], [30, 16, 38, 26]].forEach(([a, b, cc, dd]) => { const mx = (a + cc) / 2, my = Math.min(b, dd) - 5; line(x, a, b, mx, my, '#2A1E2A', 2); line(x, mx, my, cc, dd, '#2A1E2A', 2); P(x, mx, my, '#4A3A4A'); });
-      disk(x, 15, 14, 11, 7.5, (nx, ny, dd) => (dd > 0.9 ? '#1E161E' : ny < -0.45 && nx < 0.2 ? '#5A4A5A' : (Math.round((nx + 1) * 5) + Math.round((ny + 1) * 3)) % 4 === 0 ? '#4A3A4A' : '#3A2E3A'));
-      disk(x, 30, 11, 6.5, 5.5, (nx, ny, dd) => (dd > 0.88 ? '#1E161E' : ny < -0.35 ? '#5A4A5A' : '#3A2E3A'));
-      for (let yy = 10; yy < 16; yy++) for (let xx = 34; xx < 39; xx++) P(x, xx, yy, yy > 13 ? '#2A1E2A' : '#4A3A4A');
-      P(x, 37, 12, '#1A1014'); P(x, 37, 14, '#1A1014');
-      line(x, 27, 6, 22, 1, '#E8E0D0', 2); line(x, 22, 1, 20, 2, '#E8E0D0'); line(x, 32, 6, 35, 1, '#E8E0D0', 2); line(x, 35, 1, 37, 1, '#E8E0D0');
-      P(x, 31, 9, '#FF3A3A'); P(x, 32, 9, '#FF3A3A'); P(x, 31, 10, '#B81A1A'); P(x, 32, 10, '#B81A1A');
-      return c;
-    }
-    if (id === 'gashadokuro') {
-      const { c, x } = mk(76, 64), bone = '#E8E0CC', sh = '#B8B09C', dk = '#7A725E', k = fr ? 2 : 0;
-      disk(x, 38, 60, 30, 3.5, (nx, ny, dd) => (dd > 0.7 ? '#2A2020' : '#140C0C'));
-      for (let yy = 30; yy < 60; yy++) { P(x, 37, yy, bone); P(x, 38, yy, sh); }
-      for (let i = 0; i < 6; i++) { const y = 33 + i * 4, w = 15 - i; for (let xx = -w; xx <= w; xx++) P(x, 38 + xx, y + Math.round(Math.abs(xx) * 0.25), Math.abs(xx) > w - 2 ? sh : bone); }
-      const arm = (sx, sy, ex, ey, hx, hy, th2) => { line(x, sx, sy, ex, ey, bone, th2); line(x, ex, ey, hx, hy, bone, th2 - 1); P(x, ex, ey, sh); for (let f = 0; f < 4; f++) line(x, hx, hy, hx + 5, hy - 2 + f * 2, f % 2 ? sh : bone); };
-      arm(24, 34, 14, 46 - k, 22, 54 - k, 3); arm(52, 34, 62, 44 + k, 66, 52 + k, 3);
-      disk(x, 40, 18, 15, 14, (nx, ny, dd) => (dd > 0.92 ? sh : ny > 0.55 ? sh : nx < -0.45 && ny < -0.2 ? '#F8F2E4' : bone));
-      [[33, 16], [46, 16]].forEach(([ex, ey]) => { disk(x, ex, ey, 4, 4.5, () => '#1A0A0A'); P(x, ex, ey, '#FF5A3A'); P(x, ex + 1, ey, '#FF5A3A'); P(x, ex, ey + 1, '#B83A2A'); });
-      for (let yy = 22; yy < 26; yy++) { P(x, 39, yy, '#1A0A0A'); P(x, 40, yy, '#1A0A0A'); }
-      for (let xx = 30; xx < 51; xx++) { P(x, xx, 28, '#1A0A0A'); if (xx % 3) P(x, xx, 29 + k / 2, bone); P(x, xx, 30 + k, '#1A0A0A'); }
-      line(x, 28, 8, 34, 12, dk); line(x, 50, 6, 46, 11, dk);
       return c;
     }
     return null;

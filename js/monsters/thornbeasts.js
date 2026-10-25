@@ -20,36 +20,6 @@
       desc: '【由來】佩特拉核心在受損嚴重的區域「種」下的東西，根扎進地板裡，把周圍受到的破壞記下來、原樣還回去。公會把它分在精英，遇到要回報。【習性】不會移動。每隔四秒把一圈倒刺往四面八方射出去。攻擊者在 5 公尺內時，打它或受它保護的附近遺跡生物都會彈回 5%；拉到 5 公尺外就不會被反傷。【怎麼打】先把母株附近的小隻引開再打，或從倒刺的縫隙鑽進去集中打母株——母株倒了，附近的就不會再彈了。' }
   });
 
-  // ---------- 點陣圖（朝右畫；kasoplus.js 那一套） ----------
-  const grid = (w, h) => {
-    const g = Array.from({ length: h }, () => Array(w).fill('.'));
-    const o = {
-      p(x, y, c) { x = Math.round(x); y = Math.round(y); if (y >= 0 && y < h && x >= 0 && x < w) g[y][x] = c; },
-      rect(x, y, ww, hh, c) { for (let j = 0; j < hh; j++) for (let i = 0; i < ww; i++) o.p(x + i, y + j, c); },
-      line(x0, y0, x1, y1, c) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) o.p(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, c); },
-      ell(cx, cy, rx, ry, c) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.05) o.p(x, y, c); },
-      disc(cx, cy, r, c) { o.ell(cx, cy, r, r, c); },
-      rows: () => g.map(r => r.join(''))
-    };
-    return o;
-  };
-  const add = (id, pal, w, h, draw) => { if (!R.BEAST_ART) return; const [a, b] = [0, 1].map(fr => { const G = grid(w, h); draw(G, fr); return G.rows(); }); R.BEAST_ART[id] = { pal, a, b }; };
-  add('tb_shell', { k: '#2A2218', s: '#6A5A3A', l: '#9A8A5A', t: '#FFB84A', e: '#FFE8A0' }, 20, 16, (G, fr) => {
-    G.ell(10, 9, 8, 5, 's'); G.ell(10, 8, 6, 3, 'l');
-    for (let x = 4; x <= 16; x += 3) G.line(x, 5, x - 1, 2, 't');
-    G.disc(17, 9, 2, 'k'); G.p(18, 8, 'e');
-    if (fr) { G.line(5, 13, 3, 15, 'k'); G.line(10, 13, 10, 15, 'k'); G.line(14, 13, 16, 15, 'k'); } else { G.line(5, 13, 6, 15, 'k'); G.line(10, 13, 9, 15, 'k'); G.line(14, 13, 13, 15, 'k'); }
-  });
-  add('tb_snake', { b: '#8AA8C8', w: '#E8F8FF', d: '#4A6A8A', e: '#1A2A3A', g: '#9AE07A' }, 20, 16, (G, fr) => {
-    for (let i = 0; i < 12; i++) { const x = 2 + i, y = 12 + Math.round(Math.sin(i * 0.9 + (fr ? 1.4 : 0)) * 1.5); G.rect(x, y, 1, 2, i % 2 ? 'w' : 'b'); }
-    G.line(14, 12, 15, 6, 'b'); G.line(15, 12, 16, 6, 'w'); G.ell(16, 5, 2.5, 1.8, 'd'); G.p(17, 4, 'e'); G.p(18, 6, 'g'); if (fr) G.p(19, 6, 'g');
-  });
-  add('tb_mother', { r: '#2A1A10', v: '#3A5A2A', l: '#6A8A3A', t: '#E8C8A0', e: '#E85A4A' }, 24, 22, (G, fr) => {
-    G.line(6, 21, 9, 15, 'r'); G.line(18, 21, 15, 15, 'r'); G.line(12, 21, 12, 15, 'r');
-    G.ell(12, 11, 8, 6, 'v'); G.ell(12, 10, 5.5, 4, 'l');
-    for (let a = 0; a < 10; a++) { const t = a / 10 * Math.PI * 2, k = fr ? 10 : 9; G.line(12 + Math.cos(t) * 6, 11 + Math.sin(t) * 4.5, 12 + Math.cos(t) * k, 11 + Math.sin(t) * (k * 0.7), 't'); }
-    G.disc(12, 10, 1.8, 'e');
-  });
 
   // ---------- 行為（combat.js 的 R.AI_X） ----------
   const AI = R.AI_X = R.AI_X || {};

@@ -15,8 +15,7 @@
 // - 刀客（2026-10-13 重製）：X 收刀／拔刀（各讀 2 秒）、刀意、居合、殘心、刀意渾圓、反切；普攻先衝再砍（橫斬／直劈／突刺）。細節見下面刀客那段。
 // - 騎士「格擋」：（2026-10-13 改成按住 X）按住 Z 防禦的頭 0.3 秒被打＝完美格擋（不受傷、對方暈 1.5 秒、盾反擊、回體力）；防禦時身邊的隊友受到的傷害 −40%；
 //   X 盾擊往前衝（完美格擋後 2 秒內＝反制，三倍）。殿堂騎士完美格擋把傷害整個彈回去；聖騎士完美格擋回 8% 生命；龍騎士完美格擋後的盾擊變成龍躍。
-// - 武術家「連段」：打中就疊連段，2.5 秒沒打中或被打（掉超過 2% 生命）就斷；每 5 段普攻 +1%（最多 +20%）；
-//   X（10 段以上）終結技：前方一大掌，連段越多越痛。拳聖連段上限 150、不容易斷；棍僧終結技是一圈；內修者站著不動連段不會掉；外修者魔力罩擋下的不會斷。
+// - 武術家：四法（monkstance.js）。
 // 放在 skillbook.js、stamina.js、talentcap.js 後面、dmgmeter.js 前面（index.html 後段）。
 (function (R) {
   const W = () => R.W, rnd = Math.random, $ = id => document.getElementById(id), esc = s => R.esc(s);
@@ -651,23 +650,5 @@
   const ha0 = R.hurtAlly;
   if (ha0) R.hurtAlly = (a, raw, src, ...rest) => { const P = W().P; if (P && P.cls === 'knight' && P.guard && a && dist(a, P) < 3.5 && live()) raw *= 0.6; return ha0(a, raw, src, ...rest); };
 
-  // ======================= 武術家：連段 =======================
-  CORE.monk = {
-    name: '連段', col: '#FFB45A',
-    help: P => '連段：打中就疊連段，' + (adv(P) === 'fistsaint' ? '3.5' : '2.5') + ' 秒沒打中、或被打掉超過 2% 生命就斷。每 5 段普攻 +1%（最多 +20%）。X（10 段以上）終結技：前方一大掌，連段越多越痛（每 10 段 +1 倍）。'
-      + ({ fistsaint: '拳聖：連段上限 150、3.5 秒才斷。', staffmonk: '棍僧：終結技是身邊一圈。', inner: '內修者：站著不動連段不會掉。', waixiu: '外修者：被打的傷害被魔力罩擋下時，連段不會斷。' }[adv(P)] || ''),
-    max: P => (adv(P) === 'fistsaint' ? 150 : 100) + ((R.legOf ? R.legOf(P) : null) === 'lg_thousand' ? 100 : 0),
-    step(dt, P) { const keep = adv(P) === 'inner' && P.still > 0.3, gap = adv(P) === 'fistsaint' ? 3.5 : 2.5; if (!keep && (P._combo || 0) > 0 && CT - (P._comboT || 0) > gap) P._combo = 0; },
-    onHit(e, d, o, P) { if (d <= 0 || o.reflect) return; if (!P._cbF || CT - P._cbF > 0.05) { P._cbF = CT; P._combo = Math.min(this.max(P), (P._combo || 0) + 1); } P._comboT = CT; },
-    mod(e, raw, o, P) { return o.primary ? raw * (1 + Math.min(0.2, (P._combo || 0) * 0.002)) : raw; },
-    afterHurt(took, src, P) { if (took > P.hpMax * ((R.legOf ? R.legOf(P) : null) === 'lg_immovable' ? 0.1 : 0.02) && (P._combo || 0) > 0 && !(adv(P) === 'waixiu' && P.shield > 0)) { if (P._combo >= 10) say(P, '連段斷了', 'hurt'); P._combo = 0; } },
-    act(P) {
-      const c = P._combo || 0; if (c < 10) { toast('連段 10 以上才能放終結技（現在 ' + c + '）'); return; }
-      const ring = adv(P) === 'staffmonk', k = pw(P) * 0.8 * (1 + c / 10);
-      front(P, ring ? 4 : 3.5, ring ? 6.3 : 1.8).forEach(e => R.coreHit(e, k, { stun: 1, kb: 2 }));
-      R.fx && R.fx(ring ? 'ring' : 'swing', P.x, ring ? 0.1 : 1.1, P.z, ring ? { r: 4, color: '#FFB45A' } : { a: P.aimA, range: 3.5, arc: 1.8, color: '#FFB45A' }); R.shake && R.shake(0.25);
-      say(P, '終結 ×' + (1 + c / 10).toFixed(1), 'crit'); P._combo = (R.legOf ? R.legOf(P) : null) === 'lg_thousand' ? Math.floor(c / 2) : 0;
-    },
-    gauge(P) { const c = P._combo || 0, m = this.max(P); return { name: '連段 ' + c, v: c, max: m, full: c >= m, text: '普攻 +' + Math.min(20, Math.floor(c / 5)) + '%', x: c >= 10 ? '終結技 ×' + (1 + c / 10).toFixed(1) : '' }; }
-  };
+  // 武術家：四法（monkstance.js；2026-10-26 原本的「連段」刪掉了）
 })(window.R);

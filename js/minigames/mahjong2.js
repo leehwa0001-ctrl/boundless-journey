@@ -536,8 +536,7 @@
     + '<br><b>役滿</b>：天和、地和、國士無雙（十三面雙倍）、四暗刻（單騎雙倍）、大三元、小四喜、大四喜（雙倍）、字一色、清老頭、綠一色、九蓮寶燈（純正雙倍）、四槓子。'
     + '<br><b>操作</b>：點牌打出（手機先點一下選、再點一下打）；綠色箭頭＝打了會聽牌，滑鼠移上去看等什麼牌、還剩幾張。左邊可以開關自動理牌、自動和牌、不吃碰槓、自摸切。Esc 離席。';
 
-  // ---------------- 入口（包住 mahjong.js 的 R.mahjong） ----------------
-  const old = R.mahjong;
+  // ---------------- 入口 ----------------
   R.mahjong = () => {
     const S = R.S; S.mj = S.mj || { games: 0, first: 0, wins: 0, best: 0, bestName: '' };
     const st = S.mj.games ? '你的戰績：' + S.mj.games + ' 場、第一名 ' + S.mj.first + ' 次、和了 ' + S.mj.wins + ' 次' + (S.mj.best ? '、最大 ' + S.mj.best + ' 翻（' + esc(S.mj.bestName) + '）' : '') + '。' : '第一次來？桌上有聽牌提示，不懂可以按「規則與役表」。';
@@ -560,7 +559,6 @@
     if ($('mj-party')) $('mj-party').onclick = () => go(party);
     $('mj-join').onclick = () => { const c = ($('mj-code').value || '').trim(); if (!c) { R.toast('先輸入桌號。'); return; } go(c); };
   };
-  R.mahjongOld = old;
   // 測試用
   R.mj2Debug = { get V() { return V; }, get OFF() { return OFF; }, startOffline, startNet, close, OPT, act: doAct, tick: () => offTick(), get NET() { return NET; } };
 })(window.R);
