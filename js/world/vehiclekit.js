@@ -137,20 +137,48 @@
           // 連通道（車頭、最後一節的外側沒有）
           if (k > 0) add(Bx(1.2, 2.3, 0.5), dark, 0, 2.15, -hz - 0.25);
           if (k < n - 1) add(Bx(1.2, 2.3, 0.5), dark, 0, 2.15, hz + 0.25);
-          // 車頭：大擋風玻璃（往後倒一點）、頭燈、行先顯示、排障器、連結器
-          if (k === 0) {
-            const fz = -hz - 0.09;
-            add(Bx(2.5, 1.05, 0.05), pane, 0, 2.5, fz + 0.06, 0.12, 0, 0); add(Bx(2.7, 0.08, 0.08), dark, 0, 1.95, fz);
-            add(Bx(1.3, 0.24, 0.05), led, 0, 3.18, fz + 0.05);
-            [-1, 1].forEach(sd => { add(Bx(0.34, 0.2, 0.06), head, sd * 0.95, 1.55, fz); add(Bx(0.18, 0.12, 0.06), tail, sd * 0.95, 1.3, fz); });
-            add(Bx(2.6, 0.5, 0.5), dark, 0, 0.62, fz - 0.15); add(Bx(0.3, 0.25, 0.6), steel, 0, 0.95, fz - 0.4);
-          }
-          // 最後一節：後面的窗、尾燈
-          if (k === n - 1) { const rz = hz + 0.09; add(Bx(2.3, 0.95, 0.05), pane, 0, 2.5, rz - 0.04); [-1, 1].forEach(sd => add(Bx(0.3, 0.18, 0.06), tail, sd * 0.95, 1.5, rz)); add(Bx(2.6, 0.45, 0.4), dark, 0, 0.62, rz + 0.1); }
+          // 車頭（2026-10-26 改成流線型）：側面輪廓擠出的斜車鼻、斜的擋風玻璃、行先顯示、凹進去的頭燈、排障器、連結器；最後一節的後面也是一個車頭（尾燈亮）
+          const cab = rear => {
+            const z0 = rear ? hz : -hz, sgn = rear ? 1 : -1, P2 = [[0, 1.0], [1.25, 1.0], [1.4, 1.5], [1.12, 2.2], [0.55, 3.12], [0, 3.5]].map(([dz, y]) => [z0 + sgn * dz, y]);
+            add(sideGeo(rear ? P2 : P2.slice().reverse(), 2.84, { bevel: 0.06 }), body, 0, 0, 0);
+            const wz = z0 + sgn * 0.86, ang = Math.atan2(0.57, 0.92);
+            add(Bx(2.3, 1.02, 0.05), pane, 0, 2.66, wz + sgn * 0.03, rear ? -ang : ang, 0, 0); add(Bx(0.06, 0.95, 0.07), dark, 0, 2.66, wz + sgn * 0.05, rear ? -ang : ang, 0, 0);   // 擋風玻璃、中間的框
+            add(Bx(1.2, 0.22, 0.05), led, 0, 3.28, z0 + sgn * 0.28, rear ? -ang : ang, 0, 0);
+            [-1, 1].forEach(sd => { add(Bx(0.5, 0.26, 0.1), dark, sd * 0.85, 1.42, z0 + sgn * 1.33); add(Bx(0.36, 0.16, 0.06), rear ? tail : head, sd * 0.85, 1.42, z0 + sgn * 1.38); add(Bx(0.16, 0.1, 0.06), rear ? head : tail, sd * 0.85, 1.22, z0 + sgn * 1.36); });
+            add(Bx(2.7, 0.08, 0.06), stripe, 0, 1.75, z0 + sgn * 1.3);
+            add(Bx(2.6, 0.5, 0.4), dark, 0, 0.66, z0 + sgn * 1.3); add(Bx(0.3, 0.25, 0.7), steel, 0, 0.95, z0 + sgn * 1.55);
+          };
+          if (k === 0) cab(false);
+          if (k === n - 1) cab(true);
+          // 側面：黑色的窗框帶、車號牌、車底的裙板；車頂的配管
+          [-1, 1].forEach(sd => { add(Bx(0.02, 1.0, TL - 1.0), dark, sd * 1.462, 2.42, 0); add(Bx(0.03, 0.18, 0.5), CK.M('white'), sd * 1.47, 3.05, DOORS[1] + 1.3); add(Bx(0.05, 0.42, TL - 9.5), body, sd * 1.36, 0.78, 0); });
+          [-0.62, 0.62].forEach(x => add(new TH.CylinderGeometry(0.05, 0.05, TL - 2, 6), steel, x, 3.6, 0, Math.PI / 2, 0, 0));
           cars.push(merge(grp));
         }
         return cars;
       } catch (e) { console.warn('[vehiclekit] train', e); return mt0(col, n, o); }
+    };
+  }
+  // ---------- 電車線（2026-10-26）：沿著每條鐵軌每 36 公尺一根電線桿＋懸臂，上面一條架空線（rl.noTrack 的不加） ----------
+  if (CK && CK.spawnLife) {
+    const sl0 = CK.spawnLife;
+    CK.spawnLife = B => {
+      sl0(B);
+      try {
+        const D = B.D, M = CK.M, g = B.g, P = B.part; if (!D || !D.rails || !D.rails.length) return;
+        B.Bt.setFrame(null);
+        D.rails.forEach(rl => {
+          if (rl.noTrack || rl.noWire) return; const y0 = (rl.y || 0) + 0.3, loop = !!rl.loop, pts = rl.pts;
+          for (let i = 0; i < pts.length - (loop ? 0 : 1); i++) {
+            const a = pts[i], b = pts[(i + 1) % pts.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]); if (L < 1) continue;
+            const ux = (b[0] - a[0]) / L, uz = (b[1] - a[1]) / L, nx = uz, nz = -ux, ang = Math.atan2(ux, uz);
+            P(g.box, M('steelD'), (a[0] + b[0]) / 2, y0 + 5.4, (a[1] + b[1]) / 2, 0.03, 0.03, L, 0, ang, 0);   // 架空線
+            P(g.box, M('steelD'), (a[0] + b[0]) / 2, y0 + 6.3, (a[1] + b[1]) / 2, 0.02, 0.02, L, 0, ang, 0);   // 吊線
+            for (let t = 18; t < L - 4; t += 36) { const px = a[0] + ux * t + nx * 2.7, pz = a[1] + uz * t + nz * 2.7; P(g.box, M('steelD'), px, y0 + 3.4, pz, 0.28, 6.8, 0.28, 0, ang, 0); P(g.box, M('steelD'), a[0] + ux * t + nx * 1.35, y0 + 6.5, a[1] + uz * t + nz * 1.35, 2.9, 0.12, 0.12, 0, ang, 0); P(g.box, M('steelD'), a[0] + ux * t, y0 + 5.9, a[1] + uz * t, 0.06, 1.0, 0.06); }
+          }
+        });
+        B.Bt.flush(B.group);
+      } catch (e) { console.warn('[vehiclekit] wire', e); }
     };
   }
   // ---------- 停著能開的車、腳踏車（vehicles.js） ----------
