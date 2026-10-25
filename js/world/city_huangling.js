@@ -506,8 +506,7 @@
     // 五重塔
     const px = x0 + 14, pz = z1 - 13; let y = 0.8, w = 7.2;
     B.box(M('ashlar'), px - 5, 0, pz - 5, px + 5, 0.8, pz + 5);
-    for (let i = 0; i < 5; i++) { const hh = 3.1; B.box(M('verm'), px - w / 2, y, pz - w / 2, px + w / 2, y + hh, pz + w / 2); B.box(M('white'), px - w / 2 - 0.02, y + hh * 0.35, pz - w / 2 - 0.02, px + w / 2 + 0.02, y + hh * 0.75, pz + w / 2 + 0.02); B.roof(px, pz, w, w, { type: 'pyramid', y: y + hh, h: 1.1, o: 1.5, sori: 0.4, mat: 'kawara', ridge: false }); y += hh + 0.45; w -= 0.8; }
-    P(g.cyl8, M('bronze'), px, y + 3.5, pz, 0.3, 7, 0.3); for (let k = 0; k < 9; k++) P(g.torus, M('bronze'), px, y + 1.4 + k * 0.55, pz, 1.1 - k * 0.05, 1.1 - k * 0.05, 1.1 - k * 0.05, Math.PI / 2, 0, 0);
+    B.pagoda(px, pz, y, { w, n: 5 });   // 2026-10-26：templekit.js（柱子、門、連子窗、斗栱、反翹的深簷、相輪）
     B.solid(px - 5, pz - 5, px + 5, pz + 5, 'house'); B.foot([px - 5, pz - 5, px + 5, pz + 5], 'tower', 30);
     B.inter(px + 6.6, pz, 2.6, '昭光寺的五重塔（觀光地）', () => R.townTalk('昭光寺・五重塔', ['皇嶺最高的木造塔，五層，戰火裡燒掉過兩次，現在的是第三代。', ['「塔的中心柱沒有落地，是吊著的。地震的時候整座塔會像鐘擺一樣晃。」', '「每一層的屋簷都比下一層小一點點，從下面看才會覺得塔很高。」', '「冬天的五重塔配雪，是皇嶺明信片賣最好的一張。」'][Math.floor(Math.random() * 3)]]), '#E8C04A');
     for (let i = 0; i < 4; i++) B.lantern(x1 - 6 - i * 6, mz - 3.5, 0.9);
