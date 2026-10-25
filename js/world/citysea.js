@@ -110,7 +110,7 @@
     R.save();
     const cv = $('dv-cv'), x = cv.getContext('2d'), Wd = 360, Ht = 420, top = 30, floorY = top + (Ht - top - 10) * maxD;
     const msg = t => { const m = $('dv-msg'); if (m) m.textContent = t; };
-    const P = { x: 180, y: top + 4 }, key = {}, bag = [];
+    const P = { x: 180, y: top + 4 }, key = {}, bag = [], cc = C2(); let defused = 0;
     let o2 = 30, t = 0, raf = 0, last = performance.now(), done = false, stun = 0;
     const items = [], mines = [];
     const kinds = d => d < 0.35 ? ['shell', 'shell', 'gold'] : d < 0.6 ? ['shell', 'gold', 'salvage', 'crystal'] : ['salvage', 'salvage', 'crystal', 'chest', 'gold'];
@@ -121,9 +121,12 @@
       if (done) return; done = true; cancelAnimationFrame(raf); off();
       const keep = lost ? bag.filter((_, i) => i % 2 === 0) : bag, c = C2(); let g = 0, sv = 0, sh = 0, cr = 0, over = 0;
       keep.forEach(k => { if (k === 'gold') g += 20 + Math.floor(rnd() * 40); else if (k === 'chest') g += 80 + Math.floor(rnd() * 160); else if (k === 'shell') sh++; else if (k === 'crystal') cr++; else if (k === 'salvage') { if (Object.values(c.cargo).reduce((a, n) => a + n, 0) < 10 + R.CITY_BOATS[c.boat][2]) { c.cargo.salvage = (c.cargo.salvage || 0) + 1; sv++; } else { over++; g += 40; } } });
+      if (defused) { g += defused * 35; c.mines = (c.mines || 0) + defused; R.cityRep('xijian', defused); }   // 掃雷的賞金
+      const ph = PHOTOS.findIndex((_, i) => !(c.photos || []).includes(i)); let gotPhoto = '';
+      if (ph >= 0 && keep.some(k => k === 'salvage' || k === 'chest') && rnd() < 0.3) { c.photos = (c.photos || []).concat(ph); gotPhoto = '。沉船裡夾著一張泛黃的舊照片（拿去艾美利亞領事館問問）'; }
       s.gold += g; s.mats = s.mats || {}; if (sh) s.mats.shell = (s.mats.shell || 0) + sh; if (cr) s.mats.crystal = (s.mats.crystal || 0) + cr;
       if (keep.length) { R.cityRep('xijian', 1); c.diveDay = s.day; } R.save();
-      msg((lost ? '氧氣用完，被拉上去了——撈到的掉了一半。' : '上岸了。') + (keep.length ? '費拉 +' + g + (sh ? '、甲殼 ' + sh : '') + (cr ? '、魔力水晶 ' + cr : '') + (sv ? '、沉船古物 ' + sv + ' 箱（裝進貨箱）' : '') + (over ? '（貨箱滿了，' + over + ' 件古物當場賣給大學）' : '') : '什麼也沒撈到。'));
+      msg((lost ? '氧氣用完，被拉上去了——撈到的掉了一半。' : '上岸了。') + (keep.length ? '費拉 +' + g + (sh ? '、甲殼 ' + sh : '') + (cr ? '、魔力水晶 ' + cr : '') + (sv ? '、沉船古物 ' + sv + ' 箱（裝進貨箱）' : '') + (over ? '（貨箱滿了，' + over + ' 件古物當場賣給大學）' : '') : '什麼也沒撈到。') + (defused ? '　拆了 ' + defused + ' 顆水雷，港務局的賞金已經算進去。' : '') + gotPhoto);
       $('dv-x').textContent = '好了'; ok(lost ? '被拉上岸了' : '打撈結束', lost ? '#FF9A6A' : undefined);
     };
     const step = now => {
@@ -135,7 +138,7 @@
         P.x = Math.max(8, Math.min(Wd - 8, P.x)); P.y = Math.max(top, Math.min(floorY - 6, P.y));
         o2 -= dt * (1 + (P.y - top) / (Ht - top) * 0.6);
         items.forEach(it => { if (!it.got && Math.hypot(it.x - P.x, it.y - P.y) < 13) { it.got = 1; bag.push(it.k); R.sfx && R.sfx('pick'); msg('撈到' + LOOT[it.k][0] + '！'); } });
-        mines.forEach(m => { m.x += Math.sin(t * 0.6 + m.ph) * 8 * dt; if (!m.boom && Math.hypot(m.x - P.x, m.y - (P.y)) < 15) { m.boom = 0.6; o2 -= 8; stun = 1.2; R.sfx && R.sfx('hurt'); R.shake && R.shake(0.3); msg('碰到舊水雷！氧氣漏了一大截。'); } if (m.boom) m.boom -= dt; });
+        mines.forEach(m => { if (m.off) return; m.x += Math.sin(t * 0.6 + m.ph) * 8 * dt; if (!m.boom && Math.hypot(m.x - P.x, m.y - (P.y)) < 15) { if ((cc.defuse || 0) > 0) { cc.defuse--; m.off = 1; defused++; R.sfx && R.sfx('pick'); msg('用港務局的工具拆掉一顆舊水雷（剩 ' + cc.defuse + ' 次）。'); return; } m.boom = 0.6; o2 -= 8; stun = 1.2; R.sfx && R.sfx('hurt'); R.shake && R.shake(0.3); msg('碰到舊水雷！氧氣漏了一大截。'); } if (m.boom) m.boom -= dt; });   // 港務局的掃雷工具：碰到就拆掉
         if (o2 <= 0) finish(true); else if (P.y <= top + 1 && t > 1.5 && (bag.length || t > 3)) finish(false);
       }
       // 畫
@@ -158,6 +161,41 @@
     raf = requestAnimationFrame(step);
   };
   R.CITY_ACT.xijian = diving;
+  // 港務局：掃雷委託（拆彈工具三次份；潛水的時候碰到舊水雷就拆掉，一顆 35 費拉）
+  R.CITY_FAC['xijian:port'] = city => {
+    const s = S(), c = C2();
+    R.sheet('<p class="kicker">西見港・港務局</p><h2>掃雷委託</h2><p>「會戰的時候艾美利亞在港外佈了幾百顆水雷。七十年了，還沒清完。」港務局出租拆彈工具（三次份 40 費拉）：潛水的時候碰到舊水雷就是拆掉，一顆賞金 35 費拉。</p><p class="note">你的工具還剩 ' + (c.defuse || 0) + ' 次・已經拆了 ' + (c.mines || 0) + ' 顆。</p>',
+      '<div class="row"><button type="button" class="btn pri" id="pt-kit"' + (s.gold < 40 ? ' disabled' : '') + '>租拆彈工具（40）</button><button type="button" class="btn" id="pt-x">好了</button></div>');
+    $('pt-x').onclick = R.closeSheet;
+    $('pt-kit').onclick = () => { if (!pay(40)) return; c.defuse = (c.defuse || 0) + 3; R.save(); ok('拆彈工具 +3 次。到海洋大學的水下訓練營下水。'); R.CITY_FAC['xijian:port'](city); };
+  };
+  // 沉船裡的舊照片：拿到艾美利亞領事館，一張一張問出會戰時候的事
+  const PHOTOS = [
+    ['燈塔', '港口的紅白燈塔，還沒被炸之前。', '「這座燈塔……第一天就倒了。我們的轟炸機把它當成目標。」領事看了很久。'],
+    ['最後一班', '一艘貨船的船員合照，背面寫著「殖民地航線・最後一班」。', '「船名對得上。它在封鎖線外面被擊沉，船員……大部分沒有回來。」'],
+    ['天空', '一排魔導轟炸機飛過港口上空。拍照的人手在抖。', '「那是我們的第七轟炸團。」領事把照片翻過去，沒有再看。'],
+    ['小船', '封鎖期間，漁民在半夜偷偷划小船出海。', '「封鎖的時候，西見的人靠這種小船活下來。我們的巡邏艇……有時候假裝沒看到。」'],
+    ['飛行員', '一個艾美利亞飛行員坐在漁港，旁邊圍著西見的小孩。', '「他是我的祖父。墜機以後被西見的漁民救起來。這張照片，我們家只聽說過，沒見過。」領事的聲音變了。'],
+    ['第一艘船', '戰後第一艘進港的貨船，碼頭上擠滿了人。', '「這是和平以後的第一艘。照片裡每個人都在笑。」']
+  ];
+  R.CITY_FAC['xijian:consul'] = city => {
+    const s = S(), c = C2(), have = c.photos || [], told = c.photoTold || [];
+    const fresh = have.filter(i => !told.includes(i));
+    R.sheet('<p class="kicker">西見・艾美利亞領事館</p><h2>領事館</h2><p>「轟炸西見的是我們。現在我們在這裡蓋領事館——很奇怪，對吧。如果你在沉船裡找到當年的照片，請拿來給我看。」</p>'
+      + (have.length ? have.map(i => '<div class="cq' + (told.includes(i) ? '' : ' xjp-new') + '"><b>舊照片「' + PHOTOS[i][0] + '」</b><p>' + PHOTOS[i][1] + '</p>' + (told.includes(i) ? '<p class="note">' + PHOTOS[i][2] + '</p>' : '') + '</div>').join('') : '<p class="note">你還沒有舊照片。潛水打撈的時候，沉船裡的古物、寶箱有時候夾著照片。</p>')
+      + '<p class="note">' + have.length + '／' + PHOTOS.length + ' 張</p>',
+      '<div class="row">' + (fresh.length ? '<button type="button" class="btn pri" id="cs-show">把新的照片給領事看（' + fresh.length + '）</button>' : '') + '<button type="button" class="btn" id="cs-x">好了</button></div>');
+    $('cs-x').onclick = R.closeSheet;
+    if ($('cs-show')) $('cs-show').onclick = () => { c.photoTold = told.concat(fresh); const g = fresh.length * 100; s.gold += g; R.cityRep('xijian', fresh.length * 2); const all = c.photoTold.length >= PHOTOS.length; if (all) { s.mats = s.mats || {}; s.mats.crystal = (s.mats.crystal || 0) + 5; } R.save(); R.townTalk('艾美利亞領事館', fresh.map(i => PHOTOS[i][2]).concat(['「謝謝你。這是領事館的一點心意。」（+' + g + ' 費拉）'], all ? ['「六張都齊了。我想把它們掛在大廳——兩個國家的人都看得到的地方。」（魔力水晶 ×5）'] : [])); };
+  };
+  // 海灘公園：退潮的時候撿東西（一天一次）
+  R.CITY_FAC['xijian:beach'] = city => {
+    const s = S(), c = C2();
+    if (c.beachDay === s.day) { R.townTalk('海灘公園', ['今天已經撿過了。潮水要明天才會再帶東西上來。']); return; }
+    c.beachDay = s.day; const sh = 1 + Math.floor(rnd() * 3), g = Math.floor(rnd() * 25); s.mats = s.mats || {}; s.mats.shell = (s.mats.shell || 0) + sh; s.gold += g;
+    const bottle = rnd() < 0.15; if (bottle) s.gold += 60; R.save(); R.sfx && R.sfx('pick');
+    R.townTalk('海灘公園', ['退潮了。沙灘上散著貝殼和被沖上來的東西。', '撿到甲殼 ×' + sh + (g ? '、' + g + ' 費拉的零錢' : '') + '。'].concat(bottle ? ['還有一個漂流瓶：「給撿到的人——拿去買杯咖啡吧。」裡面塞著 60 費拉。'] : []));
+  };
   R.CITY_FAC['xijian:uni'] = diving;
   // 漁港拍賣場：西見也收魚（價錢比渦旗低一點）
   R.CITY_FAC['xijian:fish'] = city => { const B = box(), ks = Object.keys(B).filter(k => B[k] > 0); if (!ks.length) { R.townTalk('漁港拍賣場', ['「沒有魚？渦旗那邊的人比較會釣。」']); return; } const g = ks.reduce((a, k) => a + Math.round(fishPrice(k) * 0.85) * B[k], 0); R.sheet('<p class="kicker">西見・漁港拍賣場</p><h2>拍賣場</h2><p>「全部收，' + g + ' 費拉。渦旗的行情比較好就是了。」</p>', '<div class="row"><button type="button" class="btn pri" id="fx-ok">賣</button><button type="button" class="btn" id="fx-no">算了</button></div>'); $('fx-no').onclick = R.closeSheet; $('fx-ok').onclick = () => { ks.forEach(k => delete B[k]); S().gold += g; R.save(); ok('+' + g + ' 費拉'); R.closeSheet(); }; };
@@ -166,6 +204,7 @@
     R.cqMat('xj_shell', 'shell', 6, 120, '海灘公園的步道', '公園要用貝殼鋪步道，交 6 個甲殼。'),
     R.cqCargo('xj_med', 'medicine', 3, 290, '艾美利亞領事館的醫務室', '領事館的醫務室缺藥，交 3 箱英尼爾斯藥品。'),
     R.cqCargo('xj_ration', 'ration', 4, 170, '軍艦停靠處的補給', '軍艦補給，交 4 箱軍用口糧。'),
+    { k: 'xj_mine', name: '港務局：清一顆水雷', desc: '用港務局的拆彈工具，在潛水的時候拆掉一顆舊水雷。', pay: 80, need: () => [(C2().mines || 0) > (C2().minesQ || 0) ? 1 : 0, 1], take: () => { C2().minesQ = C2().mines; } },
     { k: 'xj_dive', name: '水下訓練營的教練', desc: '今天去水下訓練營潛一次水，至少撈起一件東西。', pay: 90, need: () => [C2().diveDay === S().day ? 1 : 0, 1], take: () => { } }
   ]);
   const css = document.createElement('style');

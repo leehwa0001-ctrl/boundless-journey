@@ -444,30 +444,20 @@
     if (first && n >= 8) R.awardTitle && R.awardTitle('railhand');
   };
 
-  const travelTo = (id, fromId) => {
+  // o：{ fare, days, how }（搭飛機：citylife.js 的機場）
+  const travelTo = (id, fromId, o) => {
     const city = byId(id); if (!city) return;
     if (dan() < city.needDan) { R.toast(city.name + '目前只接待冒險段以上的勇者（軍事／軍港管制）。', '#FF9A6A'); return; }
     const s = S(); if (!s) return;
-    if (s.gold < city.fare) { R.toast('錢不夠（要 ' + city.fare + ' 費拉）。'); return; }
-    // 錢不夠也比照奉主：勇者可先上車——但這裡仍要求付得起，避免白嫖刷日子；與 hosu 不同城際較遠
+    const fare = o && o.fare != null ? o.fare : city.fare, days = o && o.days != null ? o.days : city.days, how = (o && o.how) || (city.island ? '渡輪與接駁' : '魔導電車');
+    if (s.gold < fare) { R.toast('錢不夠（要 ' + fare + ' 費拉）。'); return; }
     R.closeSheet();
     R.fade(() => {
-      // 2026-10-08：有精緻 3D 城的（citykit.js），直接進城走路（不先回到東鶴的街上：exitInterior 會晚一點把場景換回東鶴）
-      if (R.CK && R.CK.cities && R.CK.cities[id]) {
-        s.gold -= city.fare; R.advanceDays(city.days); markVisit(id); R.save();
-        R.CK.enter(id);
-        const how = city.island ? '渡輪與接駁' : '魔導電車';
-        R.banner && R.banner(city.name, '搭' + how + '抵達・' + city.role + (fromId ? '（自' + ((byId(fromId) || {}).name || '') + '）' : ''));
-        return;
-      }
-      if (W.inside && R.exitInterior) R.exitInterior();
-      s.gold -= city.fare;
-      R.advanceDays(city.days);
-      markVisit(id);
-      R.save();
-      const how = city.island ? '渡輪與接駁' : '魔導電車';
+      if (!(R.CK && R.CK.cities && R.CK.cities[id]) && W.inside && R.exitInterior) R.exitInterior();
+      s.gold -= fare; if (days) R.advanceDays(days); markVisit(id); R.save();
+      if (R.CK && R.CK.cities && R.CK.cities[id]) R.CK.enter(id);   // 有精緻 3D 城的直接進城走路
       R.banner && R.banner(city.name, '搭' + how + '抵達・' + city.role + (fromId ? '（自' + ((byId(fromId) || {}).name || '') + '）' : ''));
-      setTimeout(() => hub(id), 280);
+      if (!(R.CK && R.CK.cities && R.CK.cities[id])) setTimeout(() => hub(id), 280);
     });
   };
   R.travelAzuki = travelTo;

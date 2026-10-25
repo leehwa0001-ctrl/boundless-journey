@@ -111,6 +111,19 @@
   R.CITY_ACT.zhengyuan = R.CITY_FAC['zhengyuan:house'];
   R.CITY_ACT.nanlong = R.CITY_FAC['nanlong:cargo'];
 
+  // ---------- 機場：有機場的城之間搭魔導飛機（當天到，票價是電車的兩倍半） ----------
+  const AIR = { huangling: 'airport', xijian: 'air', banbei: 'air', bannan: 'air', yuebei: 'air' };
+  const fly = city => {
+    const s = S(), from = city.id, to = Object.keys(AIR).filter(k => k !== from).map(k => R.azuki.byId(k)).filter(Boolean);
+    const fare = c => Math.max(60, Math.round(c.fare * 2.5));
+    R.sheet('<p class="kicker">' + esc(city.name) + '・機場</p><h2>魔導飛機</h2><p>「國內線，當天就到。」比電車貴，但不用等上好幾天。費拉 ' + s.gold + '</p><div class="az-grid">'
+      + to.map(c => '<button type="button" class="btn" data-fly="' + c.id + '"' + (s.gold < fare(c) ? ' disabled' : '') + '><b>' + esc(c.name) + '</b><br><small>' + fare(c) + ' 費拉・當天（電車要 ' + c.days + ' 天）</small></button>').join('') + '</div>',
+      '<div class="row"><button type="button" class="btn pri" id="fly-x">不搭了</button></div>');
+    $('fly-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-fly]').forEach(b => { b.onclick = () => { const c = R.azuki.byId(b.dataset.fly); R.travelAzuki(c.id, from, { fare: fare(c), days: 0, how: '魔導飛機' }); }; });
+  };
+  Object.keys(AIR).forEach(id => { R.CITY_FAC[id + ':' + AIR[id]] = fly; });
+
   // ---------- 地方委託（每座城自己的） ----------
   // R.cityQuests[城] = [{ k, name, desc, pay, need: () => [現在, 要], take: () => 交出 }]：要的東西夠了才能交
   R.cityQuests = R.cityQuests || {};
