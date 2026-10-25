@@ -5,6 +5,7 @@
 // - 自動販賣機 B.vend：原本的本體和「買熱飲」的互動照舊，外面加上：上面發光的招牌帶、展示窗裡一排一排的飲料、投幣口、退幣鈕、出貨口的框、側面的散熱孔。
 // - 公車站 B.busStop：原本的照舊，再加站牌的柱子和圓牌、屋頂的簷板、時刻表板。
 // - 樹 B.tree：杉樹（變細的樹幹、一層層的葉團、尖頂）、圓樹（根部外擴、分枝、深淺兩種綠）重做，其他種類照原本的。
+// - 電線桿 B.poles（2026-10-26）：原本的照舊，再加橫擔上的白色礙子（電線接在上面）、下面一支短橫擔、往上的腳踏釘、根部黃黑的防撞套、藍色的門牌。
 // 參數都跟原本一樣（citykit3.js）。放在 citykit*.js 後面（包住 CK.extendBuilder）。
 (function (R) {
   const CK = R.CK; if (!CK || !CK.extendBuilder) return;
@@ -102,6 +103,21 @@
         const [ex, ez] = at(x, z, ry, 0.72, 0); P(g.box, M('steelD'), ex, 2.46, ez, 3.3, 0.16, 0.06, 0, ry, 0);   // 屋頂的簷板
         B.solid(px - 0.12, pz - 0.12, px + 0.12, pz + 0.12, 'deco');
       } catch (e) { console.warn('[streetkit]', e); }
+    };
+    // ---------- 電線桿 ----------
+    const poles0 = B.poles;
+    B.poles = (pts, o) => {
+      poles0(pts, o);
+      try {
+        const ry = (o && o.ry) || 0, H = 8.5, c = Math.cos(ry), sn = Math.sin(ry), ins = M('white'), st = M('steelD');
+        pts.forEach(([x, z], i) => {
+          [-0.75, 0, 0.75].forEach(k => { P(g.cyl8, ins, x + c * k, H - 0.43, z - sn * k, 0.14, 0.24, 0.14); P(g.cyl8, ins, x + c * k, H - 0.36, z - sn * k, 0.2, 0.04, 0.2); });
+          P(g.box, st, x, H - 1.15, z, 1.1, 0.08, 0.08, 0, ry, 0); [-0.45, 0.45].forEach(k => P(g.cyl8, ins, x + c * k, H - 1.0, z - sn * k, 0.12, 0.2, 0.12));
+          for (let y = 2.4, j = 0; y < H - 2; y += 0.45, j++) { const sd = j % 2 ? 1 : -1; P(g.box, st, x - sn * sd * 0.2, y, z - c * sd * 0.2, 0.04, 0.04, 0.26, 0, ry, 0); }
+          for (let y = 0.1, j = 0; y < 1.6; y += 0.3, j++) P(g.cyl8, M(j % 2 ? 'black' : 'lineY'), x, y + 0.15, z, 0.34, 0.3, 0.34);
+          P(g.box, M('paint', { col: '#2A4A8A' }), x + Math.sin(ry + Math.PI / 2) * 0.17, 3.2, z + Math.cos(ry + Math.PI / 2) * 0.17, 0.3, 0.5, 0.02, 0, ry + Math.PI / 2, 0); void i;
+        });
+      } catch (e) { console.warn('[streetkit] poles', e); }
     };
   };
 })(window.R);
