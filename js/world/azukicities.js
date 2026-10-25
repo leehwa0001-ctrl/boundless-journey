@@ -282,27 +282,50 @@
   const toastOk = (t, c) => { R.sfx && R.sfx('pick'); R.toast(t, c || '#E8C04A'); };
 
   // ---------- 觀光章 ----------
+  // 2026-10-26 作者：觀光景點也要升級——每個景點一張明信片（assets/art/sights/景點.webp）；照「最佳時刻」去，拿到燙金的限定明信片
+  // BEST：[說明, (時, 季節) => 是不是最佳時刻]
+  const hr = (a, b) => h => (a <= b ? h >= a && h < b : h >= a || h < b), DAY = hr(9, 17), DAWN = hr(5, 8), DUSK = hr(16, 19), NIGHT = hr(19, 3);
+  const BEST = {
+    hl_tower: ['清晨（日出）', DAWN], hl_castle: ['白天', DAY], hl_uni: ['白天', DAY], hl_shrine: ['黃昏', DUSK],
+    js_neon: ['晚上', NIGHT], js_furnace: ['晚上', NIGHT], js_stock: ['開盤（9～15 點）', hr(9, 15)],
+    ft_park: ['清晨', DAWN], ft_shrine: ['白天', DAY],
+    xj_beach: ['黃昏', DUSK], xj_uni: ['白天', DAY], xj_consul: ['白天', DAY],
+    nl_statue: ['白天', DAY], nl_fog: ['夜裡到清晨（霧最濃）', hr(19, 7)], nl_uni: ['白天', DAY],
+    wq_eddy: ['秋天', (h, se) => se === '秋'], wq_market: ['清晨（開市）', hr(4, 8)], wq_sushi: ['晚上', hr(18, 22)],
+    zy_museum: ['白天', DAY], zy_wreck: ['黃昏', DUSK], zy_yard: ['晚上', NIGHT],
+    bb_ferry: ['晚上', NIGHT], bb_car: ['白天', DAY], bb_hotel: ['晚上', NIGHT],
+    bn_castle: ['白天', DAY], bn_temple: ['清晨', DAWN], bn_yokai: ['晚上', NIGHT],
+    gs_tree: ['白天', DAY], gs_rice: ['黃昏', DUSK], gs_elf: ['黃昏', DUSK],
+    yb_food: ['晚上', NIGHT], yb_mine: ['冬天', (h, se) => se === '冬'], yb_port: ['清晨', DAWN]
+  };
+  const best = sid => BEST[sid] || ['任何時候', () => true];
+  const nowBest = sid => { const sv = S(), h = sv && sv.hour != null ? sv.hour % 24 : 12, se = R.dateOf ? R.dateOf(sv.day || 0).season : ''; return best(sid)[1](h, se); };
+  const card = (sid, gold) => '<div class="pc' + (gold ? ' gold' : '') + '"><img src="assets/art/sights/' + sid + '.webp" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' + (gold ? '<i>限定</i>' : '') + '</div>';
   const stamp = (city, sg) => {
     const g = st(); if (!g) return;
-    const key = city.id + ':' + sg[0], first = !g.stamps[key], n0 = stampCount();
-    if (first) { g.stamps[key] = S().day || 1; R.save(); R.sfx && R.sfx('pick'); }
+    g.gold = g.gold || {};
+    const key = city.id + ':' + sg[0], first = !g.stamps[key], n0 = stampCount(), isBest = nowBest(sg[0]), goldNew = isBest && !g.gold[key];
+    if (first) g.stamps[key] = S().day || 1;
+    if (goldNew) { g.gold[key] = S().day || 1; S().gold += 150; if (R.sanAdd) R.sanAdd(5); }
+    if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = stampCount(), total = allStamps();
-    R.sheet('<p class="kicker">' + esc(city.name) + '・觀光章</p><h2>' + esc(sg[1]) + '</h2><p class="note">' + esc(sg[2]) + '</p><p>' + esc(sg[3]) + '</p>'
-      + '<p class="note">' + (first ? '在昭旭觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（全國 ' + n + '／' + total + '）</p>',
-      '<div class="row"><button type="button" class="btn pri" id="az-x">好</button><button type="button" class="btn" id="az-book">昭旭觀光手冊</button><button type="button" class="btn" id="az-back">回據點</button></div>');
-    $('az-x').onclick = R.closeSheet; $('az-book').onclick = bookAll; $('az-back').onclick = () => hub(city.id);
+    R.sheet('<p class="kicker">' + esc(city.name) + '・觀光景點</p><h2>' + esc(sg[1]) + '</h2>' + card(sg[0], !!g.gold[key]) + '<p>' + esc(sg[3]) + '</p>'
+      + '<p class="note">最佳時刻：' + esc(best(sg[0])[0]) + (isBest ? '——就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : g.gold[key] ? '限定明信片已經有了。' : '在最佳時刻來，可以拿到燙金的限定明信片。') + '</p>'
+      + '<p class="note">' + (first ? '在昭旭觀光手冊上蓋了章、收下一張明信片。' : '這裡的章已經蓋過了。') + '（全國 ' + n + '／' + total + '・限定 ' + Object.keys(g.gold).length + '）</p>',
+      '<div class="row"><button type="button" class="btn pri" id="az-x">好</button><button type="button" class="btn" id="az-book">明信片冊</button></div>');
+    $('az-x').onclick = R.closeSheet; $('az-book').onclick = bookAll;
     if (first && n >= total && n0 < total) {
       S().gold += 2000; R.save(); R.awardTitle && R.awardTitle('azukitsu');
       setTimeout(() => R.banner && R.banner('昭旭觀光章蓋齊了！', '觀光局送來 2000 費拉和稱號「昭旭通」。'), 500);
     }
   };
   const bookAll = () => {
-    const g = st() || { stamps: {} };
-    R.sheet('<p class="kicker">昭旭觀光局</p><h2>昭旭觀光手冊</h2><p class="note">從東鶴站售票口搭車到各城，在據點蓋章。蓋齊 ' + allStamps() + ' 個：2000 費拉與稱號「昭旭通」。（目前 ' + stampCount() + '）</p>'
+    const g = st() || { stamps: {} }, gold = g.gold || {};
+    R.sheet('<p class="kicker">昭旭觀光局</p><h2>昭旭明信片冊</h2><p class="note">到各城的觀光景點收明信片。收齊 ' + allStamps() + ' 張：2000 費拉與稱號「昭旭通」。在最佳時刻去，拿到燙金的限定版。（' + stampCount() + '／' + allStamps() + '・限定 ' + Object.keys(gold).length + '）</p>'
       + CITIES.map(c => {
         const got = c.sights.filter(sg => g.stamps[c.id + ':' + sg[0]]).length;
-        return '<h3>' + esc(c.name) + '（' + got + '／' + c.sights.length + '）</h3><ul class="sg-list">'
-          + c.sights.map(sg => '<li class="' + (g.stamps[c.id + ':' + sg[0]] ? 'ok' : '') + '"><b>' + (g.stamps[c.id + ':' + sg[0]] ? '✓ ' : '・') + esc(sg[1]) + '</b><small>' + esc(sg[2]) + '</small></li>').join('') + '</ul>';
+        return '<h3>' + esc(c.name) + '（' + got + '／' + c.sights.length + '）</h3><div class="pc-grid">'
+          + c.sights.map(sg => { const k = c.id + ':' + sg[0], has = g.stamps[k]; return '<figure class="pc-cell' + (has ? '' : ' none') + '">' + (has ? card(sg[0], !!gold[k]) : '<div class="pc empty">？</div>') + '<figcaption><b>' + esc(sg[1]) + '</b><small>最佳：' + esc(best(sg[0])[0]) + '</small></figcaption></figure>'; }).join('') + '</div>';
       }).join(''),
       '<div class="row"><button type="button" class="btn pri" id="az-x">關上</button></div>');
     $('az-x').onclick = R.closeSheet;
@@ -544,6 +567,6 @@
   };
 
   const css = document.createElement('style');
-  css.textContent = '.az-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin:8px 0}.az-grid .btn{text-align:left;white-space:normal}';
+  css.textContent = '.pc{position:relative;margin:6px 0;border-radius:6px;overflow:hidden;border:4px solid #F4ECD8;box-shadow:0 2px 8px rgba(0,0,0,.35);aspect-ratio:3/2;background:#2A2420}.pc img{display:block;width:100%;height:100%;object-fit:cover}.pc.gold{border-color:#E8C04A;box-shadow:0 0 0 2px #8A6A1A,0 0 14px rgba(232,192,74,.6)}.pc i{position:absolute;right:6px;top:6px;background:#E8C04A;color:#3A2A0A;font-style:normal;font-weight:700;font-size:12px;padding:1px 6px;border-radius:3px}.pc.empty{display:flex;align-items:center;justify-content:center;color:#6A5A4A;font-size:28px;border-color:#4A4038}.pc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.pc-cell{margin:0}.pc-cell.none{opacity:.6}.pc-cell figcaption{font-size:12px}.pc-cell figcaption small{display:block;opacity:.7}' + '.az-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin:8px 0}.az-grid .btn{text-align:left;white-space:normal}';
   document.head.appendChild(css);
 })(window.R);
