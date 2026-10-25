@@ -47,7 +47,7 @@
         for (let z = z0 + 56; z <= z1 - 4; z += 6) [sx - 6.6, sx + 6.6].forEach(x => B.lantern(x, z, 0.8));
         [[x0 + 2, sx - 8], [sx + 8, x1 - 2]].forEach(([a0, a1], i) => { for (let z = z0 + 56; z + 6 <= z1 - 2; z += 7) { B.bld({ r: [i ? a0 : a1 - 7, z, i ? a0 + 7 : a1, z + 6], h: 6.4, style: 'machiya', face: i ? 'w' : 'e', name: pk(['茶店・通天', '甘酒', '團子', '御守']), noren: pk(['#4A5A3A', '#5A2A2A']) }); } });
         H.door(B, sx - 7.4, z0 + 66, 'bn_tea', '走進通天道的茶店（茶菓子、烏龍麵）', '#E8A03A', Math.PI / 2);
-        B.inter(sx, z1 - 3, 2.6, '通天道參拜（5 費拉）', () => az().act(C), '#E8C04A'); H.fac(B, sx, z1 - 8, C, 'road', '#C8A060');
+        B.inter(sx, z1 - 3, 2.6, '通天道一千階', () => az().act(C), '#E8C04A'); H.fac(B, sx, z1 - 8, C, 'road', '#C8A060');
         B.Bt.yOff = 16;
         B.roof(126, z0 + 22, 20, 14, { type: 'irimoya', y: 6, h: 3.6, o: 1.6, sori: 0.4, mat: 'kawara' }); B.box(M('woodB'), 117, 0, z0 + 16, 135, 6, z0 + 28); B.box(M('shopLit'), 117.5, 0.6, z0 + 28.05, 134.5, 5, z0 + 28.1);
         P(g.box, M('woodB'), 92, 3, z0 + 22, 6, 6, 6); B.roof(92, z0 + 22, 7, 7, { type: 'pyramid', y: 6, h: 2.6, o: 0.9, sori: 0.3, mat: 'kawara' }); P(g.cyl, M('bronze'), 92, 3.6, z0 + 22, 2.2, 2.8, 2.2); P(g.hemi, M('bronze'), 92, 5, z0 + 22, 2.2, 0.8, 2.2);
@@ -97,4 +97,18 @@
     station: { name: '板南中樞站', dest: '皇嶺　東鶴　板北', lines: ['「往東鶴的票嗎？」', '「往皇嶺、板北每小時一班。」'], waiting: ['「去皇嶺開會。日下森電器的。」'] },
     food: { id: 'bn_tea', name: '通天道的茶店', hint: '石階旁的長椅，甘酒和茶菓子', floor: 'tatami', bg: '#4A5A3A', say: '「走完通天道，先坐一下。」', cook: '茶店的阿婆', lines: ['「三百二十四階。我年輕的時候一天走兩趟。」', '「城下烏龍麵，車站前那間也好吃。」'] }
   });
+  // 2026-10-26 作者：各城的公會分館不要同一間——板南分館是北方防禦線的舊碉堡改的：水泥牆、射口改成的窗、舊地圖
+  CK.defineRoom({ id: 'bn_guild', name: '公會板南分館', hint: '舊碉堡改的，牆很厚，射口改成了窗', w: 16, d: 12, h: 3.8, floor: 'conc', wall: 'concD', wain: 'concD', trim: 'steelD', amb: 0.85, build(B, K) {
+    const M = CK.M;
+    K.counter(-3, -3.8, 7, 0.9, { mat: 'woodD', top: 'wood' });
+    K.wallSign('公會板南分館', 'n', -3, 3.1, { size: 0.55, bg: '#3A3A2A', fg: '#F4ECD8' });
+    B.inter(-3, -2.6, 2.2, '櫃台：今日地方委託', () => R.azuki.quest('bannan'), '#3E9A5A');
+    B.talker(-1, -4.8, 0, '分館的館員', ['「這座碉堡是昭光帝國的北方防禦線。牆有一公尺厚。」', '「舊陸軍營地那邊的遺跡，跟妖物寺的封印有關係。」', '「中樞鐵路的周遊券，跑貨的人一定買。」']);
+    [-5.5, -1.5, 2.5].forEach(x => B.box(CK.mat('bnSlit', { col: '#9AB8C8', em: '#C8E0F0', ei: 0.4 }), x, 1.6, -5.95, x + 1.6, 1.9, -5.9));   // 射口改成的窗
+    B.box(M('paint', { col: '#D8C8A0' }), 4.6, 1.2, -5.95, 7.4, 2.8, -5.9);
+    B.inter(6, -4.8, 2.2, '北方防禦線的舊地圖（看看）', () => R.townTalk('北方防禦線的舊地圖', ['板南城、通天道、舊陸軍營地連成一條線。紅筆圈著一個地方：「妖物寺」。', '旁邊有人用鉛筆加了一行字：「封印不能動。」']), '#C8C0A0');
+    for (let i = 0; i < 3; i++) B.box(M('paint', { col: '#6A5A3A' }), 5 + i * 1, 0, 3.6, 5.8 + i * 1, 0.6, 4.6);   // 舊彈藥箱
+    B.talker(-5, 2.2, Math.PI / 2, '爬完通天道的勇者', ['「一千階，左右左右——腿到現在還在抖。」', '「妖物寺的住持收遺跡生物的素材。供多了會給護符。」']);
+    K.bench(-6, 1.4, 3, Math.PI / 2); K.lamp(-3, -1); K.lamp(3, 1);
+  } });
 })(window.R);

@@ -266,6 +266,7 @@
   ];
   R.AZUKI_CITIES = CITIES;
   const byId = id => CITIES.find(c => c.id === id);
+  const fareOf = c => (R.railPass && R.railPass() ? Math.ceil(c.fare / 2) : c.fare);   // 板南中樞鐵路的周遊券：電車半價（cityland.js）
 
   // ---------- 存檔 ----------
   const st = () => { const s = S(); if (!s) return null; s.cityHub = s.cityHub || { stamps: {}, visit: {}, questDay: {}, questDone: {} }; return s.cityHub; };
@@ -402,7 +403,7 @@
       + '<button type="button" class="btn" data-az="act">' + esc(city.act.name) + (city.act.cost ? '（' + city.act.cost + '）' : '') + '</button>'
       + '<button type="button" class="btn" data-az="book">昭旭觀光手冊</button>'
       + '</div>',
-      '<div class="row"><button type="button" class="btn pri" id="az-home">回東鶴（' + city.fare + ' 費拉・' + city.days + ' 日）</button><button type="button" class="btn" id="az-other">轉往他城</button><button type="button" class="btn" id="az-x">先留在據點選單外</button></div>');
+      '<div class="row"><button type="button" class="btn pri" id="az-home">回東鶴（' + fareOf(city) + ' 費拉・' + city.days + ' 日）</button><button type="button" class="btn" id="az-other">轉往他城</button><button type="button" class="btn" id="az-x">先留在據點選單外</button></div>');
     document.querySelectorAll('[data-az]').forEach(b => {
       b.onclick = () => {
         const k = b.dataset.az;
@@ -449,7 +450,7 @@
     const city = byId(id); if (!city) return;
     if (dan() < city.needDan) { R.toast(city.name + '目前只接待冒險段以上的勇者（軍事／軍港管制）。', '#FF9A6A'); return; }
     const s = S(); if (!s) return;
-    const fare = o && o.fare != null ? o.fare : city.fare, days = o && o.days != null ? o.days : city.days, how = (o && o.how) || (city.island ? '渡輪與接駁' : '魔導電車');
+    const fare = o && o.fare != null ? o.fare : fareOf(city), days = o && o.days != null ? o.days : city.days, how = (o && o.how) || (city.island ? '渡輪與接駁' : '魔導電車');
     if (s.gold < fare) { R.toast('錢不夠（要 ' + fare + ' 費拉）。'); return; }
     R.closeSheet();
     R.fade(() => {
@@ -463,7 +464,7 @@
   R.travelAzuki = travelTo;
 
   const goHome = (city) => {
-    if (!pay(city.fare, '回東鶴')) return;
+    if (!pay(fareOf(city), '回東鶴')) return;
     R.closeSheet();
     R.fade(() => {
       R.advanceDays(city.days);
@@ -490,7 +491,7 @@
       + CITIES.map(c => {
         const lock = dan() < c.needDan;
         return '<button type="button" class="btn' + (lock ? '' : '') + '" data-azgo="' + c.id + '"' + (lock ? ' title="需要冒險段以上"' : '') + '>'
-          + esc(c.name) + '・' + esc(c.role) + '<br><small>' + c.fare + ' 費拉・' + c.days + ' 日' + (c.island ? '・渡輪' : '') + (lock ? '・管制' : '') + '</small></button>';
+          + esc(c.name) + '・' + esc(c.role) + '<br><small>' + fareOf(c) + ' 費拉・' + c.days + ' 日' + (c.island ? '・渡輪' : '') + (lock ? '・管制' : '') + '</small></button>';
       }).join('')
       + '</div>',
       '<div class="row">' + (!fromId ? '<button type="button" class="btn" id="az-ruin">到遠方的遺跡</button>' : '') + '<button type="button" class="btn" id="az-x">不搭了</button></div>');

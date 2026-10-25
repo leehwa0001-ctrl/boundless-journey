@@ -284,6 +284,34 @@
     $('yk-get').onclick = () => { if ((c.yokai || 0) < 30) return; const big = c.yokai >= 60, pool = Object.keys(R.CHARM2 || {}), base = pool.length ? pool[Math.floor(rnd() * pool.length)] : 'charm'; const it = R.makeItem({ kind: 'charm', base, ilvl: lvNow(), rarity: big ? 4 : 3, identified: true }); if (!it) { R.toast('住持搖搖頭：「今天不是好日子。」'); return; } it.yokai = 1; if (!(R.giveItem && R.giveItem(it))) S().stash.push(it); /* 背包放不下就放倉庫 */ c.yokai -= big ? 60 : 30; R.save(); R.sfx && R.sfx('chest'); R.banner && R.banner('妖物寺', '住持為你加持了' + R.itemName(it)); shrine(city); };
   };
   R.CITY_FAC['bannan:yokai'] = shrine;
+  // 板南城：天守的武具庫（每天兩件古式的武器，史詩）
+  R.CITY_FAC['bannan:castle'] = city => {
+    const s = S(), c = C2(), lv = lvNow(), pool = ['katana', 'spear', 'longbow', 'dualblades', 'staffpole'].filter(k => R.WEAPONS[k]);
+    if (c.armDay !== s.day || !c.arm) { c.armDay = s.day; c.arm = [0, 1].map(() => ({ base: pool[Math.floor(rnd() * pool.length)], p: 700 + Math.floor(rnd() * 400) })); R.save(); }
+    R.sheet('<p class="kicker">板南・板南城</p><h2>天守的武具庫</h2><p>「昭光帝國北方防禦線的時候，這裡的武具都是實戰用的。現在照古法打，賣給勇者。」</p>'
+      + c.arm.map((o, i) => '<button type="button" class="btn" data-ar="' + i + '"' + (o.sold || s.gold < o.p ? ' disabled' : '') + '><b>板南城古式・' + esc((R.WEAPONS[o.base] || {}).name || o.base) + '（史詩）</b><br><small>' + (o.sold ? '賣掉了' : o.p + ' 費拉') + '</small></button>').join(''),
+      '<div class="row"><button type="button" class="btn pri" id="ar-x">好了</button></div>');
+    $('ar-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-ar]').forEach(b => { b.onclick = () => { const o = c.arm[+b.dataset.ar]; if (o.sold || !pay(o.p)) return; const it = R.makeItem({ kind: 'weapon', base: o.base, ilvl: lv, rarity: 3, identified: true }); if (!it) { s.gold += o.p; return; } it.bannan = 1; o.sold = 1; if (!(R.giveItem && R.giveItem(it))) s.stash.push(it); R.cityRep('bannan', 1); R.save(); ok('買了' + R.itemName(it) + '。'); R.CITY_FAC['bannan:castle'](city); }; });
+  };
+  const nm2 = R.itemName; if (nm2) R.itemName = it => (it && it.bannan ? '板南城古式・' : '') + nm2(it);
+  // 仰天寺：撞大鐘（一天一次）
+  R.CITY_FAC['bannan:temple'] = city => {
+    const s = S(), c = C2();
+    if (c.bellDay === s.day) { R.townTalk('仰天寺', ['鐘聲還在山谷裡迴盪。今天已經撞過了。']); return; }
+    c.bellDay = s.day; if (R.sanAdd) R.sanAdd(8); R.save(); R.sfx && R.sfx('magic');
+    R.townTalk('仰天寺', ['你拉起撞木，往大鐘撞過去——', '咚——————', '整座山都在回應。心裡有什麼東西放下了。（理智回復）']);
+  };
+  // 板南中樞鐵路：周遊券（七天內電車半價）
+  R.railPass = () => { const s = S(), c = s && s.city2; return !!(c && c.railUntil >= (s.day || 0)); };
+  R.CITY_FAC['bannan:rail'] = city => {
+    const s = S(), c = C2(), P = 300, on = R.railPass();
+    R.sheet('<p class="kicker">板南・板南中樞鐵路</p><h2>周遊券</h2><p>「天宮島的鐵路都從板南過。周遊券七天內搭電車半價——跑貨的人都買。」</p><p class="note">' + (on ? '你的周遊券到第 ' + c.railUntil + ' 天。' : '你沒有周遊券。') + '</p>',
+      '<div class="row"><button type="button" class="btn pri" id="rp-ok"' + (s.gold < P ? ' disabled' : '') + '>' + (on ? '延長七天' : '買周遊券') + '（' + P + '）</button><button type="button" class="btn" id="rp-x">好了</button></div>');
+    $('rp-x').onclick = R.closeSheet;
+    $('rp-ok').onclick = () => { if (!pay(P)) return; c.railUntil = Math.max(c.railUntil || 0, s.day || 0) + 7; R.save(); ok('周遊券到第 ' + c.railUntil + ' 天：電車半價。'); R.CITY_FAC['bannan:rail'](city); };
+  };
+  R.CITY_FAC['bannan:corp'] = city => R.cityTrade(city);   // 日下森電器的工廠直營：就是貨運窗口
   const nm1 = R.itemName; if (nm1) R.itemName = it => (it && it.yokai ? '妖物寺加持・' : '') + nm1(it);
   R.cityQuestReg('bannan', [
     R.cqCargo('bn_steel', 'steel', 3, 260, '板南城的修繕', '天守的鐵門要換，3 箱征遠鋼材。'),
