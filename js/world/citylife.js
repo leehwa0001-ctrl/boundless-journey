@@ -43,8 +43,9 @@
     const k = G[2] === city ? 0.7 : G[3].includes(city) ? 1.4 : 1;
     return Math.max(5, Math.round(G[1] * k * f));
   };
-  const buyP = (city, g) => Math.round(price(city, g) * 1.06 * (1 - repLv(city) * 0.02));
-  const sellP = (city, g) => Math.round(price(city, g) * 0.94 * (1 + repLv(city) * 0.02));
+  const luck = () => (C2().statueDay === (S().day || 1) ? 0.05 : 0);   // 南瀧：摸過卸貨第一雕像的腳
+  const buyP = (city, g) => Math.round(price(city, g) * 1.06 * (1 - repLv(city) * 0.02 - luck()));
+  const sellP = (city, g) => Math.round(price(city, g) * 0.94 * (1 + repLv(city) * 0.02 + luck()));
   R.cityPrice = { buy: buyP, sell: sellP };
 
   R.cityTrade = (city) => {
@@ -110,6 +111,38 @@
   R.cityBoat = () => C2().boat;
   R.CITY_ACT.zhengyuan = R.CITY_FAC['zhengyuan:house'];
   R.CITY_ACT.nanlong = R.CITY_FAC['nanlong:cargo'];
+
+  // ---------- 世界中央銀行：各城的分館都是同一個戶頭（bank.js） ----------
+  ['huangling', 'jishan', 'nanlong', 'banbei'].forEach(id => { R.CITY_FAC[id + ':bank'] = city => R.bankSheet && R.bankSheet(city.name + '分館'); });
+
+  // ---------- 南瀧 ----------
+  // 卸貨第一雕像：摸一下搬運工的腳，今天買賣貨物價錢好 5%
+  R.CITY_FAC['nanlong:statue'] = city => {
+    const s = S(), c = C2();
+    if (c.statueDay === s.day) { R.townTalk('卸貨第一雕像', ['雕像的腳被摸得發亮。你今天已經摸過了。']); return; }
+    c.statueDay = s.day; R.save(); R.sfx && R.sfx('pick');
+    R.townTalk('卸貨第一雕像', ['扛著貨箱的搬運工銅像。腳尖被幾十年來的人摸得發亮。', '傳說摸了他的腳，今天做生意就順。', '（今天在各城的貨運窗口買賣，價錢好 5%。）']);
+  };
+  // 湍遊國際大學：魔力學院的公開課（三天一次，經驗書 ×1）、聖教學院的晚禱（理智回復）
+  R.CITY_FAC['nanlong:uni'] = city => {
+    const s = S(), c = C2(), next = (c.lecture || -9) + 3;
+    R.sheet('<p class="kicker">南瀧・湍遊國際大學</p><h2>湍遊國際大學</h2><p>附設魔力學院分院和聖教學院。外國留學生比本地學生多。</p>',
+      '<div class="row"><button type="button" class="btn pri" id="un-l"' + (s.day < next || s.gold < 60 ? ' disabled' : '') + '>魔力學院的公開課（60 費拉・經驗書 ×1' + (s.day < next ? '・第 ' + next + ' 天再開' : '') + '）</button><button type="button" class="btn" id="un-p"' + (c.prayDay === s.day ? ' disabled' : '') + '>聖教學院的晚禱（理智回復）</button><button type="button" class="btn" id="un-x">好了</button></div>');
+    $('un-x').onclick = R.closeSheet;
+    $('un-l').onclick = () => { if (s.day < next || s.gold < 60) return; s.gold -= 60; c.lecture = s.day; s.xpBooks = (s.xpBooks || 0) + 1; R.cityRep('nanlong', 1); R.save(); R.townTalk('魔力學院・公開課', ['教授在黑板上畫魔力迴路。「遺跡裡的魔力，是從地底往上滲的——」', '你抄了滿滿三頁。（經驗書 +1）']); };
+    $('un-p').onclick = () => { if (c.prayDay === s.day) return; c.prayDay = s.day; if (R.sanAdd) R.sanAdd(10); R.save(); R.townTalk('聖教學院・晚禱', ['燭光、管風琴、聽不懂的外國話。', '心裡安靜了一點。（理智回復）']); };
+  };
+  // 商業區拱廊：德克斯凡的舶來品店（每天換三件飾品）
+  R.CITY_FAC['nanlong:mall'] = city => {
+    const s = S(), c = C2(), lv = Math.max(1, ((s.classes || {})[s.cls] || {}).lv || 1);
+    if (c.mallDay !== s.day || !c.mall) { const pool = Object.keys(R.ACC || {}); c.mallDay = s.day; c.mall = pool.length ? [0, 1, 2].map(() => { const r = Math.random() < 0.25 ? 3 : 2; return { base: pool[Math.floor(Math.random() * pool.length)], r, p: r === 3 ? 900 : 300 }; }) : []; R.save(); }
+    const nm = o => { const a = R.ACC[o.base]; return (o.r === 3 ? '【史詩】' : '【稀有】') + (a ? a.name : o.base); };
+    R.sheet('<p class="kicker">南瀧・商業區拱廊</p><h2>舶來品店「海風」</h2><p>「德克斯凡的船昨天剛到。今天就這三件，明天又換。」</p>'
+      + (c.mall.length ? c.mall.map((o, i) => '<button type="button" class="btn" data-ml="' + i + '"' + (o.sold || s.gold < o.p ? ' disabled' : '') + '><b>' + esc(nm(o)) + '</b><br><small>' + (o.sold ? '賣掉了' : o.p + ' 費拉') + '</small></button>').join('') : '<p>今天沒有貨。</p>'),
+      '<div class="row"><button type="button" class="btn pri" id="ml-x">好了</button></div>');
+    $('ml-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-ml]').forEach(b => { b.onclick = () => { const o = c.mall[+b.dataset.ml]; if (o.sold || s.gold < o.p) return; const it = R.makeItem({ kind: 'acc', base: o.base, ilvl: lv, rarity: o.r, identified: true }); if (!it) return; s.gold -= o.p; o.sold = 1; if (!(R.giveItem && R.giveItem(it))) s.stash.push(it); R.save(); ok('買了' + R.itemName(it) + '。'); R.CITY_FAC['nanlong:mall'](city); }; });
+  };
 
   // ---------- 機場：有機場的城之間搭魔導飛機（當天到，票價是電車的兩倍半） ----------
   const AIR = { huangling: 'airport', xijian: 'air', banbei: 'air', bannan: 'air', yuebei: 'air' };
