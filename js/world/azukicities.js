@@ -54,7 +54,7 @@
         ['js_stock', '股票交易所大廳', '金融區', '開盤鈴一響，整層樓像遺跡反應一樣吵。']
       ],
       food: [['機械町拉麵', 10, '工廠下班人潮', { hp: 0.05, dmg: 0.03 }], ['能量罐（德克斯凡）', 7, '自動販賣機', { mp: 0.05 }]],
-      act: { id: 'casino', name: '地下賭場・小賭一場', cost: 20, desc: '籌碼換現金。贏了高興，輸了當買教訓。', do: 'gamble' }
+      act: { id: 'casino', name: '地下賭場・骰寶', cost: 0, desc: '三顆骰子：大小、單雙、豹子、點數。', do: 'gamble' }
     },
     {
       id: 'futing', name: '府廳', role: '軍事城市', tag: '軍營・訓練', fare: 55, days: 1, needDan: 1,
@@ -315,31 +315,6 @@
     const a = city.act, s = S(); if (!a || !s) return;
     if (R.CITY_ACT[city.id]) return R.CITY_ACT[city.id](city);
     if (a.cost > 0 && !pay(a.cost, a.name)) return;
-    if (a.do === 'gamble') {
-      const win = Math.random() < 0.42, gain = win ? (a.cost * 2 + 10) : 0;
-      if (win) { s.gold += gain; toastOk('贏了 ' + gain + ' 費拉。', '#7CF0A0'); }
-      else toastOk('輸光這筆籌碼。門衛笑了一下。', '#FF9A6A');
-      R.save(); hub(city.id); return;
-    }
-    if (a.do === 'drill') { buff({ dmg: 0.04, hp: 0.03 }); toastOk('體能課結束。今天下遺跡：傷害與生命稍好。'); R.save(); hub(city.id); return; }
-    if (a.do === 'dive') { buff({ mp: 0.08, regen: 0.1 }); toastOk('肺還有點緊。今天下遺跡：魔力相關加成。'); R.save(); hub(city.id); return; }
-    if (a.do === 'trade') {
-      R.advanceDays(1); const payG = 35 + Math.floor(Math.random() * 25); s.gold += payG; R.save();
-      R.banner && R.banner(city.name + '・臨工', '搬了一天貨，領到 ' + payG + ' 費拉。'); hub(city.id); return;
-    }
-    if (a.do === 'fish') {
-      R.advanceDays(1); const tip = 28 + Math.floor(Math.random() * 30); s.gold += tip;
-      s.mats = s.mats || {}; s.mats.shell = (s.mats.shell || 0) + 2;
-      R.save(); R.banner && R.banner('海魚市集', '小費 ' + tip + ' 費拉，還塞了兩枚貝殼。'); hub(city.id); return;
-    }
-    if (a.do === 'navy') { buff({ hp: 0.03, skillCd: 0.03 }); toastOk('衣服乾了。今天翻滾與冷卻感覺輕一點。'); R.save(); hub(city.id); return; }
-    if (a.do === 'pilgrim') {
-      if (R.sanAdd) R.sanAdd(12); toastOk('朱印蓋好了。心情平一點（理智回復）。'); R.save(); hub(city.id); return;
-    }
-    if (a.do === 'plant') {
-      R.advanceDays(1); s.gold += 40; if (R.sanAdd) R.sanAdd(8); R.save();
-      R.banner && R.banner('植樹場', '種完一排樹苗。協會給 40 費拉。'); hub(city.id); return;
-    }
     if (a.do === 'gourmet') {
       buff({ hp: 0.1, mp: 0.08, dmg: 0.05 }); toastOk('三種名物都進肚子了。今天下遺跡加成很豐盛。'); R.save(); hub(city.id); return;
     }

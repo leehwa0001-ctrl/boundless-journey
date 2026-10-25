@@ -15,7 +15,9 @@
   // ---------- 藥劑：第二格加成（三天） ----------
   const cp = R.calcPlayer;
   R.calcPlayer = cls => {
-    const P = cp(cls), s = S(), t = s && s.tonic; if (!t || !W.run || t.until < s.day) return P;
+    const P = cp(cls), s = S(), t = s && s.tonic, om = s && s.city2 && s.city2.omi; if (!W.run) return P;
+    if (om && om.day === s.day) { const b = om.b; if (b.hp) P.hpMax = Math.round(P.hpMax * (1 + b.hp)); if (b.dmg) P.dmgMult *= 1 + b.dmg; if (b.regen) P.regen += b.regen; }   // 府廳軍神社的武運籤（當天）
+    if (!t || t.until < s.day) return P;
     const b = t.b; if (b.hp) P.hpMax = Math.round(P.hpMax * (1 + b.hp)); if (b.mp) P.mpMax = Math.round(P.mpMax * (1 + b.mp)); if (b.dmg) P.dmgMult *= 1 + b.dmg; if (b.skillCd) P.skillCdMult *= 1 - b.skillCd; if (b.regen) P.regen += b.regen;
     return P;
   };
@@ -90,12 +92,71 @@
     }; });
   };
   R.CITY_FAC['futing:hq'] = quarter;
+  // 射擊場：30 秒，窗口裡跳出來的靶——紅的是敵兵靶，戴白盔的是新兵（打到扣分）
+  const range = () => {
+    const s = S(), c = C2();
+    R.sheet('<p class="kicker">府廳・軍營</p><h2>射擊場</h2><p class="note">30 秒。點紅色的敵兵靶（+10），別打到戴白盔的新兵（−20）。照新兵的標準給軍功章：200 分以上 3 枚、140 以上 2 枚、80 以上 1 枚。一次 10 費拉。</p><canvas id="rg-cv" width="360" height="220" class="fs-cv" style="cursor:crosshair"></canvas><p class="note" id="rg-msg">按「開始」。</p>',
+      '<div class="row"><button type="button" class="btn pri" id="rg-go">開始（10 費拉）</button><button type="button" class="btn" id="rg-x">離開</button></div>');
+    const cv = $('rg-cv'), x = cv.getContext('2d'), msg = t => { const m = $('rg-msg'); if (m) m.textContent = t; };
+    const SLOT = [[50, 70], [130, 70], [210, 70], [290, 70], [90, 150], [180, 150], [270, 150]];
+    let on = false, t = 0, score = 0, pops = [], next = 0, raf = 0, last = 0, fx = [];
+    const draw = () => {
+      x.fillStyle = '#6A7A5A'; x.fillRect(0, 0, 360, 220); x.fillStyle = '#4A3A2A'; SLOT.forEach(([a, b]) => x.fillRect(a - 22, b - 26, 44, 52));
+      pops.forEach(p => { const [a, b] = SLOT[p.i], up = Math.min(1, p.t / 0.15, (p.life - p.t) / 0.15); x.save(); x.beginPath(); x.rect(a - 22, b - 26, 44, 52); x.clip(); const y = b + 26 - 48 * up; x.fillStyle = p.bad ? '#E8E4DC' : '#C83A3A'; x.fillRect(a - 12, y + 14, 24, 32); x.beginPath(); x.arc(a, y + 9, 9, 0, 7); x.fill(); if (p.bad) { x.fillStyle = '#FFFFFF'; x.fillRect(a - 10, y, 20, 6); } x.restore(); });
+      fx.forEach(f => { x.fillStyle = f.c; x.font = 'bold 14px sans-serif'; x.fillText(f.t, f.x, f.y - (0.6 - f.l) * 30); });
+      x.fillStyle = '#FFF'; x.font = '12px sans-serif'; x.fillText('分數 ' + score + '　剩 ' + Math.max(0, 30 - t).toFixed(1) + ' 秒', 8, 16);
+    };
+    const end = () => { on = false; const got = score >= 200 ? 3 : score >= 140 ? 2 : score >= 80 ? 1 : 0; c.medal = (c.medal || 0) + got; if (got >= 2) c.rangeDay = s.day; if (got) R.cityRep('futing', 1); R.save(); msg('結束：' + score + ' 分' + (got ? '，軍功章 +' + got + '（現在 ' + c.medal + ' 枚）' : '。教官搖頭：「新兵都比你準。」')); $('rg-go').disabled = false; };
+    const loop = now => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now; if (!$('rg-cv')) return;
+      if (on) { t += dt; next -= dt; if (next <= 0) { next = Math.max(0.35, 0.9 - t / 50); const free = SLOT.map((_, i) => i).filter(i => !pops.some(p => p.i === i)); if (free.length) pops.push({ i: free[Math.floor(rnd() * free.length)], t: 0, life: 1.4 - Math.min(0.6, t / 50), bad: rnd() < 0.25 }); } pops.forEach(p => { p.t += dt; }); pops = pops.filter(p => p.t < p.life); if (t >= 30) end(); }
+      fx.forEach(f => { f.l -= dt; }); fx = fx.filter(f => f.l > 0); draw(); raf = requestAnimationFrame(loop);
+    };
+    cv.onpointerdown = e => { if (!on) return; const r = cv.getBoundingClientRect(), mx = (e.clientX - r.left) * 360 / r.width, my = (e.clientY - r.top) * 220 / r.height; const p = pops.find(q => { const [a, b] = SLOT[q.i]; return Math.abs(mx - a) < 16 && my > b - 26 && my < b + 26 && q.t > 0.1; }); R.sfx && R.sfx('gun'); if (!p) return; pops = pops.filter(q => q !== p); score += p.bad ? -20 : 10; fx.push({ t: p.bad ? '−20' : '+10', c: p.bad ? '#FF5A3A' : '#FFE04A', x: SLOT[p.i][0] - 10, y: SLOT[p.i][1] - 30, l: 0.6 }); };
+    $('rg-go').onclick = () => { if (on || !pay(10)) return; R.save(); on = true; t = 0; score = 0; pops = []; next = 0.5; $('rg-go').disabled = true; msg('射！'); };
+    $('rg-x').onclick = () => { cancelAnimationFrame(raf); R.closeSheet(); };
+    last = performance.now(); raf = requestAnimationFrame(loop);
+  };
+  // 軍神社：武運籤（一天一次，當天下遺跡有效）
+  const OMI = [['大吉', { dmg: 0.06, hp: 0.04 }, '「武運長久。今天的你，誰也擋不住。」'], ['吉', { dmg: 0.03 }, '「出手要快。」'], ['中吉', { hp: 0.04 }, '「守得住，就贏了。」'], ['末吉', { regen: 0.2 }, '「慢慢來，傷會好的。」'], ['凶', {}, '「今天別逞強。」——把籤綁在神社的樹上。']];
+  const omikuji = () => {
+    const s = S(), c = C2();
+    if (c.omi && c.omi.day === s.day) { R.townTalk('軍神社', ['今天已經抽過了：' + c.omi.name + '。']); return; }
+    if (!pay(10)) return;
+    const r = rnd(), o = OMI[r < 0.12 ? 0 : r < 0.4 ? 1 : r < 0.65 ? 2 : r < 0.88 ? 3 : 4];
+    c.omi = { day: s.day, name: o[0], b: o[1] }; R.save(); R.sfx && R.sfx('pick');
+    R.townTalk('軍神社・武運籤', ['【' + o[0] + '】' + o[2], tonicText(o[1]) ? '今天下遺跡：' + tonicText(o[1]) + '。' : '今天沒有加成。']);
+  };
+  // 軍眷宿舍：太太託你把信交給軍營的教官（一天一封）
+  const pick = a => a[Math.floor(rnd() * a.length)];
+  const letter = () => {
+    const s = S(), c = C2();
+    if (c.ftLetterDone === s.day) { R.townTalk('軍眷宿舍', ['「謝謝你。他回信說這個月會回家。」']); return; }
+    if (c.ftLetter === s.day) { R.townTalk('軍眷宿舍', ['「信交給操場上帶隊的教官就好。他是我先生。」']); return; }
+    c.ftLetter = s.day; R.save();
+    R.townTalk('軍眷宿舍', ['「勇者先生……可以幫我把這封信拿到軍營嗎？」', '「操場上帶隊的教官就是我先生。宿舍的人不能進營區。」', '（收下一封信。軍營在西北邊。）']);
+  };
+  const letterTo = () => {
+    const s = S(), c = C2();
+    if (c.ftLetter !== s.day) { R.townTalk('帶隊的教官', [pick(['「勇者？黃線外面一步都不准踩。」', '「新兵！再跑三圈！」', '「射擊場借你用，10 費拉。打到新兵的靶要扣分。」'])]); return; }
+    c.ftLetter = 0; c.ftLetterDone = s.day; s.gold += 60; R.cityRep('futing', 1); R.save(); R.sfx && R.sfx('coin');
+    R.townTalk('帶隊的教官', ['「……我太太的字。」', '（教官把信收進胸口的口袋，轉過去喊了一聲「全員休息五分鐘」。）', '「拿著。跑腿費。」（+60 費拉，府廳的聲望 +1）']);
+  };
+  // 作戰桌：附近的遺跡
+  const intel = () => {
+    const me = (R.SITES || []).find(x => x.id === 'futing'), near = (R.SITES || []).filter(x => x.kind === 'ruin' && me && Math.hypot((x.x || 0) - (me.x || 0), (x.z || 0) - (me.z || 0)) < 0.9);
+    R.townTalk('作戰桌', near.length ? near.map(x => '【' + x.name + '】' + (((R.GRADES || []).find(g => g.id === x.grade) || {}).name || '') + (x.status === 'lock' ? '（還沒開放）' : '') + '：' + (x.desc || '')) : ['「附近沒有登記的遺跡。」']);
+  };
+  R.futing = { range, omikuji, letter, letterTo, intel };
+  R.CITY_FAC['futing:camp'] = range;
   const nm0 = R.itemName; if (nm0) R.itemName = it => (it && it.mil ? '府廳軍規・' : '') + nm0(it);
   R.cityQuestReg('futing', [
     R.cqCargo('ft_med', 'medicine', 4, 340, '軍醫院的補給', '演習的傷兵多，軍醫院要 4 箱英尼爾斯藥品。'),
     R.cqCargo('ft_steel', 'steel', 4, 300, '靶場的新靶', '靶場要換鋼靶，4 箱征遠鋼材。'),
     R.cqCargo('ft_fish', 'fishdry', 5, 200, '軍營的伙房', '伙房要 5 箱銀旗魚乾。'),
-    { k: 'ft_oc', name: '跟新兵跑一趟', desc: '今天在戰爭公園的越野障礙賽跑出 A 以上。', pay: 120, need: () => [C2().ocDay === S().day ? 1 : 0, 1], take: () => { } }
+    { k: 'ft_oc', name: '跟新兵跑一趟', desc: '今天在戰爭公園的越野障礙賽跑出 A 以上。', pay: 120, need: () => [C2().ocDay === S().day ? 1 : 0, 1], take: () => { } },
+    { k: 'ft_range', name: '射擊場的考核', desc: '今天在軍營的射擊場拿到 140 分以上。', pay: 120, need: () => [C2().rangeDay === S().day ? 1 : 0, 1], take: () => { } },
+    { k: 'ft_letter', name: '軍眷的信', desc: '今天幫軍眷宿舍的太太把信送到軍營。', pay: 50, need: () => [C2().ftLetterDone === S().day ? 1 : 0, 1], take: () => { } }
   ]);
 
   // ================= 板北：製藥廠、地下賭場 =================
@@ -115,7 +176,7 @@
     document.querySelectorAll('[data-rx]').forEach(b => { b.onclick = () => { const r = RX[+b.dataset.rx]; if (!Object.keys(r[1]).every(k => (M[k] || 0) >= r[1][k]) || !pay(30)) return; Object.keys(r[1]).forEach(k => { M[k] -= r[1][k]; }); drink(r[0], r[2]); R.cityRep('banbei', 1); C2().rxDay = s.day; R.save(); ok('喝下' + r[0] + '：' + tonicText(r[2]) + '（三天）'); pharma(city); }; });
   };
   R.CITY_FAC['banbei:pharma'] = pharma;
-  if (R.sicbo) R.CITY_ACT.banbei = R.CITY_FAC['banbei:casino'] = () => R.sicbo('板北・地下賭場');
+  if (R.sicbo) { R.CITY_ACT.banbei = R.CITY_FAC['banbei:casino'] = () => R.sicbo('板北・地下賭場'); R.CITY_ACT.jishan = R.CITY_FAC['jishan:casino'] = () => R.sicbo('吉山・地下賭場'); }
   R.cityQuestReg('banbei', [
     R.cqCargo('bb_tea', 'tea', 4, 240, '港灣酒店的下午茶', '酒店的外國客人要喝昭旭茶，4 箱古森茶。'),
     R.cqCargo('bb_spice', 'spice', 4, 300, '夜店街的新菜單', '夜店的廚師要 4 箱德克斯凡香料。'),
