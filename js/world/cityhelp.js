@@ -171,7 +171,8 @@
       K.bench(-5.4, 0.5, 3, Math.PI / 2); K.bench(5.4, 0.5, 3, -Math.PI / 2);
       K.plant(-7.2, 4.8); K.plant(7.2, 4.8); K.rug(0, 1.5, 4, 6, '#2E5A3A'); K.lamp(-3.5, 0); K.lamp(3.5, 0);
     } });
-    CK.defineRoom({ id: p + '_station', name: St.name + '・大廳', hint: St.hint || '「往東鶴的魔導電車，即將進站——」', w: 22, d: 12, h: 6, floor: 'gran', wall: 'plaster', wain: 'woodB', trim: 'steelD', amb: 1.0, build(B, K) {
+    CK.defineRoom({ id: p + '_station', name: St.name + '・大廳', hint: St.hint || '「往東鶴的魔導電車，即將進站——」', w: 22, d: 12, h: 6, floor: St.floor || 'gran', wall: St.wall || 'plaster', wain: St.wain || 'woodB', trim: St.trim || 'steelD', amb: St.amb || 1.0, build(B, K) {
+      if (St.deco) St.deco(B, K, CK.M);   // 2026-10-26 作者：各城的車站不要同一間——每座城自己加東西（city_*.js）
       K.counter(-7, 1.0, 5, 0.9, { mat: 'woodB', top: 'wood' });
       K.wallSign(St.name, 'n', 0, 4.8, { size: 1.0, bg: '#F4ECD8', fg: '#2A1A10' });
       K.wallSign(St.dest || '東鶴　皇嶺　吉山', 'n', 0, 3.8, { size: 0.42, bg: '#2A2420', fg: '#F4D88A', lit: 1 });
@@ -186,7 +187,8 @@
       if (St.waiting) B.talker(1, 2, Math.PI, '等車的人', St.waiting);
       K.lamp(-7, 0); K.lamp(0, 2); K.lamp(7, 0);
     } });
-    if (F) CK.defineRoom({ id: F.id, name: F.name, hint: F.hint, w: 12, d: 9, h: 3.4, floor: F.floor || 'wfloor', wall: 'plaster', wain: 'woodB', build(B, K) {
+    if (F) CK.defineRoom({ id: F.id, name: F.name, hint: F.hint, w: 12, d: 9, h: 3.4, floor: F.floor || 'wfloor', wall: F.wall || 'plaster', wain: F.wain || 'woodB', build(B, K) {
+      if (F.deco) F.deco(B, K, CK.M);
       K.counter(0, -2.6, 8, 0.7, { mat: 'woodB', top: 'woodD' });
       K.wallSign(F.name, 'n', 0, 2.6, { size: 0.5, bg: F.bg || '#2A2420', fg: '#F4ECD8', lit: 1 });
       B.inter(0, -1.4, 2.2, '點菜', () => H.eat(city, F.name, F.say, F.menu || H.menu(city)), '#E8A03A');
