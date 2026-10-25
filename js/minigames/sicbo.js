@@ -9,10 +9,10 @@
   const win = (k, d) => { const s = d[0] + d[1] + d[2], tri = d[0] === d[1] && d[1] === d[2]; if (k === 'triple') return tri; if (k[0] === 's' && k !== 'small') return s === +k.slice(1); if (tri) return false; return k === 'big' ? s >= 11 : k === 'small' ? s <= 10 : k === 'odd' ? s % 2 === 1 : s % 2 === 0; };
   const payOf = k => (k[0] === 's' && k !== 'small' ? SUMPAY[+k.slice(1)] : KINDS.find(x => x[0] === k)[3]);
   const nameOf = k => (k[0] === 's' && k !== 'small' ? '點數 ' + k.slice(1) : KINDS.find(x => x[0] === k)[1]);
-  R.sicbo = () => {
+  R.sicbo = where => {
     const S = R.S; S.sicbo = S.sicbo || { n: 0, best: 0 };
     let bet = BETS.includes(S.sicbo.bet) ? S.sicbo.bet : 20, pick = 'big', rolling = false;
-    R.sheet('<p class="kicker">柏青哥「銀河」・裡面的骰寶桌</p><h2>骰寶「三連星」</h2><p class="note">莊家把三顆骰子蓋在碗裡搖。押大小單雙一賠一，但開出豹子（三顆一樣）就全歸莊家。'
+    R.sheet('<p class="kicker">' + (where || '柏青哥「銀河」・裡面的骰寶桌') + '</p><h2>骰寶「三連星」</h2><p class="note">莊家把三顆骰子蓋在碗裡搖。押大小單雙一賠一，但開出豹子（三顆一樣）就全歸莊家。'
       + (S.sicbo.n ? '你玩了 ' + S.sicbo.n + ' 把' + (S.sicbo.best ? '，贏最多的一把 ' + S.sicbo.best + ' 費拉' : '') + '。' : '') + '</p>'
       + '<div class="sb-dice" id="sb-d">⚀ ⚀ ⚀</div><p class="note" id="sb-msg">選一種押法、押多少，按「開」。</p>'
       + '<div class="row sb-k">' + KINDS.map(([k, n, d, p]) => '<button type="button" class="btn" data-sbk="' + k + '">' + n + '<small>' + d + '・1 賠 ' + p + '</small></button>').join('') + '</div>'

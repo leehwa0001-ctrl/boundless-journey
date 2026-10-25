@@ -12,7 +12,7 @@
   H.city = id => (R.AZUKI_CITIES || []).find(c => c.id === id) || {};
   // ---- 觀光章、設施、吃東西 ----
   H.sight = (B, x, z, city, sid, r) => { const sg = (H.city(city).sights || []).find(s => s[0] === sid), it = B.inter(x, z, r || 2.6, '觀光景點：' + (sg ? sg[1] : sid) + '（觀光章）', () => az().stamp(city, sid), '#E8C04A'); it.sight = sid; return it; };
-  H.fac = (B, x, z, city, fid, icon, r) => { const f = (H.city(city).fac || []).find(q => q[0] === fid); return B.inter(x, z, r || 2.4, (f ? f[1] : fid) + '（看看）', () => az().fac(city, fid), icon || '#C8A060'); };
+  H.fac = (B, x, z, city, fid, icon, r) => { const f = (H.city(city).fac || []).find(q => q[0] === fid); return B.inter(x, z, r || 2.4, (f ? f[1] : fid) + (R.CITY_FAC && R.CITY_FAC[city + ':' + fid] ? '' : '（看看）'), () => az().fac(city, fid), icon || '#C8A060'); };
   H.door = (B, x, z, roomId, label, icon, ry, r) => B.inter(x, z, r || 2.6, label, () => { const [wx, wz] = B.toWorld(x, z); CK.enterRoom(roomId, { x: wx, z: wz, yaw: (ry || 0) + B.yaw() }); }, icon || '#C8A060');
   H.eat = (city, title, say, menu) => {
     const s = S(), nm = H.city(city).name || '';
@@ -179,6 +179,9 @@
       B.talker(-7, 0, 0, '售票口的站務員', St.lines || ['「往東鶴的票嗎？」']);
       K.shelf(8, 1.5, 4, -Math.PI / 2, { cols: ['#E8E4DC', '#C83A3A', '#2E5A9A', '#E8B830'] });
       B.inter(6.6, 1.5, 2, '車站的小賣店', () => az().food(city), '#E8A03A');
+      K.counter(6, -4.2, 5, 0.9, { mat: 'steelD', top: 'wood' });
+      B.inter(6, -3, 2.4, '貨運窗口（買賣貨物、交外貿訂單）', () => R.cityTrade && R.cityTrade(city), '#C8A060');   // citylife.js
+      B.talker(6, -5, 0, '貨運窗口的職員', ['「這裡出產的貨在這裡最便宜。」', '「要運多一點？去征遠買條船。」']);
       K.bench(-2, 3.8, 4, 0); K.bench(3, 3.8, 4, 0);
       if (St.waiting) B.talker(1, 2, Math.PI, '等車的人', St.waiting);
       K.lamp(-7, 0); K.lamp(0, 2); K.lamp(7, 0);

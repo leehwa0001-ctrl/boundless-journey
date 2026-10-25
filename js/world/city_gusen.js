@@ -71,7 +71,7 @@
         H.door(B, x0 + 40.4, (z0 + z1) / 2, 'gs_tea', '走進古森茶廠的茶室（茶套餐、野菜飯）', '#9AE07A', -Math.PI / 2); H.fac(B, x0 + 40.4, z0 + 6, C, 'tea', '#9AE07A');
         B.area('茶園・茶廠', CUT.tea); B.label('茶園', x0 + 20, (z0 + z1) / 2); }
       { const [x0, z0, x1, z1] = CUT.plant; B.zone(CUT.plant, 'soil', 0.02); for (let x = x0 + 4; x <= x1 - 4; x += 5) for (let z = z0 + 4; z <= z1 - 4; z += 5) B.tree(x + rr(-1, 1), z + rr(-1, 1), 'pine', rr(0.3, 0.5));
-        H.fac(B, x0 - 1, (z0 + z1) / 2 - 6, C, 'plant', '#9AE07A'); B.inter(x0 - 1, (z0 + z1) / 2 + 6, 2.4, '植樹場幫忙（種一天樹苗）', () => az().act(C), '#9AE07A');
+        H.fac(B, x0 - 1, (z0 + z1) / 2 - 6, C, 'plant', '#9AE07A'); B.inter(x0 - 1, (z0 + z1) / 2 + 6, 2.4, '植樹場（你的六塊地）', () => az().act(C), '#9AE07A');
         B.label('植樹場', (x0 + x1) / 2, (z0 + z1) / 2); }
       { const [x0, z0, x1, z1] = CUT.zoo; B.zone(CUT.zoo, 'grass', 0.02);
         B.fence(x0 + 2, z0 + 2, x1 - 2, z0 + 2, 1.2, 'woodB'); B.fence(x0 + 2, z1 - 2, x1 - 2, z1 - 2, 1.2, 'woodB'); B.fence(x0 + 2, z0 + 2, x0 + 2, (z0 + z1) / 2 - 3, 1.2, 'woodB'); B.fence(x0 + 2, (z0 + z1) / 2 + 3, x0 + 2, z1 - 2, 1.2, 'woodB'); B.fence(x1 - 2, z0 + 2, x1 - 2, z1 - 2, 1.2, 'woodB');

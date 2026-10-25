@@ -73,7 +73,7 @@
         ['ft_shrine', '軍神社', '神社', '鈴繩旁放著一排舊頭盔。']
       ],
       food: [['軍糧便當', 6, '特劃區食堂', { hp: 0.04, regen: 0.15 }], ['黑咖啡（軍部販賣部）', 4, '苦到說話變少', { skillCd: 0.05 }]],
-      act: { id: 'drill', name: '戰爭公園・體能課', cost: 10, desc: '跟新兵一起跑圈。今天遺跡裡移動與傷害稍好。', do: 'drill' }
+      act: { id: 'drill', name: '戰爭公園・越野障礙賽', cost: 10, desc: '跳矮牆、滑過鐵絲網，跑 60 秒。照成績拿軍功章，到軍部旁的軍需處換府廳軍規的裝備。', do: 'drill' }
     },
     {
       id: 'xijian', name: '西見', role: '港都', tag: '港口・海洋大學', fare: 65, days: 1, needDan: 0,
@@ -95,7 +95,7 @@
         ['xj_consul', '艾美利亞領事館外', '港區', '衛兵用共通語問你有沒有預約。']
       ],
       food: [['港灣刺身定食', 14, '漁港直送', { hp: 0.06, mp: 0.03 }], ['鹽烤鯖魚', 9, '路邊摊', { hp: 0.05 }]],
-      act: { id: 'dive', name: '水下訓練營體驗', cost: 18, desc: '穿上借用的潛水裝。今天魔力回復與魔力上限感覺好一點。', do: 'dive' }
+      act: { id: 'dive', name: '水下訓練營・潛水打撈', cost: 18, desc: '潛到港外的沉船撈古物、貝殼、寶箱，小心會戰留下的舊水雷。船越大潛得越深。', do: 'dive' }
     },
     {
       id: 'nanlong', name: '南瀧', role: '國際港都', tag: '深海港・外貿', fare: 75, days: 1, needDan: 0,
@@ -117,7 +117,7 @@
         ['nl_uni', '湍遊國際大學鐘樓', '大學', '鐘聲混著汽笛。外籍學生在草坪野餐。']
       ],
       food: [['南瀧霧茶', 7, '拱廊茶屋', { mp: 0.07 }], ['碼頭炒麵', 11, '工人最愛', { hp: 0.05, dmg: 0.02 }]],
-      act: { id: 'trade', name: '外貿公司臨工', cost: 0, desc: '搬半天貨物。給當日工錢，日子照過。', do: 'trade' }
+      act: { id: 'trade', name: '外貿公司・外貿訂單', cost: 0, desc: '每天三張訂單：把幾箱貨送到某座城，期限內交貨拿報酬。', do: 'trade' }
     },
     {
       id: 'woqi', name: '渦旗', role: '漁港', tag: '漁汛・市集', fare: 85, days: 2, needDan: 0, island: 1,
@@ -138,7 +138,7 @@
         ['wq_sushi', '壽司・渦潮的櫃台', '港邊', '師傅把魚刺排成渦旗的形狀。']
       ],
       food: [['銀旗魚握壽司', 16, '季節限定', { hp: 0.07, mp: 0.04 }], ['漁港味噌湯', 5, '會館食堂', { regen: 0.2 }]],
-      act: { id: 'auction', name: '海魚市集・幫忙喊價', cost: 0, desc: '幫一天忙。魚販給你小費與一盒鮮魚。', do: 'fish' }
+      act: { id: 'auction', name: '渦旗漁港・出海釣魚', cost: 15, desc: '一趟五竿。秋天銀旗魚順著渦流下來；船越大出得越遠、魚越大。釣到的魚賣給海魚市集，或請壽司店捏。', do: 'fish' }
     },
     {
       id: 'zhengyuan', name: '征遠', role: '海軍造船', tag: '造船・軍港', fare: 70, days: 1, needDan: 1,
@@ -161,7 +161,7 @@
         ['zy_yard', '造船廠夜景', '船台', '電焊像夏天的祭典煙火。']
       ],
       food: [['船屋海鮮鍋', 13, '船屋區', { hp: 0.06 }], ['鋼鐵廠食堂咖哩', 8, '份量驚人', { hp: 0.05, dmg: 0.03 }]],
-      act: { id: 'navy', name: '海軍訓練所體驗操艇', cost: 12, desc: '手臂酸、衣服濕。今天翻滾與體力比較耐用。', do: 'navy' }
+      act: { id: 'navy', name: '船屋「老錨」・買船', cost: 0, desc: '買自己的船：貨箱變多，渦旗出海、西見潛水都能去更遠更深。', do: 'navy' }
     },
     {
       id: 'banbei', name: '板北', role: '橋樑・開放港', tag: '外資・夜生活', fare: 60, days: 1, needDan: 0,
@@ -186,7 +186,7 @@
         ['bb_hotel', '港灣酒店大廳', '酒店', '鋼琴師在彈沒聽過的華爾納曲子。']
       ],
       food: [['機場咖哩麵包', 6, '出發前必買', { hp: 0.03, mp: 0.03 }], ['酒店下午茶', 18, '貴但好看', { mp: 0.06 }]],
-      act: { id: 'casino2', name: '地下賭場・骰子', cost: 25, desc: '燈光很暗。贏或輸都算體驗。', do: 'gamble' }
+      act: { id: 'casino2', name: '地下賭場・骰寶', cost: 0, desc: '三顆骰子：大小、單雙、豹子、點數。', do: 'gamble' }
     },
     {
       id: 'bannan', name: '板南', role: '觀光', tag: '城・寺・鐵路', fare: 55, days: 1, needDan: 0,
@@ -209,7 +209,7 @@
         ['bn_yokai', '妖物寺山門', '寺', '札很多。住持說：「不要念出聲音。」']
       ],
       food: [['通天道茶菓子', 9, '茶店', { mp: 0.05 }], ['城下烏龍麵', 10, '車站前', { hp: 0.05 }]],
-      act: { id: 'pilgrim', name: '通天道參拜', cost: 5, desc: '走完石階、敲鐘、蓋朱印。理智回一點。', do: 'pilgrim' }
+      act: { id: 'pilgrim', name: '通天道一千階', cost: 0, desc: '左右腳照節奏踩，60 秒內爬到仰天寺。爬到頂蓋朱印、理智回復。', do: 'pilgrim' }
     },
     {
       id: 'gusen', name: '古森', role: '自然', tag: '生態・精靈', fare: 95, days: 2, needDan: 0, island: 1,
@@ -233,7 +233,7 @@
         ['gs_elf', '精靈部落會客橋', '部落', '橋上掛著風鈴。你不會精靈語，但點頭就夠。']
       ],
       food: [['古森茶套餐', 11, '茶廠', { mp: 0.08 }], ['梯田野菜飯', 10, '老街', { hp: 0.05, regen: 0.15 }]],
-      act: { id: 'plant', name: '植樹場幫忙', cost: 0, desc: '種一天樹苗。協會給津貼，理智也回一點。', do: 'plant' }
+      act: { id: 'plant', name: '植樹場・你的六塊地', cost: 0, desc: '種下古森木的樹苗，四天後長大，砍下來是古森木材（貨物）。', do: 'plant' }
     },
     {
       id: 'yuebei', name: '岳北', role: '美食觀光', tag: '山礦洋・名物', fare: 100, days: 2, needDan: 0, island: 1,
@@ -309,8 +309,11 @@
   R.azukiBook = bookAll;
 
   // ---------- 招牌活動 ----------
+  // 2026-10-26 作者：各城不要換皮——有自己玩法的城（citytrade.js、citysea.js、cityland.js）在 R.CITY_ACT／R.CITY_FAC／R.CITY_QUESTS 登記，這裡先問它們
+  R.CITY_ACT = R.CITY_ACT || {}; R.CITY_FAC = R.CITY_FAC || {}; R.CITY_QUESTS = R.CITY_QUESTS || {};
   const doAct = (city) => {
     const a = city.act, s = S(); if (!a || !s) return;
+    if (R.CITY_ACT[city.id]) return R.CITY_ACT[city.id](city);
     if (a.cost > 0 && !pay(a.cost, a.name)) return;
     if (a.do === 'gamble') {
       const win = Math.random() < 0.42, gain = win ? (a.cost * 2 + 10) : 0;
@@ -357,6 +360,7 @@
     ['採購分館食材', 50, '照清單買齊，發票拿回來。']
   ];
   const questSheet = (city) => {
+    if (R.CITY_QUESTS[city.id]) return R.CITY_QUESTS[city.id](city);
     const g = st(), s = S(), day = s.day || 1;
     if (g.questDone[city.id] === day) {
       R.townTalk(city.guild, ['「今天的地方委託你做過了。明天再來。」', '「遠方的遺跡委託，還是回東鶴或奉主分館看板。」']);
@@ -379,6 +383,7 @@
   // ---------- 設施 ----------
   const facSheet = (city, f) => {
     const [id, name, line] = f;
+    if (R.CITY_FAC[city.id + ':' + id]) return R.CITY_FAC[city.id + ':' + id](city, f);
     if (id === 'guild') {
       R.sheet('<p class="kicker">' + esc(city.name) + '</p><h2>' + esc(name) + '</h2><p>' + esc(line) + '</p>',
         '<div class="row"><button type="button" class="btn pri" id="az-q">看今日地方委託</button><button type="button" class="btn" id="az-back">回據點</button></div>');
