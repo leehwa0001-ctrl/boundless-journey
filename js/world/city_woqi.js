@@ -37,7 +37,7 @@
       for (let i = 0; i < 6; i++) { const x = -120 + i * 13; P(g.box, M('paint', { col: '#C8D0D8' }), x, 0.5, -58, 3, 0.6, 1.4); P(g.cone8, M('paint', { col: '#B8C8D8' }), x, 0.95, -58, 0.5, 2.4, 0.3, 0, 0, Math.PI / 2); }
       B.sign('渦旗海魚市集', 's', -55, -88, 6.2, { size: 1.0, bg: '#1A3A5A', fg: '#F4ECD8', box: 1, lit: 1 });
       H.sight(B, -88, -55.4, C, 'wq_market'); H.fac(B, -100, -55.4, C, 'market', '#7AC8E8');
-      B.inter(-76, -55.4, 2.4, '海魚市集・幫忙喊價', () => az().act(C), '#E8A03A');
+      B.inter(-76, -55.4, 2.4, '漁港：出海釣魚（魚餌 15 費拉）', () => az().act(C), '#E8A03A');
       [-30, 10, 80].forEach(x => { B.bridge(x - 2.5, -96, x + 2.5, COAST + 0.5, { deck: 0.3, mat: 'planks', rail: false }); for (let z = -94; z < COAST; z += 6) [-2.5, 2.5].forEach(dx => P(g.cyl8, M('woodB'), x + dx, -1.2, z, 0.4, 2.6, 0.4)); });
       // 2026-10-22 棧橋兩邊停著插銀色旗子的漁船（shipkit.js；設定寫了、原本沒有放）
       [-30, 10, 80].forEach((x, i) => [-1, 1].forEach(sd => B.ship('fishing', x + sd * 5.2, -78 - (i + (sd > 0 ? 1 : 0)) % 2 * 9, Math.PI / 2, { y: -1.2, L: 9 + (i % 2), col: pk(['#E8E4DC', '#2E7A6A', '#2A5A9A', '#C83A2A']), flag: '#C8D0D8', solid: false })));
@@ -102,12 +102,26 @@
     station: { name: '渦旗港站', hint: '渡輪的汽笛和魚的味道', dest: '天宮（南瀧）　納瓦　東鶴（經南瀧）', lines: ['「往東鶴要經南瀧，兩天。」', '「往納瓦的渡輪，一天一班。」'], waiting: ['「回納瓦。帶了一箱銀旗魚給家裡。」'] },
     food: { id: 'wq_sushi', name: '壽司・渦潮', hint: '白木的吧台，師傅只收當天的魚', floor: 'tatami', bg: '#1A3A5A', say: '「今天的銀旗魚，早上才上岸。」', cook: '壽司師傅', lines: ['「只收當天的魚。賣完就關門。」', '「魚刺排成渦旗的形狀——這是本店的招牌。」'] }
   });
-  const rd = CK.rooms.wq_sushi, b0 = rd.build; rd.build = (B, K) => { b0(B, K); H.sight(B, 3, -1.4, C, 'wq_sushi', 2.2); };
+  const rd = CK.rooms.wq_sushi, b0 = rd.build; rd.build = (B, K) => { b0(B, K); H.sight(B, 3, -1.4, C, 'wq_sushi', 2.2); B.inter(-3, -1.4, 2.2, '請師傅捏自己釣的魚', () => R.azuki.fac('woqi', 'sushi'), '#7AC8E8'); };
   CK.defineRoom({ id: 'wq_hall', name: '漁業會館・食堂', hint: '牆上記著歷年的漁獲，大鍋裡的味噌湯', w: 14, d: 10, h: 3.6, floor: 'wfloor', wall: 'plaster', wain: 'woodB', build(B, K) {
     K.counter(0, -2.8, 8, 0.7, { mat: 'woodB', top: 'woodD' }); K.wallSign('渦旗漁業會館', 'n', 0, 2.8, { size: 0.5, bg: '#1A3A5A', fg: '#F4ECD8', lit: 1 });
     B.inter(0, -1.6, 2.2, '點菜', () => H.eat(C, '漁業會館・食堂', '「漁師吃的，份量很大。」', H.menu(C)), '#E8A03A');
     B.talker(0, -3.8, 0, '食堂的大嬸', ['「味噌湯是用魚骨熬的。」', '「牆上的數字，是每年的漁獲。今年比去年少。」']);
     B.talker(-5, 2, Math.PI / 2, '漁協的會長', ['「法蘭克漁業的牌子掛在那邊，我每天看了都生氣。」']);
     [[-3, 2], [2, 2.5]].forEach(([x, z]) => K.cafeSet(x, z, { top: 'wood' })); K.lamp(-3, 0); K.lamp(3, 0);
+  } });
+  // 2026-10-26 作者：各城的公會分館不要同一間——渦旗分館在漁業會館隔壁：魚拓牆、漁網、浮球、鐵桶裡的冰
+  CK.defineRoom({ id: 'wq_guild', name: '公會渦旗分館', hint: '魚腥味和海風，牆上掛滿魚拓', w: 16, d: 12, h: 4.2, floor: 'wfloor', wall: 'plaster', wain: 'woodB', amb: 1, build(B, K) {
+    const M = CK.M;
+    K.counter(-3, -3.8, 7, 0.9, { mat: 'woodB', top: 'wood' });
+    K.wallSign('公會渦旗分館', 'n', -3, 3.4, { size: 0.55, bg: '#1A3A5A', fg: '#F4ECD8' });
+    B.inter(-3, -2.6, 2.2, '櫃台：今日地方委託', () => R.azuki.quest('woqi'), '#3E9A5A');
+    B.talker(-1, -4.8, 0, '分館的館員（漁師出身）', ['「秋天的委託一半是銀旗魚。」', '「想釣大的就去征遠買船。防波堤只有小魚。」', '「華爾納的人收魚收得很兇，價錢也給得兇。」']);
+    for (let i = 0; i < 4; i++) B.box(M('paint', { col: '#F4ECD8' }), 3 + i * 1.3, 1.4, -5.95, 4 + i * 1.3, 2.4, -5.9);   // 魚拓
+    B.inter(4.9, -4.8, 2.4, '魚拓牆：你釣到過的魚', () => R.woqiPrints(), '#7AC8E8');
+    B.box(M('paint', { col: '#5A4A3A' }), 7.6, 0.4, -2, 7.75, 3.4, 2);   // 漁網
+    [[6.8, 2.6], [6.4, 3.4]].forEach(([x, z]) => B.box(M('paint', { col: '#E8A03A' }), x - 0.3, 0, z - 0.3, x + 0.3, 0.6, z + 0.3));   // 浮球
+    B.talker(-5.4, 2, Math.PI / 2, '曬黑的勇者', ['「我在渦流裡看過一條很大的影子。他們說那是渦流王。」', '「藍鰭鮪要一拉一放。死命拉一定斷。」']);
+    K.bench(-6, 1.4, 3, Math.PI / 2); K.lamp(-3, -1); K.lamp(3, 1);
   } });
 })(window.R);

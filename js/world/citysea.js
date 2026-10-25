@@ -53,7 +53,7 @@
         slack = ten < 0.05 ? slack + dt : 0;
         if (ten >= 1) { st = 'idle'; msg('啪——線斷了。是' + F[0] + '……'); R.sfx && R.sfx('hurt'); end(); }
         else if (slack > 2.5) { st = 'idle'; msg('線鬆太久，' + F[0] + '跑掉了。'); end(); }
-        else if (dist <= 0) { st = 'idle'; got.push(fish); box()[fish] = (box()[fish] || 0) + 1; R.save(); msg('釣到' + F[0] + '！（市價約 ' + fishPrice(fish) + ' 費拉）'); R.sfx && R.sfx(F[1] >= 150 ? 'chest' : 'coin'); end(); }
+        else if (dist <= 0) { st = 'idle'; got.push(fish); box()[fish] = (box()[fish] || 0) + 1; const lg = C2().fishLog = C2().fishLog || {}; lg[fish] = (lg[fish] || 0) + 1; R.save(); msg('釣到' + F[0] + '！（市價約 ' + fishPrice(fish) + ' 費拉）'); R.sfx && R.sfx(F[1] >= 150 ? 'chest' : 'coin'); end(); }
       }
       draw(); raf = requestAnimationFrame(step);
     };
@@ -92,6 +92,30 @@
   };
   R.CITY_FAC['woqi:sushi'] = sushi;
   R.CITY_FAC['woqi:hall'] = city => R.cityQuestSheet(city);
+  // 魚拓：每一種釣到過的魚（漁業會館、渦旗分館的牆上）
+  R.woqiPrints = () => { const lg = C2().fishLog || {}, ks = Object.keys(FISH); R.townTalk('魚拓牆', [ks.filter(k => lg[k]).length + '／' + ks.length + ' 種'].concat(ks.map(k => lg[k] ? '【' + FISH[k][0] + '】釣到 ' + lg[k] + ' 條' : '【？？？】' + (FISH[k][3] ? '（要' + R.CITY_BOATS[FISH[k][3]][0] + '以上的船）' : '') + (FISH[k][5] ? '（秋天）' : '')))); };
+  // 物流倉庫：貨箱放不下的貨寄在這裡（寄放不限量；每箱每天 1 費拉，領的時候一起算）
+  R.CITY_FAC['woqi:logi'] = city => {
+    const s = S(), c = C2(), W2 = c.depot = c.depot || {}, G = R.CITY_GOODS, day = s.day || 0, fee = Object.values(W2).reduce((a, d) => a + d.n * Math.max(0, day - d.d), 0);
+    const load = Object.values(c.cargo).reduce((a, n) => a + n, 0), cap = 10 + R.CITY_BOATS[c.boat][2];
+    R.sheet('<p class="kicker">渦旗・物流倉庫</p><h2>物流倉庫</h2><p>「放不下的貨寄在這裡。一箱一天 1 費拉，領的時候一起算。」貨箱 ' + load + '／' + cap + '</p><table class="ct-t"><tr><th>貨物</th><th>貨箱裡</th><th>寄放的</th><th></th></tr>'
+      + Object.keys(G).filter(g => c.cargo[g] || (W2[g] && W2[g].n)).map(g => '<tr><td>' + esc(G[g][0]) + '</td><td>' + (c.cargo[g] || 0) + '</td><td>' + ((W2[g] && W2[g].n) || 0) + '</td><td>' + (c.cargo[g] ? '<button type="button" class="btn" data-dp="' + g + '">寄放</button>' : '') + (W2[g] && W2[g].n ? '<button type="button" class="btn" data-dg="' + g + '">領回</button>' : '') + '</td></tr>').join('') + '</table>'
+      + (fee ? '<p class="note">目前的寄放費 ' + fee + ' 費拉（領回的時候付）。</p>' : ''),
+      '<div class="row"><button type="button" class="btn pri" id="dp-x">好了</button></div>');
+    $('dp-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-dp]').forEach(b => { b.onclick = () => { const g = b.dataset.dp, n = c.cargo[g]; const d = W2[g] || { n: 0, d: day }; d.n += n; d.d = day; W2[g] = d; delete c.cargo[g]; R.save(); R.CITY_FAC['woqi:logi'](city); }; });
+    document.querySelectorAll('[data-dg]').forEach(b => { b.onclick = () => { const g = b.dataset.dg, d = W2[g], room = cap - load, n = Math.min(d.n, room), f = d.n * Math.max(0, day - d.d); if (n <= 0) { R.toast('貨箱滿了。', '#FF9A6A'); return; } if (s.gold < f) { R.toast('寄放費 ' + f + ' 費拉，錢不夠。', '#FF9A6A'); return; } s.gold -= f; d.n -= n; d.d = day; c.cargo[g] = (c.cargo[g] || 0) + n; if (!d.n) delete W2[g]; R.save(); ok('領回 ' + n + ' 箱' + G[g][0] + (f ? '（寄放費 ' + f + '）' : '')); R.CITY_FAC['woqi:logi'](city); }; });
+  };
+  // 華爾納外貿協會：每天收一種魚，價錢是市集的 1.6 倍（法蘭克漁業公司要的）
+  R.CITY_FAC['woqi:trade'] = city => {
+    const s = S(), c = C2(), B = box(), day = s.day || 0, ks = Object.keys(FISH).filter(k => FISH[k][1] >= 30);
+    if (c.wantDay !== day) { c.wantDay = day; c.want = ks[Math.floor(rnd() * ks.length)]; c.wantN = 2 + Math.floor(rnd() * 3); c.wantDone = 0; R.save(); }
+    const k = c.want, p = Math.round(fishPrice(k) * 1.6), have = B[k] || 0;
+    R.sheet('<p class="kicker">渦旗・華爾納外貿協會</p><h2>華爾納外貿協會</h2><p>「法蘭克漁業公司今天要' + esc(FISH[k][0]) + '，' + c.wantN + ' 條。一條 ' + p + ' 費拉——市集的一倍六。」</p><p class="note">你有 ' + have + ' 條' + esc(FISH[k][0]) + '。' + (c.wantDone ? '今天已經交過了。' : '') + '</p>',
+      '<div class="row"><button type="button" class="btn pri" id="wt-ok"' + (c.wantDone || have < c.wantN ? ' disabled' : '') + '>交 ' + c.wantN + ' 條（' + p * c.wantN + ' 費拉）</button><button type="button" class="btn" id="wt-x">好了</button></div>');
+    $('wt-x').onclick = R.closeSheet;
+    $('wt-ok').onclick = () => { if (c.wantDone || (B[k] || 0) < c.wantN) return; B[k] -= c.wantN; c.wantDone = 1; s.gold += p * c.wantN; R.cityRep('woqi', 2); R.save(); ok('交貨：+' + p * c.wantN + ' 費拉（渦旗的聲望 +2）'); R.closeSheet(); };
+  };
   R.cityQuestReg('woqi', [
     { k: 'wq_kajiki', name: '漁業會館：秋汛的第一條', desc: '會館要一條銀旗魚供在神龕（秋天才釣得到）。', pay: 300, need: () => [box().kajiki || 0, 1], take: () => { box().kajiki--; } },
     { k: 'wq_aji', name: '物流倉庫的便當', desc: '倉庫工人的午餐，要 3 條竹筴魚。', pay: 70, need: () => [box().aji || 0, 3], take: () => { box().aji -= 3; } },
