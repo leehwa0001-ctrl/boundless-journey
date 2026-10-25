@@ -44,8 +44,8 @@
     const step = now => {
       const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
       if (!$('fs-cv')) { cancelAnimationFrame(raf); off(); return; }
-      if (st === 'wait') { wait -= dt; if (wait <= 0) { st = 'bite'; wait = 0.9; R.sfx && R.sfx('pick'); msg('咬了！快按「拉」！'); } }
-      else if (st === 'bite') { wait -= dt; if (wait <= 0) { st = 'idle'; msg('……魚跑了。再拋一次。'); end(); } }
+      if (st === 'wait') { wait -= dt; if (wait <= 0) { st = 'bite'; wait = C2().sonar ? 1.5 : 0.9; R.sfx && R.sfx('pick'); msg('咬了！快按「拉」！' + (C2().sonar ? '（聲納：是' + FISH[fish][0] + '）' : '')); } }
+      else if (st === 'bite') { wait -= dt; if (wait <= 0) { st = 'idle'; msg('……魚跑了。再拋一次。'); end(); } }   // 咬餌的時間：朝日科技的魔導聲納多 0.6 秒
       else if (st === 'fight') {
         const F = FISH[fish], surge = Math.sin(t * (2 + F[2])) > 0.92 ? F[2] * 0.9 : 0;
         if (hold) { ten += dt * (0.4 + F[2] * 0.25 + surge); dist -= dt * 0.25 / Math.sqrt(F[2]); } else { ten -= dt * 0.9; dist += dt * 0.02 * F[2]; }   // 大魚：一拉一放大約 20 秒
@@ -157,7 +157,7 @@
       const dt = Math.min(0.05, (now - last) / 1000); last = now; t += dt;
       if (!$('dv-cv')) { cancelAnimationFrame(raf); off(); return; }
       if (!done) {
-        const sp = stun > 0 ? 30 : 90; stun -= dt;
+        const sp = (stun > 0 ? 30 : 90) * (cc.thruster ? 1.35 : 1); stun -= dt;   // 朝日科技的潛水推進器
         P.x += ((key.r ? 1 : 0) - (key.l ? 1 : 0)) * sp * dt; P.y += ((key.d ? 1 : 0) - (key.u ? 1 : 0)) * sp * dt + 6 * dt;
         P.x = Math.max(8, Math.min(Wd - 8, P.x)); P.y = Math.max(top, Math.min(floorY - 6, P.y));
         o2 -= dt * (1 + (P.y - top) / (Ht - top) * 0.6);

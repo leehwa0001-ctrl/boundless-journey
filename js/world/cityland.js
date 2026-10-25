@@ -176,11 +176,64 @@
     document.querySelectorAll('[data-rx]').forEach(b => { b.onclick = () => { const r = RX[+b.dataset.rx]; if (!Object.keys(r[1]).every(k => (M[k] || 0) >= r[1][k]) || !pay(30)) return; Object.keys(r[1]).forEach(k => { M[k] -= r[1][k]; }); drink(r[0], r[2]); R.cityRep('banbei', 1); C2().rxDay = s.day; R.save(); ok('喝下' + r[0] + '：' + tonicText(r[2]) + '（三天）'); pharma(city); }; });
   };
   R.CITY_FAC['banbei:pharma'] = pharma;
+  // 艾美利亞造車廠：新車（送到東鶴的停車位；舊車折價一半）
+  R.CITY_FAC['banbei:car'] = city => {
+    const s = S(), V = R.VEH, L = V ? Object.keys(V.MODELS).filter(k => V.MODELS[k].emelia) : [];
+    const trade = s.car && V ? Math.floor(((V.MODELS[s.car.model] || {}).price || 0) / 2) : 0;
+    R.sheet('<p class="kicker">板北・艾美利亞造車廠</p><h2>展示間</h2><p>「會戰以後，艾美利亞在板北蓋的第一間工廠就是這裡。」新車送到你在東鶴的停車位。' + (s.car ? '（舊車折價 ' + trade + ' 費拉）' : '') + '</p>'
+      + L.map(k => { const M = V.MODELS[k], cost = M.price - trade, mine = s.car && s.car.model === k; return '<button type="button" class="btn" data-ec="' + k + '"' + (mine || s.gold < cost ? ' disabled' : '') + '><b>' + esc(M.name) + '</b><br><small>最高 ' + Math.round(M.max * 3.6) + ' km/h・' + (mine ? '你的車' : cost + ' 費拉') + '</small></button>'; }).join(''),
+      '<div class="row"><button type="button" class="btn pri" id="ec-x">看看就好</button></div>');
+    $('ec-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-ec]').forEach(b => { b.onclick = () => { const k = b.dataset.ec, M = V.MODELS[k], cost = M.price - trade; if (s.gold < cost) return; s.gold -= cost; s.car = { model: k, col: M.col }; s.carPos = null; R.cityRep('banbei', 2); R.save(); R.sfx && R.sfx('levelup'); R.townTalk('艾美利亞造車廠', ['「' + M.name + '，好眼光。」', '（車會送到東鶴的停車位。）']); }; });
+  };
+  // 渡輪港：夜船去岳北、古森（電車的一半價錢，在船上睡一晚：理智回復）
+  R.CITY_FAC['banbei:ferry'] = city => {
+    const s = S(), to = ['yuebei', 'gusen'].map(id => R.azuki.byId(id)).filter(Boolean), fare = c => Math.max(20, Math.round(c.fare / 2));
+    R.sheet('<p class="kicker">板北・渡輪港</p><h2>夜船</h2><p>「晚上十點開船，早上到北州。船艙的床很窄，但睡得著。」</p><div class="az-grid">'
+      + to.map(c => '<button type="button" class="btn" data-fe="' + c.id + '"' + (s.gold < fare(c) ? ' disabled' : '') + '><b>往' + esc(c.name) + '</b><br><small>' + fare(c) + ' 費拉・一晚（理智回復）</small></button>').join('') + '</div>',
+      '<div class="row"><button type="button" class="btn pri" id="fe-x">不搭了</button></div>');
+    $('fe-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-fe]').forEach(b => { b.onclick = () => { const c = R.azuki.byId(b.dataset.fe); if (R.sanAdd) R.sanAdd(15); R.travelAzuki(c.id, 'banbei', { fare: fare(c), days: 1, how: '夜船' }); }; });
+  };
+  // 夜店街：爵士酒吧裡的情報販子（今天哪條貨物路線最好賺）
+  R.CITY_FAC['banbei:club'] = city => {
+    const s = S(), c = C2(), G = R.CITY_GOODS, P = R.cityPrice;
+    if (c.tipDay === s.day) { R.townTalk('夜店街・爵士酒吧', ['薩克斯風在吹慢歌。情報販子朝你舉了舉杯：「今天的已經賣你了。」']); return; }
+    R.sheet('<p class="kicker">板北・夜店街</p><h2>爵士酒吧「藍燈」</h2><p>吧台最裡面坐著一個戴帽子的男人。「想知道今天哪條路最好賺？30 費拉。」</p>',
+      '<div class="row"><button type="button" class="btn pri" id="tp-ok"' + (s.gold < 30 ? ' disabled' : '') + '>買情報（30）</button><button type="button" class="btn" id="tp-l">只聽音樂（理智回復一點）</button><button type="button" class="btn" id="tp-x">走了</button></div>');
+    $('tp-x').onclick = R.closeSheet;
+    $('tp-l').onclick = () => { if (R.sanAdd) R.sanAdd(4); R.townTalk('爵士酒吧「藍燈」', ['一首慢歌、一杯熱的。外面港口的霧笛很遠。']); };
+    $('tp-ok').onclick = () => {
+      if (!pay(30)) return; c.tipDay = s.day; R.save();
+      const best = Object.keys(G).map(g => { const from = G[g][2], b = P.buy(from, g), dest = G[g][3].map(t => [t, P.sell(t, g)]).sort((a, z) => z[1] - a[1])[0]; return [g, from, dest[0], dest[1] - b]; }).sort((a, z) => z[3] - a[3]).slice(0, 2);
+      const nm = id => (R.azuki.byId(id) || {}).name || id;
+      R.townTalk('情報販子', best.map(([g, f, t, d]) => '「' + G[g][0] + '：在' + nm(f) + '買、運到' + nm(t) + '賣，今天一箱賺 ' + d + '。」').concat(['「明天就不一定了。」']));
+    };
+  };
+  // 朝日科技板北所：釣魚的魔導聲納、潛水推進器
+  const GADGET = [['sonar', '魔導聲納', 1500, '渦旗出海：魚咬餌的時候多 0.6 秒反應，還看得出是什麼魚。'], ['thruster', '潛水推進器', 1800, '西見潛水：游得快 35%。']];
+  R.CITY_FAC['banbei:tech'] = city => {
+    const s = S(), c = C2();
+    R.sheet('<p class="kicker">板北・朝日科技板北所</p><h2>朝日科技・展示區</h2><p>「民用的魔導具。軍規的我們不能賣。」</p>'
+      + GADGET.map(([k, n, p, d]) => '<button type="button" class="btn" data-gd="' + k + '"' + (c[k] || s.gold < p ? ' disabled' : '') + '><b>' + esc(n) + '</b>　' + (c[k] ? '已經有了' : p + ' 費拉') + '<br><small>' + esc(d) + '</small></button>').join(''),
+      '<div class="row"><button type="button" class="btn pri" id="gd-x">好了</button></div>');
+    $('gd-x').onclick = R.closeSheet;
+    document.querySelectorAll('[data-gd]').forEach(b => { b.onclick = () => { const g = GADGET.find(q => q[0] === b.dataset.gd); if (c[g[0]] || !pay(g[2])) return; c[g[0]] = 1; R.cityRep('banbei', 1); R.save(); ok('買了' + g[1] + '。'); R.CITY_FAC['banbei:tech'](city); }; });
+  };
+  // 港灣酒店：住一晚（理智、疲勞回滿；過一天）
+  R.CITY_FAC['banbei:hotel'] = city => {
+    const s = S(), P = 180;
+    R.sheet('<p class="kicker">板北・港灣酒店</p><h2>櫃台</h2><p>「海景房，看得到大橋的藍燈。一晚 ' + P + ' 費拉，含早餐。」</p>',
+      '<div class="row"><button type="button" class="btn pri" id="ht-ok"' + (s.gold < P ? ' disabled' : '') + '>住一晚（' + P + '）</button><button type="button" class="btn" id="ht-x">不了</button></div>');
+    $('ht-x').onclick = R.closeSheet;
+    $('ht-ok').onclick = () => { if (!pay(P)) return; R.closeSheet(); R.fade(() => { R.advanceDays(1); s.hour = 8; if (R.sanAdd) R.sanAdd(100); if (R.fatAdd && R.fatMax) R.fatAdd(R.fatMax()); s.buff = { kind: 'food', b: { hp: 0.05, mp: 0.05 }, until: s.day }; R.ateFood && R.ateFood(s.buff); R.save(); R.banner && R.banner('港灣酒店', '一覺到天亮。窗外的大橋在晨霧裡。（理智回滿、早餐的加成）'); }); };
+  };
   if (R.sicbo) { R.CITY_ACT.banbei = R.CITY_FAC['banbei:casino'] = () => R.sicbo('板北・地下賭場'); R.CITY_ACT.jishan = R.CITY_FAC['jishan:casino'] = () => R.sicbo('吉山・地下賭場'); }
   R.cityQuestReg('banbei', [
     R.cqCargo('bb_tea', 'tea', 4, 240, '港灣酒店的下午茶', '酒店的外國客人要喝昭旭茶，4 箱古森茶。'),
     R.cqCargo('bb_spice', 'spice', 4, 300, '夜店街的新菜單', '夜店的廚師要 4 箱德克斯凡香料。'),
     R.cqCargo('bb_salv', 'salvage', 1, 200, '朝日科技的拆解', '朝日科技要一件沉船古物拆開研究。'),
+    R.cqCargo('bb_steel', 'steel', 4, 320, '造車廠的車架', '艾美利亞造車廠的新車架，要 4 箱征遠鋼材。'),
     R.cqMat('bb_herb', 'herb', 6, 110, '製藥廠的原料', '製藥廠缺藥草，交 6 份。'),
     { k: 'bb_rx', name: '藥劑試飲', desc: '今天在製藥廠調一瓶藥劑喝下去，告訴他們效果。', pay: 80, need: () => [C2().rxDay === S().day ? 1 : 0, 1], take: () => { } }
   ]);

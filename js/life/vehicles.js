@@ -14,7 +14,9 @@
     van: { name: '輕型貨車', price: 600, max: 11, acc: 7, turn: 1.9, col: '#E8E8EC', len: 4.4, low: 0 },
     sedan: { name: '小轎車', price: 900, max: 14, acc: 9, turn: 2.2, col: '#3A5A8A', len: 4.2, low: 0 },
     sport: { name: '跑車「疾風」', price: 2400, max: 19, acc: 13, turn: 2.5, col: '#C8282A', len: 4.0, low: 1 },
-    dex: { name: '德克斯凡的貨車', price: 0, max: 10, acc: 6, turn: 1.7, col: '#4A6A8A', len: 5.2, low: 0 }
+    dex: { name: '德克斯凡的貨車', price: 0, max: 10, acc: 6, turn: 1.7, col: '#4A6A8A', len: 5.2, low: 0 },
+    emgt: { name: '艾美利亞 GT「星條」', price: 5200, max: 22, acc: 15, turn: 2.6, col: '#1A2A5A', len: 4.3, low: 1, emelia: 1 },   // 板北・艾美利亞造車廠（cityland.js）
+    emvan: { name: '艾美利亞旅行車', price: 1800, max: 15, acc: 9, turn: 2.1, col: '#8A9A7A', len: 4.8, low: 0, emelia: 1 }
   };
   const BIKE = { max: 0, mul: 1.5 };
   const V = { cur: null, list: [], zoom0: null, speed0: null, hitT: 0 };
