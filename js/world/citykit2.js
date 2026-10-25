@@ -203,7 +203,8 @@
         const t0 = i / n, t1 = (i + 1) / n, y0 = yAt(t0), y1 = yAt(t1), a = (ax ? r[0] : r[1]) + L * t0, c = L / n, slope = Math.atan2(y1 - y0, c);
         const cx = ax ? a + c / 2 : (r[0] + r[2]) / 2, cz = ax ? (r[1] + r[3]) / 2 : a + c / 2, len = Math.hypot(c, y1 - y0) + 0.02;
         const dm = M(b.mat, { ground: 1 }); if (ax) Bt.add(g.box, dm, cx, (y0 + y1) / 2 - 0.25, cz, len, 0.5, Wd, 0, 0, slope); else Bt.add(g.box, dm, cx, (y0 + y1) / 2 - 0.25, cz, Wd, 0.5, len, -slope, 0, 0);
-        if (b.rail) [-1, 1].forEach(sd => { const o = sd * (Wd / 2 - 0.15); if (ax) Bt.add(g.box, M(b.railMat), cx, (y0 + y1) / 2 + 0.45, cz + o, len, 0.9, 0.3, 0, 0, slope); else Bt.add(g.box, M(b.railMat), cx + o, (y0 + y1) / 2 + 0.45, cz, 0.3, 0.9, len, -slope, 0, 0); });
+        if (b.rail && CK.bridgeRail) CK.bridgeRail(Bt, g, M, b, { ax, cx, cz, y0, y1, len, slope, Wd, i, n, a, c });   // 2026-10-26：照材質畫柱子、橫木（bridgekit.js）
+        else if (b.rail) [-1, 1].forEach(sd => { const o = sd * (Wd / 2 - 0.15); if (ax) Bt.add(g.box, M(b.railMat), cx, (y0 + y1) / 2 + 0.45, cz + o, len, 0.9, 0.3, 0, 0, slope); else Bt.add(g.box, M(b.railMat), cx + o, (y0 + y1) / 2 + 0.45, cz, 0.3, 0.9, len, -slope, 0, 0); });
       }
       if (b.rail) [-1, 1].forEach(sd => { const o = sd * (Wd / 2 - 0.15); if (ax) R.addBox(r[0] + 0.3, r[2] - 0.3, (r[1] + r[3]) / 2 + o - 0.15, (r[1] + r[3]) / 2 + o + 0.15, 'rail'); else R.addBox((r[0] + r[2]) / 2 + o - 0.15, (r[0] + r[2]) / 2 + o + 0.15, r[1] + 0.3, r[3] - 0.3, 'rail'); });
       // 橋墩：每 12 公尺一個（拱橋沒有）
