@@ -49,8 +49,8 @@
         H.door(B, sx - 7.4, z0 + 66, 'bn_tea', '走進通天道的茶店（茶菓子、烏龍麵）', '#E8A03A', Math.PI / 2);
         B.inter(sx, z1 - 3, 2.6, '通天道一千階', () => az().act(C), '#E8C04A'); H.fac(B, sx, z1 - 8, C, 'road', '#C8A060');
         B.Bt.yOff = 16;
-        B.roof(126, z0 + 22, 20, 14, { type: 'irimoya', y: 6, h: 3.6, o: 1.6, sori: 0.4, mat: 'kawara' }); B.box(M('woodB'), 117, 0, z0 + 16, 135, 6, z0 + 28); B.box(M('shopLit'), 117.5, 0.6, z0 + 28.05, 134.5, 5, z0 + 28.1);
-        P(g.box, M('woodB'), 92, 3, z0 + 22, 6, 6, 6); B.roof(92, z0 + 22, 7, 7, { type: 'pyramid', y: 6, h: 2.6, o: 0.9, sori: 0.3, mat: 'kawara' }); P(g.cyl, M('bronze'), 92, 3.6, z0 + 22, 2.2, 2.8, 2.2); P(g.hemi, M('bronze'), 92, 5, z0 + 22, 2.2, 0.8, 2.2);
+        B.hondo(117, z0 + 16, 135, z0 + 28, { face: 's', h: 6.4 });   // 2026-10-26：本堂、鐘樓改用 templekit.js
+        B.shoro(92, z0 + 22, { s: 1 });
         H.sight(B, 98, z0 + 30, C, 'bn_temple'); H.fac(B, 126, z0 + 32, C, 'temple', '#E8C04A');
         B.Bt.yOff = 0;
         B.solid(117, z0 + 16, 135, z0 + 28, 'house'); B.solid(89, z0 + 19, 95, z0 + 25, 'house');
