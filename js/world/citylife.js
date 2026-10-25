@@ -109,6 +109,63 @@
     if ($('ct-boat')) $('ct-boat').onclick = () => { const p = next[1] - Math.round(BOATS[c.boat][1] / 2); if (s.gold < p) return; s.gold -= p; c.boat++; R.cityRep('zhengyuan', 3); R.save(); R.sfx && R.sfx('levelup'); R.banner && R.banner('船屋「老錨」', '買下了' + BOATS[c.boat][0]); R.CITY_FAC['zhengyuan:house'](city); };
   };
   R.cityBoat = () => C2().boat;
+  R.CITY_FAC['zhengyuan:yard'] = R.CITY_FAC['zhengyuan:house'];   // 造船廠：船也是在這裡下水的
+  // 鋼鐵廠：鐵礦三份煉成一箱征遠鋼材（加工費 10）
+  R.CITY_FAC['zhengyuan:steel'] = city => {
+    const s = S(), c = C2(), M = s.mats = s.mats || {}, have = M.iron || 0, load = Object.values(c.cargo).reduce((a, n) => a + n, 0), n = Math.min(Math.floor(have / 3), cap() - load, Math.floor(s.gold / 10));
+    R.sheet('<p class="kicker">征遠・鋼鐵廠</p><h2>鋼鐵廠</h2><p>「遺跡裡挖的鐵礦也收。三份煉一箱，加工費 10。」爐子的熱氣隔著玻璃都感覺得到。</p><p class="note">你有鐵礦 ' + have + '・貨箱 ' + load + '／' + cap() + '</p>',
+      '<div class="row"><button type="button" class="btn pri" id="sl-1"' + (n >= 1 ? '' : ' disabled') + '>煉一箱</button><button type="button" class="btn" id="sl-a"' + (n >= 2 ? '' : ' disabled') + '>能煉的全煉（' + n + ' 箱）</button><button type="button" class="btn" id="sl-x">好了</button></div>');
+    $('sl-x').onclick = R.closeSheet;
+    const go = k => { if (k < 1) return; M.iron -= k * 3; s.gold -= k * 10; c.cargo.steel = (c.cargo.steel || 0) + k; R.cityRep('zhengyuan', 1); R.save(); ok('煉出 ' + k + ' 箱征遠鋼材。'); R.CITY_FAC['zhengyuan:steel'](city); };
+    $('sl-1').onclick = () => go(Math.min(1, n)); $('sl-a').onclick = () => go(n);
+  };
+  // 舊艦遺址：武聖號的姊妹艦「武德號」擱在岸邊，公會的監看站在旁邊；找得到艦上的銘牌就送去博物館
+  R.CITY_FAC['zhengyuan:wreck'] = city => {
+    const s = S(), c = C2();
+    if (c.plate && !c.plateGiven) { R.townTalk('舊艦遺址・監看站', ['「銘牌找到了？送去軍艦博物館吧，館長找了好多年。」']); return; }
+    if (c.wreckDay === s.day) { R.townTalk('舊艦遺址・監看站', ['退潮的時間過了。明天再來找。']); return; }
+    c.wreckDay = s.day; const found = !c.plate && Math.random() < 0.34; if (found) c.plate = 1; const iron = c.plate && !found ? 1 + Math.floor(Math.random() * 3) : 0; if (iron) { s.mats = s.mats || {}; s.mats.iron = (s.mats.iron || 0) + iron; } R.save(); R.sfx && R.sfx('pick');
+    R.townTalk('舊艦遺址・監看站', ['武聖號的姊妹艦「武德號」，會戰的最後一年擱淺在這裡。艦體已經被遺跡的魔力侵蝕了一半。', '公會的監看員讓你趁退潮在外圍找找看。'].concat(found ? ['在砲塔的殘骸底下，摸到一塊刻著「武德」的銅銘牌！（拿去軍艦博物館）'] : iron ? ['撿了一些還能用的艦體鐵片。（鐵礦 +' + iron + '，鋼鐵廠收）'] : ['只找到生鏽的鉚釘。（一天能找一次）']));
+  };
+  // 軍艦博物館：武聖號的展覽；看完回答館長三個問題，答對有獎（一天一次）；把武德號的銘牌捐出來
+  const QUIZ = [
+    ['武聖號以前是什麼船？', ['昭旭最大的戰列艦', '殖民地航線的貨船', '漁業公司的捕鯨船'], 0],
+    ['會戰以後，征遠的造船廠主要造什麼？', ['新的戰列艦', '商業、民用的船', '只修不造'], 1],
+    ['擱淺在征遠岸邊的舊艦叫什麼？', ['武德號', '武聖二號', '海鷗號'], 0],
+    ['征遠在昭旭的哪個方位？', ['東南', '西北', '正南'], 1]
+  ];
+  R.CITY_FAC['zhengyuan:museum'] = city => {
+    const s = S(), c = C2();
+    R.sheet('<p class="kicker">征遠・軍艦博物館</p><h2>軍艦博物館</h2><p>大廳正中間是武聖號的模型，比人還高。說明牌：「昭旭最大的戰列艦。第二次大陸會戰之後，征遠只造商船與民用船——但仍是全國最大的造船廠。」</p>'
+      + '<p class="note">' + (c.plateGiven ? '大廳角落多了一塊銅銘牌：「武德號（由勇者捐贈）」。' : '館長說：「武聖號的姊妹艦武德號還擱在岸邊。要是有人能把它的銘牌帶回來……」') + '</p>',
+      '<div class="row">' + (c.plate && !c.plateGiven ? '<button type="button" class="btn pri" id="mu-plate">把武德號的銘牌交給館長</button>' : '') + '<button type="button" class="btn" id="mu-q"' + (c.quizDay === s.day ? ' disabled' : '') + '>館長的問題（一天一次）</button><button type="button" class="btn" id="mu-x">好了</button></div>');
+    $('mu-x').onclick = R.closeSheet;
+    if ($('mu-plate')) $('mu-plate').onclick = () => { c.plateGiven = 1; s.gold += 500; R.cityRep('zhengyuan', 5); R.save(); R.townTalk('軍艦博物館・館長', ['館長的手在抖。「……真的是武德號的。我父親是這艘船上的機關兵。」', '「這塊銘牌會掛在大廳。謝謝你。」（+500 費拉，征遠的聲望 +5）']); };
+    $('mu-q').onclick = () => {
+      const q = QUIZ[Math.floor(Math.random() * QUIZ.length)];
+      R.sheet('<p class="kicker">軍艦博物館・館長</p><h2>館長的問題</h2><p>「' + esc(q[0]) + '」</p>', '<div class="row">' + q[1].map((a, i) => '<button type="button" class="btn" data-mq="' + i + '">' + esc(a) + '</button>').join('') + '</div>');
+      document.querySelectorAll('[data-mq]').forEach(b => { b.onclick = () => { c.quizDay = s.day; const okA = +b.dataset.mq === q[2]; if (okA) { s.gold += 50; R.cityRep('zhengyuan', 1); } R.save(); R.townTalk('軍艦博物館・館長', okA ? ['「對。你有認真看說明牌。」（+50 費拉）'] : ['「不對。答案是「' + q[1][q[2]] + '」。明天再來。」']); }; });
+    };
+  };
+  // 海軍訓練所：操艇（指針在綠區的時候划；十槳，越準越快）
+  R.CITY_FAC['zhengyuan:train'] = city => {
+    const s = S(), c = C2();
+    R.sheet('<p class="kicker">征遠・海軍訓練所</p><h2>操艇訓練</h2><p class="note">教官喊口令。指針走到綠色的地方按「划」（空白鍵），一共十槳；越準船越快。報名 12 費拉。</p><canvas id="rw-cv" width="360" height="120" class="fs-cv"></canvas><p class="note" id="rw-msg">按「開始」。</p>',
+      '<div class="row"><button type="button" class="btn pri" id="rw-go">開始（12 費拉）</button><button type="button" class="btn" id="rw-p">划（空白鍵）</button><button type="button" class="btn" id="rw-x">離開</button></div>');
+    const cv = $('rw-cv'), x = cv.getContext('2d'), msg = t => { const m = $('rw-msg'); if (m) m.textContent = t; };
+    let on = false, t = 0, k = 0, n = 0, good = 0, raf = 0, last = 0, flash = 0;
+    const zone = () => [0.42 - n * 0.006, 0.58 + n * -0.006];
+    const draw = () => { x.fillStyle = '#1E4A6A'; x.fillRect(0, 0, 360, 120); x.fillStyle = '#333'; x.fillRect(20, 50, 320, 20); const [a, b] = zone(); x.fillStyle = '#5AD87A'; x.fillRect(20 + a * 320, 50, (b - a) * 320, 20); x.fillStyle = flash > 0 ? '#FFE04A' : '#FFF'; x.fillRect(20 + k * 320 - 2, 44, 4, 32); x.fillStyle = '#FFF'; x.font = '12px sans-serif'; x.fillText('第 ' + n + '／10 槳　準 ' + good, 8, 16); };
+    const loop = now => { const dt = Math.min(0.05, (now - last) / 1000); last = now; if (!$('rw-cv')) { off(); return; } if (on) { t += dt; k = (Math.sin(t * (2.4 + n * 0.25)) + 1) / 2; flash -= dt; } draw(); raf = requestAnimationFrame(loop); };
+    const stroke = () => { if (!on) return; const [a, b] = zone(), hit = k >= a && k <= b; if (hit) { good++; flash = 0.2; R.sfx && R.sfx('pick'); } n++; if (n >= 10) { on = false; const rk = good >= 9 ? 'S' : good >= 7 ? 'A' : good >= 5 ? 'B' : 'C'; if (rk === 'S' || rk === 'A') { c.rowDay = s.day; s.buff = { kind: 'food', b: { hp: 0.04, skillCd: 0.04 }, until: s.day }; R.ateFood && R.ateFood(s.buff); R.cityRep('zhengyuan', 1); } R.save(); msg('划完了：準 ' + good + '／10，評價 ' + rk + (rk === 'S' || rk === 'A' ? '。教官點頭。（今天下遺跡：生命、技能冷卻稍好）' : '。教官：「再來。」')); $('rw-go').disabled = false; } };
+    const kd = e => { if (e.code === 'Space') { e.preventDefault(); e.stopPropagation(); if (!e.repeat) stroke(); } };
+    const off = () => { cancelAnimationFrame(raf); removeEventListener('keydown', kd, true); };
+    addEventListener('keydown', kd, true);
+    $('rw-p').onclick = stroke;
+    $('rw-go').onclick = () => { if (on || s.gold < 12) return; s.gold -= 12; R.save(); on = true; t = 0; n = 0; good = 0; $('rw-go').disabled = true; msg('一、二！'); };
+    $('rw-x').onclick = () => { off(); R.closeSheet(); };
+    last = performance.now(); raf = requestAnimationFrame(loop);
+  };
   R.CITY_ACT.zhengyuan = R.CITY_FAC['zhengyuan:house'];
   R.CITY_ACT.nanlong = R.CITY_FAC['nanlong:cargo'];
 
@@ -187,6 +244,8 @@
     R.cqCargo('zy_timber', 'timber', 6, 380, '船塢的龍骨', '造船廠新的商船要古森木做龍骨，6 箱。'),
     R.cqCargo('zy_elec', 'electro', 3, 330, '軍艦博物館的燈', '博物館的展示燈壞了一半，要 3 箱日下森電器。'),
     R.cqCargo('zy_ration', 'ration', 4, 160, '海軍訓練所的補給', '新兵出海訓練，要 4 箱軍用口糧。'),
+    R.cqMat('zy_iron', 'iron', 6, 140, '鋼鐵廠的爐子', '鋼鐵廠缺鐵礦，交 6 份。'),
+    { k: 'zy_row', name: '訓練所的助教', desc: '今天在海軍訓練所的操艇拿到 A 以上，給新兵示範。', pay: 110, need: () => [C2().rowDay === S().day ? 1 : 0, 1], take: () => { } },
     { k: 'zy_boat', name: '試航', desc: '有一艘自己的船（船屋買的），開出港跑一圈給造船廠的師傅看。', pay: 120, need: () => [C2().boat ? 1 : 0, 1], take: () => { } }
   ]);
   const css = document.createElement('style');

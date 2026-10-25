@@ -41,7 +41,7 @@
       B.ship('warship', 30, -104, -Math.PI / 2 + 0.9, { y: -1.2, L: 80, col: '#4A5058', top: '#5A5048', funnel: '#5A5048', anti: '#3A3028', wreck: true, solid: false });   // 半沉的武聖號（往一邊傾、沉了一半）
       B.plaza(36, -82, 46, COAST, 'gran', { noCurb: true }); B.fence(36.4, -81.6, 45.6, -81.6, 1.1, 'steelD');
       B.inter(41, -78, 2.6, '觀光景點：舊艦遺址（觀光章）', () => az().stamp(C, 'zy_wreck'), '#E8C04A').sight = 'zy_wreck';
-      B.inter(41, -68, 2.4, '舊艦遺址（岸邊・公會的監看站）', () => az().fac(C, 'wreck'), '#9AA0A8');
+      B.inter(41, -68, 2.4, '舊艦遺址：趁退潮找找看（一天一次）', () => az().fac(C, 'wreck'), '#9AA0A8');
       // ---------- 西：船屋區（海上的高腳屋、木板路） ----------
       B.plaza(-150, COAST, -100, -46, 'planks', { noCurb: true });
       [[-140, -100, -136, COAST + 0.5], [-116, -100, -112, COAST + 0.5], [-140, -102, -112, -98]].forEach(([a, b, c, d]) => B.bridge(a, b, c, d, { deck: 0.6, mat: 'planks', rail: false }));
@@ -86,7 +86,7 @@
       // ---------- 海軍訓練所、船屋海鮮 ----------
       { const [x0, z0, x1, z1] = CUT.navy; B.bld({ r: [x0 + 2, z0 + 1, x1 - 2, z1 - 1], h: 9, style: 'office', face: 'n', col: '#D8D4CC', top: false });
         B.sign('海軍訓練所', 'n', z0 + 1, (x0 + x1) / 2, 6, { size: 0.6, bg: '#1A2A4A', fg: '#F4ECD8', box: 1 });
-        H.fac(B, (x0 + x1) / 2 - 8, z0 - 0.8, C, 'train', '#7AC8E8'); B.inter((x0 + x1) / 2 + 8, z0 - 0.8, 2.4, '海軍訓練所・操艇體驗（12 費拉）', () => az().act(C), '#7AC8E8'); }
+        H.fac(B, (x0 + x1) / 2 - 8, z0 - 0.8, C, 'train', '#7AC8E8'); B.inter((x0 + x1) / 2 + 8, z0 - 0.8, 2.4, '海軍訓練所・操艇訓練（12 費拉）', () => az().fac(C, 'train'), '#7AC8E8'); }
       { const [x0, z0, x1, z1] = CUT.food; B.bld({ r: [x0 + 1, z0 + 1, x1 - 1, z1 - 1], h: 6.4, style: 'machiya', face: 'n', name: '船屋海鮮', noren: '#1A3A5A' }); H.door(B, (x0 + x1) / 2, z0 - 0.6, 'zy_food', '走進船屋海鮮（海鮮鍋、鋼鐵廠咖哩）', '#E8A03A', Math.PI); }
       // ---------- 南：征遠站 ----------
       H.station(B, { p: 'zy', name: '征遠站', w: 70, d: 22, h: 11, col: '#8A9098', style: 'office', bg: '#1A2A4A', fg: '#F4ECD8', tt: ['往東鶴：每天兩班（魔導電車，一天）', '往西見：每天兩班', '往板北：每天兩班', '軍港專用線：不載客'] });
@@ -105,9 +105,24 @@
     const g = B.g, P = B.part, M = CK.M;
     B.box(M('woodB'), -5, 0, -2, 5, 1, 2); B.box(M('glassL'), -5, 1, -2, 5, 2.6, 2); P(g.box, M('paint', { col: '#6A7078' }), 0, 1.3, 0, 7.6, 0.5, 1.2); P(g.box, M('paint', { col: '#7A8088' }), 0.4, 1.8, 0, 2.4, 0.6, 0.8);
     B.solid(-5, -2, 5, 2, 'deco');
-    H.sight(B, 0, 3, C, 'zy_museum', 2.6); B.inter(5, 3, 2.2, '軍艦博物館（看看）', () => az().fac(C, 'museum'), '#C8C0A0');
+    H.sight(B, 0, 3, C, 'zy_museum', 2.6); B.inter(5, 3, 2.2, '和館長說話（武聖號、館長的問題）', () => az().fac(C, 'museum'), '#C8C0A0');
     B.talker(-7, 3, Math.PI / 2, '博物館的解說員', ['「武聖號，昭旭最大的戰列艦。現在沉在岸外，只剩艦橋露出水面。」', '「它下水那天，整座城放假。」', '「船艙底下的那一層，現在不開放。」']);
     K.shelf(-9, -5.6, 4, 0, { cols: ['#6A7078', '#8A2A2A', '#C8A040'] }); K.shelf(9, -5.6, 4, 0, { cols: ['#6A7078', '#2E4A6A', '#C8A040'] });
     K.bench(-6, 5, 3, 0); K.bench(6, 5, 3, 0); K.lamp(-4, 0); K.lamp(4, 0);
+  } });
+  // 2026-10-26 作者：各城的公會分館不要同一間——征遠分館是舊海軍的事務所：舵輪、錨、艦船模型、海軍旗
+  CK.defineRoom({ id: 'zy_guild', name: '公會征遠分館', hint: '舊海軍的事務所，舵輪掛在牆上', w: 16, d: 12, h: 4.4, floor: 'wfloor', wall: 'plaster', wain: 'woodD', trim: 'woodD', amb: 1, build(B, K) {
+    const M = CK.M;
+    K.counter(-3, -3.8, 7, 0.9, { mat: 'woodD', top: 'wood' });
+    K.wallSign('公會征遠分館', 'n', -3, 3.5, { size: 0.55, bg: '#1A2A4A', fg: '#F4ECD8' });
+    B.inter(-3, -2.6, 2.2, '櫃台：今日地方委託', () => R.azuki.quest('zhengyuan'), '#3E9A5A');
+    B.talker(-1, -4.8, 0, '分館的館員（退役水兵）', ['「造船廠要古森木做龍骨。北州那邊運過來最快。」', '「舊艦遺址那邊有公會的監看站。武德號的銘牌到現在還沒人找到。」', '「船屋的老錨，船賣得不便宜，但貨真價實。」']);
+    B.part(CK.geo().cyl24, M('woodB'), 4.6, 2.4, -5.8, 1.4, 0.12, 1.4, Math.PI / 2, 0, 0);   // 舵輪
+    B.box(M('steelD'), 6.4, 0, -5.4, 7.2, 1.6, -4.6);   // 錨座
+    K.table(4.6, 0.6, 3.2, 1.6, { mat: 'woodD' }); B.box(M('paint', { col: '#8A8A90' }), 3.4, 0.74, 0.3, 5.8, 1.1, 0.9);   // 艦船模型
+    B.inter(4.6, 2, 2.2, '武聖號的模型（看看）', () => R.townTalk('武聖號的模型', ['昭旭最大的戰列艦。模型的甲板上連砲塔的鉚釘都做出來了。', '底座刻著：「武聖號・征遠造船廠建造」。']), '#C8C0A0');
+    B.box(M('paint', { col: '#F4ECD8' }), -7.9, 1.4, -2, -7.85, 2.6, 0); B.box(M('paint', { col: '#C8202A' }), -7.88, 2.1, -1.6, -7.84, 2.5, -0.4);   // 海軍旗
+    B.talker(-5.2, 2.4, Math.PI / 2, '剛下船的勇者', ['「渦旗出海要大船。我買了貨船，藍鰭鮪還是拉不上來。」', '「鋼鐵廠收鐵礦。遺跡裡挖的拿來煉，運去吉山賣。」']);
+    K.bench(-6, 1.4, 3, Math.PI / 2); K.lamp(-3, -1); K.lamp(3, 1);
   } });
 })(window.R);
