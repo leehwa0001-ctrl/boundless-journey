@@ -13,7 +13,8 @@
   CK.extendBuilder = B => {
     eb0(B);
     const M = CK.M, g = B.g, P = B.part, BOX = B.box, rnd = B.rnd, pk = B.pk;
-    const META = { office: [3, 3.5], apt: [3.6, 2.9], glass: [3, 3.6], brick: [3.4, 4.2], factory: [4, 6] };
+    const META = { office: [3, 3.5], apt: [3.6, 2.9], glass: [3, 3.6], brick: [3.4, 4.2], factory: [4, 6], machiya: [3, 3.2], kura: [3, 3], shop: [2.7, 3.0] };
+    const WORDS = ['酒場', '雀莊', '牙科', '卡拉OK', '按摩', '珈琲', '當鋪', '診所', '補習班', '理髮', '麵館', '燒肉', '中古屋', '會計', '律師', '美容'];
     const deco = (o, res) => {
       const st = o.style, [x0, z0, x1, z1] = o.r, h = (res && res.h) || o.h || 12, f = o.face || 's';
       const faces = { s: [z1, x0, x1], n: [z0, x0, x1], e: [x1, z0, z1], w: [x0, z0, z1] };
@@ -61,6 +62,30 @@
         // 捲門、卸貨平台、棧板（正面）
         const nd = Math.max(1, Math.min(4, Math.floor((b - a) / 7))); for (let k = 0; k < nd; k++) { const p = a + (b - a) * (k + 0.5) / nd; fb(f, p - 1.8, p + 1.8, 0.2, Math.min(h - 1, 4.4), 0, 0.06, M('corr', { col: pk(['#C8C8C0', '#D8B040', '#5A7A9A']) })); fb(f, p - 2.0, p + 2.0, Math.min(h - 1, 4.4), Math.min(h - 1, 4.4) + 0.4, 0, 0.3, M('steelD')); }
         // 卸貨平台、棧板不放：會凸到人行道上（擋路、擋住門口的互動）
+      } else if (st === 'shop' && h > 7.5) {
+        // 雜居樓（2026-10-26）：每層一條線腳、正面每層（二樓起）一塊亮著的招牌、掛在牆上的冷氣室外機、樓頂的欄杆
+        for (let y = 3.6 + fh; y < h - 0.6; y += fh) ring(y - 0.05, y + 0.07, 0.07, M('curb'));
+        const [c, a, b] = faces[f], L = b - a;
+        for (let y = 3.6 + 0.9; y < h - 1.2; y += fh) {
+          if (rnd() < 0.6 && L > 3) { const wd = pk(WORDS), sz = Math.min(0.5, (L - 1) / ([...wd].length + 1)), at = a + L * (0.3 + rnd() * 0.4); B.sign(wd, f, c, at, y + 0.9, { size: sz, bg: pk(['#1A1A22', '#C8202A', '#F4ECD8', '#1A3A6A', '#2A4A2E', '#E8A020']), fg: pk(['#FFFFFF', '#FFE24A', '#1A1A22']), lit: 1, box: 1 }); }
+          if (rnd() < 0.5) { const p = a + 0.6 + rnd() * (L - 1.2); fb(f, p - 0.4, p + 0.4, y - 0.6, y - 0.05, 0, 0.38, M('metal', { col: '#D8D8D4' })); fb(f, p - 0.3, p + 0.1, y - 0.5, y - 0.15, 0.38, 0.4, M('steelD')); }
+        }
+        if (o.top !== false) { [[x0, z0, x1, z0], [x0, z1, x1, z1], [x0, z0, x0, z1], [x1, z0, x1, z1]].forEach(([a0, b0, a1, b1]) => { const n = Math.max(1, Math.round(Math.hypot(a1 - a0, b1 - b0) / 1.2)); for (let k = 0; k <= n; k++) P(g.box, M('steel'), a0 + (a1 - a0) * k / n, h + 0.55, b0 + (b1 - b0) * k / n, 0.05, 1.1, 0.05); BOX(M('steel'), Math.min(a0, a1) - 0.03, h + 1.05, Math.min(b0, b1) - 0.03, Math.max(a0, a1) + 0.03, h + 1.11, Math.max(b0, b1) + 0.03); }); }
+      } else if (st === 'machiya') {
+        // 町家（2026-10-26）：二樓正面兩端的卯建（防火的小牆＋小屋頂）、門口的犬矢來（竹編、往外斜）、有店名的掛紅燈籠、一樓的竹簾
+        const [c, a, b] = faces[f], h1 = 3.2, sg = f === 's' || f === 'e' ? 1 : -1, along = f === 's' || f === 'n', flat = Math.abs(Math.sin(B.yaw() * 2)) < 1e-6;
+        if (h > 4.5) [a + 0.14, b - 0.14].forEach(p => { fb(f, p - 0.13, p + 0.13, h1 + 0.4, h + 0.55, -1.2, -0.15, M('white')); fb(f, p - 0.2, p + 0.2, h + 0.55, h + 0.68, -1.3, -0.05, M('kawara', { col: '#767C88' })); });
+        if (!named && flat && rnd() < 0.6) { const bam = M('wood', { col: '#B89A60' }); for (let p = a + 0.6; p < b - 0.5; p += 0.16) { const [px, pz] = along ? [p, c + sg * 0.28] : [c + sg * 0.28, p]; P(g.box, bam, px, 0.42, pz, along ? 0.04 : 0.04, 0.9, 0.04, along ? sg * -0.5 : 0, 0, along ? 0 : sg * 0.5); } fb(f, a + 0.55, b - 0.45, 0.02, 0.08, 0.05, 0.55, M('woodD')); if (along) B.solid(a + 0.55, Math.min(c, c + sg * 0.55), b - 0.45, Math.max(c, c + sg * 0.55), 'deco'); else B.solid(Math.min(c, c + sg * 0.55), a + 0.55, Math.max(c, c + sg * 0.55), b - 0.45, 'deco'); }
+        if (named) { const p = a + (b - a) * 0.8, red = CK.mat('chochinRed', { col: '#E8503A', em: '#FF6A3A', ei: 0, lamp: true, snow: 0 }); const [px, pz] = along ? [p, c + sg * 0.55] : [c + sg * 0.55, p]; P(g.cyl8, M('black'), px, h1 + 0.1, pz, 0.03, 0.4, 0.03); P(g.cyl8, red, px, h1 - 0.45, pz, 0.46, 0.62, 0.46); P(g.cyl8, M('black'), px, h1 - 0.1, pz, 0.4, 0.06, 0.4); P(g.cyl8, M('black'), px, h1 - 0.8, pz, 0.4, 0.06, 0.4); B.lampAt(px, pz); }
+        else if (rnd() < 0.4) fb(f, a + 0.4, b - 0.4, h1 - 1.3, h1 - 0.4, 0.04, 0.07, M('wood', { col: '#C8A870' }));   // 竹簾
+      } else if (st === 'kura') {
+        // 土藏（2026-10-26）：黑色腰牆上白色菱格的海鼠壁、厚的倉門（黑框、白的門扇）、高處的小窗（黑色的窗扉）
+        const white = M('white'), lines = (fc, aa, ab) => { const len = ab - aa; for (let p = aa + 0.25; p < ab - 0.1; p += 0.42) [0.785, -0.785].forEach(r => { const [, , ] = faces[fc]; const sgn = fc === 's' || fc === 'e' ? 1 : -1, cc = faces[fc][0] + sgn * 0.02; if (fc === 's' || fc === 'n') P(g.box, white, p, 1.05, cc, 0.04, 1.35, 0.03, 0, 0, r); else P(g.box, white, cc, 1.05, p, 0.03, 1.35, 0.04, r, 0, 0); }); void len; };
+        if (Math.abs(Math.sin(B.yaw() * 2)) < 1e-6) ['s', 'n', 'e', 'w'].forEach(fc => { const [, aa, ab] = faces[fc]; lines(fc, aa, ab); fb(fc, aa, ab, 1.55, 1.68, 0, 0.06, white); });
+        const [, a, b] = faces[f], m = (a + b) / 2;
+        fb(f, m - 1.1, m + 1.1, 0.5, 3.0, 0, 0.18, M('black')); fb(f, m - 0.9, m + 0.9, 0.5, 2.8, 0.18, 0.22, white); fb(f, m - 0.02, m + 0.02, 0.5, 2.8, 0.22, 0.24, M('black'));
+        fb(f, m - 1.4, m + 1.4, 3.0, 3.18, 0, 0.6, M('kawara', { col: '#767C88' }));   // 門上的小屋頂
+        [a + (b - a) * 0.22, b - (b - a) * 0.22].forEach(p => { if (Math.abs(p - m) < 1.5) return; fb(f, p - 0.4, p + 0.4, h - 1.9, h - 1.1, 0, 0.12, M('black')); });
       } else if (st === 'brick') {
         const stone = M('ashlar'), white = M('cream');
         if (h > 5) for (let y = 1.3 + fh; y < h - 1; y += fh) ring(y - 0.1, y + 0.12, 0.08, stone);   // 腰帶
