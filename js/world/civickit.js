@@ -2,7 +2,8 @@
 // 包住 cityhelp.js 的 CK.H.station、CK.H.guild（八座城共用），原本的照舊（門、互動、招牌不動），再加：
 // - 車站：大樓上一座鐘塔（四面的鐘、寄棟的小屋頂、尖頂）、入口的石框；站前廣場兩邊的花壇（矮籬笆）、腳踏車架、計程車招呼站的站牌；
 //   平頂的車站另加女兒牆、玻璃天窗、冷氣室外機。
-// - 公會分館：門口的門廊（兩根柱子、三角山牆）、石階、兩盞門燈、門上方綠色的公會紋章（盾形＋交叉的兩把金色的劍）。
+// - 公會分館：門口的門廊（兩根柱子、三角山牆）、石階、兩盞門燈、門上方綠色的公會紋章（盾形＋交叉的兩把金色的劍）；
+//   平頂的分館另加女兒牆、樓梯間、水塔、冷氣室外機。
 // 放在 cityhelp.js 後面、city_*.js 前面。
 (function (R) {
   const CK = R.CK; if (!CK || !CK.H) return;
@@ -75,6 +76,17 @@
           if (along) { P(g.box, gold, qx, 7.3, qz, 0.12, 1.6, 0.04, 0, 0, r); P(g.box, gold, qx - Math.sin(-r) * 0.55, 7.3 - Math.cos(r) * 0.55, qz, 0.36, 0.08, 0.05, 0, 0, r); }
           else { P(g.box, gold, qx, 7.3, qz, 0.04, 1.6, 0.12, r, 0, 0); P(g.box, gold, qx, 7.3 - Math.cos(r) * 0.55, qz - Math.sin(r) * 0.55, 0.05, 0.08, 0.36, r, 0, 0); }
         });
+      }
+      // 平頂（沒有 o.roof）的分館：女兒牆、樓梯間的小屋、水塔、冷氣室外機（避開正面那一邊）
+      if (!o.roof) {
+        const h = o.h || 12, pm = M('ashlar'), back = { s: z0, n: z1, e: x0, w: x1 }[face];
+        B.box(pm, x0, h, z0, x1, h + 0.8, z0 + 0.3); B.box(pm, x0, h, z1 - 0.3, x1, h + 0.8, z1); B.box(pm, x0, h, z0, x0 + 0.3, h + 0.8, z1); B.box(pm, x1 - 0.3, h, z0, x1, h + 0.8, z1);
+        const hx = along ? x0 + 2.6 : (back < cx ? x0 + 2.6 : x1 - 2.6), hz = along ? (back < cz ? z0 + 2.4 : z1 - 2.4) : z0 + 2.4;
+        B.box(M('cream'), hx - 1.6, h, hz - 1.4, hx + 1.6, h + 2.6, hz + 1.4); B.box(pm, hx - 1.8, h + 2.6, hz - 1.6, hx + 1.8, h + 2.8, hz + 1.6);
+        const tx = along ? x1 - 3 : hx, tz = along ? hz : z1 - 3;
+        [[-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6]].forEach(([dx, dz]) => P(g.box, M('steelD'), tx + dx, h + 0.8, tz + dz, 0.1, 1.6, 0.1));
+        P(g.cyl24, M('metal', { col: '#C8CCD0' }), tx, h + 2.4, tz, 2.0, 1.6, 2.0); P(g.hemi, M('metal', { col: '#C8CCD0' }), tx, h + 3.2, tz, 2.0, 0.4, 2.0);
+        for (let k = 0; k < 3; k++) { const [ax, az] = along ? [cx - 2.4 + k * 2.4, back < cz ? z0 + 1.6 : z1 - 1.6] : [back < cx ? x0 + 1.6 : x1 - 1.6, cz - 2.4 + k * 2.4]; B.box(M('metal', { col: '#D8D8D4' }), ax - 0.8, h, az - 0.6, ax + 0.8, h + 1.0, az + 0.6); P(g.cyl24, M('steelD'), ax, h + 1.02, az, 0.9, 0.04, 0.9); }
       }
       void cz; void x1; void z1;
     } catch (e) { console.warn('[civickit] guild', e); }
