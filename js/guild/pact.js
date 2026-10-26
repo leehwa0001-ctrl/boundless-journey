@@ -62,15 +62,18 @@
   R.titleName = () => { const t = TT[pact().title]; return t && pact().got[t[0]] ? t[1] : ''; };
 
   // ---------- 委託書上的條款 ----------
+  // 2026-10-27：條款一長串（1200 多像素）把「接下委託，出發」擠到最下面：預設收起來，這次打開過（或已經加注）就保持展開
+  let pactOpen = false;
   const sheet = (site, sp) => {
     const p = pact(), s = S(), sel = p.sel, party = (s.party || []).length, kaso = site.grade === 'kaso', mx = maxFor(site.grade), pts = ptsOf(party || kaso ? Object.assign({}, sel, { solo: 0 }) : sel), best = p.best[site.grade] || 0;   // 隊伍裡有人：「單獨」出發時會被拿掉，這裡就不算它
-    return '<div id="pact-box"><h3>加注條款</h3><p class="note">自願接下更苛刻的條款，公會照條款加付報酬。加注每 1 點：報酬 +10%、經驗 +5%、寶物數量 +3%。</p><div class="pact-list">'
+    return '<div id="pact-box"><details class="pact-fold"' + (pts || pactOpen ? ' open' : '') + '><summary><b>加注條款</b>（選填）・目前 <b>' + pts + '</b> 點' + (pts ? '・報酬 +' + pts * 10 + '%' : '・不加也可以直接出發') + '</summary><p class="note">自願接下更苛刻的條款，公會照條款加付報酬。加注每 1 點：報酬 +10%、經驗 +5%、寶物數量 +3%。</p><div class="pact-list">'
       + TERMS.map(([id, name, lv, pt]) => { const v = sel[id] || 0, dis = id === 'solo' && (party || kaso); return '<div class="pact-row' + (v ? ' on' : '') + '"><b>' + esc(name) + '</b><small>' + esc(v ? lv[v - 1] : lv.join('／')) + (dis ? (kaso ? '（卡索級一定要帶隊友：不能選，滿注也不算這一條）' : v ? '<b style="color:#FF9A7A">（隊伍裡有人：這一趟不算，點數也不算）</b>' : '（隊伍裡有人，不能選）') : '') + '</small><div class="pact-lv">' + ['不加'].concat(lv.map((_, i) => (lv.length > 1 ? (i ? '二級' : '一級') : '加') + ' ' + pt[i] + ' 點')).map((n, i) => '<button type="button" class="mini' + (v === i ? ' gold' : '') + '" data-pact="' + id + ':' + i + '"' + (dis && i ? ' disabled' : '') + '>' + n + '</button>').join('') + '</div></div>'; }).join('')
-      + '</div><p class="pact-sum">加注 <b>' + pts + '</b>／' + mx + ' 點' + (pts ? '・報酬 +' + pts * 10 + '%・經驗 +' + pts * 5 + '%・寶物數量 +' + pts * 3 + '%' : '')   /* 2026-10-04 作者：寶物數量（寶箱多開一樣的機率）在總計列沒顯示 */ + (best ? '・這個分級的最高紀錄：' + best + ' 點' : '') + (pts >= mx ? '・<b>滿注</b>' : '') + '</p></div>';
+      + '</div><p class="pact-sum">加注 <b>' + pts + '</b>／' + mx + ' 點' + (pts ? '・報酬 +' + pts * 10 + '%・經驗 +' + pts * 5 + '%・寶物數量 +' + pts * 3 + '%' : '')   /* 2026-10-04 作者：寶物數量（寶箱多開一樣的機率）在總計列沒顯示 */ + (best ? '・這個分級的最高紀錄：' + best + ' 點' : '') + (pts >= mx ? '・<b>滿注</b>' : '') + '</p></details></div>';
   };
   if (R.taskExtras) R.taskExtras.push({
     html: (site, sp) => sheet(site, sp),
     bind: (box, site, sp) => {
+      box.addEventListener('toggle', e => { if (e.target && e.target.classList && e.target.classList.contains('pact-fold')) pactOpen = e.target.open; }, true);
       const wire = () => box.querySelectorAll('[data-pact]').forEach(b => { b.onclick = () => { const [id, v] = b.dataset.pact.split(':'); pact().sel[id] = +v; if (!+v) delete pact().sel[id]; R.save(); const old = box.querySelector('#pact-box'); if (old) { const t = document.createElement('div'); t.innerHTML = sheet(site, sp); old.replaceWith(t.firstChild); wire(); } }; });
       wire();
     }
@@ -217,6 +220,6 @@
     box.querySelectorAll('[data-title]').forEach(b => { b.onclick = () => { p.title = b.dataset.title; R.save(); R.hub(); }; });
   };
   const css = document.createElement('style');
-  css.textContent = '.pact-list{display:grid;gap:4px}.pact-row{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:5px 8px}.pact-row.on{border-color:#FF9A6A}.pact-row small{opacity:.85}.pact-lv{grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap}.pact-sum{margin-top:6px}.ft-row.locked{opacity:.55}';
+  css.textContent = '.pact-list{display:grid;gap:4px}.pact-row{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:center;background:var(--bg2);border:1px solid var(--line);border-radius:8px;padding:5px 8px}.pact-row.on{border-color:#FF9A6A}.pact-row small{opacity:.85}.pact-lv{grid-column:1/-1;display:flex;gap:4px;flex-wrap:wrap}.pact-sum{margin-top:6px}.pact-fold>summary{cursor:pointer;padding:6px 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg2);list-style:revert}.pact-fold[open]>summary{margin-bottom:6px}#hub-sheet .row:has(#tk-go),#r-sheet .row:has(#tk-go){position:sticky;bottom:0;z-index:4;padding:8px 0 4px;margin-top:8px;background:linear-gradient(to bottom,transparent,var(--panel,#1E1814) 30%)}.ft-row.locked{opacity:.55}';
   document.head.appendChild(css);
 })(window.R);
