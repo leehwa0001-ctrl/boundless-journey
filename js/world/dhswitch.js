@@ -20,10 +20,19 @@
       CK._dongheH = H;
       try { ce0('donghe', Object.assign({}, o || {}, pos ? { at: pos } : {})); } finally { CK._dongheH = null; }
       const tw = W.town, P2 = W.P;
-      if (tw) tw.from = from || null;
+      if (tw) { tw.from = from || null; unbury(tw); }
       if (P2) { R.collide(P2, 0.42); P2.yv = CK.heightAt(P2.x, P2.z); P2.h.g.position.set(P2.x, P2.yv, P2.z); R.placeCam(null); }   // 收東西時的位置在精緻版可能壓在東西裡
     } finally { R.banner = rb; }
     if (ban) R.banner(...ban);
+  };
+  // 收下來的互動點如果落在精緻版的牆、水裡面（走不到），推到那個擋住的東西外面最近的地方
+  const unbury = tw => {
+    const L = (R.col && R.col.list) || [], solid = b => b && b.tag !== 'npc' && b.tag !== 'deco';
+    (tw.inter || []).forEach(it => {
+      const b = L.find(q => solid(q) && it.x > q.x0 + 0.3 && it.x < q.x1 - 0.3 && it.z > q.z0 + 0.3 && it.z < q.z1 - 0.3); if (!b) return;
+      const d = [[it.x - b.x0, b.x0 - 0.9, it.z], [b.x1 - it.x, b.x1 + 0.9, it.z], [it.z - b.z0, it.x, b.z0 - 0.9], [b.z1 - it.z, it.x, b.z1 + 0.9]].sort((p, q) => p[0] - q[0])[0];
+      it.x = d[1]; it.z = d[2];
+    });
   };
   const go = (from, at, o) => {
     if (!ready()) { R.three.then(() => CK.clipperReady).then(() => go(from, at, o)); return; }
