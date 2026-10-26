@@ -25,20 +25,26 @@
   R.SIGHTS = SIGHTS;
   const got = () => { const s = S(); s.sights = s.sights || {}; return s.sights; };
   R.addTitle && R.addTitle(['tourist', '東鶴通', '在東鶴的每一個觀光景點蓋了觀光章', '委託報酬 +2%', { pay: 0.02 }]);
+  const gold = () => { const s = S(); s.sightsGold = s.sightsGold || {}; return s.sightsGold; };
+  const pid = sg => 'dh_' + sg[0];
   const visit = sg => {
-    const g = got(), first = !g[sg[0]], n0 = Object.keys(g).length;
-    if (first) { g[sg[0]] = S().day || 1; R.save(); R.sfx && R.sfx('pick'); }
+    const PC = R.postcard, g = got(), first = !g[sg[0]], n0 = Object.keys(g).length, G = gold(), isBest = PC && PC.isNow(pid(sg)), goldNew = isBest && !G[sg[0]];
+    if (first) g[sg[0]] = S().day || 1;
+    if (goldNew) { G[sg[0]] = S().day || 1; S().gold += 150; if (R.sanAdd) R.sanAdd(5); }
+    if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = Object.keys(g).length, all = n >= SIGHTS.length;
-    R.sheet('<p class="kicker">觀光景點・' + esc(sg[3]) + '</p><h2>' + esc(sg[2]) + '</h2><p>' + esc(sg[4]) + '</p>'
-      + '<p class="note">' + (first ? '在觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
+    R.sheet('<p class="kicker">觀光景點・' + esc(sg[3]) + '</p><h2>' + esc(sg[2]) + '</h2>' + (PC ? PC.card(pid(sg), !!G[sg[0]]) : '') + '<p>' + esc(sg[4]) + '</p>'
+      + (PC ? '<p class="note">最佳時刻：' + esc(PC.best(pid(sg))) + (isBest ? '——就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : G[sg[0]] ? '限定明信片已經有了。' : '') + '</p>' : '')
+      + '<p class="note">' + (first ? '在觀光手冊上蓋了章、收下一張明信片。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
       '<div class="row"><button type="button" class="btn pri" id="sg-x">好</button><button type="button" class="btn" id="sg-book">觀光手冊</button></div>');
     document.getElementById('sg-x').onclick = R.closeSheet; document.getElementById('sg-book').onclick = book;
     if (first && all && n0 < SIGHTS.length) { S().gold += 800; R.save(); R.awardTitle && R.awardTitle('tourist'); setTimeout(() => R.banner && R.banner('觀光章蓋齊了！', '東鶴觀光協會送來 800 費拉和稱號「東鶴通」。'), 600); }
   };
   const book = () => {
     const g = got();
-    R.sheet('<p class="kicker">東鶴觀光協會</p><h2>觀光手冊</h2><p class="note">走到景點旁邊的說明牌就能蓋章。蓋齊 ' + SIGHTS.length + ' 個：800 費拉和稱號「東鶴通」。</p><ul class="sg-list">'
-      + SIGHTS.map(sg => '<li class="' + (g[sg[0]] ? 'ok' : '') + '"><b>' + (g[sg[0]] ? '✓ ' : '・') + esc(sg[2]) + '</b><small>' + esc(sg[3]) + '</small></li>').join('') + '</ul>',
+    const G = gold(), PC = R.postcard;
+    R.sheet('<p class="kicker">東鶴觀光協會</p><h2>東鶴明信片冊</h2><p class="note">走到景點旁邊的說明牌就能蓋章。蓋齊 ' + SIGHTS.length + ' 個：800 費拉和稱號「東鶴通」。</p><div class="pc-grid">'
+      + SIGHTS.map(sg => '<figure class="pc-cell' + (g[sg[0]] ? '' : ' none') + '">' + (g[sg[0]] && PC ? PC.card(pid(sg), !!G[sg[0]]) : '<div class="pc empty">？</div>') + '<figcaption><b>' + esc(sg[2]) + '</b><small>' + esc(sg[3]) + (PC ? '・最佳：' + esc(PC.best(pid(sg))) : '') + '</small></figcaption></figure>').join('') + '</div>',
       '<div class="row"><button type="button" class="btn pri" id="sg-x">關上</button></div>');
     document.getElementById('sg-x').onclick = R.closeSheet;
   };

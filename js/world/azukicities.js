@@ -296,11 +296,15 @@
     bb_ferry: ['晚上', NIGHT], bb_car: ['白天', DAY], bb_hotel: ['晚上', NIGHT],
     bn_castle: ['白天', DAY], bn_temple: ['清晨', DAWN], bn_yokai: ['晚上', NIGHT],
     gs_tree: ['白天', DAY], gs_rice: ['黃昏', DUSK], gs_elf: ['黃昏', DUSK],
-    yb_food: ['晚上', NIGHT], yb_mine: ['冬天', (h, se) => se === '冬'], yb_port: ['清晨', DAWN]
+    yb_food: ['晚上', NIGHT], yb_mine: ['冬天', (h, se) => se === '冬'], yb_port: ['清晨', DAWN],
+    dh_shrine: ['清晨', DAWN], dh_bell: ['黃昏', DUSK], dh_clock: ['正午（木頭鶴出來的時候）', hr(11, 13)], dh_pillar: ['晚上（約見面的時間）', hr(18, 22)], dh_theater: ['晚上', NIGHT], dh_market: ['清晨（開市）', hr(4, 8)],
+    dh_beach: ['夏天', (h, se) => se === '夏'], dh_light: ['晚上', NIGHT], dh_whitelight: ['清晨（日出）', DAWN], dh_brick: ['黃昏', DUSK], dh_bridge: ['冬天', (h, se) => se === '冬'], dh_hokora: ['白天', DAY], dh_onsen: ['晚上', NIGHT],
+    hs_station: ['白天', DAY], hs_castle: ['白天', DAY], hs_billboard: ['晚上', NIGHT], hs_canal: ['晚上', NIGHT], hs_tower: ['晚上', NIGHT], hs_port: ['黃昏', DUSK]
   };
   const best = sid => BEST[sid] || ['任何時候', () => true];
   const nowBest = sid => { const sv = S(), h = sv && sv.hour != null ? sv.hour % 24 : 12, se = R.dateOf ? R.dateOf(sv.day || 0).season : ''; return best(sid)[1](h, se); };
   const card = (sid, gold) => '<div class="pc' + (gold ? ' gold' : '') + '"><img src="assets/art/sights/' + sid + '.webp" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' + (gold ? '<i>限定</i>' : '') + '</div>';
+  R.postcard = { card, best: sid => best(sid)[0], isNow: nowBest };   // 東鶴（sights.js）、奉主（hosu.js）也用
   const stamp = (city, sg) => {
     const g = st(); if (!g) return;
     g.gold = g.gold || {};

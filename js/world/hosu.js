@@ -56,19 +56,22 @@
   R.HOSU_SIGHTS = SIGHTS;
   R.addTitle && R.addTitle(['hosutsu', '奉主通', '在奉主的每一個觀光景點蓋了觀光章', '委託報酬 +2%', { pay: 0.02 }]);
   const stamps = () => { const s = S(); s.hosuSights = s.hosuSights || {}; return s.hosuSights; };
+  const gold = () => { const s = S(); s.hosuGold = s.hosuGold || {}; return s.hosuGold; };
   const visit = id => {
-    const sg = SIGHTS.find(v => v[0] === id), g = stamps(), first = !g[id], n0 = Object.keys(g).length;
-    if (first) { g[id] = S().day || 1; R.save(); R.sfx && R.sfx('pick'); }
+    const PC = R.postcard, sg = SIGHTS.find(v => v[0] === id), g = stamps(), first = !g[id], n0 = Object.keys(g).length, G = gold(), isBest = PC && PC.isNow('hs_' + id), goldNew = isBest && !G[id];
+    if (first) g[id] = S().day || 1;
+    if (goldNew) { G[id] = S().day || 1; S().gold += 150; if (R.sanAdd) R.sanAdd(5); }
+    if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = Object.keys(g).length;
-    R.sheet('<p class="kicker">奉主・' + esc(sg[2]) + '</p><h2>' + esc(sg[1]) + '</h2><p>' + esc(sg[3]) + '</p><p class="note">' + (first ? '在奉主觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
+    R.sheet('<p class="kicker">奉主・' + esc(sg[2]) + '</p><h2>' + esc(sg[1]) + '</h2>' + (PC ? PC.card('hs_' + id, !!G[id]) : '') + '<p>' + esc(sg[3]) + '</p>' + (PC ? '<p class="note">最佳時刻：' + esc(PC.best('hs_' + id)) + (isBest ? '——就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : '') + '</p>' : '') + '<p class="note">' + (first ? '在奉主觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
       '<div class="row"><button type="button" class="btn pri" id="hv-x">好</button><button type="button" class="btn" id="hv-book">奉主觀光手冊</button></div>');
     $('hv-x').onclick = R.closeSheet; $('hv-book').onclick = book;
     if (first && n >= SIGHTS.length && n0 < SIGHTS.length) { S().gold += 800; R.save(); R.awardTitle && R.awardTitle('hosutsu'); setTimeout(() => R.banner && R.banner('奉主的觀光章蓋齊了！', '奉主觀光局送來 800 費拉和稱號「奉主通」。'), 600); }
   };
   const book = () => {
-    const g = stamps();
-    R.sheet('<p class="kicker">奉主觀光局</p><h2>奉主觀光手冊</h2><p class="note">走到景點按空白鍵就能蓋章。蓋齊 ' + SIGHTS.length + ' 個：800 費拉和稱號「奉主通」。</p><ul class="sg-list">'
-      + SIGHTS.map(sg => '<li class="' + (g[sg[0]] ? 'ok' : '') + '"><b>' + (g[sg[0]] ? '✓ ' : '・') + esc(sg[1]) + '</b><small>' + esc(sg[2]) + '</small></li>').join('') + '</ul>',
+    const g = stamps(), G = gold(), PC = R.postcard;
+    R.sheet('<p class="kicker">奉主觀光局</p><h2>奉主明信片冊</h2><p class="note">走到景點按空白鍵就能蓋章。蓋齊 ' + SIGHTS.length + ' 個：800 費拉和稱號「奉主通」。</p><div class="pc-grid">'
+      + SIGHTS.map(sg => '<figure class="pc-cell' + (g[sg[0]] ? '' : ' none') + '">' + (g[sg[0]] && PC ? PC.card('hs_' + sg[0], !!G[sg[0]]) : '<div class="pc empty">？</div>') + '<figcaption><b>' + esc(sg[1]) + '</b><small>' + esc(sg[2]) + (PC ? '・最佳：' + esc(PC.best('hs_' + sg[0])) : '') + '</small></figcaption></figure>').join('') + '</div>',
       '<div class="row"><button type="button" class="btn pri" id="hb-x">關上</button></div>');
     $('hb-x').onclick = R.closeSheet;
   };
