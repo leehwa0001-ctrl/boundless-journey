@@ -5,16 +5,16 @@
 //   巢織蛛：爬上天花板，影子跟著你，掉下來砸；吐絲纏人。怕火。
 //   千節蟲：頭的甲殼很硬（正面 ×0.5）、尾巴軟（背後 ×1.5）；衝鋒會留下毒地、會鑽地。
 //   地出巨骸：幾乎不動；兩隻骨手拍地、橫掃、抓人；血掉到 2/3、1/3 會散架重組（3 秒不會受傷，叫骨兵）。
-//   霜冠鹿：寒氣——站在牠附近會一直積霜，積滿 5 層整個人凍住 1.5 秒；怕火（×1.5）。
-//   熔顎蜥：熔甲——平常受到的傷害 ×0.6，被冰（緩速）打到甲殼裂開 6 秒（×1.3）；走過的地方留熔岩；會潛進熔岩回血。
+//   霜冠鹿：寒氣──站在牠附近會一直積霜，積滿 5 層整個人凍住 1.5 秒；怕火（×1.5）。
+//   熔顎蜥：熔甲──平常受到的傷害 ×0.6，被冰（緩速）打到甲殼裂開 6 秒（×1.3）；走過的地方留熔岩；會潛進熔岩回血。
 //   沙暴鯨：大半時間潛在沙裡（打不到），從你腳下衝出來；衝出來之後擱淺 3 秒，這時受到的傷害 +40%。
 //   深淵王蛸：身邊有觸手護著（兩條以上活著時本體 ×0.4）；砍斷一條觸手牠會痛得愣住；噴墨、漩渦。
 //   萬面樹：不會動；身上只有一張臉是睜開的（地上有光指著那個方向），從那個方向打 ×2，其他方向 ×0.5；每 6 秒換一張。怕火。
-//   朽翼龍：一下飛一下落地——飛在天上近戰打不到（×0.2），只能用遠程；落地時 +20%。
-//   雷鳴猿：蓄雷——每出一招、每打中你一下都在蓄電，滿了「雷神降臨」：整個大廳落雷，只有貼在牠身邊安全。
-//   緋面風翁：風之衣——飛過來的投射物有一半被吹散；會把人吹開、颳出追人的龍捲。
+//   朽翼龍：一下飛一下落地──飛在天上近戰打不到（×0.2），只能用遠程；落地時 +20%。
+//   雷鳴猿：蓄雷──每出一招、每打中你一下都在蓄電，滿了「雷神降臨」：整個大廳落雷，只有貼在牠身邊安全。
+//   緋面風翁：風之衣──飛過來的投射物有一半被吹散；會把人吹開、颳出追人的龍捲。
 //   棘背狼：原本的刺、毛、怕火、預判、越打越兇（lordfloor.js）照舊，招式範圍跟著身體變大。
-//   無主大鎧：架勢——擺出架勢的 1.5 秒內打牠會被反擊（居合）；鎧甲很硬（×0.7），背後打 ×1.3。
+//   無主大鎧：架勢──擺出架勢的 1.5 秒內打牠會被反擊（居合）；鎧甲很硬（×0.7），背後打 ×1.3。
 // - 異變（lordvariant.js）的招式也照身體大小放大（那邊用 e.BR）。
 // 放在 lords.js、lordplus.js、lordfloor.js、region.js、windelder.js、lordvariant.js、kasoplus.js 後面。
 (function (R) {
@@ -68,7 +68,7 @@
     moves: [
       (e, P, de, a) => { shoot(e, a, 5, 0.22, 'web', 11, 0.6); for (let i = 0; i < 3; i++) { const [x, z] = at(e, a + (i - 1) * 0.3, e.BR + 5 + i * 2); zone(x, z, 2.2, 7, 0, 'web'); } },
       (e) => { // 爬上天花板：影子跟著你，2.2 秒後掉下來
-        e.lockT = 3.2; e.invuln = true; const g = e.m.g; let t = 0; const w = W(), run = w.run; R.toast && R.toast('巢織蛛爬上了天花板——看地上的影子！', '#B08AFF');
+        e.lockT = 3.2; e.invuln = true; const g = e.m.g; let t = 0; const w = W(), run = w.run; R.toast && R.toast('巢織蛛爬上了天花板──看地上的影子！', '#B08AFF');
         w.dyn.push(dt => { if (w.run !== run || e.dead) return false; t += dt; const Q = W().P; if (t < 0.5) g.position.y = 12 * t / 0.5; else if (t < 2.4) { e.x += (Q.x - e.x) * Math.min(1, dt * 1.6); e.z += (Q.z - e.z) * Math.min(1, dt * 1.6); g.position.y = 12; if (((t * 10) | 0) % 3 === 0) R.fx('mark', e.x, 0, e.z, { r: e.BR + 0.5, t: 0.25, color: '#B08AFF' }); } else if (t < 2.75) g.position.y = 12 * (1 - (t - 2.4) / 0.35); else { g.position.y = 0; e.invuln = false; R.fx('boom', e.x, 0.3, e.z, { r: e.BR + 1, color: '#5A4A6A' }); hitCircle(e, e.x, e.z, e.BR + 1, 2, { knock: 0.7 }); R.shake && R.shake(0.7); return false; } g.position.x = e.x; g.position.z = e.z; return true; });
       },
       (e, P) => { around(P, 4, 3).forEach(([x, z]) => zone(x, z, 1.8, 6, 0, 'web')); [0, 500, 1000].forEach(ms => later(() => { if (e.dead) return; const Q = W().P; slam(e, Q.x, Q.z, 1.8, 0.6, 1.1, '#B08AFF', { slow: 1.5 }); }, ms)); R.toast && R.toast('蛛絲纏住地面，腳一直刺下來', '#B08AFF'); },
@@ -91,7 +91,7 @@
     hurt: (e, raw) => (e.reform ? 0 : raw),
     passive: (e, P, dt) => {
       const f = e.hp / e.hpMax; e.reformAt = e.reformAt || [0.66, 0.33];
-      if (!e.reform && e.reformAt.length && f < e.reformAt[0]) { e.reformAt.shift(); e.reform = 3; e.lockT = 3.2; R.banner && R.banner('地出巨骸散架了', '骨頭重新拼起來之前打不動——先處理骨兵'); summon(e, 'honemusha', 3, 0.7); R.fx('poof', e.x, 1, e.z, { color: '#E8E0CC', n: 40 }); }
+      if (!e.reform && e.reformAt.length && f < e.reformAt[0]) { e.reformAt.shift(); e.reform = 3; e.lockT = 3.2; R.banner && R.banner('地出巨骸散架了', '骨頭重新拼起來之前打不動──先處理骨兵'); summon(e, 'honemusha', 3, 0.7); R.fx('poof', e.x, 1, e.z, { color: '#E8E0CC', n: 40 }); }
       if (e.reform) { e.reform -= dt; e.m.g.position.y = -e.BR * 0.9 * Math.min(1, Math.min(3 - e.reform, e.reform) / 0.6); if (e.reform <= 0) { e.reform = 0; e.m.g.position.y = 0; wave(e, 8, 9, 1.2, '#E8E0CC'); } }
     },
     moves: [
@@ -189,7 +189,7 @@
       (e) => { e.volt += 8; wave(e, 9, 8, 1.1, '#FFE04A', { stun: 0.3 }); }
     ] };
   const godThunder = e => {
-    e.volt = 0; e.lockT = 2.6; R.banner && R.banner('雷神降臨', '整個大廳要落雷了——貼到雷鳴猿身邊！');
+    e.volt = 0; e.lockT = 2.6; R.banner && R.banner('雷神降臨', '整個大廳要落雷了──貼到雷鳴猿身邊！');
     const safe = e.BR + 3.5; R.fx('mark', e.x, 0, e.z, { r: safe, t: 1.8, color: '#9AE07A' });
     const pts = []; targets().forEach(t => { for (let i = 0; i < 6; i++) { const a = rnd() * 6.28, d = i ? 2 + rnd() * 6 : 0; pts.push(floor(t.x + Math.sin(a) * d, t.z + Math.cos(a) * d)); } });
     pts.forEach(([x, z]) => R.fx('mark', x, 0, z, { r: 2, t: 1.8, color: '#FFE04A' }));
@@ -212,10 +212,10 @@
       (e, P) => { e.lockT = 1.3; const x = P.x, z = P.z; R.fx('mark', x, 0, z, { r: e.BR, t: 0.7 }); later(() => { if (!e.dead) jump(e, x, z, 0.55, 3, () => { R.fx('boom', e.x, 0.3, e.z, { r: e.BR + 0.5, color: '#3A3A44' }); hitCircle(e, e.x, e.z, e.BR + 0.5, 1.5 * (e.fero || 1), { knock: 0.6 }); R.shake && R.shake(0.4); }); }, 700); },
       (e) => { e.lockT = 1.3; [0, 450].forEach(ms => later(() => { if (!e.dead) cone(e, angTo(e, W().P), 2, 4, 0.3, 1.1 * (e.fero || 1), '#E8E0CC'); }, ms)); },
       (e) => { e.lockT = 1; R.fx('mark', e.x, 0, e.z, { r: e.BR + 4, t: 0.6 }); later(() => { if (e.dead) return; R.fx('ring', e.x, 0.1, e.z, { r: e.BR + 4, color: '#8A8A96' }); hitCircle(e, e.x, e.z, e.BR + 4, 1.2 * (e.fero || 1), { knock: 0.9 }); }, 600); },
-      (e) => { e.lockT = 1; e.howl = 6; R.banner && R.banner('棘背狼吼了一聲', '背上的刺變長了——近戰會被刺得更深'); later(() => { if (!e.dead) radial(e, 16, 'arrow', 11, 0.7 * (e.fero || 1), rnd()); }, 500); }
+      (e) => { e.lockT = 1; e.howl = 6; R.banner && R.banner('棘背狼吼了一聲', '背上的刺變長了──近戰會被刺得更深'); later(() => { if (!e.dead) radial(e, 16, 'arrow', 11, 0.7 * (e.fero || 1), rnd()); }, 500); }
     ] };
   // 緋喙屍鷲（2026-10-18 作者：沙漠的新領主體）
-  // 特色「食腐」：身邊 14 公尺內有生物倒下（包括牠叫來的屍鴉），撲過去啄食——回 4% 生命、傷害 +10%（8 秒，最多 3 層）。
+  // 特色「食腐」：身邊 14 公尺內有生物倒下（包括牠叫來的屍鴉），撲過去啄食──回 4% 生命、傷害 +10%（8 秒，最多 3 層）。
   // 招式：羽刃（扇形一排羽毛）、俯衝啄擊（跳起來砸在你站的地方）、沙塵捲翼（往外吹開、看不清楚）、屍鴉（叫三隻來，最好離牠遠一點再打）。
   D.carrionvulture = { move: 'keep', keep: [2.5, 8], reach: 2.2, every: 3, col: '#C8302A',
     passive: (e, P, dt) => {
@@ -228,14 +228,14 @@
       (e, P, de, a) => { e.lockT = 0.8; shoot(e, a, 7, 0.16, 'feather', 13, 0.6); },
       (e, P) => { e.lockT = 1.6; const x = P.x, z = P.z; R.fx('mark', x, 0, z, { r: e.BR + 0.6, t: 0.8, color: '#C8302A' }); later(() => { if (e.dead) return; jump(e, x, z, 0.6, 7, () => { R.fx('boom', e.x, 0.3, e.z, { r: e.BR + 1, color: '#5E1210' }); hitCircle(e, e.x, e.z, e.BR + 1.2, 1.5, { knock: 0.5 }); }); }, 500); },
       (e) => { e.lockT = 1; wave(e, 9, 9, 0.9, '#D8B86A', { on: t => { const aa = angTo(e, t); t.x += Math.sin(aa) * 3; t.z += Math.cos(aa) * 3; R.collide && R.collide(t, 0.42); if (t === W().P) t.blindT = Math.max(t.blindT || 0, 1.5); } }); },
-      (e) => { summon(e, R.ENEMIES.ashcrow ? 'ashcrow' : 'karasu', 3, 0.5); R.toast && R.toast('屍鴉從天上落下來了——在緋喙屍鷲旁邊打倒，牠會去吃', '#C8302A'); }
+      (e) => { summon(e, R.ENEMIES.ashcrow ? 'ashcrow' : 'karasu', 3, 0.5); R.toast && R.toast('屍鴉從天上落下來了──在緋喙屍鷲旁邊打倒，牠會去吃', '#C8302A'); }
     ] };
   // 無主大鎧
   D.muhyo = { move: 'chase', reach: 2.4, every: 3, col: '#C8A040', turn: 2.4,
     hurt: (e, raw, o, P) => { let k = 0.7; if (P && Math.abs(wrap(angTo(e, P) - (e.yaw || 0))) > 2.2) k = 1.3; if (e.stance > 0 && P && !o.dot && !o.reflect && !(e.ctrCd > 0)) { e.ctrCd = 1; later(() => { if (e.dead) return; const Q = W().P, a = angTo(e, Q); R.banner && R.banner('居合', '無主大鎧反擊了'); beam(e, a, 8, 1.6, 0.15, 2.2, '#FF5A3A', { knock: 0.7 }); }, 50); } return raw * k; },
     passive: (e, P, dt) => { if (e.stance > 0) { e.stance -= dt; if (e.stance <= 0) msg(e, '架勢解除', ''); } if (e.ctrCd > 0) e.ctrCd -= dt; },
     moves: [
-      (e) => { e.lockT = 1.6; e.stance = 1.6; msg(e, '架勢——別打牠！', 'crit'); R.fx('ring', e.x, 0.1, e.z, { r: e.BR + 1, color: '#FF5A3A' }); },
+      (e) => { e.lockT = 1.6; e.stance = 1.6; msg(e, '架勢──別打牠！', 'crit'); R.fx('ring', e.x, 0.1, e.z, { r: e.BR + 1, color: '#FF5A3A' }); },
       (e, P) => { e.lockT = 2.6; let t0 = 0; for (let i = 0; i < 3; i++) { later(() => { if (e.dead) return; const Q = W().P, a = angTo(e, Q), len = Math.min(14, dist(e, Q) + 3); R.fx('aim', e.x, 0.3, e.z, { a, len: len + e.BR, t: 0.5 }); later(() => { if (e.dead) return; beam(e, a, len, e.BR * 0.5 + 1, 0, 1.5, '#C8A040'); const [x, z] = at(e, a, len); e.x = x; e.z = z; e.m.g.position.set(x, 0, z); }, 500); }, t0); t0 += 750; } },
       (e) => { const r0 = e.BR + 1.2, r1 = e.BR + 4.5, rr = e.BR + 9; R.fx('mark', e.x, 0, e.z, { r: r0, t: 1.3, color: '#B04AFF' }); R.fx('mark', e.x, 0, e.z, { r: rr, t: 1.3, color: '#B04AFF' }); R.toast && R.toast('站到身邊那一圈！', '#B04AFF'); later(() => { if (e.dead) return; R.fx('ring', e.x, 0.1, e.z, { r: rr, color: '#B04AFF' }); targets().forEach(t => { const d = dist(t, e); if ((d < r0 || (d > r1 && d < rr)) && !(t.iframe > 0)) hitT(t, e.dmg * 2, e, { knock: 0.4 }); }); }, 1300); },
       (e) => { summon(e, 'ashigaru', 3, 0.6); R.toast && R.toast('足輕從鎧甲的影子裡走出來', '#C8A040'); }

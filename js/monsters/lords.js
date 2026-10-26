@@ -1,5 +1,5 @@
 // 無境之旅：領主體多七種（作者：領主體太少），總共十種；克森特級每一層（最後一層以外）都有領主區，大樓層有機會兩個。
-// - 環境專屬：霜冠鹿（凍原）、熔顎蜥（火山）、沙暴鯨（沙漠）、深淵王蛸（深海）——那個環境的克森特級遺跡優先出現。
+// - 環境專屬：霜冠鹿（凍原）、熔顎蜥（火山）、沙暴鯨（沙漠）、深淵王蛸（深海）──那個環境的克森特級遺跡優先出現。
 // - 遺跡形式：萬面樹（迷宮型）、朽翼龍（高塔型）、雷鳴猿（城區型）。
 // - 每一種有四套招式，血越少出招越密；招式都會先在地上畫出範圍（圈、扇形、直線）。
 (function (R) {
@@ -12,14 +12,14 @@
   // ---------- 資料 ----------
   const L = (o) => Object.assign({ ref: '', boss: 1, xp: 85 }, o);
   const NEW = {
-    frostdeer: L({ name: '領主體・霜冠鹿', hp: 700, dmg: 22, speed: 3.4, size: 2.2, ai: 'l_frost', armor: 0.2, env: 'snow', color: '#CFE6FF', eye: '#3A8AFF', desc: '凍原的克森特級遺跡裡的領主體。冰做的大角，走過的地方結霜。會射出一排排冰槍、吹起暴風雪、低頭衝撞，還會叫冰棺守出來。' }),
-    lavajaw: L({ name: '領主體・熔顎蜥', hp: 760, dmg: 24, speed: 2.8, size: 2.3, ai: 'l_lava', armor: 0.3, env: 'volcano', color: '#3A2420', eye: '#FFD04A', desc: '火山的克森特級遺跡裡的領主體。張嘴噴出扇形的火、讓熔岩從天上落下、甩尾掃一圈，地上會留下燒人的熔岩。' }),
-    sandwhale: L({ name: '領主體・沙暴鯨', hp: 820, dmg: 22, speed: 3, size: 2.6, ai: 'l_sand', armor: 0.15, env: 'desert', color: '#B89A6A', eye: '#1A1410', desc: '沙漠的克森特級遺跡裡的領主體。在沙子底下游，從腳下衝出來；捲起會追人的沙暴，噴出遮眼的沙。' }),
-    kraken: L({ name: '領主體・深淵王蛸', hp: 780, dmg: 22, speed: 1.8, size: 2.4, ai: 'l_kraken', armor: 0.15, env: 'deep', color: '#5A2A4A', eye: '#FFD04A', desc: '深海的克森特級遺跡裡的領主體。好幾條觸手一起砸下來，噴墨讓人看不清楚，還會捲起漩渦把人拉過去。' }),
-    faceforest: L({ name: '領主體・萬面樹', hp: 900, dmg: 20, speed: 0, size: 2.6, ai: 'l_tree', armor: 0.25, color: '#3A5A2E', eye: '#F2E6C8', desc: '迷宮型的克森特級遺跡最常見的領主體。不會移動；樹根一路竄過來、種子灑滿整間房、從腳下纏住人，還會結出根童。' }),
-    bonewyvern: L({ name: '領主體・朽翼龍', hp: 720, dmg: 24, speed: 4, size: 2.4, ai: 'l_wyvern', fly: 1, armor: 0.1, color: '#D8D0C0', eye: '#7FD8FF', desc: '高塔型的克森特級遺跡最常見的領主體。只剩骨頭的飛龍，從高處俯衝、吐出直線的骨焰、搧翅膀把人吹開。' }),
-    carrionvulture: L({ name: '領主體・緋喙屍鷲', hp: 760, dmg: 23, speed: 3.6, size: 2.3, ai: 'l_vulture', armor: 0.12, env: 'desert', color: '#5E1210', eye: '#FFD24A', desc: '沙漠的克森特級遺跡裡的領主體（2026-10-18）。像人一樣站著的巨大屍鷲，光禿的紅頭、垂到地上的黑紅大翅膀。吃倒在沙裡的東西——旁邊有生物倒下，牠會撲過去啄食、回復，越吃越兇。會射出羽刃、從高處俯衝啄擊、搧起沙塵，還會叫屍鴉來。' }),
-    thunderape: L({ name: '領主體・雷鳴猿', hp: 760, dmg: 24, speed: 3.8, size: 2.2, ai: 'l_ape', armor: 0.15, color: '#4A4A7A', eye: '#FFE04A', desc: '城區型的克森特級遺跡最常見的領主體。跳起來砸地、叫雷落下、連續揮拳，吼一聲就是一圈震波。' })
+    frostdeer: L({ name: '領主體・霜冠鹿', hp: 700, dmg: 22, speed: 3.4, size: 2.2, ai: 'l_frost', armor: 0.2, env: 'snow', color: '#CFE6FF', eye: '#3A8AFF', desc: '頭上是冰做的大角，走過的地方都會結霜。會射出一排排冰槍、吹起暴風雪、低頭衝撞，打到一半還會把冰棺守叫出來。凍原的克森特級遺跡才遇得到。' }),
+    lavajaw: L({ name: '領主體・熔顎蜥', hp: 760, dmg: 24, speed: 2.8, size: 2.3, ai: 'l_lava', armor: 0.3, env: 'volcano', color: '#3A2420', eye: '#FFD04A', desc: '火山型克森特級遺跡的主人。一張嘴就是一片扇形的火，熔岩從天上落下來，尾巴一甩掃一整圈；打完地上到處是燒人的熔岩。' }),
+    sandwhale: L({ name: '領主體・沙暴鯨', hp: 820, dmg: 22, speed: 3, size: 2.6, ai: 'l_sand', armor: 0.15, env: 'desert', color: '#B89A6A', eye: '#1A1410', desc: '在沙子底下游，等你走過去才從腳下衝出來。會捲起追著人跑的沙暴，也會噴沙遮眼。住在沙漠的克森特級遺跡。' }),
+    kraken: L({ name: '領主體・深淵王蛸', hp: 780, dmg: 22, speed: 1.8, size: 2.4, ai: 'l_kraken', armor: 0.15, env: 'deep', color: '#5A2A4A', eye: '#FFD04A', desc: '好幾條觸手一起砸下來。噴墨讓人看不清楚，還會捲起漩渦把人往牠那邊拉。深海的克森特級遺跡裡才有。' }),
+    faceforest: L({ name: '領主體・萬面樹', hp: 900, dmg: 20, speed: 0, size: 2.6, ai: 'l_tree', armor: 0.25, color: '#3A5A2E', eye: '#F2E6C8', desc: '迷宮型的克森特級遺跡，最常碰到的就是牠。牠不會走動，可是樹根會一路竄過來、種子灑滿整間房、從腳下纏住人，還會結出根童。' }),
+    bonewyvern: L({ name: '領主體・朽翼龍', hp: 720, dmg: 24, speed: 4, size: 2.4, ai: 'l_wyvern', fly: 1, armor: 0.1, color: '#D8D0C0', eye: '#7FD8FF', desc: '只剩骨頭的飛龍，高塔型的克森特級遺跡裡最常見。從高處俯衝、吐出一直線的骨焰，翅膀一搧就把人吹開。' }),
+    carrionvulture: L({ name: '領主體・緋喙屍鷲', hp: 760, dmg: 23, speed: 3.6, size: 2.3, ai: 'l_vulture', armor: 0.12, env: 'desert', color: '#5E1210', eye: '#FFD24A', desc: '像人一樣站著的巨大屍鷲，光禿的紅頭，黑紅色的大翅膀拖在地上。在沙漠的克森特級遺跡裡，牠專吃倒在沙裡的東西：旁邊有生物倒下，牠就撲過去啄，吃了會回血，越吃越兇。會射出羽刃、從高處俯衝啄擊、搧起沙塵，還會叫屍鴉來。' }),
+    thunderape: L({ name: '領主體・雷鳴猿', hp: 760, dmg: 24, speed: 3.8, size: 2.2, ai: 'l_ape', armor: 0.15, color: '#4A4A7A', eye: '#FFE04A', desc: '城區型的克森特級遺跡裡最常遇到。跳起來砸地、叫雷劈下來、一拳接一拳；聽到牠吼，就是震波要來了。' })
   };
   Object.keys(NEW).forEach(id => { R.ENEMIES[id] = NEW[id]; });
 

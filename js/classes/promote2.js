@@ -2,9 +2,9 @@
 // - 條件：職業等級 40、已經轉職、公會段位討伐段以上、完成要選的那一個的指定試煉（見下面），
 //   再交魔力核心 3 顆、高純度魔力水晶 2 個。存在 R.S.classes[職業]：trial2（1＝報名了、2＝通過了）、adv2（選了哪一個）。
 // - 選項：
-//   覺醒（每個職業都有）：走原本的轉職路線再往上——傷害 +12%、生命 +10%、技能冷卻 −8%；
+//   覺醒（每個職業都有）：走原本的轉職路線再往上──傷害 +12%、生命 +10%、技能冷卻 −8%；
 //     路線上最強的那一招多一個「覺醒」版（威力 ×1.5），40 級學會。
-//   諧鳴（術士）：諧鳴有五個派系，公會目前只登錄了「瑟蘭派」（《法術統整》第四項第一節）——
+//   諧鳴（術士）：諧鳴有五個派系，公會目前只登錄了「瑟蘭派」（《法術統整》第四項第一節）──
 //     用共振圍出「奏域」、改寫法術的頻率：奏域、共鳴、鎮頻、共振、轉調、定頻六招（40～45 級學會）；
 //     魔法傷害 +10%、魔力 +15%、技能冷卻 −5%。其他四個派系等作者的設定。
 // - 選過以後可以重選（交 1 顆魔力核心）。技能書多一段「二次轉職」（skillbook.js）。
@@ -13,7 +13,7 @@
   const W = () => R.W, S = () => R.S, $ = id => document.getElementById(id), esc = s => R.esc(s);
   const LV = 40, COST = { core: 3, purecry: 2 };
   const LIB = R.SKILL_LIB || {};
-  // 2026-10-05 作者：覺醒的不死狂怒還比原版弱——原本只放大威力（k），增益、無敵的部分跟原版一樣；現在增益的加成 ×1.5、持續時間 ×1.25、吸血回復護盾 ×1.5、暈眩 ×1.25
+  // 2026-10-05 作者：覺醒的不死狂怒還比原版弱──原本只放大威力（k），增益、無敵的部分跟原版一樣；現在增益的加成 ×1.5、持續時間 ×1.25、吸血回復護盾 ×1.5、暈眩 ×1.25
   const scaleK = p => { const q = JSON.parse(JSON.stringify(p || {})); const f = o => { if (!o || typeof o !== 'object') return; if (typeof o.k === 'number') o.k *= 1.5; if (typeof o.dmg === 'number' && o.dmg > 1) o.dmg = 1 + (o.dmg - 1) * 1.5; if (typeof o.speed === 'number' && o.speed > 1) o.speed = 1 + (o.speed - 1) * 1.5; if (typeof o.t === 'number' && o.t < 30) o.t *= 1.25; ['vamp', 'pct', 'shield', 'allies', 'allyShield', 'regen', 'crit', 'def'].forEach(k => { if (typeof o[k] === 'number' && o[k] > 0 && o[k] < 1) o[k] = Math.min(0.95, o[k] * 1.5); }); if (typeof o.stun === 'number') o.stun *= 1.25; if (Array.isArray(o) && typeof o[0] === 'string' && typeof o[2] === 'number' && o[2] >= 1000) o[2] *= 1.25; Object.values(o).forEach(f); };   /* 組合技裡等增益結束才發動的那一段（例如狂怒爆發）跟著延後 */ f(q); return q; };
   // ---------- 覺醒技：每條路線最強的那一招 ×1.5 ----------
   const AW = {};
@@ -157,7 +157,7 @@
     if (k === 'scroll') { const now = s.scrolls || 0; if (now < t.sc) t.n += t.sc - now; t.sc = now; }
     if (k === 'cast') t.n = t.casts; if (k === 'tank') t.n = Math.floor(t.tank); if (k === 'heal') t.n = Math.floor(t.heal);
     const fl = run.floor + (run.f0 ? 0 : 1), objOk = k === 'nopot' ? !t.pot : t.n >= need;
-    if (k === 'nopot' && t.pot && !t.failSaid) { t.failSaid = 1; R.toast && R.toast('指定試煉：喝了藥——這一趟不算了。', '#FF9A6A'); }
+    if (k === 'nopot' && t.pot && !t.failSaid) { t.failSaid = 1; R.toast && R.toast('指定試煉：喝了藥──這一趟不算了。', '#FF9A6A'); }
     if (fl >= t.need && t.lord && objOk && !doneOf(st, t.opt)) {
       tOf(st)[t.opt] = { done: 1 }; st.t2on = null; run.t2 = null; R.save();
       R.banner && R.banner('指定試煉完成', '回公會登記處的「武器登記」，選二次轉職：' + optName(t.cls, t.opt));

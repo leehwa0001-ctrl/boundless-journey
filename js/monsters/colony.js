@@ -46,7 +46,7 @@
     const name = same ? R.ENEMIES[ids[0]].name + '的巢' : '遺跡生物的大群';
     F.colony = { r, list, name, done: false };
     nestDeco(F, r, same ? (R.ENEMIES[ids[0]].color || '#6A5A4A') : '#5A4A3A');
-    setTimeout(() => { if (W().F === F && R.toast) R.toast('這一層有聚落：「' + name + '」——一大群 ' + list.length + ' 隻。打光的話有獎勵。', '#FF9A6A'); }, 3000);
+    setTimeout(() => { if (W().F === F && R.toast) R.toast('這一層有聚落：「' + name + '」──一大群 ' + list.length + ' 隻。打光的話有獎勵。', '#FF9A6A'); }, 3000);
   };
   const pf0 = R.populateFloor;
   R.populateFloor = (...a) => { const r = pf0(...a); try { make(); } catch (e) { console.warn('[colony]', e); } return r; };

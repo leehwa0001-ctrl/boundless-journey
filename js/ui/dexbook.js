@@ -4,7 +4,7 @@
 //   右頁是一塊深色的框（四角的括弧、撕紙邊）：名字的布條、撕紙邊框著的大圖、生命值、說明、底下的擊敗次數；右上角紅色的 ✕ 闔上書。
 // - 只換外觀和多翻頁的動畫，內容照 dexui.js（書本外框、分級分頁）和 dexruins.js（左頁、右頁的內容）原本的。
 // - 書籤：dexui.js 的分級分頁搬到書的上緣；右邊多一個「地圖」書籤（＝原本右上角的地圖鈕）；✕＝原本的「東鶴／標題」。
-// - 翻頁：切分級分頁、選遺跡、回上一層、切小分頁（小怪／領主體／遺跡詳情）、右頁「出現的遺跡」跳過去——
+// - 翻頁：切分級分頁、選遺跡、回上一層、切小分頁（小怪／領主體／遺跡詳情）、右頁「出現的遺跡」跳過去──
 //   先把兩頁原本的樣子拍下來（複製一份），換好內容後，一張紙從右頁沿著書脊翻到左頁（往回是左翻到右），翻的時候有陰影、紙的聲音。
 //   點小頭像只換右頁：不翻，右頁的字像墨水一樣浮出來。
 // - A／D 或 ← →：換分級分頁（打字的時候不算）；Esc 闔上書。
@@ -185,7 +185,7 @@
 
   // ---------- 樣子 ----------
   const INK = '#24160C', PAPER = '#D7B37A', PAPER2 = '#C49A5E', GOLD = '#E2B65C';
-  // 2026-10-22 作者：圖鑑的背景（質感）再精細一點——紙的纖維和斑點、更細的木紋和木節、封面的皮革紋（都是 SVG 的雜訊，畫一次就好）
+  // 2026-10-22 作者：圖鑑的背景（質感）再精細一點──紙的纖維和斑點、更細的木紋和木節、封面的皮革紋（都是 SVG 的雜訊，畫一次就好）
   const svg = (w, h, body) => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '">' + body + '</svg>') + '")';
   const noise = (id, bf, oct, seed, mat) => '<filter id="' + id + '" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="' + bf + '" numOctaves="' + oct + '" seed="' + seed + '" stitchTiles="stitch"/><feColorMatrix values="' + mat + '"/></filter>';
   const FIBER = svg(300, 300, noise('f', '.9 .55', 4, 3, '0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .9 -.32') + '<rect width="300" height="300" filter="url(#f)"/>');
@@ -198,7 +198,7 @@
   const css = document.createElement('style');
   css.textContent = [
     // 桌子：木板＋木紋
-    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat;overflow:hidden}',   // 2026-10-22 作者：圖鑑背後沒有質感——換成畫的木桌（羅盤、墨水瓶、蠟燭、地圖）
+    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat;overflow:hidden}',   // 2026-10-22 作者：圖鑑背後沒有質感──換成畫的木桌（羅盤、墨水瓶、蠟燭、地圖）
     '#bestiary.bk-on .dx-book .dx-left{background-blend-mode:normal,multiply}',
     '#bestiary.bk-on .dx-book .dx-left{background-image:linear-gradient(90deg,rgba(140,100,50,.55) 0,rgba(0,0,0,0) 6%,rgba(0,0,0,0) 88%,rgba(150,105,55,.6) 100%),url("assets/art/dex/dex-paper.webp");background-size:auto,320px}',
     '#bestiary.bk-on::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'240\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.012 .32\' numOctaves=\'3\' seed=\'4\'/%3E%3CfeColorMatrix values=\'0 0 0 0 .2 0 0 0 0 .1 0 0 0 0 .04 0 0 0 1.1 -.35\'/%3E%3C/filter%3E%3Crect width=\'240\' height=\'240\' filter=\'url(%23n)\'/%3E%3C/svg%3E");mix-blend-mode:multiply}',
@@ -210,7 +210,7 @@
     '.bk-candle path:first-of-type{animation:bkflame 1.6s ease-in-out infinite;transform-origin:60px 52px}@keyframes bkflame{0%,100%{transform:scale(1,1)}50%{transform:scale(.92,1.08)}}',
     // 版面：書擺在中間，上面那條、說明藏起來
     '#bestiary.bk-on>.bar,#bestiary.bk-on .b-intro{display:none}',
-    '@media (min-width:1000px){#bestiary.bk-on .b-body{padding:max(84px,12vh) max(48px,10vw) max(36px,7vh)!important}}',   // 2026-10-24 作者：木桌沒看到——書縮小一點，四周露出桌面
+    '@media (min-width:1000px){#bestiary.bk-on .b-body{padding:max(84px,12vh) max(48px,10vw) max(36px,7vh)!important}}',   // 2026-10-24 作者：木桌沒看到──書縮小一點，四周露出桌面
     '#bestiary.bk-on .b-body{position:relative;z-index:1;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:84px 24px 22px;overflow:hidden;max-width:none}',
     '#bestiary.bk-on #cards{width:min(1240px,100%);height:100%;max-height:820px;display:block}',
     // 書：紫色封面＋兩頁羊皮紙
@@ -280,10 +280,10 @@
     '.bk-face{box-shadow:0 8px 16px rgba(0,0,0,.35)}',   // 不能用 filter：filter 會把 3D 壓平，背面就透出來
     '@property --sh{syntax:"<number>";inherits:true;initial-value:0}',
     '@media (prefers-reduced-motion:reduce){.bk-leaf{display:none}}',
-    // 2026-10-22 修：瘦高的圖示（高過格子）會凸出框外——圖示一律縮進格子裡
+    // 2026-10-22 修：瘦高的圖示（高過格子）會凸出框外──圖示一律縮進格子裡
     '.dr-th img,.dx-th img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;min-width:0;min-height:0}',
     // 2026-10-22 質感：桌子（細木紋＋木節＋木板接縫的亮邊）、紙（纖維＋斑點）、封面（皮革紋＋縫線）
-    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat}#bestiary.bk-on .bk-desk{display:none}',   // 2026-10-24 作者：木桌沒看到——換成畫的木桌（蠟燭、羅盤、墨水瓶、地圖都在畫裡，原本的向量小物件收起來）
+    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat}#bestiary.bk-on .bk-desk{display:none}',   // 2026-10-24 作者：木桌沒看到──換成畫的木桌（蠟燭、羅盤、墨水瓶、地圖都在畫裡，原本的向量小物件收起來）
     '#bestiary.bk-on::before{opacity:.22}',
     '#bestiary.bk-on .dx-left{background:' + PAGE_L + '}',
     '#bestiary.bk-on .dx-book{background:' + LEATHER + ',linear-gradient(180deg,#5A4D9A,#3F3474)}',

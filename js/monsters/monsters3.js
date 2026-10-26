@@ -1,7 +1,7 @@
 // 遺跡生物（第三批）：補到七十種（作者）。名字都是自己取的，不用妖怪的原名。
 // 每一種有自己的點陣圖（R.BEAST_ART，朝右畫）；行為大多沿用原本的（combat.js、monsters2.js），新的五種：
 //  quills（晶刺蝟：縮成一團射出一圈晶刺）、mortar（酸泡：遠遠拋出酸液，落地留下酸池）、sting（裂地蠍：拉一條線再甩尾）、
-//  spin（鐘擺刃：轉起來砍一圈）、rally（號角骸：吹號角讓附近的生物變兇——先打牠）。泥偶打倒會裂成兩個小泥偶。
+//  spin（鐘擺刃：轉起來砍一圈）、rally（號角骸：吹號角讓附近的生物變兇──先打牠）。泥偶打倒會裂成兩個小泥偶。
 // 分到哪些分級在最下面；凍原、火山、沙漠、深海各多一種只在那個環境出現的生物。
 (function (R) {
   const W = () => R.W, ART = R.BEAST_ART, rnd = Math.random;
@@ -13,7 +13,7 @@
     mossball: { name: '苔團', hp: 18, dmg: 5, speed: 2.2, xp: 3, size: 0.6, ai: 'chase', color: '#4A7A3A', eye: '#F2F0D0', desc: '長滿青苔的圓球，滾來滾去。哈米莉亞級的遺跡裡最常見，不太會主動惹人。' },
     lampmoth: { name: '燈蛾', hp: 12, dmg: 5, speed: 4.5, xp: 3, size: 0.6, ai: 'swoop', fly: 1, color: '#D8CCB0', eye: '#FFE070', desc: '肚子會發光的大蛾。繞著光飛，突然俯衝下來撞人。' },
     stonesnail: { name: '石蝸', hp: 40, dmg: 7, speed: 1.4, xp: 5, size: 0.8, ai: 'chase', armor: 0.4, color: '#8A8478', eye: '#1A1410', desc: '背著石殼的蝸牛，很慢、很硬。殼擋掉四成的傷害。' },
-    crysthog: { name: '晶刺蝟', hp: 38, dmg: 8, speed: 2.6, xp: 8, size: 0.6, ai: 'quills', color: '#6A5A4A', eye: '#9AE0FF', desc: '背上長著水晶刺。靠得太近，牠會縮成一團把刺射向四面八方——腳下出現藍圈就退開。' },
+    crysthog: { name: '晶刺蝟', hp: 38, dmg: 8, speed: 2.6, xp: 8, size: 0.6, ai: 'quills', color: '#6A5A4A', eye: '#9AE0FF', desc: '背上長著水晶刺。靠得太近，牠會縮成一團把刺射向四面八方──腳下出現藍圈就退開。' },
     shadelizard: { name: '影蜥', hp: 30, dmg: 11, speed: 3.8, xp: 8, size: 0.7, ai: 'pounce', color: '#2A2434', eye: '#FFD04A', desc: '貼著地面爬的黑蜥蜴，在暗處很難看見。蹲低之後會撲過來。' },
     bonebird: { name: '骨鳥', hp: 22, dmg: 8, speed: 3.6, xp: 8, size: 0.6, ai: 'kite', shoot: 0.5, shot: 'feather', fly: 1, color: '#E8E0CC', eye: '#FF5A3A', desc: '只剩骨架的鳥，飛在半空，射出削尖的骨羽。' },
     muddoll: { name: '泥偶', hp: 46, dmg: 9, speed: 2.2, xp: 9, size: 0.8, ai: 'chase', color: '#7A5A3A', eye: '#FFB04A', desc: '泥巴捏成的人形。打倒之後會裂成兩個小泥偶，小的也要打。' },
@@ -22,18 +22,18 @@
     rustknight: { name: '鏽甲兵', hp: 70, dmg: 12, speed: 2.2, xp: 11, size: 0.8, ai: 'guard', armor: 0.15, color: '#8A5A3A', eye: '#FFB04A', desc: '生鏽的鎧甲裡沒有人。舉著盾的時候從正面打不太進去，繞到旁邊或背後。' },
     acidbubble: { name: '酸泡', hp: 26, dmg: 8, speed: 2, xp: 8, size: 0.65, ai: 'mortar', color: '#8AE04A', eye: '#1A3010', desc: '會冒泡的綠色黏液。遠遠地把酸液拋過來，落地的地方會留下一攤酸，站在上面會一直受傷。' },
     echobat: { name: '回音蝠', hp: 14, dmg: 6, speed: 5.2, xp: 3, size: 0.5, ai: 'swoop', fly: 1, pack: 3, color: '#2A2430', eye: '#FF5A5A', desc: '靠回音找人的蝙蝠，三隻一群，輪流俯衝。' },
-    mirrorgolem: { name: '鏡魔像', hp: 180, dmg: 18, speed: 2.6, xp: 26, size: 1.3, ai: 'charge', armor: 0.3, elite: 1, coreChance: 0.18, color: '#B8C8D8', eye: '#7FD8FF', desc: '胸口嵌著一面大鏡子的石像。低頭之後會往前猛衝，撞牆會暈一下——那時候打牠。摩爾斯級以上才看得到。' },
+    mirrorgolem: { name: '鏡魔像', hp: 180, dmg: 18, speed: 2.6, xp: 26, size: 1.3, ai: 'charge', armor: 0.3, elite: 1, coreChance: 0.18, color: '#B8C8D8', eye: '#7FD8FF', desc: '胸口嵌著一面大鏡子的石像。低頭之後會往前猛衝，撞牆會暈一下──那時候打牠。摩爾斯級以上才看得到。' },
     riftscorp: { name: '裂地蠍', hp: 64, dmg: 14, speed: 3, xp: 13, size: 0.9, ai: 'sting', color: '#8A3A2A', eye: '#FFD04A', desc: '紅色的大蠍子，總是保持兩、三公尺。地上拉出一條線就是要甩尾了，被刺中會變慢。' },
     mistwisp: { name: '霧燈靈', hp: 30, dmg: 12, speed: 3, xp: 11, size: 0.6, ai: 'blink', fly: 1, color: '#C8D8E8', eye: '#3A4A6A', desc: '提燈一樣的白霧。會在你背後亮起來：腳下出現小圈就快轉身或翻滾。' },
     bonehound: { name: '蝕骨犬', hp: 34, dmg: 11, speed: 4.6, xp: 10, size: 0.75, ai: 'pounce', pack: 2, color: '#E8E0CC', eye: '#C83A3A', desc: '只剩骨頭的獵犬，兩隻一起。一隻引開你，另一隻從旁邊撲上來。' },
     thunderspider: { name: '雷晶蛛', hp: 40, dmg: 11, speed: 4.6, xp: 11, size: 0.7, ai: 'zap', color: '#3A3060', eye: '#FFE04A', desc: '背上長著雷晶的蜘蛛。直線衝刺，留下一條會電人的痕跡。' },
     bladewheel: { name: '鐘擺刃', hp: 90, dmg: 14, speed: 1.6, xp: 14, size: 1, ai: 'spin', armor: 0.25, color: '#8A8A92', eye: '#FFD04A', desc: '一圈刀刃圍著一顆眼睛的機關生物。地上出現大圈就是要轉起來了，轉的時候靠近會被砍。' },
     blackmaw: { name: '黑泥巨口', hp: 80, dmg: 18, speed: 2.4, xp: 14, size: 1.2, ai: 'ambush', color: '#1A1418', eye: '#FFD04A', desc: '平常是一攤黑泥，人走近才張開一張大嘴咬下去。看到地上有不自然的黑泥就繞開。' },
-    hornbones: { name: '號角骸', hp: 50, dmg: 6, speed: 2.4, xp: 14, size: 0.8, ai: 'rally', color: '#5A3A4A', eye: '#C8A040', desc: '吹著骨號角的骸骨。號角一響，附近的遺跡生物都會變快、變痛——先打牠。' },
+    hornbones: { name: '號角骸', hp: 50, dmg: 6, speed: 2.4, xp: 14, size: 0.8, ai: 'rally', color: '#5A3A4A', eye: '#C8A040', desc: '吹著骨號角的骸骨。號角一響，附近的遺跡生物都會變快、變痛──先打牠。' },
     ashcrow: { name: '灰燼鴉', hp: 26, dmg: 9, speed: 4, xp: 10, size: 0.6, ai: 'kite', shoot: 0.45, fan: 3, shot: 'fire', fly: 1, color: '#2A2A30', eye: '#FFD04A', desc: '羽毛末端燒著火的烏鴉，一次甩出三團火星。' },
     bonecentipede: { name: '白骨百足', hp: 260, dmg: 20, speed: 3.4, xp: 34, size: 1.5, ai: 'charge', armor: 0.2, elite: 1, coreChance: 0.22, color: '#E8E0CC', eye: '#C83A3A', desc: '一節一節的白骨連成的百足。會低頭猛衝，衝完要喘一下。克森特級才看得到。' },
     icewarden: { name: '冰棺守', hp: 110, dmg: 15, speed: 2, xp: 18, size: 1, ai: 'guard', armor: 0.3, env: 'snow', color: '#CFE6FF', eye: '#3A8AFF', desc: '只在凍原環境出現。棺材一樣的冰塊站起來守著路，正面幾乎打不動。' },
-    lavaturtle: { name: '熔岩龜', hp: 140, dmg: 15, speed: 1.6, xp: 20, size: 1.1, ai: 'drum', armor: 0.35, env: 'volcano', color: '#3A2A24', eye: '#FFD04A', desc: '只在火山環境出現。殼上流著熔岩，跺腳打出一圈往外擴的熱浪——翻滾穿過去。' },
+    lavaturtle: { name: '熔岩龜', hp: 140, dmg: 15, speed: 1.6, xp: 20, size: 1.1, ai: 'drum', armor: 0.35, env: 'volcano', color: '#3A2A24', eye: '#FFD04A', desc: '只在火山環境出現。殼上流著熔岩，跺腳打出一圈往外擴的熱浪──翻滾穿過去。' },
     sandsinker: { name: '沙沉蟲', hp: 70, dmg: 14, speed: 3, xp: 14, size: 1, ai: 'burrow', env: 'desert', color: '#C8A870', eye: '#1A1410', desc: '只在沙漠環境出現。在沙子底下游，從腳下鑽出來咬人。' },
     abyssarm: { name: '深淵觸手', hp: 100, dmg: 12, speed: 0, xp: 15, size: 1.1, ai: 'turret', env: 'deep', color: '#3A5A6A', eye: '#FFD04A', desc: '只在深海環境出現。從地板裂縫伸出來的觸手，不會移動；會吐東西，也會從你腳下纏上來。' },
     voidwalker: { name: '虛空行者', hp: 220, dmg: 22, speed: 3.2, xp: 32, size: 1.1, ai: 'blink', elite: 1, coreChance: 0.22, color: '#140E1C', eye: '#8A5AFF', desc: '胸口開著一個洞的高大人影，一眨眼就到你背後。克森特級才看得到。' },
@@ -115,7 +115,7 @@
     if (e.cd <= 0 && d < 16) {
       e.cd = 7; R.fx('ring', e.x, 0.1, e.z, { r: 9, color: '#C8A040' }); if (R.playSfx) R.playSfx('alarm', 400);
       W().enemies.forEach(o => { if (o.dead || o === e || o.rallied || Math.hypot(o.x - e.x, o.z - e.z) > 9) return; o.rallied = 1; o.speed *= 1.3; o.dmg *= 1.2; R.fx('ring', o.x, 0.1, o.z, { r: 0.9, color: '#FFB04A' }); later(() => { if (o.dead || !o.rallied) return; o.rallied = 0; o.speed /= 1.3; o.dmg /= 1.2; }, 5000); });
-      if (performance.now() - rallyMsg > 15000) { rallyMsg = performance.now(); R.toast('號角骸吹響了號角——附近的生物變兇了。先打牠！'); }
+      if (performance.now() - rallyMsg > 15000) { rallyMsg = performance.now(); R.toast('號角骸吹響了號角──附近的生物變兇了。先打牠！'); }
     }
     return mv;
   };

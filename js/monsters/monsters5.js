@@ -21,7 +21,7 @@
     lanternwisp: { name: '引魂燈', hp: 40, dmg: 0, speed: 3, xp: 12, size: 0.6, ai: 'healer', fly: 1, color: '#FFD08A', eye: '#8A3A1A', desc: '提著燈籠的小小魂火，不會攻擊人，但會躲在後面幫同伴補血。先打掉牠。' },
     shieldbeetle: { name: '盾甲蟲', hp: 110, dmg: 12, speed: 1.8, xp: 16, size: 1, ai: 'aegis', armor: 0.3, color: '#5A7A9A', eye: '#FFE04A', desc: '殼像盾牌一樣的大甲蟲。會幫附近的同伴罩上一層光（傷害減半）。' },
     ringbird: { name: '環刃鳥', hp: 46, dmg: 12, speed: 4.4, xp: 11, size: 0.7, ai: 'orbit', fly: 1, color: '#C8C8D0', eye: '#C83A3A', desc: '翅膀邊緣像刀刃的銀色鳥。繞著你轉圈，冷不防地從中間穿過去。' },
-    prismeye: { name: '稜鏡眼', hp: 60, dmg: 18, speed: 1.8, xp: 14, size: 0.8, ai: 'laser', fly: 1, color: '#E8E0FF', eye: '#FF3A6A', desc: '長在稜鏡裡的眼睛。地上拉出一條紅線，就是光束要射過來了——離開那條線。' },
+    prismeye: { name: '稜鏡眼', hp: 60, dmg: 18, speed: 1.8, xp: 14, size: 0.8, ai: 'laser', fly: 1, color: '#E8E0FF', eye: '#FF3A6A', desc: '長在稜鏡裡的眼睛。地上拉出一條紅線，就是光束要射過來了──離開那條線。' },
     gearsentry: { name: '齒輪哨兵', hp: 90, dmg: 10, speed: 0, xp: 13, size: 0.9, ai: 'turret', armor: 0.25, color: '#9A8A6A', eye: '#FF5A3A', desc: '古代的齒輪機關，釘在地上轉個不停，看到人就射出鐵釘。' },
     tarbeast: { name: '瀝青獸', hp: 120, dmg: 16, speed: 2.4, xp: 16, size: 1.1, ai: 'charge', color: '#2A2420', eye: '#FFB04A', desc: '全身沾滿黑色瀝青的野獸。低頭衝撞之後會黏在地上一下，那時候打。' },
     echoshade: { name: '回聲影', hp: 50, dmg: 13, speed: 3, xp: 12, size: 0.8, ai: 'blink', color: '#4A4A6A', eye: '#BFE8FF', desc: '你自己的腳步聲變成的影子。會突然出現在你背後。' },

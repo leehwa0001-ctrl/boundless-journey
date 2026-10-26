@@ -1,4 +1,4 @@
-// 職業的核心玩法（作者 2026-10-05：我要有趣又好玩、多樣性的職業——十三個職業的核心玩法一次做）
+// 職業的核心玩法（作者 2026-10-05：我要有趣又好玩、多樣性的職業──十三個職業的核心玩法一次做）
 // 每個職業一個別人沒有的機制，三、四條轉職路線各自把它往不同方向改；X 鍵（原本的「換彈」）變成「職業鍵」。
 // 這個檔：共用的部分（R.CORE 登記、X 鍵、包 R.hurtEnemy／R.hurtPlayer／R.castSlot／R.step、職業量表）
 //   ＋戰士、術士、槍手、弓箭手、刀客、騎士、武術家。牧師、吟遊詩人、召喚師、術陣師、附魔師、符卷師在 classcore2.js。
@@ -107,7 +107,7 @@
     const bl = $('r-bl'), r1 = bl && bl.getBoundingClientRect();
     g.hidden = false;
     const left = Math.max(6, Math.round(Math.min(r0.left - 4, r1 && r1.height ? r1.left : 1e9))), gw = g.offsetWidth || 236;
-    // 2026-10-05 作者：量表還是黏在角色卡上——以前只看「角色卡有沒有碰到生命球」才決定要不要往上放，
+    // 2026-10-05 作者：量表還是黏在角色卡上──以前只看「角色卡有沒有碰到生命球」才決定要不要往上放，
     // 但量表本身是對齊角色卡的左邊放的，窄螢幕角色卡縮成 178px 碰不到生命球，量表就被放在生命球的高度、壓住角色卡的上半。
     // 改成：用量表自己會佔的左右範圍，去比對生命球、角色卡、隊友列（貼在角色卡上面那條），碰得到的都要放在它們上面，再留 8px 空隙。
     const pt = $('r-party'), r2 = pt && !pt.hidden && pt.classList.contains('hf-dock') ? pt.getBoundingClientRect() : null;
@@ -128,7 +128,7 @@
   // ======================= 戰士：怒氣 =======================
   CORE.warrior = {
     name: '怒氣', col: '#E8503A',
-    // 2026-10-15 作者：怒氣條就是大招條——怒氣 100 才能放大招（放了怒氣歸零）；技能不再吃怒氣；怒氣滿的時候受到的傷害 −20%。
+    // 2026-10-15 作者：怒氣條就是大招條──怒氣 100 才能放大招（放了怒氣歸零）；技能不再吃怒氣；怒氣滿的時候受到的傷害 −20%。
     help: P => '怒氣（取代魔力）：打中、被打都會漲，4 秒沒打沒被打就慢慢掉。怒氣滿 100 才能放大招（放了歸零），滿的時候受到的傷害 −20%；技能不吃怒氣。X：怒氣 50 以上時怒吼（全部吼出去，越多越痛，之後 6 秒傷害提高）。'
       + ({ berserker: '狂戰士：怒氣不會掉，生命三成以下被打漲兩倍。', gladiator: '劍鬥士：6 秒內放三種不同的技能，下一下普攻變「終幕」（4 倍、範圍）。', onimusha: '鬼武者：怒吼時戴上鬼面（扣 10% 生命，6 秒傷害 +30%、吸血系數 +100）。', inner: '內修者：站著不動每秒 +8 怒氣。' }[adv(P)] || ''),
     calc: P => { P.mpMax = 100; },
@@ -179,7 +179,7 @@
   const REACT = { 'fire+frost': '蒸發', 'frost+shock': '碎冰', 'fire+shock': '過載', 'shock+wood': '激化', 'fire+wood': '燃燒', 'frost+wood': '凍藤' };
   CORE.mage = {
     name: '元素', col: '#B88AFF',
-    help: P => '元素反應：X 換元素（火、冰、雷），之後的攻擊、法術都帶著這個元素。同一隻遺跡生物身上疊到不同元素就引爆——火＋冰＝蒸發（大傷害）、冰＋雷＝碎冰（暈眩＋小範圍）、雷＋火＝過載（大範圍爆炸）。元素在牠身上留 4 秒。'
+    help: P => '元素反應：X 換元素（火、冰、雷），之後的攻擊、法術都帶著這個元素。同一隻遺跡生物身上疊到不同元素就引爆──火＋冰＝蒸發（大傷害）、冰＋雷＝碎冰（暈眩＋小範圍）、雷＋火＝過載（大範圍爆炸）。元素在牠身上留 4 秒。'
       + ({ elementalist: '元素師：反應的威力 ×1.5。', hexer: '咒術師：反應順便詛咒周圍 4 公尺。', shikigami: '式神使：反應回 6 點魔力。', waixiu: '外修者：反應回 6 點魔力。' }[adv(P)] || ''),
     floor: P => { P._el = P._el || 'fire'; },
     onHit(e, d, o, P, killed) {
@@ -234,7 +234,7 @@
   };
 
   // ======================= 槍手：彈種＋完美換彈 =======================
-  // 2026-10-18 作者：彈種改成按住 X 換——一般彈；暈眩彈（暈 2 秒、射程 −50%）；穿甲彈（貫穿 +1、護甲穿透 +50%、一發用 2 顆）；螺旋彈（傷害 ×2、暴擊率 +50%、一發用 3 顆）
+  // 2026-10-18 作者：彈種改成按住 X 換──一般彈；暈眩彈（暈 2 秒、射程 −50%）；穿甲彈（貫穿 +1、護甲穿透 +50%、一發用 2 顆）；螺旋彈（傷害 ×2、暴擊率 +50%、一發用 3 顆）
   const AMMO = { normal: ['一般彈', '#C8C0B0'], stun: ['暈眩彈', '#FFE08A'], ap: ['穿甲彈', '#C8D0DC'], spiral: ['螺旋彈', '#FF9A6A'] }, AM = ['normal', 'stun', 'ap', 'spiral'];
   const AMK = { normal: { cost: 1 }, stun: { cost: 1, lifeK: 0.5, stun: 2 }, ap: { cost: 2, pierce: 1, xPen: 0.5 }, spiral: { cost: 3, dmgK: 2, critP: 0.5 } };
   const AMD = { normal: '普通的子彈', stun: '暈眩 2 秒・射程 −50%', ap: '貫穿 +1・護甲穿透 +50%・一發用 2 顆', spiral: '傷害 ×2・暴擊率 +50%・一發用 3 顆' };   // 2026-10-18 作者：換了彈種，左下角的量表寫出效果
@@ -374,7 +374,7 @@
   const soulN = P => P._bdSoul || 0;   // 刀魂層數（2026-10-17 作者：2 秒到了只掉 2 層，在 step 裡扣）
   const myrOn = P => (P._bdMyrT || 0) > CT;   // 萬刃
   const atkRateK = P => (1 + 0.005 * soulN(P)) * (myrOn(P) ? 1.5 : 1);   // 刀魂：每層攻速 +0.5%（2026-10-17，原本 1%）
-  // 攻速加成（相對武器原本的攻速：詞綴、天賦、渾圓、刀魂、萬刃…；30 級刀意解放的 ×2 不算）
+  // 攻速加成（相對武器原本的攻速：詞綴、天賦、渾圓、刀魂、萬刃……；30 級刀意解放的 ×2 不算）
   const atkUp = P => { const b0 = (R.WEAPONS[bw(P).b] || {}).rate || P.ws.rate || 1; return Math.max(0, (P.ws.rate || b0) / b0 * (enso(P) ? 1 + 0.25 * ensoK(P) : 1) * atkRateK(P) - 1); };
   const extraCuts = P => (pvB(P, 'bdMa') ? 1 : 0) + (myrOn(P) ? 1 : 0);
   const rangeK = P => { const { w0 } = bw(P); return Math.max(0.5, (P.ws.range || w0.range) / (w0.range || 2.6)) * (1 + 0.005 * soulN(P)); };
@@ -488,7 +488,7 @@
     }
     if ((P._bdBusy || 0) > CT) return;
     const st = bdState(P);
-    if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀…' : '正在拔刀…'); return; }
+    if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀……' : '正在拔刀……'); return; }
     const iai = st === 'sheathed';
     if (iai && !full(P)) { blockMsg(P, '收刀中：等刀意集滿再出居合，或按 X 拔刀'); return; }
     const { w } = bw(P), k = rangeK(P), iaiK = iaiKOf(P), iaiNm = iaiName(P);
@@ -579,7 +579,7 @@
       if (P._bdRead) { blockMsg(P, '讀條中，不能中斷'); return; }
       const to = bdState(P) === 'sheathed' ? 'drawn' : 'sheathed';
       P._bdRead = { to, t: 0, dur: readT(P) }; P._bdSt = to === 'sheathed' ? 'sheathing' : 'drawing';
-      say(P, to === 'sheathed' ? '收刀…' : '拔刀…', 'heal');
+      say(P, to === 'sheathed' ? '收刀……' : '拔刀……', 'heal');
     },
     gauge(P) {
       const v = P._iai || 0, st = bdState(P), rd = P._bdRead, zan = zanOn(P) ? '・殘心 ' + Math.max(0, P._zanT - CT).toFixed(1) + 's' : '';
@@ -596,13 +596,13 @@
       const P = W().P;
       if (P && P.cls === 'blade' && live()) {
         const st = bdState(P);
-        if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀…' : '正在拔刀…'); return; }
+        if (st === 'sheathing' || st === 'drawing') { blockMsg(P, st === 'sheathing' ? '正在收刀……' : '正在拔刀……'); return; }
         if (st === 'sheathed') { if (!full(P)) { blockMsg(P, '收刀中不能放技能（大招可以）；按 X 拔刀'); return; } P._iaiSkPend = CT + 0.05; }
       }
       return f0(...a);
     };
   });
-  // 戰士（2026-10-15 作者）：技能不吃怒氣——放技能那一下把魔力（＝怒氣）暫時當成無限，放完還原
+  // 戰士（2026-10-15 作者）：技能不吃怒氣──放技能那一下把魔力（＝怒氣）暫時當成無限，放完還原
   ['castSlot', 'useSkill'].forEach(fn => {
     const f0 = R[fn]; if (!f0) return;
     R[fn] = (...a) => { const P = W().P; if (!P || P.cls !== 'warrior' || !live()) return f0(...a); const r = P._rage == null ? P.mp : P._rage; P.mp = 1e9; try { return f0(...a); } finally { P.mp = r; P._rage = r; } };

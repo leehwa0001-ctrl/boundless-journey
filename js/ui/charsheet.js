@@ -65,7 +65,7 @@
   if (ps0) R.pauseSheet = () => {
     const run = R.W && R.W.run; if (!run) return ps0();
     const stats = R.charSheetHtml(null, { live: true }) || '';
-    // 2026-10-05 作者：哈米莉亞級、阿彌勒級的第 0 層（休息區）和訓練場，「放棄這一趟」改成「直接回程」——跟從入口走出去一樣，東西都帶得走、不會掉裝備
+    // 2026-10-05 作者：哈米莉亞級、阿彌勒級的第 0 層（休息區）和訓練場，「放棄這一趟」改成「直接回程」──跟從入口走出去一樣，東西都帶得走、不會掉裝備
     const train = !!(run.site && run.site.kind === 'train'), safe = !run.done && (train || !!(run.grade && run.grade.floor0 && run.floor === 0));
     const where = train ? '' : '・' + (R.floorLabel ? R.floorLabel(run) : '第 ' + (run.floor + 1) + ' 層');
     R.sheet('<h2>暫停</h2><p>' + esc(run.site.name) + where + '</p>'

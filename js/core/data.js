@@ -241,9 +241,9 @@ window.R = window.R || {};
     yukionna: { name: '霜衣', ref: '', hp: 40, dmg: 10, speed: 3.6, xp: 9, size: 0.75, ai: 'kite', freeze: 1, env: 'snow', color: '#E8F2F8', eye: '#5FB8FF',
       desc: '北州的遺跡才看得到。白衣、黑長髮的人形，吐出的寒氣會讓人動作變慢。' },
     tsuchigumo: { name: '領主體・巢織蛛', ref: '', hp: 520, dmg: 20, speed: 3, xp: 70, size: 2.2, ai: 'lord', armor: 0.2, color: '#3A3430', eye: '#FF5A3A', boss: 1,
-      desc: '克森特級遺跡的「領主體」：支配一區的巨型個體。吐出的蛛網會黏住人，還會把幼體從天花板放下來。' },
+      desc: '一整區都歸牠管的巨型蜘蛛。吐出的蛛網會黏住人，還會把幼體從天花板放下來。' },
     omukade: { name: '領主體・千節蟲', ref: '', hp: 640, dmg: 22, speed: 4.4, xp: 80, size: 2, ai: 'centipede', armor: 0.25, color: '#6A2A1E', eye: '#FFD04A', boss: 1,
-      desc: '克森特級遺跡的「領主體」。身體一節一節的，只有頭會受傷。繞著房間爬，越打越快。' },
+      desc: '身體一節一節的，只有頭會受傷。繞著房間爬，越打越快。' },
     hyakume: { name: '群瞳', ref: '', hp: 150, dmg: 11, speed: 3.2, xp: 24, size: 1.25, ai: 'eye', fly: 1, color: '#E8D8D0', eye: '#9A2A3A', coreChance: 0.15, modelScale: 0.7,
       desc: '全身長滿眼睛的遺跡生物。被它看見的時候，佩特拉的注意會一直往上升。會瞬移、放出凝視的光線。先打掉它。' },
     // ---- v14 新增 ----
@@ -264,7 +264,7 @@ window.R = window.R || {};
     ushioni: { name: '蛛身牛', ref: '', hp: 220, dmg: 20, speed: 3, xp: 30, size: 1.5, ai: 'charge', armor: 0.15, elite: 1, color: '#3A2E3A', eye: '#FF3A3A', coreChance: 0.2,
       desc: '牛的頭、蛛的身子。低頭刨地就是要衝過來了——閃到旁邊，讓牠撞牆暈過去。靠太近會被踩。摩爾斯級以上才看得到。' },
     gashadokuro: { name: '領主體・地出巨骸', ref: '', hp: 760, dmg: 24, speed: 1.6, xp: 90, size: 2.6, ai: 'giant', armor: 0.2, color: '#E8E0CC', eye: '#FF5A3A', boss: 1,
-      desc: '克森特級遺跡的「領主體」。從地底探出上半身的巨大骸骨。揮手掃過一大片、拍地，還會叫守墓骨兵出來。' },
+      desc: '從地底探出上半身的巨大骸骨。揮手掃過一大片、拍地，還會叫守墓骨兵出來。' },
     // ---- 人（遺跡裡的壞人、私人賞金獵人）：不是遺跡生物，不放進圖鑑 ----
     rogue: { name: '惡質的勇者', ref: '', human: 1, hp: 105, dmg: 13, speed: 5.4, xp: 16, size: 0.7, ai: 'chase', color: '#5A4A3A', eye: '#FFFFFF', desc: '' },
     rogue_shot: { name: '惡質的勇者', ref: '', human: 1, hp: 80, dmg: 11, speed: 5.0, xp: 16, size: 0.7, ai: 'kite', shoot: 0.6, shot: 'bullet', color: '#5A4A3A', eye: '#FFFFFF', desc: '' },

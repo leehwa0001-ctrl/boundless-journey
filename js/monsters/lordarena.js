@@ -2,7 +2,7 @@
 // 原本每一隻都是同一種城堡大廳（lordfloor.js 的 hall）；有自己的房間的領主體改成：
 // - 熔獄之顎：熔岩池中間的石島，石橋連到每一個門口。站進熔岩會被燙傷；開打以後熔岩慢慢漫上來（石島縮小、石橋變窄），打倒牠就停。
 // - 永凍之冠：冰湖。中間的冰面會滑（停不下來、轉向慢）；周圍一圈冰柱可以躲，牠撞到或出招震到就碎掉。
-// - 巢織蛛：整間掛著蛛網（走進去會變慢），牆邊有卵囊——不打破的話過一陣子孵出小蜘蛛。
+// - 巢織蛛：整間掛著蛛網（走進去會變慢），牆邊有卵囊──不打破的話過一陣子孵出小蜘蛛。
 // 其他的領主體照舊是城堡大廳。
 // 做法：蓋樓層的時候先決定這一間是哪一隻領主體（跟 run.js 進房間時的挑法一樣），記在 r.lordId；進房間時照這個生。
 // 放在 lordfloor.js、lordwing.js、lordlogic.js、monsters3.js（雷晶蛛）後面。
@@ -87,7 +87,7 @@
       A.pillars.forEach(q => { if (!q.gone && Math.hypot(L.x - q.x, L.z - q.z) < br) shatter(A, q); });
       if (L.lastMove != null && L.lastMove !== A.lm) { if (A.lm !== undefined) A.pillars.forEach(q => { if (!q.gone && Math.hypot(L.x - q.x, L.z - q.z) < br + 5 && rnd() < 0.5) shatter(A, q); }); A.lm = L.lastMove; }
     }
-    // 滑：腳下是冰的時候，實際的移動往「慣性」那邊拉——放開方向鍵還會滑一段、轉彎慢半拍
+    // 滑：腳下是冰的時候，實際的移動往「慣性」那邊拉──放開方向鍵還會滑一段、轉彎慢半拍
     const last = A.last; A.last = { x: P.x, z: P.z };
     if (!last || P.dead || !dt || R.roomIndexAt(P.x, P.z) !== A.r.i || !onIce(A, P) || P.air) { A.v.x = A.v.z = 0; return; }
     const vx = (P.x - last.x) / dt, vz = (P.z - last.z) / dt;
