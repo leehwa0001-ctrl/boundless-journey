@@ -40,22 +40,22 @@
   const road = (kind, pts, name, o) => { const r = Object.assign({ kind, pts, w: RW[kind], name: name || '' }, o || {}); C.roads.push(r); return r; };
   // 主幹道：國道一號東西橫過舊城南邊（過鶴川的新大橋，盡頭是東鶴港的渡輪碼頭）；大手通從南門直直往南到鐵路邊
   road('main', [[0, 480], [200, 476], [600, 474], [860, 480], [1000, 488]], '國道一號');
-  road('main', [[320, 416], [320, 750]], '大手通');
+  road('sub', [[320, 416], [320, 750]], '大手通');
   // 副幹道
-  road('sub', [[80, 140], [80, 1000]], '河西通');                        // 霜溪東岸，過平交道一路到南郊
+  road('lane', [[80, 140], [80, 1000]], '河西通');                        // 霜溪東岸，過平交道一路到南郊
   road('sub', [[400, 476], [400, 1000]], '站西通');                      // 國道 → 平交道 → 站前
   road('sub', [[760, 476], [760, 1000]], '站東通');                      // 國道 → 過鶴川 → 平交道 → 南郊
   road('sub', [[860, 480], [860, 750]], '港通');                         // 國道 → 過鶴川 → 新商區、選礦廠
-  road('sub', [[80, 620], [972, 620]], '中央通');
-  road('sub', [[80, 750], [972, 750]], '線路沿');
-  road('sub', [[230, 476], [230, 750]], '學校通');
-  road('sub', [[560, 476], [560, 750]], '寺町通');
-  road('sub', [[80, 940], [972, 940]], '站前南通');
-  road('sub', [[760, 872], [930, 872]], '漁港通');
+  road('lane', [[80, 620], [170, 612], [300, 626], [420, 614], [560, 628], [700, 616], [860, 626], [972, 620]], '中央通');
+  road('lane', [[80, 750], [972, 750]], '線路沿');
+  road('lane', [[230, 476], [234, 560], [228, 640], [230, 750]], '學校通');
+  road('lane', [[560, 476], [556, 560], [564, 650], [560, 750]], '寺町通');
+  road('lane', [[80, 940], [200, 934], [400, 942], [620, 936], [760, 944], [972, 938]], '站前南通');
+  road('lane', [[760, 872], [930, 872]], '漁港通');
   road('sub', [[80, 260], [176, 260]], '西門通');
   road('sub', [[464, 260], [680, 260]], '東門通');                       // 東門 → 鶴橋 → 官廳街
   road('sub', [[680, 120], [680, 340], [790, 440], [860, 480]], '官廳通');
-  road('sub', [[680, 230], [972, 230]], '北濱通');                       // 往海水浴場
+  road('lane', [[680, 230], [972, 230]], '北濱通');                       // 往海水浴場
   road('sub', [[680, 340], [972, 340]], '縣廳通');
   // 舊城：石板路（北門 → 西市口 → 南門；西門 → 西市口 → 東門，十字）
   road('old', [[320, 92], [320, 416]], '本町通');
@@ -206,8 +206,8 @@
   setR(C.COAST - 1, 0, 1000, 1000, 2); setR(948, 110, C.COAST, 206, 3);   // 海、海水浴場的沙灘：不蓋房子
   // 門朝哪邊：預設朝南；百貨公司朝西對著站前廣場（civic.js 的 faceAt 整棟轉過去）
   C.FACE = { dept: -Math.PI / 2 };
-  // 設施的地＋門前的前庭（12 單位，約 5 公尺）：一般的房子不會蓋在門口
-  C.footR = (k, F) => { const p = C.FAC[k], [w0, d0] = FS[k], a = C.FACE[k] || 0, side = Math.abs(Math.sin(a)) > 0.5, w = side ? d0 : w0, d = side ? w0 : d0, f = F == null ? 12 : F, r = [p[0] - w / 2 - 2, p[1] - d / 2 - 2, p[0] + w / 2 + 2, p[1] + d / 2 + 2], dx = Math.round(Math.sin(a)), dy = Math.round(Math.cos(a)); if (dx > 0) r[2] += f; if (dx < 0) r[0] -= f; if (dy > 0) r[3] += f; if (dy < 0) r[1] -= f; return r; };
+  // 設施的地＋門前的前庭（8 單位，約 3.5 公尺）：一般的房子不會蓋在門口
+  C.footR = (k, F) => { const p = C.FAC[k], [w0, d0] = FS[k], a = C.FACE[k] || 0, side = Math.abs(Math.sin(a)) > 0.5, w = side ? d0 : w0, d = side ? w0 : d0, f = F == null ? 8 : F, r = [p[0] - w / 2 - 2, p[1] - d / 2 - 2, p[0] + w / 2 + 2, p[1] + d / 2 + 2], dx = Math.round(Math.sin(a)), dy = Math.round(Math.cos(a)); if (dx > 0) r[2] += f; if (dx < 0) r[0] -= f; if (dy > 0) r[3] += f; if (dy < 0) r[1] -= f; return r; };
   Object.keys(FS).forEach(k => { const p = C.FAC[k]; if (!p || typeof p[0] !== 'number') return; setR(...C.footR(k), 3); });
   C.FAC.stalls.forEach(([x, y]) => setR(x - 9, y - 8, x + 9, y + 12, 3));
   { const [x0, y0, x1, y1] = C.FAC.dojo; setR(x0 - 2, y0 - 2, x1 + 2, y1 + 2, 3); }
@@ -239,7 +239,7 @@
   // ---------- 用地：沿著路一塊一塊排房子（門朝路） ----------
   // f：門朝哪邊（0 南、1 北、2 西、3 東）
   C.lots = [];
-  const lot = o => { C.lots.push(o); setR(o.r[0] - 1, o.r[1] - 1, o.r[2] + 1, o.r[3] + 1, 4); return o; };
+  const lot = o => { C.lots.push(o); setR(o.r[0], o.r[1], o.r[2], o.r[3], 4); return o; };   // 2026-10-26：房子挨著房子（原本四周各多佔 1 單位，排起來很散）
   const WALLS = ['#E8E2D4', '#D8D2C4', '#C8CCD0', '#E0D6C0', '#B8BCC2', '#D4C8B4', '#F0ECE4', '#C4B8A4', '#D8C8B8', '#B8C4C8'];
   const OLDC = ['#B8A688', '#A89478', '#C8BCA2', '#8E7A62', '#D0C4AA', '#9A9286'];
   // 站前、商店街的店名（拱廊裡、大馬路邊）
@@ -251,10 +251,11 @@
     if (zone === 'old') return r0 < 0.12 ? { type: 'kura' } : { type: 'oldhouse', shop: r0 < 0.55, floors: r0 < 0.75 ? 2 : 1 };
     if (zone === 'com') {
       if (rd.kind === 'arcade') { const s = SHOPS[shopI++ % SHOPS.length]; return { type: 'shop', name: s[0], sc: s[1], kind: s[2], low: false, awn: pick(['#C83A3A', '#3A6A8A', '#E8A03A', '#3E7A48', '#8A3A6A']) }; }
-      if (r0 < 0.42) return { type: 'midrise', floors: 3 + Math.floor(rnd() * 4) };        // 雜居大樓：3～6 層
-      if (r0 < 0.58) { const s = SHOPS[shopI++ % SHOPS.length]; return { type: 'shop', name: s[0], sc: s[1], kind: s[2], awn: pick(['#C83A3A', '#3A6A8A', '#E8A03A', '#3E7A48']) }; }
-      if (r0 < 0.66) return { type: 'conbini' };
-      if (r0 < 0.76) return { type: 'parking', big: 1 };
+      if (r0 < 0.16) return { type: 'midrise', floors: 3 + Math.floor(rnd() * 2) };        // 雜居大樓：3～4 層（2026-10-26：少一點，多一點兩層的店）
+      if (r0 < 0.62) { const s = SHOPS[shopI++ % SHOPS.length]; return { type: 'shop', name: s[0], sc: s[1], kind: s[2], awn: pick(['#C83A3A', '#3A6A8A', '#E8A03A', '#3E7A48']) }; }
+      if (r0 < 0.67) return { type: 'conbini' };
+      if (r0 < 0.7) return { type: 'parking', big: 1 };
+      if (r0 < 0.88) return { type: 'oldhouse', shop: true, floors: 2 };
       return { type: 'office', floors: 3 + Math.floor(rnd() * 3) };
     }
     if (zone === 'civic') return r0 < 0.55 ? { type: 'office', floors: 3 + Math.floor(rnd() * 3) } : r0 < 0.72 ? { type: 'midrise', floors: 3 + Math.floor(rnd() * 3) } : r0 < 0.85 ? { type: 'parking', big: 1 } : { type: 'house', floors: 2 };
@@ -262,9 +263,10 @@
     if (zone === 'farm') return r0 < 0.6 ? { type: 'farm' } : r0 < 0.8 ? { type: 'warehouse' } : { type: 'garden' };
     // 住宅區
     if (rd.kind === 'main') return r0 < 0.35 ? { type: 'midrise', floors: 3 + Math.floor(rnd() * 3) } : r0 < 0.55 ? { type: 'shop', name: (() => { const s = SHOPS[shopI++ % SHOPS.length]; return s[0]; })(), sc: '#3A3A44', awn: pick(['#C83A3A', '#3A6A8A']) } : r0 < 0.7 ? { type: 'conbini' } : r0 < 0.85 ? { type: 'apt', floors: 3 } : { type: 'parking', big: 1 };
-    if (r0 < 0.06) return { type: 'parking' };
-    if (r0 < 0.11) return { type: 'garden' };
-    if (r0 < 0.14) return { type: 'vacant' };
+    if (r0 < 0.02) return { type: 'parking' };
+    if (r0 < 0.06) return { type: 'garden' };
+    if (r0 < 0.1) return { type: 'oldhouse', shop: false, floors: rnd() < 0.5 ? 2 : 1 };
+    if (r0 < 0.12) return { type: 'vacant' };
     if (r0 < 0.24 && w > 34) return { type: 'apt', floors: rnd() < 0.6 ? 2 : 3 };
     if (r0 < 0.28 && rd.kind === 'sub') { const s = SHOPS[shopI++ % SHOPS.length]; return { type: 'shop', name: s[0], sc: s[1], kind: s[2], low: true, awn: pick(['#C83A3A', '#3A6A8A', '#E8A03A']) }; }
     if (r0 < 0.3 && rd.kind === 'sub') return { type: 'conbini' };
@@ -273,14 +275,14 @@
   };
   // 塞滿街區：每一種分區的房子大小（示意圖單位：寬 × 深）、房子之間的空隙
   const SIZES = {
-    old: [[14, 22], [12, 18], [16, 24], [12, 14], [10, 12]],
-    com: [[26, 30], [22, 26], [18, 24], [14, 20], [12, 14]],
+    old: [[12, 20], [10, 18], [12, 16], [10, 14], [8, 12]],
+    com: [[18, 24], [14, 22], [12, 18], [10, 14]],
     civic: [[40, 30], [32, 26], [24, 22], [16, 16]],
     ind: [[52, 36], [40, 30], [28, 24], [18, 16]],
-    res: [[22, 22], [20, 24], [24, 18], [18, 20], [16, 16], [12, 14]],
+    res: [[16, 18], [14, 16], [16, 14], [12, 14], [10, 12]],
     farm: [[28, 22], [22, 18]]
   };
-  const GAP = { old: 0.2, com: 0.3, civic: 2, ind: 2, res: 1.2, farm: 8 };
+  const GAP = { old: 0.2, com: 0.3, civic: 1.2, ind: 1.5, res: 0.6, farm: 8 };   // 2026-10-26：日本的街房子挨著房子（原本住宅區空隙太大、看起來散）
   // 一塊地往四個方向看，最近的路在哪一邊（0 南、1 北、2 西、3 東）、離多遠
   const roadSide = r => {
     const cx = (r[0] + r[2]) / 2, cy = (r[1] + r[3]) / 2, best = [1e9, 0];
