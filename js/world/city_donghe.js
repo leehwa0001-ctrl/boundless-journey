@@ -153,12 +153,13 @@
         const h = 1 + Math.floor(rnd() * 3); for (let k = 0; k < h; k++) P(g.box, M('corr', { col: CC[Math.floor(rnd() * CC.length)] }), x, 0.14 + 1.3 + k * 2.62, z, 6, 2.6, 2.44);
       }
       B.solid(a + 14, c + 20, b - 10, c + 22 + 9 * 2.9 + 4, 'deco');
+      for (let row = 0; row < 9; row++) { const z = c + 22 + row * 2.9 + (row > 4 ? 4 : 0); B.foot([a + 15, z - 1.22, Math.min(b - 14, a + 18 + 17 * 7.2) + 3, z + 1.22], 'factory', 2); }   // 小地圖：一排排的貨櫃（高度 2：晚上窗戶的光不灑在貨櫃旁邊，ckpix.js）
       // 起重機（紅白的門架，懸臂伸到船上；頂上的紅燈會閃）
       const blink = [];
       [0.22, 0.47, 0.72].forEach(fx => {
         const x = a + (b - a) * fx, z0 = c + 3, z1 = c + 15;
         [x - 7, x + 7].forEach(lx => [z0, z1].forEach(lz => { B.box(M('red'), lx - 0.5, 0, lz - 0.5, lx + 0.5, 22, lz + 0.5); B.solid(lx - 0.6, lz - 0.6, lx + 0.6, lz + 0.6, 'deco'); }));
-        [z0, z1].forEach(lz => B.box(M('white'), x - 7.5, 21.8, lz - 0.6, x + 7.5, 23.2, lz + 0.6));
+        [z0, z1].forEach(lz => B.box(M('white'), x - 7.5, 21.8, lz - 0.6, x + 7.5, 23.2, lz + 0.6)); B.foot([x - 7.5, z0 - 0.5, x + 7.5, z1 + 0.5], 'tower', 2);   // 小地圖：起重機
         B.box(M('red'), x - 1.1, 24.2, (z0 + z1) / 2 - 39, x + 1.1, 25.8, (z0 + z1) / 2 + 11); B.box(M('white'), x - 2, 22.3, z1 - 4, x + 2, 25.3, z1); B.box(M('steelD'), x - 1.3, 20.7, z0 - 9.2, x + 1.3, 22.3, z0 - 6.8);
         P(g.cyl8, M('steelD'), x, 22.9, z0 - 8, 0.06, 2.2, 0.06);
         blink.push(mesh(g.sph, own('#FF3A2A', { em: '#FF3A2A', ei: 2 }), x, 26.2, (z0 + z1) / 2 - 38, 0.8, 0.8, 0.8));
