@@ -8,6 +8,16 @@
 (function (R) {
   const CK = R.CK; if (!CK || !CK.H) return;
   const H = CK.H;
+  // 平頂車站的屋頂：女兒牆、中間一條長的玻璃天窗、背面一排冷氣室外機；front＝正面朝哪（'n'／'s'），靠正面那一邊留給招牌
+  H.stationRoof = (B, x0, z0, x1, z1, h, front) => {
+    const M = CK.M, g = B.g, P = B.part, w = x1 - x0, d = z1 - z0, cx = (x0 + x1) / 2, pm = M('ashlar'), sg = front === 's' ? -1 : 1, fz = front === 's' ? z1 : z0, bz = front === 's' ? z0 : z1;
+    B.box(pm, x0, h, z0, x1, h + 0.7, z0 + 0.3); B.box(pm, x0, h, z1 - 0.3, x1, h + 0.7, z1); B.box(pm, x0, h, z0, x0 + 0.3, h + 0.7, z1); B.box(pm, x1 - 0.3, h, z0, x1, h + 0.7, z1);
+    const sz = fz + sg * d * 0.62, sl = w * 0.72, nr = Math.max(1, Math.round(sl / 3));
+    B.box(M('steelD'), cx - sl / 2 - 0.2, h, sz - 1.8, cx + sl / 2 + 0.2, h + 0.4, sz + 1.8);
+    P(g.prism, M('glassL'), cx, h + 0.4, sz, 3.4, 1.3, sl, 0, Math.PI / 2, 0);
+    for (let k = 0; k <= nr; k++) P(g.prism, M('steelD'), cx - sl / 2 + k * sl / nr, h + 0.4, sz, 3.5, 1.35, 0.1, 0, Math.PI / 2, 0);
+    for (let k = 0; k < 6; k++) { const ax = x0 + 4 + k * 2.4; if (ax > cx - 4) break; const az = bz - sg * 2.4; B.box(M('metal', { col: '#D8D8D4' }), ax - 0.9, h, az - 0.8, ax + 0.9, h + 1.1, az + 0.8); P(g.cyl24, M('steelD'), ax, h + 1.12, az, 1.1, 0.04, 1.1); }
+  };
   const st0 = H.station;
   H.station = (B, o) => {
     st0(B, o);
@@ -41,15 +51,7 @@
         B.box(M('steelD'), rx - 0.05, 0.02, rz - 3, rx + 0.05, 0.08, rz + 3); B.solid(rx - 0.3, rz - 3, rx + 0.3, rz + 3, 'deco');
       });
       // 平頂（沒有 o.roof）的車站：女兒牆、屋頂中間一條長的玻璃天窗、後面一排冷氣室外機
-      if (!o.roof) {
-        const x0 = cx - w / 2, x1 = cx + w / 2, z1 = z0 + d, pm = M('ashlar');
-        B.box(pm, x0, h, z0, x1, h + 0.7, z0 + 0.3); B.box(pm, x0, h, z1 - 0.3, x1, h + 0.7, z1); B.box(pm, x0, h, z0, x0 + 0.3, h + 0.7, z1); B.box(pm, x1 - 0.3, h, z0, x1, h + 0.7, z1);
-        const sz = z0 + d * 0.62, sl = w * 0.72;
-        B.box(M('steelD'), cx - sl / 2 - 0.2, h, sz - 1.8, cx + sl / 2 + 0.2, h + 0.4, sz + 1.8);
-        P(g.prism, M('glassL'), cx, h + 0.4, sz, 3.4, 1.3, sl, 0, Math.PI / 2, 0);
-        for (let k = 0; k <= Math.round(sl / 3); k++) P(g.prism, M('steelD'), cx - sl / 2 + k * sl / Math.round(sl / 3), h + 0.4, sz, 3.5, 1.35, 0.1, 0, Math.PI / 2, 0);
-        for (let k = 0; k < 6; k++) { const ax = x0 + 4 + k * 2.4; if (ax > cx - 4) break; B.box(M('metal', { col: '#D8D8D4' }), ax - 0.9, h, z1 - 3.2, ax + 0.9, h + 1.1, z1 - 1.6); P(g.cyl24, M('steelD'), ax, h + 1.12, z1 - 2.4, 1.1, 0.04, 1.1); }
-      }
+      if (!o.roof) H.stationRoof(B, cx - w / 2, z0, cx + w / 2, z0 + d, h, 'n');
       const ts = [cx + 12, z0 - 16];   // 計程車招呼站的站牌
       P(g.cyl8, M('steelD'), ts[0], 1.5, ts[1], 0.12, 3.0, 0.12); B.sign('計程車', 'n', ts[1] - 0.08, ts[0], 2.8, { size: 0.36, bg: '#1A3A6A', fg: '#FFFFFF', box: 1, lit: 1 }); B.solid(ts[0] - 0.15, ts[1] - 0.15, ts[0] + 0.15, ts[1] + 0.15, 'deco');
       void d;

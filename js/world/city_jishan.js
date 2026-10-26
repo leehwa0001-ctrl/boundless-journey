@@ -349,6 +349,7 @@
     B.box(M('metal'), cx - 22, 4.6, z0 - 5, cx + 22, 4.9, z0 + 2); [-20, -10, 0, 10, 20].forEach(dx => { P(g.cyl8, M('metal'), cx + dx, 2.3, z0 - 4.4, 0.3, 4.6, 0.3); B.solid(cx + dx - 0.2, z0 - 4.6, cx + dx + 0.2, z0 - 4.2, 'deco'); });
     B.neon(cx - 22, 4.5, z0 - 5.05, cx + 22, 4.6, z0 - 4.95, '#4AE8FF');
     B.sign('吉山站', 'n', z0 + 1.8, cx, 17.6, { size: 2.2, bg: '#0A0A14', fg: '#4AE8FF', neon: 1 });
+    if (CK.H && CK.H.stationRoof) CK.H.stationRoof(B, x0, z0 + 2, x1, z1, 16, 'n');   // 2026-10-26：屋頂的女兒牆、天窗、室外機（civickit.js）
     CK.door(B, cx, z0 - 1.2, 'js_station', '走進吉山站（售票口：回東鶴、轉往他城）', '#5A8AC8', Math.PI);
     B.inter(cx - 10, z0 - 1.2, 2.4, '吉山站的時刻表', () => R.townTalk('吉山站的時刻表', ['往東鶴：每天四班（魔導電車，一天）', '往皇嶺：每天四班', '往奉主、府廳：每天兩班', '市內環狀線：高架，五分鐘一班']));
   }

@@ -256,7 +256,7 @@
         B.box(M('roofG'), pl[0] + 2, 3.8, pl[1] + 0.2, pl[2] - 2, 4.05, pl[3] - 0.2); for (let x = pl[0] + 4; x < pl[2] - 2; x += 8) B.box(M('steelD'), x - 0.1, 0.9, (pl[1] + pl[3]) / 2 - 0.1, x + 0.1, 3.8, (pl[1] + pl[3]) / 2 + 0.1);
         B.sign('東鶴', 's', pl[3], (pl[0] + pl[2]) / 2, 2.4, { size: 0.7, bg: '#F4F4F8', fg: '#1A2A5A', box: 1 });
         // 站房
-        const st = rectW(C.STATION); B.bld({ r: st, h: 8.5, style: 'office', face: 's', col: '#D8D4CC', top: false });
+        const st = rectW(C.STATION); B.bld({ r: st, h: 8.5, style: 'office', face: 's', col: '#D8D4CC', top: false }); if (CK.H && CK.H.stationRoof) CK.H.stationRoof(B, st[0], st[1], st[2], st[3], 8.5, 's');   /* 2026-10-26：屋頂（civickit.js） */
         B.sign('東鶴站', 's', st[3], (st[0] + st[2]) / 2, 6.4, { size: 1.3, bg: '#1A2A5A', fg: '#FFFFFF', box: 1, lit: 1 });
         B.box(M('glassL'), st[0] + 4, 3.6, st[3], st[2] - 4, 3.75, st[3] + 3); B.box(M('shopLit'), st[0] + 5, 0.3, st[3] - 0.02, st[2] - 5, 3.2, st[3] + 0.05);
         const pz = rectW(C.PLAZA); B.plaza(pz[0], pz[1], pz[2], pz[3], 'gran');
