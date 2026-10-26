@@ -191,7 +191,7 @@
   };
   N.create = () => act({ t: 'create' });
   N.join = code => { code = String(code || '').trim().toUpperCase(); if (!/^[A-Z]{4}$/.test(code)) { R.toast('房號是 4 個英文字母。'); return; } return act({ t: 'join', code }); };
-  N.leave = () => disconnect('離開了房間。');
+  N.leave = () => { try { if (N.ws && N.ws.readyState === 1 && N.room) N.ws.send(JSON.stringify({ t: 'leave' })); } catch (e) { } disconnect('離開了房間。'); };   // 2026-10-26：先告訴伺服器是自己離開（原本只關連線，伺服器當成斷線、座位留 3 分鐘，其他人一直看到「斷線了」）
   // 斷線：HOLD_MS 內指數退避＋抖動重連回原本座位（伺服器認 id＋token）
   // 換層中斷線走靜默重連（silentRejoin）：少 toast、更快重試
   const rejoin = (closeCode, closeReason) => {
@@ -359,9 +359,13 @@
       X0: t.X0, Z0: t.Z0, nx: t.nx, nz: t.nz, TS: t.TS,
       T: b64enc(t.T), RM: b64enc(t.RM), CR: b64enc(t.CR),
       chests: (F.chests || []).map(c => ({ x: +c.x.toFixed(2), z: +c.z.toFixed(2), tier: c.tier|0, room: c.room|0 })),
+      extra: extraOf(F),
       ck: checksum(F)
     };
   };
+  // genFloor 長出來、不是地形的欄位（休息層、樓層效果、領主的翼和閘門、平靜層……）：能變成 JSON 的才帶
+  const SKIP_X = new Set(['f', 'rooms', 'links', 'tile', 'last', 'chests', 'genKeys', 'ores', 'crystals', 'saved', 'group']);
+  const extraOf = F => { const o = {}; (F.genKeys || []).forEach(k => { if (SKIP_X.has(k)) return; const v = F[k]; if (typeof v === 'function') return; try { const j = JSON.stringify(v); if (j !== undefined && j.length < 4000) o[k] = JSON.parse(j); } catch (e) { } }); return o; };
   const restoreRoomTiles = F => {
     const t = F.tile, FLOOR = (R.TILE && R.TILE.FLOOR) || 1, N4 = [[1, 0], [-1, 0], [0, 1], [0, -1]];
     const { nx, T: TT, RM, id } = t, N = nx * t.nz;
@@ -389,6 +393,7 @@
       tile: { X0, Z0, nx, nz, TS, T, RM, CR, id, tX, tZ, cX, cZ }
     };
     restoreRoomTiles(F);
+    if (p.extra) Object.keys(p.extra).forEach(k => { if (!(k in F)) F[k] = p.extra[k]; });
     return F;
   };
   const snapChests = (F, packed) => {
@@ -424,16 +429,25 @@
     }).catch(() => { });
   };
   N.pushFloorDump = pushFloorDump;
-  const gf0 = R.genFloor;
-  R.genFloor = (run, f) => {
-    if (run && run.coop && !run.coop.host && pendingHostLayout && pendingHostLayout.n === run.coop.n && pendingHostLayout.f === f) {
-      const L = pendingHostLayout; pendingHostLayout = null;
-      try { return unpackLayout(L); } catch (e) { console.warn('[net] unpackLayout', e); }
-    }
-    return run && run.coop ? R.withSeed(seedOf(run, 1), () => gf0(run, f)) : gf0(run, f);
+  // 2026-10-26：等全部檔案載入完才包（最外層）。原本 net.js 之後載入的 hamilia.js、lordwing.js、island.js、special.js 也包了 genFloor，
+  //   它們的亂數跑在種子外面（房主、隊員抽到不同的解謎房、寶箱房），隊員套用房主地圖之後還會被它們再改一次。
+  const installSeedWrap = () => {
+    if (R.genFloor && R.genFloor.netWrapped) return;
+    const gf0 = R.genFloor;
+    R.genFloor = (run, f) => {
+      if (run && run.coop && !run.coop.host && pendingHostLayout && pendingHostLayout.n === run.coop.n && pendingHostLayout.f === f) {
+        const L = pendingHostLayout; pendingHostLayout = null;
+        try { return unpackLayout(L); } catch (e) { console.warn('[net] unpackLayout', e); }
+      }
+      const F = run && run.coop ? R.withSeed(seedOf(run, 1), () => gf0(run, f)) : gf0(run, f);
+      if (F && run && run.coop) F.genKeys = Object.keys(F);   // 房主打包時一起帶走的欄位（genFloor 長出來的）
+      return F;
+    };
+    R.genFloor.netWrapped = 1;
+    const bf0 = R.buildFloor;
+    R.buildFloor = (sc, run, F) => run && run.coop ? R.withSeed(seedOf(run, 2), () => bf0(sc, run, F)) : bf0(sc, run, F);
   };
-  const bf0 = R.buildFloor;
-  R.buildFloor = (sc, run, F) => run && run.coop ? R.withSeed(seedOf(run, 2), () => bf0(sc, run, F)) : bf0(sc, run, F);
+  if (document.readyState === 'complete') installSeedWrap(); else window.addEventListener('load', installSeedWrap);
   // 這一層長得一不一樣（地形和寶箱的位置）
   // 只看地形：寶箱另外用 snapChests 對齊（2026-10-08：寶箱位置的四捨五入對不上，會一直強制套用、每次都把人拉回入口）
   const checksum = F => { let h = 2166136261; const T = F.tile && F.tile.T; if (T) for (let i = 0; i < T.length; i++) h = Math.imul(h ^ T[i], 16777619); return h >>> 0; };

@@ -589,7 +589,7 @@
     F.rooms.forEach(r => {
       if (r.type !== 'start' && r.type !== 'boss' && r.type !== 'puzzle') {   /* 解謎房間不擺罈子、木箱（2026-10-04 作者回報：石頭被擋住、踩不到） */
         const nb = r.type === 'chest' ? 3 : rint(3, 7);
-        for (let k = 0; k < nb; k++) { const s = spot(r, { wall: Math.random() < 0.7, rad: 0.7 }); if (!s) continue; const kind = Math.random() < 0.45 ? 'jar' : Math.random() < 0.6 ? 'crate' : 'crystal'; R.addProp(group, F, kind, s[0], s[1], th, r.i); }
+        for (let k = 0; k < nb; k++) { const s = spot(r, { wall: Math.random() < 0.7, rad: 0.7 }); if (!s || !R.spotClear(F, s[0], s[1], r.i, 2.2) || !R.spotOpen(F, s[0], s[1], r.i)) continue; const kind = Math.random() < 0.45 ? 'jar' : Math.random() < 0.6 ? 'crate' : 'crystal'; R.addProp(group, F, kind, s[0], s[1], th, r.i); }
       }
       const near = (x, z) => { const [px, pz] = R.nearestFloorLocal(t, x, z); return [px, pz]; };
       if (r.type === 'trap' || r.traps) spikes(r, r.type === 'trap');
@@ -860,6 +860,7 @@
   };
   // 寶箱：tier 0 木、1 銅、2 金
   R.addChest = (group, F, x, z, tier, room) => {
+    [x, z] = R.clearSpot(F, x, z, room, 2.6);
     const TH = T(), col = ['#7A5A3A', '#9A6A3A', '#C9A13A'][tier], trim = ['#4A3A2A', '#5A3A1E', '#8A6A1E'][tier];
     const g2 = new TH.Group();
     const base = new TH.Mesh(new TH.BoxGeometry(1.6, 0.9, 1.1), lam(col)); base.position.y = 0.45; base.castShadow = true; g2.add(base);
@@ -874,8 +875,40 @@
     return ch;
   };
   // 回歸水晶：帶著東西回到地面
+  // 擺東西的位置離房間出口（走廊、隔壁房間的地板）至少 clr 公尺；太近就挪到房間裡最近的空地（2026-10-26：東嶺、板南的樓梯房只有一個出口，水晶剛好擺在出口上，整層下不去）
+  R.spotClear = (F, px, pz, room, clr) => {
+    const t = F && F.tile; if (!t || room == null || room < 0) return true;
+    const TS = t.TS, nx = t.nx, nz = t.nz, rr = Math.ceil(clr / TS) + 1;
+    {
+      const tx = Math.floor((px - t.X0) / TS), tz = Math.floor((pz - t.Z0) / TS); if (tx < 0 || tz < 0 || tx >= nx || tz >= nz) return false;
+      const k0 = tz * nx + tx; if (t.T[k0] !== FLOOR || t.RM[k0] !== room) return false;
+      for (let dz = -rr; dz <= rr; dz++) for (let dx = -rr; dx <= rr; dx++) {
+        const ax = tx + dx, az = tz + dz; if (ax < 0 || az < 0 || ax >= nx || az >= nz) continue; const k = az * nx + ax; if (t.T[k] !== FLOOR || t.RM[k] === room) continue;
+        const cx = t.X0 + (ax + 0.5) * TS, cz = t.Z0 + (az + 0.5) * TS; if (Math.hypot(cx - px, cz - pz) < clr + TS * 0.5) return false;
+      }
+      if (F.stairs && F.stairs.room === room && Math.hypot(F.stairs.x - px, F.stairs.z - pz) < 3.4) return false;
+      return true;
+    }
+  };
+  // 這一格和四周八格都是同一間房的地板（不是一格寬的通道）：罈子、木箱只擺在這種地方，才不會把窄的地方堵死
+  R.spotOpen = (F, px, pz, room) => {
+    const t = F && F.tile; if (!t || room == null || room < 0) return true;
+    const tx = Math.floor((px - t.X0) / t.TS), tz = Math.floor((pz - t.Z0) / t.TS);
+    for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const ax = tx + dx, az = tz + dz; if (ax < 0 || az < 0 || ax >= t.nx || az >= t.nz) return false; const k = az * t.nx + ax; if (t.T[k] !== FLOOR || t.RM[k] !== room) return false; }
+    return true;
+  };
+  R.clearSpot = (F, x, z, room, clr) => {
+    const t = F && F.tile; if (!t || room == null || room < 0) return [x, z];
+    const TS = t.TS, nx = t.nx;
+    if (R.spotClear(F, x, z, room, clr) && R.spotOpen(F, x, z, room)) return [x, z];
+    const r = F.rooms && F.rooms[room]; if (!r || !r.tiles) return [x, z];
+    let best = null, bd = 1e9;
+    r.tiles.forEach(k => { const tx = k % nx, tz = (k - tx) / nx, cx = t.X0 + (tx + 0.5) * TS, cz = t.Z0 + (tz + 0.5) * TS, d = Math.hypot(cx - x, cz - z); if (d < bd && R.spotClear(F, cx, cz, room, clr) && R.spotOpen(F, cx, cz, room)) { bd = d; best = [cx, cz]; } });
+    return best || [x, z];
+  };
   R.addCrystal = (group, F, x, z, room) => {
     const TH = T();
+    [x, z] = R.clearSpot(F, x, z, room, 3);
     const c = new TH.Mesh(new TH.OctahedronGeometry(0.9, 0), lam('#7FE8FF', { emissive: '#2A9ABF', emissiveIntensity: 0.9, transparent: true, opacity: 0.9 }));
     c.scale.y = 1.8; c.position.set(x, 1.9, z); group.add(c);
     const ring = new TH.Mesh(new TH.TorusGeometry(1.3, 0.08, 6, 24), lam('#BFF4FF', { emissive: '#4AC8E8' })); ring.rotation.x = Math.PI / 2; ring.position.set(x, 0.2, z); group.add(ring);

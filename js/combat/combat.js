@@ -427,6 +427,7 @@
   // ---------- 遺跡生物 ----------
   R.spawnEnemy = (id, x, z, room, o) => {
     const w = W(), d = R.ENEMIES[id], g = w.run.grade.lv, f = w.run.floor;
+    if (R.boxesNear && R.openFloorNear) { for (const c of R.boxesNear(x, z)) if ((c.tag === 'pillar' || c.tag === 'prop' || c.tag === 'chest' || c.tag === 'crystal') && x > c.x0 - 0.4 && x < c.x1 + 0.4 && z > c.z0 - 0.4 && z < c.z1 + 0.4) { [x, z] = R.openFloorNear(x, z); break; } }   // 2026-10-26：不要長在柱子、罈子、寶箱、水晶裡
     o = o || {};
     const m = o.human ? R.humanModel(o.human) : R.makeBeast(id, o.role);
     // 硬核：遺跡生物更硬、更痛，越深越強
