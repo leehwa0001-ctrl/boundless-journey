@@ -24,7 +24,7 @@
     const ri = R.roomIndexAt(P.x, P.z), r = ri >= 0 ? F.rooms[ri] : null;
     const left = r && r.locked ? w.enemies.filter(e => !e.dead && e.room === r.i && !e.fake) : [];
     if (!left.length || left.length > 3) { if (marks.size) clear(); lastN = 0; since = 0; return; }
-    if (left.length !== lastN) { if (!lastN || left.length < lastN) R.toast && R.toast('這一區還剩 ' + left.length + ' 隻——紅色箭頭標出來了', '#FF7A6A'); lastN = left.length; }
+    if (left.length !== lastN) { if (!lastN || left.length < lastN) R.toast && R.toast('這一區還剩 ' + left.length + ' 隻──紅色箭頭標出來了', '#FF7A6A'); lastN = left.length; }
     since += 0.2;
     // 世界裡的箭頭
     marks.forEach((m, e) => { if (!left.includes(e)) { if (m.parent) m.parent.remove(m); marks.delete(e); } });

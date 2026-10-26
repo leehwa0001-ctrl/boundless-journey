@@ -4,7 +4,7 @@
 // - 「自動整理」重排全部；放不下的放到「暫放區」，東西不會不見（R.S.stash 照舊是全部物品，格子只記位置 R.S.tg）。
 // - 倉庫在公寓 302 室的收納櫃；有家之後，別的地方打開倉庫只能看身上的裝備。還沒租房子的人照舊在公會寄放。
 // - 擴充：加大倉庫（每次 +2 排）、買箱子（箱子本身佔格子，裡面有更大的格子，有的只收某一類）。
-// - 2026-10-18 作者：所有東西都放進倉庫格——費拉、素材、藥水、炸彈、卷軸、禮物、代幣、家具、任務道具照數量切成一疊一疊（stacks.js 的 R.stackList，一疊 1×1），跟裝備一樣拖、排、記位置。
+// - 2026-10-18 作者：所有東西都放進倉庫格──費拉、素材、藥水、炸彈、卷軸、禮物、代幣、家具、任務道具照數量切成一疊一疊（stacks.js 的 R.stackList，一疊 1×1），跟裝備一樣拖、排、記位置。
 // - 2026-10-18 第二階段：背包也是一個格子（g:'bag'，大小＝目前的背包 R.PACKS[R.S.pack]，裝備照遺跡背包的大小 R.itemSize）；
 //   倉庫頁面上倉庫格、背包格可以互相拖：裝備進出背包（R.S.bagIds），一疊的東西搬數量（倉庫 R.S.vault ⇄ 背包的數字，carry.js、stacks.js）。
 //   R.renderBagGrid(容器)：把背包格畫進去（倉庫頁面、城裡的背包視窗用）。
@@ -37,7 +37,7 @@
 
   const S = () => R.S;
   const tg = () => { const s = S(); if (!s.tg || typeof s.tg !== 'object') s.tg = { v: 1, v2: 1, rows: BASE_ROWS, up: 0, boxes: [], pos: {}, bought: {} }; const g = s.tg; if (!g.v2) { g.rows = Math.max((g.rows || 8) + 2, BASE_ROWS); g.v2 = 1; } g.boxes = g.boxes || []; g.pos = g.pos || {}; g.bought = g.bought || {}; g.rows = g.rows || BASE_ROWS; return g; };
-  // 倉庫格裡的東西＝沒穿在身上的裝備＋一疊一疊的東西（一下子會問很多次，記 50 毫秒；整理的時候（hold）一直用同一份——東西多的時候算一次就超過 50 毫秒，每找一個空位都重算會卡死）
+  // 倉庫格裡的東西＝沒穿在身上的裝備＋一疊一疊的東西（一下子會問很多次，記 50 毫秒；整理的時候（hold）一直用同一份──東西多的時候算一次就超過 50 毫秒，每找一個空位都重算會卡死）
   let LC = null, LT = 0, BC = null, BM = null, hold = 0;
   const loose = () => { const now = performance.now(); if (LC && (hold || now - LT < 50)) return LC; BM = null; const eq = R.equippedIds(); LC = (S().stash || []).filter(it => !eq.has(it.id) && !(R.inBag && R.inBag(it.id))).concat(R.stackList ? R.stackList('stash') : []); BC = (R.bagGear ? R.bagGear() : []).concat(R.stackList ? R.stackList('bag') : []); LT = now; return LC; };
   const bagList = () => { loose(); return BC || []; };

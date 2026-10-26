@@ -26,7 +26,7 @@
       sh.classList.add('eu-menu');
       // 標題：在哪裡＋日期
       let head = sh.querySelector(':scope > .eu-head'); if (!head) { head = document.createElement('div'); head.className = 'eu-head'; sh.prepend(head); const x = sh.querySelector('.cx-x'); if (x) sh.prepend(x); }
-      // 2026-10-21 修：沒變就不要動 DOM——每動一次，escmenu.js 的 MutationObserver 就重排、又叫醒這裡，一秒重畫一百多次，滑鼠按下去到放開之間按鈕就被換掉，按不了
+      // 2026-10-21 修：沒變就不要動 DOM──每動一次，escmenu.js 的 MutationObserver 就重排、又叫醒這裡，一秒重畫一百多次，滑鼠按下去到放開之間按鈕就被換掉，按不了
       const hh = '<p class="kicker">' + (W.run ? '暫停' : '選單') + '</p><h2>' + esc(where()) + '</h2><p class="note">' + esc(R.dateLabel ? R.dateLabel() : '') + '</p>';
       if (head.dataset.h !== hh) { head.innerHTML = hh; head.dataset.h = hh; }
       [...sh.querySelectorAll(':scope > h2, :scope > .kicker, :scope > p.kicker')].forEach(h => h.remove());
