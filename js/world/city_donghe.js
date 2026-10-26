@@ -217,6 +217,23 @@
     patrols: [[[WX(220), WZ(456)], [WX(640), WZ(456)]], [[WX(330), WZ(132)], [WX(330), WZ(240)]], [[WX(344), WZ(500)], [WX(344), WZ(740)]]],
     alleys: [rectW([404, 566, 532, 578]), rectW([620, 684, 740, 692]), rectW([404, 752, 736, 764])],
     brawl: [[WX(236), WZ(318)], [WX(520), WZ(900)]],
+    // 平交道：任何一節車廂離平交道 40 公尺內（而且在軌道上）就放下柵欄；站在軌道上被電車推開
+    tick(dt, tw, P) {
+      const X = tw.xings; if (!X || !X.length || !tw.trains) return;
+      const zr = WZ(C.RAIL.y), cars = []; tw.trains.forEach(tr => tr.cars.forEach(g => cars.push(g.position)));
+      let ring = false; tw._xt = (tw._xt || 0) + dt;
+      X.forEach(c => {
+        const on = cars.some(q => Math.abs(q.z - zr) < 8 && Math.abs(q.x - c.x) < 40);
+        c.k = Math.max(0, Math.min(1, c.k + (on ? dt : -dt) / 1.4));
+        c.arms.forEach(({ piv, sd }) => { piv.rotation.z = -sd * Math.PI / 2 * (1 - c.k); });
+        const blink = Math.floor(tw._xt * 2.4) % 2;
+        c.lamps.forEach((lm, i) => { lm.material.emissiveIntensity = on ? ((i % 2 === 0) === !!blink ? 2 : 0.05) : 0; });
+        c.boxes.forEach(b => { b.on = c.k > 0.6; });
+        if (on && P && Math.abs(P.x - c.x) + Math.abs(P.z - zr) < 45) ring = true;
+      });
+      tw._bell = (tw._bell || 0) - dt; if (ring && tw._bell <= 0) { tw._bell = 0.55; R.sfx && R.sfx('crossing'); }
+      if (P) cars.forEach(q => { if (Math.abs(P.x - q.x) < 9.5 && Math.abs(P.z - q.z) < 1.7) { const sd = P.z >= q.z ? 1 : -1; P.z = q.z + sd * 1.8; tw._hit = (tw._hit || 0) - dt; if (tw._hit <= 0) { tw._hit = 3; R.toast && R.toast('電車經過！差點被撞到。'); R.shake && R.shake(0.3); } } });
+    },
     mapNote: '北邊靠山的是舊城（城牆、外濠圍著），鶴川從北山斜斜穿過城中間流進東鶴港；河東是官廳街，南邊是鐵路、東鶴站和站前，東南角是漁港。',
     firstTip: '東鶴換成精緻版了：照原本的地圖蓋的，店都走得進去，Tab 看地圖。電腦跑不動的話，暫停選單可以換回像素版。',
     build(B) {
@@ -251,8 +268,25 @@
         B.bridge(WX(C.BRIDGE[0] - 2), WZ(RL.y0), WX(C.BRIDGE[1] + 2), WZ(RL.y1), { axis: 'x', mat: 'concD', railMat: 'steelD', deck: 0.12 });   // 鐵橋
         // 柵欄（平交道留缺口）
         [RL.fn, RL.fs].forEach(y => { let a = x0; (C.CROSS || []).slice().sort((p, q) => p - q).concat([1e9]).forEach(cx => { const b = Math.min(x1, cx === 1e9 ? x1 : WX(cx - 14)); if (b > a + 2) B.fence(a, WZ(y) - 0.05, b, WZ(y) + 0.05, 1.2, 'steelD'); a = cx === 1e9 ? x1 : WX(cx + 14); }); });
-        // 平交道的柵欄桿
-        (C.CROSS || []).forEach(cx => [RL.fn, RL.fs].forEach((y, k) => { const x = WX(cx) + (k ? 5 : -5), z = WZ(y); P(g.box, M('black'), x, 0.6, z, 0.25, 1.2, 0.25); P(g.box, CK.mat('xingBar', { col: '#E8E4DC', rough: 0.6 }), x + (k ? -3 : 3), 1.05, z, 6, 0.12, 0.12); }));
+        // 平交道（2026-10-26 修正：原本只是擺著不會動的桿子）：電車快到了柵欄放下、紅燈交互閃、噹噹響，柵欄放下時過不去（tick 裡動）
+        tw.xings = [];
+        { const TH = THREE, armM = CK.mat('xingArm', { col: '#F2D21A', rough: 0.5 }), poleM = M('black'), stripeM = M('black');
+          (C.CROSS || []).forEach(cx => {
+            const rd = C.roads.find(q => q.kind !== 'arcade' && q.kind !== 'dirt' && q.pts.some(pt => Math.abs(pt[0] - cx) < 3)), hw = ((rd ? rd.w : 15) / 2) * S, x = WX(cx), c = { x, k: 0, arms: [], lamps: [], boxes: [] };
+            [[x + hw + 0.4, WZ(RL.fs + 1), 1], [x - hw - 0.4, WZ(RL.fn - 1), -1]].forEach(([px, pz, sd]) => {
+              P(g.box, poleM, px, 1.6, pz, 0.14, 3.2, 0.14); P(g.box, M('steelD'), px, 0.35, pz, 0.4, 0.7, 0.4);
+              [0.6, -0.6].forEach(r => P(g.box, M('white'), px, 2.95, pz, 0.95, 0.12, 0.04, 0, 0, r));   // 叉叉的標誌
+              [-0.22, 0.22].forEach(o => { const lm = new TH.Mesh(new TH.BoxGeometry(0.22, 0.22, 0.1), new TH.MeshStandardMaterial({ color: '#4A1A18', emissive: '#FF2A1A', emissiveIntensity: 0 })); lm.position.set(px + o, 2.35, pz + sd * 0.1); B.group.add(lm); c.lamps.push(lm); });
+              const piv = new TH.Group(); piv.position.set(px, 1.0, pz); B.group.add(piv);
+              const L = hw * 2 + 0.3, arm = new TH.Mesh(new TH.BoxGeometry(L, 0.1, 0.1), armM); arm.position.x = -sd * L / 2; piv.add(arm);
+              for (let i = 0; i < Math.floor(L / 1.2); i++) { const st = new TH.Mesh(new TH.BoxGeometry(0.4, 0.11, 0.11), stripeM); st.position.x = -sd * (0.6 + i * 1.2); piv.add(st); }
+              piv.rotation.z = -sd * Math.PI / 2; c.arms.push({ piv, sd });
+              const bx = R.addBox(x - hw, x + hw, pz - 0.15, pz + 0.15, 'deco'); if (bx) { bx.on = false; c.boxes.push(bx); }
+            });
+            tw.xings.push(c);
+          }); }
+        // 車：柵欄放下（或正在放下）的時候，停在柵欄前面；已經在軌道上的照開出去
+        { const zn = WZ(RL.fn - 1), zs = WZ(RL.fs + 1); tw.carStop = (x, z, ux, uz) => { if (z > zn && z < zs) return false; return tw.xings.some(c => c.k > 0.05 && Math.abs(x - c.x) < 9 && [zn, zs].some(zb => { const al = (zb - z) * uz; return Math.abs(uz) > 0.5 && al > 0.5 && al < 9; })); }; }
         // 月台、雨棚
         const pl = rectW(C.PLAT); B.box(M('conc'), pl[0], 0, pl[1], pl[2], 0.9, pl[3]); B.solid(pl[0], pl[1], pl[2], pl[3], 'house');
         B.box(M('roofG'), pl[0] + 2, 3.8, pl[1] + 0.2, pl[2] - 2, 4.05, pl[3] - 0.2); for (let x = pl[0] + 4; x < pl[2] - 2; x += 8) B.box(M('steelD'), x - 0.1, 0.9, (pl[1] + pl[3]) / 2 - 0.1, x + 0.1, 3.8, (pl[1] + pl[3]) / 2 + 0.1);

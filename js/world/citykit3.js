@@ -456,6 +456,7 @@
       // 前面有人、同方向的車就停；交叉的車：編號小的先走（不會兩台互相卡死）
       const ahead = (ox, oz, far, wide) => { const al = ox * ux + oz * uz, sd = Math.abs(ox * uz - oz * ux); return al > 0.5 && al < far && sd < wide; };
       let stop = ahead(P.x - x, P.z - z, 7, 1.9);
+      if (!stop && tw.carStop) stop = !!tw.carStop(x, z, ux, uz);   // 城市自己的規則（東鶴：平交道的柵欄放下了）
       if (!stop) tw.cars.forEach((o, k) => { if (stop || o === c || o.x == null) return; const same = Math.sin(o.ang) * ux + Math.cos(o.ang) * uz; if (same > 0.6) stop = ahead(o.x - x, o.z - z, 8.5, 1.9); else if (k < tw.cars.indexOf(c)) stop = ahead(o.x - x, o.z - z, 6.5, 2.6); });
       c.v = Math.max(0, Math.min(c.vmax, c.v + (stop ? -18 : 4) * dt)); c.s += c.v * dt; c.x = x; c.z = z; c.ang = ang;
       c.g.position.set(x, CK.heightAt(x, z) > 0.3 ? CK.heightAt(x, z) : 0, z); c.g.rotation.y = ang + Math.PI;   // 車頭朝 -z
