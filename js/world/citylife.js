@@ -167,6 +167,9 @@
     last = performance.now(); raf = requestAnimationFrame(loop);
   };
   R.CITY_ACT.zhengyuan = R.CITY_FAC['zhengyuan:house'];
+  R.CITY_FAC['nanlong:yard'] = R.CITY_FAC['zhengyuan:house'];   // 南瀧的造船廠也接征遠船屋的訂單
+  R.CITY_FAC['nanlong:consul'] = city => R.CITY_FAC['nanlong:cargo'](city);   // 德克斯凡領事館：外貿訂單
+  R.CITY_FAC['zhengyuan:harbor'] = city => R.cityTrade(city);
   R.CITY_ACT.nanlong = R.CITY_FAC['nanlong:cargo'];
 
   // ---------- 世界中央銀行：各城的分館都是同一個戶頭（bank.js） ----------

@@ -185,6 +185,7 @@
     raf = requestAnimationFrame(step);
   };
   R.CITY_ACT.xijian = diving;
+  R.CITY_FAC['xijian:ship'] = city => R.CITY_FAC['xijian:port'](city);   // 軍艦停靠處旁邊就是港務局
   // 港務局：掃雷委託（拆彈工具三次份；潛水的時候碰到舊水雷就拆掉，一顆 35 費拉）
   R.CITY_FAC['xijian:port'] = city => {
     const s = S(), c = C2();

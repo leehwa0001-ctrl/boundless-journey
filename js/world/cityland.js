@@ -149,6 +149,8 @@
   };
   R.futing = { range, omikuji, letter, letterTo, intel };
   R.CITY_FAC['futing:camp'] = range;
+  R.CITY_FAC['futing:house'] = letter; R.CITY_FAC['futing:shrine'] = omikuji;
+  R.CITY_FAC['bannan:camp'] = city => { const me = (R.SITES || []).find(x => x.id === city.id), near = (R.SITES || []).filter(x => x.kind === 'ruin' && me && Math.hypot((x.x || 0) - (me.x || 0), (x.z || 0) - (me.z || 0)) < 0.45); R.townTalk('舊陸軍營地・監看哨', ['「封鎖線外面只能看，不能進。」'].concat(near.map(x => '【' + x.name + '】' + (x.status === 'lock' ? '（還沒開放）' : '') + '：' + (x.desc || '')))); };   // 附近的遺跡情報（和府廳的作戰桌一樣）
   const nm0 = R.itemName; if (nm0) R.itemName = it => (it && it.mil ? '府廳軍規・' : '') + nm0(it);
   R.cityQuestReg('futing', [
     R.cqCargo('ft_med', 'medicine', 4, 340, '軍醫院的補給', '演習的傷兵多，軍醫院要 4 箱英尼爾斯藥品。'),
