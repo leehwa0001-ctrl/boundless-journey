@@ -477,7 +477,7 @@
     };
     const coffin = (x, z, alongX) => { const w = alongX ? 2.4 : 1.2, d = alongX ? 1.2 : 2.4; bx(w, 0.8, d, M.stone, x, 0.4, z); bx(w + 0.15, 0.18, d + 0.15, M.stoneD, x, 0.89, z); R.addBox(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 'deco'); };
     const pillar = (x, z, round) => {
-      { const ri = R.roomIndexAt ? R.roomIndexAt(x, z) : -1; if (ri >= 0 && !R.spotClear(F, x, z, ri, 1.6)) return; }   // 2026-10-27：柱子不要擋在房間出口（一格寬的通道口被柱子堵死，古森・樹根迷宮）
+      { const ri = R.roomIndexAt ? R.roomIndexAt(x, z) : -1, t9 = F.tile; if (ri >= 0 ? !R.spotClear(F, x, z, ri, 1.6) : t9 && (() => { const tx = Math.floor((x - t9.X0) / t9.TS), tz = Math.floor((z - t9.Z0) / t9.TS); for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const ax = tx + dx, az = tz + dz; if (ax < 0 || az < 0 || ax >= t9.nx || az >= t9.nz || t9.T[az * t9.nx + ax] !== FLOOR) return true; } return false; })()) return; }   /* 走廊上的柱子：四周不是一整片地板（窄的通道）就不擺 */   // 2026-10-27：柱子不要擋在房間出口（一格寬的通道口被柱子堵死，古森・樹根迷宮）
       if (round) { const p = new TH.Mesh(new TH.CylinderGeometry(0.55, 0.6, 3.2, 10), lam(th.wall)); p.position.set(x, 1.6, z); p.castShadow = true; p.receiveShadow = true; group.add(p); bx(1.4, 0.3, 1.4, lam(th.top), x, 3.25, z); }
       else { bx(1.4, 3, 1.4, lam(th.wall), x, 1.5, z); bx(1.7, 0.3, 1.7, lam(th.top), x, 3.05, z); }
       R.addBox(x - 0.7, x + 0.7, z - 0.7, z + 0.7, 'pillar');
@@ -885,6 +885,7 @@
     {
       const tx = Math.floor((px - t.X0) / TS), tz = Math.floor((pz - t.Z0) / TS); if (tx < 0 || tz < 0 || tx >= nx || tz >= nz) return false;
       const k0 = tz * nx + tx; if (t.T[k0] !== FLOOR || t.RM[k0] !== room) return false;
+      for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) { const ax = tx + dx, az = tz + dz; if (ax < 0 || az < 0 || ax >= nx || az >= nz) continue; const k = az * nx + ax; if (t.T[k] === FLOOR && t.RM[k] !== room) return false; }   // 2026-10-27：緊鄰走廊、隔壁房的那一格不行（只量距離的話，剛好 2.6 公尺會漏掉，柱子把 2 公尺寬的通道口堵住）
       for (let dz = -rr; dz <= rr; dz++) for (let dx = -rr; dx <= rr; dx++) {
         const ax = tx + dx, az = tz + dz; if (ax < 0 || az < 0 || ax >= nx || az >= nz) continue; const k = az * nx + ax; if (t.T[k] !== FLOOR || t.RM[k] === room) continue;
         const cx = t.X0 + (ax + 0.5) * TS, cz = t.Z0 + (az + 0.5) * TS; if (Math.hypot(cx - px, cz - pz) < clr + TS * 0.5) return false;
