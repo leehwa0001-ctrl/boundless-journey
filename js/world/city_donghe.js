@@ -28,7 +28,8 @@
     R.makeHeroSprite = (cls, base, look) => { const h = mh0(cls, base, Object.assign({}, look || {}, { pool: (look && look.pool) || 'dh_harvest' })); if (!(look && look.pool)) h.look0 = look || null; return h; };
     if (cp0) W.renderer.compile = () => { };
     CK.harvesting = true;   // 路人、貓狗收了也用不到（streetlife.js、townlife.js 看到就不蓋）
-    try { (CK._enterPixel || R.enterTownNow)(from, at); } finally { R.makeHeroSprite = mh0; if (cp0) W.renderer.compile = cp0; CK.harvesting = false; }   // 像素版原本的那一套（dhswitch.js 包住 R.enterTownNow 以後，這裡要直接叫原本的）
+    const cs0 = R.buildCityscape; R.buildCityscape = null;   // 街景（路面、路燈、販賣機）只有販賣機、電話亭的互動，收了也丟掉（GENERIC）
+    try { (CK._enterPixel || R.enterTownNow)(from, at); } finally { R.makeHeroSprite = mh0; if (cp0) W.renderer.compile = cp0; R.buildCityscape = cs0; CK.harvesting = false; }   // 像素版原本的那一套（dhswitch.js 包住 R.enterTownNow 以後，這裡要直接叫原本的）
     const tw = W.town, out = { inter: [], npcs: [], steals: [] };
     (tw.inter || []).forEach(it => { const l = lbl(it); if (!l || (it.follow && !it.person && !it.job)) return;   /* 2026-10-16 修正：私人委託的交件（jobs.js 標 job）也要收下，不然精緻版東鶴交不了件 */   /* 劇情人物（people.js）的對話跟著那個人：留著，蓋好以後改指向新的人 */ if (STEAL.test(l)) { out.steals.push(it); return; } if (GENERIC.test(l)) return; out.inter.push(it); });
     // 站著不動的人（店員、攤販、衛兵、今天在城裡的劇情人物）：記下外觀，精緻版照原樣重建
