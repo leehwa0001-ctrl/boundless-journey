@@ -327,6 +327,22 @@
   };
   CK.applyTime = applyTime;
 
+  // ---------- 海上擋起來（2026-10-26：靠海的城原本海面整片都能走）----------
+  // land 外面的格子是海；廣場、碼頭（B.plaza）、橋、木板路（B.bridge）、路、人行道、台地、地面（B.zone，水以外）上面照樣能走。每一列連在一起的海併成一個方塊。
+  const blockSea = (B, city) => {
+    const D = B.D, w = city.walk, land = city.land, pad = 0.3;
+    const inPoly = (x, z, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, zi] = P[i], [xj, zj] = P[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    const rects = [].concat(D.slabs.map(q => q.r), D.bridges.map(q => q.r), D.roads.map(q => q.r), D.walkways || [], D.terr.map(q => q.r));
+    const zones = D.zones.filter(q => !/water|sea/.test(q.mat)).map(q => q.poly);
+    const open = (x, z) => rects.some(r => x > r[0] - pad && x < r[2] + pad && z > r[1] - pad && z < r[3] + pad) || zones.some(P => inPoly(x, z, P));
+    for (let z = Math.floor(w[1]); z < w[3]; z++) {
+      let run = null;
+      for (let x = Math.floor(w[0]); x <= w[2]; x++) {
+        const sea = x < w[2] && !inPoly(x + 0.5, z + 0.5, land) && !open(x + 0.5, z + 0.5);
+        if (sea && run == null) run = x; else if (!sea && run != null) { R.addBox(run, x, z, z + 1, 'water'); run = null; }
+      }
+    }
+  };
   // ---------- 進城 ----------
   const build = (city, sc) => {
     const TH = T(), group = new TH.Group(), tw = W.town;
@@ -336,6 +352,7 @@
     if (CK.extendBuilder) CK.extendBuilder(B);
     try { city.build(B); } catch (e) { console.error('[city ' + city.id + ']', e); }
     finishGround(B);
+    if (city.sea && city.land && city.seaBlock !== false) blockSea(B, city);
     B.Bt.flush(group);
     if (B.after) B.after.forEach(f => { try { f(); } catch (e) { console.error(e); } });
     sc.add(group); tw.group = group;

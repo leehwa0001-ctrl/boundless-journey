@@ -46,11 +46,11 @@
       { at: /^在燈塔下看海/, fb: [216, 188], txt: '東鶴燈塔', say: ['（燈塔的門鎖得好好的。）'] },
       { at: /^在白燈塔下看海/, fb: [438, 57], txt: '港外的白燈塔', say: ['（海風很大。白燈塔也沒問題。）'] }] },
     { id: 'huangling', name: '搭電車把公會的信送到皇嶺', who: '公會的櫃台', pay: 45, fare: 90, steps: [
-      { at: /^走進東鶴站/, fb: [53, -90], txt: '東鶴站（買票去皇嶺）', say: ['（在售票口買往皇嶺的票。）'] },
+      { at: /^走進東鶴站/, fb: [9, 154], txt: '東鶴站（買票去皇嶺）', say: ['（在售票口買往皇嶺的票。）'] },
       { city: 'huangling', txt: '皇嶺（公會昭旭分館）', say: ['昭旭分館的館員：「東鶴分館的信，收到了。回去幫我問候分館長。」'] }] },
     { id: 'jishan', name: '搭電車把零件送到吉山', who: '德克斯凡商行', pay: 40, fare: 70, steps: [
       { at: /^走進德克斯凡商行/, fb: [145, -85], txt: '德克斯凡商行（拿零件）', say: ['店員：「吉山的工廠急著要這批魔導零件。」'] },
-      { at: /^走進東鶴站/, fb: [53, -90], txt: '東鶴站（買票去吉山）', say: ['（在售票口買往吉山的票。）'] },
+      { at: /^走進東鶴站/, fb: [9, 154], txt: '東鶴站（買票去吉山）', say: ['（在售票口買往吉山的票。）'] },
       { city: 'jishan', txt: '吉山', say: ['工廠的師傅：「來得正好，生產線停一天就虧大了。」'] }] },
     { id: 'bannan', name: '到板南的寺院求朱印給東鶴寺', who: '東鶴寺', pay: 35, fare: 55, steps: [
       { at: /^走進東鶴寺/, fb: [-13, 188], txt: '東鶴寺（拿朱印帳）', say: ['住持：「板南的寺院跟本寺有緣，麻煩你幫我求一個朱印。」'] },
@@ -81,15 +81,16 @@
   };
   // 2026-10-14 作者：「委託按下去要有指示（指引地圖）」——點「手上的委託」裡的一行：設好這一站的目的地、打開地圖給你看；
   //   要搭電車的站、或人不在東鶴的時候，先指到售票口；跑完了指回公會。畫面上的方向箭頭在 questguide.js。
+  // 售票口在車站裡面（精緻版的城，站房是走進去的房間）：外面找不到就指到車站門口
   const interAt = re => { const t = W().town; return t && (t.inter || []).find(i => typeof i.label === 'string' && !i.follow && re.test(i.label)); };
   const wpAt = (it, name) => { const C = R.CITY, toS = v => (ck() ? v : v / C.S + 500); R.setWaypoint(toS(it.x), toS(it.z), name); return true; };
   const guide = q => {
     const e = byId(q.eid), st = e && e.steps[q.step], t = W().town; if (!e) return false;
     if (!t || W().run) { R.toast && R.toast('回到城裡才能指路。', '#E8C04A'); return false; }
     const say = m => { R.toast && R.toast(m, '#7FE0FF'); };
-    if (!inDonghe()) { const it = interAt(/售票口/); if (it) { wpAt(it, '跑腿：先回東鶴（售票口）'); say('先到售票口搭車回東鶴。'); return true; } say('先回東鶴。'); return false; }
+    if (!inDonghe()) { const it = (interAt(/售票口/) || interAt(/^走進\S*站(（|$)/)); if (it) { wpAt(it, '跑腿：先回東鶴（售票口）'); say('先到售票口搭車回東鶴。'); return true; } say('先回東鶴。'); return false; }
     if (q.done || !st) { const it = interAt(/^走進公會東鶴分館/); if (it) { wpAt(it, '跑腿：回公會繳交'); say('跑完了，回公會分館繳交。'); return true; } return false; }
-    if (st.city) { const it = interAt(/售票口/); if (it) { wpAt(it, '跑腿：搭電車去' + st.txt); say('到東鶴站的售票口搭電車去' + st.txt + '。'); return true; } return false; }
+    if (st.city) { const it = (interAt(/售票口/) || interAt(/^走進\S*站(（|$)/)); if (it) { wpAt(it, '跑腿：搭電車去' + st.txt); say('到東鶴站的售票口搭電車去' + st.txt + '。'); return true; } return false; }
     if (!target(st)) return false; wp(q); say('目的地：' + st.txt + '（地圖、雷達上有路線，畫面上有箭頭）'); return true;
   };
   R.errandGuide = eid => { const q = mine().find(x => x.eid === eid); return q ? guide(q) : false; };

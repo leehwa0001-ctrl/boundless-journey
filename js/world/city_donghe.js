@@ -218,6 +218,7 @@
     alleys: [rectW([404, 566, 532, 578]), rectW([620, 684, 740, 692]), rectW([404, 752, 736, 764])],
     brawl: [[WX(236), WZ(318)], [WX(520), WZ(900)]],
     // 平交道：任何一節車廂離平交道 40 公尺內（而且在軌道上）就放下柵欄；站在軌道上被電車推開
+    seaBlock: false,   // 海岸自己擋（seaside）：碼頭、防波堤是用方塊蓋的
     tick(dt, tw, P) {
       const X = tw.xings; if (!X || !X.length || !tw.trains) return;
       const zr = WZ(C.RAIL.y), cars = []; tw.trains.forEach(tr => tr.cars.forEach(g => cars.push(g.position)));
@@ -248,6 +249,42 @@
       (C.GREENS || []).forEach(r => B.zone(rectW(r), 'grass', 0.02));
       (C.PARKS || []).forEach(r => { B.zone(rectW(r), 'grass', 0.02); const q = rectW(r); B.trees([q[0] + 2, q[1] + 2, q[2] - 2, q[3] - 2], Math.max(2, Math.round((q[2] - q[0]) * (q[3] - q[1]) / 120)), () => (rnd() < 0.6 ? 'pine' : 'round'), 1); });
       { const Z = C.Z || {}; if (Z.school) { B.zone(rectW(Z.school), 'gravel', 0.02); } if (Z.park) B.zone(rectW(Z.park), 'grass', 0.02); if (Z.grove) { B.zone(rectW(Z.grove), 'grass', 0.02); const q = rectW(Z.grove); B.trees(q, 18, () => (rnd() < 0.5 ? 'cedar' : 'round'), 1.1); } if (Z.grave) B.zone(rectW(Z.grave), 'gravel', 0.02); if (Z.ruins) B.zone(rectW(Z.ruins), 'soil', 0.02); if (Z.market) B.plaza(...rectW(Z.market), 'asph'); }
+      // 2026-10-26：小學、墓地、超市、城西遺跡、遺跡入口、湯山村原本只有一塊地面（看起來是一大片空地），照像素版的樣子蓋上去
+      { const Z = C.Z || {}, wall = (x0, z0, x1, z1, h, mat) => { B.fence(x0, z0, x1, z1, h, mat); B.solid(Math.min(x0, x1) - 0.06, Math.min(z0, z1) - 0.06, Math.max(x0, x1) + 0.06, Math.max(z0, z1) + 0.06, 'house'); };
+        if (Z.school) { const [x0, z0, x1, z1] = rectW(Z.school), gz = WZ(545);
+          B.bld({ r: [x0 + 1.5, z0 + 1.5, x1 - 1.5, z0 + 10.5], h: 10.5, style: 'office', face: 's', col: '#E8E4DA' });
+          B.sign('河西小學', 's', z0 + 10.5, (x0 + x1) / 2, 8.4, { size: 0.9, bg: '#2E4A3A', fg: '#F4ECD8', box: 1 });
+          P(g.cyl, M('white'), (x0 + x1) / 2, 9.6, z0 + 10.56, 1.2, 0.08, 1.2, Math.PI / 2, 0, 0);   // 校舍的時鐘
+          B.bld({ r: [x0 + 1.5, z1 - 12, x0 + 13.5, z1 - 1.5], h: 8, style: 'factory', face: 'e', col: '#B8BCC2', top: false });   // 體育館
+          B.zone([x0 + 15, z0 + 13, x1 - 2, z1 - 2], 'soil', 0.03);
+          [x0 + 16, x1 - 3].forEach(x => { const zc = (z0 + 13 + z1 - 2) / 2; [-2.5, 2.5].forEach(o => P(g.box, M('white'), x, 1, zc + o, 0.12, 2, 0.12)); P(g.box, M('white'), x, 2, zc, 0.12, 0.12, 5.1); });   // 足球門
+          wall(x0, z0 + 10.5, x0, z1, 1.6); wall(x0, z1, x1, z1, 1.6); wall(x1, z0 + 10.5, x1, gz - 3, 1.6); wall(x1, gz + 3, x1, z1, 1.6);
+          B.trees([x0 + 15, z1 - 4, x1 - 4, z1 - 2.5], 5, () => 'round', 0.9); }
+        if (Z.grave) { const [x0, z0, x1, z1] = rectW(Z.grave), xm = (x0 + x1) / 2;
+          for (let x = x0 + 2; x < x1 - 1.5; x += 2.3) { if (Math.abs(x - xm) < 1.6) continue; for (let z = z0 + 3; z < z1 - 2; z += 3.2) {
+            P(g.box, M('ashlar'), x, 0.2, z, 1.0, 0.4, 0.8); P(g.box, M('paint', { col: rnd() < 0.5 ? '#8A8C90' : '#6E7076' }), x, 0.95, z, 0.42, 1.1, 0.3); B.solid(x - 0.5, z - 0.4, x + 0.5, z + 0.4, 'house'); } }
+          for (let z = z0 + 2; z < z1; z += 6) B.tree(x0 + 0.8, z, 'cedar', 1.1);
+          B.lantern(xm - 1.8, z1 - 1, 0.8); B.lantern(xm + 1.8, z1 - 1, 0.8); }
+        if (Z.market) { const [x0, z0, x1, z1] = rectW(Z.market);
+          B.bld({ r: [x0 + 1, z0 + 0.5, x1 - 1, z0 + 8.5], h: 6, style: 'office', face: 's', col: '#ECEAE4' });
+          B.sign('河西超市', 's', z0 + 8.5, (x0 + x1) / 2, 4.8, { size: 1.0, bg: '#C83A3A', fg: '#FFFFFF', box: 1, lit: 1 });
+          for (let x = x0 + 3; x < x1 - 2; x += 2.6) P(g.box, M('lineW'), x, 0.14, z1 - 3, 0.1, 0.01, 4.6); }
+        if (Z.ruins) { const [x0, z0, x1, z1] = rectW(Z.ruins);
+          [[0.15, 0.55, 6, 2.2], [0.7, 0.35, 4, 3.4], [0.45, 0.85, 7, 1.4], [0.85, 0.75, 3, 2.6]].forEach(([u, v, L, h], i) => { const x = x0 + (x1 - x0) * u, z = z0 + (z1 - z0) * v; P(g.box, M('ashlar', { col: '#9C968A' }), x, h / 2, z, i % 2 ? 0.8 : L, h, i % 2 ? L : 0.8); B.solid(x - (i % 2 ? 0.4 : L / 2), z - (i % 2 ? L / 2 : 0.4), x + (i % 2 ? 0.4 : L / 2), z + (i % 2 ? L / 2 : 0.4), 'house'); });
+          for (let i = 0; i < 6; i++) { const x = rr(x0 + 3, x1 - 3), z = rr(z0 + 22, z1 - 3), hh = rr(0.6, 2.4); P(g.cyl8, M('ashlar', { col: '#A8A296' }), x, hh / 2, z, 0.9, hh, 0.9); B.solid(x - 0.45, z - 0.45, x + 0.45, z + 0.45, 'house'); }
+          for (let i = 0; i < 14; i++) P(g.ico0, M('ashlar', { col: '#8A847A' }), rr(x0 + 1, x1 - 1), 0.2, rr(z0 + 22, z1 - 1), rr(0.5, 1.2), rr(0.4, 0.8), rr(0.5, 1.2), 0, rr(0, 3), 0);
+          // 入口（town.js 的 ruinGate 同一個位置）：兩根石柱、橫樑、黑黑的門；旁邊是公會調查點的帳篷
+          const gx = WX((Z.ruins[0] + Z.ruins[2]) / 2 - 8), gz = WZ(Z.ruins[1] + 20);
+          [-2.4, 2.4].forEach(o => { P(g.box, M('ashlar', { col: '#6E6A60' }), gx + o, 2.2, gz, 1.2, 4.4, 1.2); B.solid(gx + o - 0.6, gz - 0.6, gx + o + 0.6, gz + 0.6, 'house'); });
+          P(g.box, M('ashlar', { col: '#5E5A52' }), gx, 4.8, gz, 6.4, 1, 1.4); P(g.box, M('black'), gx, 1.9, gz - 0.3, 3.6, 3.8, 0.3);
+          P(g.cone8, M('paint', { col: '#C8B888' }), gx + 7, 1.3, gz + 3, 4.2, 2.6, 4.2, 0, Math.PI / 4, 0); B.solid(gx + 5.4, gz + 1.4, gx + 8.6, gz + 4.6, 'house'); }
+        // 北山礦坑：木頭的坑口、鐵軌；霜溪石窟：一堆岩石圍著的洞口
+        { const x = WX(560), z = WZ(46); [-2.2, 2.2].forEach(o => { P(g.box, M('woodD'), x + o, 2, z, 0.5, 4, 0.5); B.solid(x + o - 0.3, z - 0.3, x + o + 0.3, z + 0.3, 'house'); }); P(g.box, M('woodD'), x, 4.1, z, 5.2, 0.6, 0.6); P(g.box, M('black'), x, 1.8, z - 0.4, 3.8, 3.6, 0.3); [-0.6, 0.6].forEach(o => P(g.box, M('steelD'), x + o, 0.06, z + 4.5, 0.12, 0.08, 9)); }
+        { const x = WX(800), z = WZ(62); for (let i = 0; i < 7; i++) { const s2 = rr(3, 5); P(g.ico0, M('ashlar', { col: '#7A7E84' }), x + (i - 3) * 2.2, s2 * 0.35, z - 1.5 - rr(0, 1.5), s2, s2 * 0.8, s2, 0, rr(0, 3), 0); } P(g.box, M('black'), x, 1.4, z - 0.9, 3.2, 2.8, 0.3); B.solid(x - 8, z - 3.6, x - 1.8, z - 0.6, 'house'); B.solid(x + 1.8, z - 3.6, x + 8, z - 0.6, 'house'); }
+        // 湯山村：冒著熱氣的露天溫泉、幾間木造的小屋
+        { const x = WX(150), z = WZ(66); P(g.box, M('ishi'), x, 0.25, z, 11.6, 0.5, 6.8); P(g.box, M('paint', { col: '#7FB4C4' }), x, 0.52, z, 10.6, 0.04, 5.8); B.solid(x - 5.8, z - 3.4, x + 5.8, z + 3.4, 'water');
+          if (B.smoke) [-3, 0, 3].forEach(o => B.smoke(x + o, 0.6, z, { s: 1.6, rise: 2.4, drift: 0.4, n: 3, col: '#F4F4F4', per: 1.6, op: 0.45 }));
+          [70, 96, 120, 182].forEach((sx, i) => B.bld({ r: [WX(sx) - 2.6, WZ(48) - 2, WX(sx) + 2.6, WZ(48) + 2], h: 3.4, style: 'house', face: 's', col: '#A8927A', roof: 'gable', name: i === 1 ? '湯山・湯宿' : undefined })); } }
       // 西市口（橢圓的廣場）
       if (C.SQUARE) { const [cx, cy, rx, ry] = C.SQUARE, pts = []; for (let i = 0; i < 28; i++) { const a = i / 28 * Math.PI * 2; pts.push([WX(cx + Math.cos(a) * rx), WZ(cy + Math.sin(a) * ry)]); } B.zone(pts, 'gran', 0.03); }
       // ---------- 路 ----------

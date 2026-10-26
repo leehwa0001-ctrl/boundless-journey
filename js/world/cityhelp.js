@@ -88,7 +88,7 @@
     // ---- 道路：遇到水就變橋 ----
     const draw = (rd, vert) => {
       const pieces = subAll([rd.r], water); pieces.forEach(p => B.road(p[0], p[1], p[2], p[3], { sw: rd.sw, name: rd.name, line: rd.line || 'w' }));
-      water.forEach(w => { if (!ov(rd.r, w)) return; const s = rd.sw; if (vert) B.bridge(rd.r[0] - s, Math.max(w[1], rd.r[1]), rd.r[2] + s, Math.min(w[3], rd.r[3]), { rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); else B.bridge(Math.max(w[0], rd.r[0]), rd.r[1] - s, Math.min(w[2], rd.r[2]), rd.r[3] + s, { rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); });
+      water.forEach(w => { if (!ov(rd.r, w)) return; const s = rd.sw; if (vert) B.bridge(rd.r[0] - s, Math.max(w[1], rd.r[1]), rd.r[2] + s, Math.min(w[3], rd.r[3]), { axis: 'z', rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); else B.bridge(Math.max(w[0], rd.r[0]), rd.r[1] - s, Math.min(w[2], rd.r[2]), rd.r[3] + s, { axis: 'x', rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); });   /* 2026-10-26：橋的方向照路走（川比路窄的時候，自動判斷會把欄杆裝在橋頭，整座橋過不去） */
     };
     HZ.forEach(rd => draw(rd, false)); VX.forEach(rd => draw(rd, true));
     // 開發用：地標範圍蓋到道路（含人行道）就在 console 提示
