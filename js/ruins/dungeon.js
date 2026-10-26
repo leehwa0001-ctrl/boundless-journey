@@ -477,6 +477,7 @@
     };
     const coffin = (x, z, alongX) => { const w = alongX ? 2.4 : 1.2, d = alongX ? 1.2 : 2.4; bx(w, 0.8, d, M.stone, x, 0.4, z); bx(w + 0.15, 0.18, d + 0.15, M.stoneD, x, 0.89, z); R.addBox(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 'deco'); };
     const pillar = (x, z, round) => {
+      { const ri = R.roomIndexAt ? R.roomIndexAt(x, z) : -1; if (ri >= 0 && !R.spotClear(F, x, z, ri, 1.6)) return; }   // 2026-10-27：柱子不要擋在房間出口（一格寬的通道口被柱子堵死，古森・樹根迷宮）
       if (round) { const p = new TH.Mesh(new TH.CylinderGeometry(0.55, 0.6, 3.2, 10), lam(th.wall)); p.position.set(x, 1.6, z); p.castShadow = true; p.receiveShadow = true; group.add(p); bx(1.4, 0.3, 1.4, lam(th.top), x, 3.25, z); }
       else { bx(1.4, 3, 1.4, lam(th.wall), x, 1.5, z); bx(1.7, 0.3, 1.7, lam(th.top), x, 3.05, z); }
       R.addBox(x - 0.7, x + 0.7, z - 0.7, z + 0.7, 'pillar');
@@ -870,6 +871,8 @@
     const lock = new TH.Mesh(new TH.BoxGeometry(0.22, 0.26, 0.08), lam('#E8C860', { emissive: '#3A2A00' })); lock.position.set(0, 0.8, 0.58); g2.add(lock);
     g2.position.set(x, 0, z); group.add(g2);
     const c = R.addBox(x - 0.8, x + 0.8, z - 0.55, z + 0.55, 'chest');
+    // 2026-10-27：寶箱是在遺跡生物之後才擺的（寶藏層多的寶箱）：壓在寶箱下的生物推到旁邊的空地
+    ((R.W && R.W.enemies) || []).forEach(e => { if (e.dead || !(e.x > x - 1.2 && e.x < x + 1.2 && e.z > z - 0.95 && e.z < z + 0.95)) return; const q = R.openFloorNear ? R.openFloorNear(e.x, e.z) : null; if (!q) return; e.x = q[0]; e.z = q[1]; if (e.m && e.m.g) e.m.g.position.set(e.x, e.m.g.position.y, e.z); });
     const ch = { x, z, tier, room, mesh: g2, lid: lidPivot, state: 'closed', refresh: 0, opened: 0, col: c };
     F.chests.push(ch);
     return ch;

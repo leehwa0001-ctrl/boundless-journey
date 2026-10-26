@@ -358,7 +358,7 @@
       rooms, links: (F.links || []).map(L => ({ a: L.a, b: L.b, dir: L.dir, bridge: L.bridge ? 1 : undefined })),
       X0: t.X0, Z0: t.Z0, nx: t.nx, nz: t.nz, TS: t.TS,
       T: b64enc(t.T), RM: b64enc(t.RM), CR: b64enc(t.CR),
-      chests: (F.chests || []).map(c => ({ x: +c.x.toFixed(2), z: +c.z.toFixed(2), tier: c.tier|0, room: c.room|0 })),
+      chests: (F.chests || []).map(c => ({ x: +c.x.toFixed(2), z: +c.z.toFixed(2), tier: c.tier|0, room: c.room|0, mimic: c.mimic ? 1 : undefined })),
       extra: extraOf(F),
       ck: checksum(F)
     };
@@ -396,15 +396,21 @@
     if (p.extra) Object.keys(p.extra).forEach(k => { if (!(k in F)) F[k] = p.extra[k]; });
     return F;
   };
+  // 2026-10-26：連房間、等級、偽箱都照房主；數量不同（蓋完才加的寶箱，例如寶藏層）就補上或收掉
   const snapChests = (F, packed) => {
-    if (!F || !packed || !packed.chests || !packed.chests.length) return;
-    const list = F.chests || [];
+    if (!F || !packed || !packed.chests) return;
+    const list = F.chests = F.chests || [];
     packed.chests.forEach((hc, i) => {
-      const c = list[i]; if (!c) return;
-      c.x = hc.x; c.z = hc.z;
+      let c = list[i];
+      if (!c) { if (!R.addChest || !F.group) return; R.addChest(F.group, F, hc.x, hc.z, hc.tier | 0, hc.room | 0); c = list[i]; if (!c) return; }
+      if (c.state === 'open') return;
+      const moved = Math.hypot(c.x - hc.x, c.z - hc.z) > 0.05;
+      c.x = hc.x; c.z = hc.z; c.room = hc.room | 0; c.tier = hc.tier | 0; c.mimic = !!hc.mimic;
       if (c.mesh) c.mesh.position.set(hc.x, 0, hc.z);
-      if (c.col) { c.col.x0 = hc.x - 0.8; c.col.x1 = hc.x + 0.8; c.col.z0 = hc.z - 0.55; c.col.z1 = hc.z + 0.55; }
+      if (moved && c.col) { c.col.on = false; c.col = R.addBox(hc.x - 0.8, hc.x + 0.8, hc.z - 0.55, hc.z + 0.55, 'chest'); }   // 碰撞格要重新登記（只改邊界的話，格子還在舊的地方）
     });
+    list.slice(packed.chests.length).forEach(c => { if (c.state !== 'closed') return; c.state = 'gone'; if (c.mesh && c.mesh.parent) c.mesh.parent.remove(c.mesh); if (c.col) c.col.on = false; });
+    F.chests = list.filter(c => c.state !== 'gone');
   };
   let pendingHostLayout = null;   // 下一次 genFloor 強制用這份（隊員）
   const hostLayouts = {};         // n → packed
@@ -446,6 +452,9 @@
     R.genFloor.netWrapped = 1;
     const bf0 = R.buildFloor;
     R.buildFloor = (sc, run, F) => run && run.coop ? R.withSeed(seedOf(run, 2), () => bf0(sc, run, F)) : bf0(sc, run, F);
+    // 整個換層也在種子裡跑：蓋完之後才加東西的（寶藏層多的寶箱、魔晶層的礦、偽箱、陷阱……）房主、隊員才會一樣（2026-10-26：寶藏層的兩個寶箱每個人位置都不同）
+    const lf0 = R.loadFloor;
+    R.loadFloor = (f, o) => { const run = W().run; return run && run.coop ? R.withSeed((run.coop.seed ^ Math.imul((f | 0) + 13, 0x85EBCA77)) >>> 0, () => lf0(f, o)) : lf0(f, o); };
   };
   if (document.readyState === 'complete') installSeedWrap(); else window.addEventListener('load', installSeedWrap);
   // 這一層長得一不一樣（地形和寶箱的位置）
@@ -508,7 +517,7 @@
     if (run && !run.coop.host && run.coop.seed === packed.rid) {
       const localCk = W().F && run.coop.n === packed.n && run.floor === packed.f ? checksum(W().F) : null;
       if (localCk == null || localCk !== packed.ck) forceApplyHost(packed);
-      else { cks.mine[packed.n] = localCk; cks.host[packed.n] = packed.ck; delete ckBad[packed.n]; delete cks.mine[packed.n]; delete cks.host[packed.n]; }
+      else { try { snapChests(W().F, packed); } catch (e) { } cks.mine[packed.n] = localCk; cks.host[packed.n] = packed.ck; delete ckBad[packed.n]; delete cks.mine[packed.n]; delete cks.host[packed.n]; }
     }
   };
 
