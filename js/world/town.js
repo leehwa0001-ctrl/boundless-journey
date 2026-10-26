@@ -585,7 +585,7 @@
     guard(WX(328), WZ(150), 0, null, [[WX(328), WZ(134)], [WX(328), WZ(240)]]);
     guard(WX(212), WZ(268), 0, null, [[WX(212), WZ(268)], [WX(300), WZ(268)]]);
     guard(WX(340), WZ(458), 0, null, [[WX(220), WZ(458)], [WX(640), WZ(458)]]);
-    if (E.martial) { guard(WX(300), WZ(284), 0, ['「今天戒嚴，別在街上晃。」']); guard(WX(312), WZ(240), Math.PI, null); guard(WX(260), WZ(266), 0, null, [[WX(212), WZ(266)], [WX(300), WZ(266)]]); guard(WX(342), WZ(560), 0, null, [[WX(342), WZ(500)], [WX(342), WZ(740)]]); }
+    if (E.martial) { guard(WX(300), WZ(284), 0, ['「今天戒嚴，別在街上晃。」']); guard(WX(312), WZ(240), Math.PI, null); guard(WX(260), WZ(266), 0, null, [[WX(212), WZ(266)], [WX(300), WZ(266)]]); guard(WX(331), WZ(560), 0, null, [[WX(331), WZ(500)], [WX(331), WZ(740)]]); }
     // --- 在街上走的人（各種種族） ---
     C.nodes.forEach(([sx, sy]) => { if (sy > 110) tw.walkNodes.push([WX(sx), WZ(sy)]); });
     const nextNode = n => { const nb = C.adj[n.ni]; if (nb && nb.length) { let k = nb[Math.floor(Math.random() * nb.length)]; if (nb.length > 1 && k === n.prev) k = nb[Math.floor(Math.random() * nb.length)]; n.prev = n.ni; n.ni = k; } const [sx, sy] = C.nodes[n.ni]; return [WX(sx + (Math.random() - 0.5) * 3), WZ(sy + (Math.random() - 0.5) * 3)]; };
