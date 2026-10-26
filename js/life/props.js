@@ -150,7 +150,7 @@
     if (R.repForgive && R.repForgive(name)) { R.save(); return; }   // 信譽值 100：75% 被原諒（repute.js）
     C.heat = Math.min(3, C.heat + (who && who.watch.guard ? 2 : 1)); C.lostT = 0;
     S().rep = (S().rep || 0) - 5; S().grudge = S().grudge || {}; S().grudge[st.owner] = S().day + 3;
-    R.banner('被看見了！', name + '大喊：「小偷！」——衛兵往這裡來了（通緝 ' + '★'.repeat(C.heat) + '）');
+    R.banner('被看見了！', name + '大喊：「小偷！」──衛兵往這裡來了（通緝 ' + '★'.repeat(C.heat) + '）');
     if (W.town && !W.inside) (W.town.watchers || []).forEach(n => { if (n.watch.guard && Math.hypot(n.x - W.P.x, n.z - W.P.z) < 45) { n.chase = true; n.lastX = W.P.x; n.lastZ = W.P.z; } });
     R.save();
   };
@@ -230,7 +230,7 @@
     const s = S(), fakes = s.fake || 0;
     R.sheet('<p class="kicker">西市兌換所</p><h2>驗貨幣</h2><p>「昭旭的舊銅錢一天比一天不值錢。要換費拉，還是驗貨幣？」</p>'
       + '<p class="note">費拉的硬幣：白條 1、貝勒 5、綠幣 10、碧光 50、黃十 100、四文 500、赤金 1000、彩碧 5000。赤金的鳴文是紅色的漩渦。</p>'
-      + (fakes ? '<p class="hand">你身上有 ' + fakes + ' 枚私人委託付的「赤金」。掌櫃拿起來對著燈看：鳴文是藍色的直紋——假的。</p>' : '<p class="note">身上沒有可疑的錢。</p>'),
+      + (fakes ? '<p class="hand">你身上有 ' + fakes + ' 枚私人委託付的「赤金」。掌櫃拿起來對著燈看：鳴文是藍色的直紋──假的。</p>' : '<p class="note">身上沒有可疑的錢。</p>'),
       '<div class="row">' + (fakes ? '<button type="button" class="btn pri" id="ex-report">交給衛兵（假幣）</button>' : '') + '<button type="button" class="btn" id="ex-x">好</button></div>');
     $('ex-x').onclick = R.closeSheet;
     if ($('ex-report')) $('ex-report').onclick = () => { s.fake = 0; const b = 30; s.gold += b; s.rep = (s.rep || 0) + 2; R.addDeed && R.addDeed('有勇者把私人委託收到的假赤金交給衛兵。衛兵說：「最近這種很多。」'); R.save(); R.closeSheet(); R.toast('衛兵給了 ' + b + ' 費拉的通報獎金。'); };

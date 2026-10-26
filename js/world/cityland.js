@@ -92,7 +92,7 @@
     }; });
   };
   R.CITY_FAC['futing:hq'] = quarter;
-  // 射擊場：30 秒，窗口裡跳出來的靶——紅的是敵兵靶，戴白盔的是新兵（打到扣分）
+  // 射擊場：30 秒，窗口裡跳出來的靶──紅的是敵兵靶，戴白盔的是新兵（打到扣分）
   const range = () => {
     const s = S(), c = C2();
     R.sheet('<p class="kicker">府廳・軍營</p><h2>射擊場</h2><p class="note">30 秒。點紅色的敵兵靶（+10），別打到戴白盔的新兵（−20）。照新兵的標準給軍功章：200 分以上 3 枚、140 以上 2 枚、80 以上 1 枚。一次 10 費拉。</p><canvas id="rg-cv" width="360" height="220" class="fs-cv" style="cursor:crosshair"></canvas><p class="note" id="rg-msg">按「開始」。</p>',
@@ -118,7 +118,7 @@
     last = performance.now(); raf = requestAnimationFrame(loop);
   };
   // 軍神社：武運籤（一天一次，當天下遺跡有效）
-  const OMI = [['大吉', { dmg: 0.06, hp: 0.04 }, '「武運長久。今天的你，誰也擋不住。」'], ['吉', { dmg: 0.03 }, '「出手要快。」'], ['中吉', { hp: 0.04 }, '「守得住，就贏了。」'], ['末吉', { regen: 0.2 }, '「慢慢來，傷會好的。」'], ['凶', {}, '「今天別逞強。」——把籤綁在神社的樹上。']];
+  const OMI = [['大吉', { dmg: 0.06, hp: 0.04 }, '「武運長久。今天的你，誰也擋不住。」'], ['吉', { dmg: 0.03 }, '「出手要快。」'], ['中吉', { hp: 0.04 }, '「守得住，就贏了。」'], ['末吉', { regen: 0.2 }, '「慢慢來，傷會好的。」'], ['凶', {}, '「今天別逞強。」──把籤綁在神社的樹上。']];
   const omikuji = () => {
     const s = S(), c = C2();
     if (c.omi && c.omi.day === s.day) { R.townTalk('軍神社', ['今天已經抽過了：' + c.omi.name + '。']); return; }
@@ -170,7 +170,7 @@
   ];
   const pharma = city => {
     const s = S(), M = mats(), t = s.tonic && s.tonic.until >= s.day ? s.tonic : null;
-    R.sheet('<p class="kicker">板北・英尼爾斯製藥廠</p><h2>調藥室</h2><p>「素材帶來，我們的藥劑師幫你調。一次只喝得下一瓶——喝了撐三天，跟吃的東西分開算。」調製費 30 費拉。</p>'
+    R.sheet('<p class="kicker">板北・英尼爾斯製藥廠</p><h2>調藥室</h2><p>「素材帶來，我們的藥劑師幫你調。一次只喝得下一瓶──喝了撐三天，跟吃的東西分開算。」調製費 30 費拉。</p>'
       + (t ? '<p class="note">現在喝著：<b>' + esc(t.name) + '</b>（' + tonicText(t.b) + '，到第 ' + t.until + ' 天）。再喝會換掉。</p>' : '')
       + RX.map((r, i) => { const can = Object.keys(r[1]).every(k => (M[k] || 0) >= r[1][k]); return '<button type="button" class="btn" data-rx="' + i + '"' + (can && s.gold >= 30 ? '' : ' disabled') + '><b>' + esc(r[0]) + '</b>：' + tonicText(r[2]) + '<br><small>' + Object.keys(r[1]).map(k => matName(k) + ' ' + (M[k] || 0) + '／' + r[1][k]).join('、') + '</small></button>'; }).join(''),
       '<div class="row"><button type="button" class="btn pri" id="rx-x">好了</button></div>');
@@ -277,7 +277,7 @@
   // 妖物寺：供奉遺跡生物的素材（普通怪的 mm_、領主體的部位）→ 加持過的護符
   const shrine = city => {
     const M = mats(), lordMat = k => R.MATS[k] && R.MATS[k].lord && R.MATS[k].tier <= 2, offer = Object.keys(M).filter(k => M[k] > 0 && (/^mm_/.test(k) || lordMat(k) || k === 'mutacore')), pts = offer.reduce((a, k) => a + M[k] * (k === 'mutacore' ? 12 : lordMat(k) ? 4 : 1), 0), c = C2();   // 領主體的源晶、王冠這些貴的（tier 3、4）不收
-    R.sheet('<p class="kicker">板南・妖物寺</p><h2>妖物寺</h2><p>「遺跡生物身上留下的東西，放在外面會招來不好的東西。交給寺裡供奉——住持會為你加持一枚護符。」</p>'
+    R.sheet('<p class="kicker">板南・妖物寺</p><h2>妖物寺</h2><p>「遺跡生物身上留下的東西，放在外面會招來不好的東西。交給寺裡供奉──住持會為你加持一枚護符。」</p>'
       + '<p class="note">供奉的功德：普通遺跡生物的素材 1、領主體的部位 4、異變核心 12。累積 ' + (c.yokai || 0) + '／30 換一枚加持護符（史詩；60 換傳說）。</p>'
       + (offer.length ? '<p>你身上可以供奉的：' + offer.map(k => esc(matName(k)) + '×' + M[k]).join('、') + '（共 ' + pts + ' 功德）</p>' : '<p>你身上沒有遺跡生物的素材。</p>'),
       '<div class="row">' + (offer.length ? '<button type="button" class="btn" id="yk-all">全部供奉（+' + pts + '）</button>' : '') + '<button type="button" class="btn pri" id="yk-get"' + ((c.yokai || 0) >= 30 ? '' : ' disabled') + '>請住持加持護符</button><button type="button" class="btn" id="yk-x">好了</button></div>');
@@ -302,13 +302,13 @@
     const s = S(), c = C2();
     if (c.bellDay === s.day) { R.townTalk('仰天寺', ['鐘聲還在山谷裡迴盪。今天已經撞過了。']); return; }
     c.bellDay = s.day; if (R.sanAdd) R.sanAdd(8); R.save(); R.sfx && R.sfx('magic');
-    R.townTalk('仰天寺', ['你拉起撞木，往大鐘撞過去——', '咚——————', '整座山都在回應。心裡有什麼東西放下了。（理智回復）']);
+    R.townTalk('仰天寺', ['你拉起撞木，往大鐘撞過去──', '咚──────', '整座山都在回應。心裡有什麼東西放下了。（理智回復）']);
   };
   // 板南中樞鐵路：周遊券（七天內電車半價）
   R.railPass = () => { const s = S(), c = s && s.city2; return !!(c && c.railUntil >= (s.day || 0)); };
   R.CITY_FAC['bannan:rail'] = city => {
     const s = S(), c = C2(), P = 300, on = R.railPass();
-    R.sheet('<p class="kicker">板南・板南中樞鐵路</p><h2>周遊券</h2><p>「天宮島的鐵路都從板南過。周遊券七天內搭電車半價——跑貨的人都買。」</p><p class="note">' + (on ? '你的周遊券到第 ' + c.railUntil + ' 天。' : '你沒有周遊券。') + '</p>',
+    R.sheet('<p class="kicker">板南・板南中樞鐵路</p><h2>周遊券</h2><p>「天宮島的鐵路都從板南過。周遊券七天內搭電車半價──跑貨的人都買。」</p><p class="note">' + (on ? '你的周遊券到第 ' + c.railUntil + ' 天。' : '你沒有周遊券。') + '</p>',
       '<div class="row"><button type="button" class="btn pri" id="rp-ok"' + (s.gold < P ? ' disabled' : '') + '>' + (on ? '延長七天' : '買周遊券') + '（' + P + '）</button><button type="button" class="btn" id="rp-x">好了</button></div>');
     $('rp-x').onclick = R.closeSheet;
     $('rp-ok').onclick = () => { if (!pay(P)) return; c.railUntil = Math.max(c.railUntil || 0, s.day || 0) + 7; R.save(); ok('周遊券到第 ' + c.railUntil + ' 天：電車半價。'); R.CITY_FAC['bannan:rail'](city); };
@@ -330,7 +330,7 @@
   const grove = city => {
     const s = S(), T = plots(), day = s.day || 0, c = C2();
     const stage = tr => { const a = day - tr.d; return a >= GROW ? ['長大了', '#3A8A3A'] : a >= 2 ? ['小樹', '#6AA85A'] : ['樹苗', '#9AC87A']; };
-    R.sheet('<p class="kicker">古森・植樹場</p><h2>你的六塊地</h2><p>「古森木要四天才長得夠粗。砍一棵，協會就讓你再種一棵——這是規矩。」樹苗 ' + SAP + ' 費拉。種了 ' + (c.planted || 0) + ' 棵、砍了 ' + (c.cut || 0) + ' 棵。</p><div class="gv">'
+    R.sheet('<p class="kicker">古森・植樹場</p><h2>你的六塊地</h2><p>「古森木要四天才長得夠粗。砍一棵，協會就讓你再種一棵──這是規矩。」樹苗 ' + SAP + ' 費拉。種了 ' + (c.planted || 0) + ' 棵、砍了 ' + (c.cut || 0) + ' 棵。</p><div class="gv">'
       + T.map((tr, i) => tr ? '<button type="button" class="btn gv-p" data-gv="' + i + '" style="--gv:' + stage(tr)[1] + '"><b>' + stage(tr)[0] + '</b><small>' + (day - tr.d >= GROW ? '可以砍了' : '再 ' + (GROW - (day - tr.d)) + ' 天') + '</small></button>' : '<button type="button" class="btn gv-p" data-gv="' + i + '"' + (s.gold < SAP ? ' disabled' : '') + '><b>空地</b><small>種一棵（' + SAP + '）</small></button>').join('')
       + '</div><p class="note">砍下來的古森木材裝進貨箱（貨箱 ' + Object.values(c.cargo).reduce((a, n) => a + n, 0) + '／' + (10 + R.CITY_BOATS[c.boat][2]) + '），征遠、板南、南瀧收得貴。</p>',
       '<div class="row"><button type="button" class="btn pri" id="gv-x">好了</button></div>');
@@ -360,7 +360,7 @@
   // 古森木開發公司：古森木材三箱訂做一件木護符（稀有；聲望高了有機會史詩）
   R.CITY_FAC['gusen:wood'] = city => {
     const s = S(), c = C2(), have = c.cargo.timber || 0;
-    R.sheet('<p class="kicker">古森・古森木開發公司</p><h2>木造工房</h2><p>「古森木做的護符，戴著不會冷。三箱木材，我們的師傅幫你刻一件。」工錢 50 費拉。</p><p class="note">你的古森木材 ' + have + ' 箱。精靈不太喜歡這家公司——但他們的木工是全國最好的。</p>',
+    R.sheet('<p class="kicker">古森・古森木開發公司</p><h2>木造工房</h2><p>「古森木做的護符，戴著不會冷。三箱木材，我們的師傅幫你刻一件。」工錢 50 費拉。</p><p class="note">你的古森木材 ' + have + ' 箱。精靈不太喜歡這家公司──但他們的木工是全國最好的。</p>',
       '<div class="row"><button type="button" class="btn pri" id="wd-ok"' + (have >= 3 && s.gold >= 50 ? '' : ' disabled') + '>訂做木護符</button><button type="button" class="btn" id="wd-x">好了</button></div>');
     $('wd-x').onclick = R.closeSheet;
     $('wd-ok').onclick = () => { if ((c.cargo.timber || 0) < 3 || !pay(50)) return; const pool = Object.keys(R.CHARM2 || {}), base = pool.length ? pool[Math.floor(rnd() * pool.length)] : 'charm', it = R.makeItem({ kind: 'charm', base, ilvl: lvNow(), rarity: rnd() < 0.1 + R.cityRepLv('gusen') * 0.06 ? 3 : 2, identified: true }); if (!it) { S().gold += 50; return; } c.cargo.timber -= 3; if (!c.cargo.timber) delete c.cargo.timber; it.gusen = 1; if (!(R.giveItem && R.giveItem(it))) s.stash.push(it); R.save(); ok('刻好了：' + R.itemName(it)); R.closeSheet(); };

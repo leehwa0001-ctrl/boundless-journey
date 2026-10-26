@@ -122,7 +122,7 @@
   const pet = a => {
     const xeno = R.xenoLevel ? R.xenoLevel() : 0, heat = R.crime ? R.crime.heat : 0;
     let line;
-    if (a.kind === 'cat') line = xeno >= 3 ? '貓盯著你的角看了一下，尾巴炸開，跑掉了。' : pick(['貓瞇起眼睛，喉嚨咕嚕咕嚕地響。', '貓聞了聞你的手指，轉頭走了。', '貓翻過來露出肚子——一摸就被抓了一下。', '貓用頭頂你的手，要你再摸一下。']);
+    if (a.kind === 'cat') line = xeno >= 3 ? '貓盯著你的角看了一下，尾巴炸開，跑掉了。' : pick(['貓瞇起眼睛，喉嚨咕嚕咕嚕地響。', '貓聞了聞你的手指，轉頭走了。', '貓翻過來露出肚子──一摸就被抓了一下。', '貓用頭頂你的手，要你再摸一下。']);
     else if (heat > 0) line = '狗往後退了兩步，對著你低吼。';
     else if (a.mode === 'walk') line = pick(['「牠很親人，摸吧。」狗搖著尾巴。', '狗舔了舔你的手。牽著牠的人笑了一下。', '「別餵牠吃的喔。」狗在你腳邊轉了一圈。']);
     else line = pick(['狗搖著尾巴，把頭靠過來。', '狗翻過身，要你摸肚子。', '狗聞了聞你身上遺跡的味道，打了個噴嚏。']);
@@ -153,7 +153,7 @@
         // 路人停著不動：等一下就從旁邊繞過去（你擋著就一直等）
         let blk = ahead(P); if (!blk && !(b.pass > 0)) for (const n of tw.npcs) { if (n.off || !n.h.g.visible) continue; const a = ahead(n); if (a) { blk = a; break; } }
         b.pass = (b.pass || 0) - dt; b.wait = blk && blk < 1.4 ? (b.wait || 0) + dt : 0; if (b.wait > 1.5 && blk !== ahead(P)) { b.pass = 1.5; b.wait = 0; blk = 0; }
-        if (blk) { want = blk < 1.4 ? 0 : 1.2; if (blk < 3 && b.bell <= 0 && blk === ahead(P)) { b.bell = 4; R.sfx && R.sfx('bell'); R.townToast('鈴鈴——腳踏車在你後面按鈴。'); } }
+        if (blk) { want = blk < 1.4 ? 0 : 1.2; if (blk < 3 && b.bell <= 0 && blk === ahead(P)) { b.bell = 4; R.sfx && R.sfx('bell'); R.townToast('鈴鈴──腳踏車在你後面按鈴。'); } }
       }
       b.bell -= dt; b.v += (want - b.v) * Math.min(1, dt * 3);
       b.x += ux * b.v * dt; b.z += uz * b.v * dt; b.t += dt * (b.v > 0.3 ? 1 : 0);
@@ -217,7 +217,7 @@
     a.barkT = (a.barkT || 0) - dt;
     const d = Math.hypot(P.x - a.x, P.z - a.z);
     if (a.barkT > 0) return;
-    if (heat > 0 && d < 8) { a.barkT = 3; R.sfx && R.sfx('bark'); R.townToast('汪！汪汪！——狗對著你狂叫。'); if (R.alertGuards) R.alertGuards(P.x, P.z, 30, '狗叫'); }
+    if (heat > 0 && d < 8) { a.barkT = 3; R.sfx && R.sfx('bark'); R.townToast('汪！汪汪！──狗對著你狂叫。'); if (R.alertGuards) R.alertGuards(P.x, P.z, 30, '狗叫'); }
     else if (a.mode === 'chain' && d < 3 && rnd() < 0.5) { a.barkT = 12; R.sfx && R.sfx('bark'); R.townToast('汪！拴在門口的狗叫了兩聲。'); }
     else if (d < 3) a.barkT = 8;
   };

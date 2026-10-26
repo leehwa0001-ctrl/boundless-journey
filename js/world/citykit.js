@@ -2,7 +2,7 @@
 // 給《昭旭重要城市》的十一座城（皇嶺、吉山、府廳、西見、南瀧、渦旗、征遠、板北、板南、古森、岳北）用；之後東鶴也照這一套重做。
 // 這個檔案是「底」：貼圖、材質、合併繪製、畫面（不走像素風：全解析度、反鋸齒、泛光、電影色調）、天空和光線、天氣。
 // citykit2.js 是蓋東西的工具（地面、道路、水、建築、屋頂、樹、街上的小東西、人、車）和進城、每一格、地圖；
-// 每一座城一個檔案（city_皇嶺.js……），用 R.CK.define({ … }) 登記。
+// 每一座城一個檔案（city_皇嶺.js……），用 R.CK.define({ …… }) 登記。
 // 規矩：
 // - 世界座標是公尺，北是 -z（跟奉主一樣）。地面的高度看 heightAt（人行道、廣場高 0.12，橋、台階另外算）。
 // - 所有貼圖都是程式畫的（沒有圖檔），第一次用到才畫，畫好留著（userData.shared，換場景不丟）。
@@ -168,7 +168,7 @@
       }, wall: true, base: 'corrugated' },
       // 和風高樓（皇嶺，2026-10-08）：白漆喰、深色的木柱和橫樑、障子窗（晚上透出暖黃的光）；有的格子是小的蟲籠窗
       wafu: { tw: 3.0, th: 3.6, bays: 6, floors: 6, draw: (g, e, r, x, y, w, h, R2) => {
-        // 2026-10-09 作者：窗戶太多——格子加寬；大約四成障子窗、兩成小的蟲籠窗、四成白牆（中間一條木的橫樑）
+        // 2026-10-09 作者：窗戶太多──格子加寬；大約四成障子窗、兩成小的蟲籠窗、四成白牆（中間一條木的橫樑）
         const kind = R2(), lit = R2() < 0.5, pw = Math.max(2, w * 0.07);
         g.fillStyle = '#3A2A20'; g.fillRect(x, y, pw, h); g.fillRect(x, y + h * 0.86, w, h * 0.14); g.fillRect(x, y, w, h * 0.05);
         r.fillStyle = '#A8A8A8'; r.fillRect(x, y, pw, h); r.fillRect(x, y + h * 0.86, w, h * 0.14);
@@ -352,9 +352,9 @@
       },
       flush(par, o) {
         o = o || {};
-        // 2026-10-10 作者：替電腦比較慢的玩家優化——用得少的材質（整批加起來不到 MERGE_V 個頂點）不分區塊、合成一塊（繪製次數少很多）；
+        // 2026-10-10 作者：替電腦比較慢的玩家優化──用得少的材質（整批加起來不到 MERGE_V 個頂點）不分區塊、合成一塊（繪製次數少很多）；
         // 透明的照舊分區塊（合成一大塊，前後的排序會亂）
-        // 2026-10-22：長度 0 或 NaN 的法線（厚度 0 的盒子、屋頂的邊）改成朝上——不然打光算出 NaN，泛光一擴散就是畫面上一大塊黑的
+        // 2026-10-22：長度 0 或 NaN 的法線（厚度 0 的盒子、屋頂的邊）改成朝上──不然打光算出 NaN，泛光一擴散就是畫面上一大塊黑的
         const fixN = N => { for (let i = 0; i < N.length; i += 3) { const x = N[i], y = N[i + 1], z = N[i + 2], l = x * x + y * y + z * z; if (!(l > 1e-10)) { N[i] = 0; N[i + 1] = 1; N[i + 2] = 0; } } return N; };
         const cat = (G, k) => { let n = 0; G.forEach(A => { n += A[k].length; }); const out = new Float32Array(n); let off = 0; G.forEach(A => { const a = A[k]; for (let i = 0; i < a.length; i++) out[off + i] = a[i]; off += a.length; }); return out; };
         map.forEach((bucket, mat) => {
@@ -430,7 +430,7 @@
     const r = W.renderer, TH = T(); if (!HQ.scene) hqInit();
     // 用一般的透視鏡頭（像素風的窄角鏡頭不用）
     const cam = W.pcam || W.camera; if (W.camera !== cam) { cam.position.copy(W.camera.position); cam.quaternion.copy(W.camera.quaternion); W.camera = cam; }
-    const dpr = window.devicePixelRatio || 1, pr = (HQ.q >= 2 ? Math.min(dpr, 1.25) : HQ.q === 1 ? Math.min(dpr, 1.0) : 0.8) * (CK.dynScale || 1);   // dynScale：動態解析度（perfhud.js）   // 2026-10-09 作者：皇嶺很卡——高 DPI 的螢幕像素太多（1.5 → 1.25）
+    const dpr = window.devicePixelRatio || 1, pr = (HQ.q >= 2 ? Math.min(dpr, 1.25) : HQ.q === 1 ? Math.min(dpr, 1.0) : 0.8) * (CK.dynScale || 1);   // dynScale：動態解析度（perfhud.js）   // 2026-10-09 作者：皇嶺很卡──高 DPI 的螢幕像素太多（1.5 → 1.25）
     if (Math.abs(r.getPixelRatio() - pr) > 0.01) r.setPixelRatio(pr);
     const sz = size(), w = sz.x, h = sz.y; if (w < 4 || h < 4) return;
     const far = CK.far || 4200; if (cam.far !== far || cam.near !== 0.8 || Math.abs(cam.aspect - w / h) > 1e-3) { cam.far = far; cam.near = 0.8; cam.aspect = w / h; cam.updateProjectionMatrix(); }

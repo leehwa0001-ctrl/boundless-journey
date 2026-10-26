@@ -1,6 +1,6 @@
-// 無境之旅：街頭的犯罪——扒路人的錢包
+// 無境之旅：街頭的犯罪──扒路人的錢包
 // 從背後靠近一般的路人（不是衛兵、不是有名字的人），按空白鍵（手機點提示）：貼著他走一下子（不能離太遠）就扒到了。
-// 有一定機率對方會回頭——被他看到就是「小偷！」（通緝）；旁邊看得到你的人也會讓視線條往上漲（和偷東西同一套，props.js）。
+// 有一定機率對方會回頭──被他看到就是「小偷！」（通緝）；旁邊看得到你的人也會讓視線條往上漲（和偷東西同一套，props.js）。
 // 一個人一天只能扒一次；扒到的可能是零錢、鼓鼓的錢包、小東西，或空錢包。
 (function (R) {
   const W = R.W, wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
@@ -43,7 +43,7 @@
   const step = dt => {
     const P = W.P, tw = W.town; if (!pp || !P || !tw) return;
     const n = pp.n, d = Math.hypot(P.x - n.x, P.z - n.z), C = R.crime;
-    if (d > 1.8 || n.off || P.sit) { pp = null; R.toast('沒扒成——跟丟了。'); return; }
+    if (d > 1.8 || n.off || P.sit) { pp = null; R.toast('沒扒成──跟丟了。'); return; }
     pp.t += dt;
     // 對方回頭：當場被看到
     if (pp.turn >= 0 && pp.t >= pp.turn) { n.h.g.rotation.y = Math.atan2(P.x - n.x, P.z - n.z); caught(n, n); return; }

@@ -1,4 +1,4 @@
-// 精緻城市改成像素畫法（2026-10-20 作者：精緻版跟我們的人物會割裂；照作者給的像素影片、圖那樣——東鶴先不動，先拿皇嶺來試）
+// 精緻城市改成像素畫法（2026-10-20 作者：精緻版跟我們的人物會割裂；照作者給的像素影片、圖那樣──東鶴先不動，先拿皇嶺來試）
 // 參考：低解析度的 3D 場景、少色平塗、網點漸層、強烈明暗與冷暖對比、夜裡路燈和窗戶是主角。
 // - 跟遺跡同一套做法：先畫到小畫布（一格像素＝人物的一個像素，R.PIX.PX 公尺），再整數倍放大；放大的時候
 //   描邊（深度差大的邊變暗）、色階收斂（每個顏色只留幾階，中間用 4×4 網點抖動混出來）、亮又鮮豔的東西透出像素格的光暈、暗角。
@@ -11,7 +11,7 @@
   const PIXCITY = { donghe: 1, huangling: 1, jishan: 1, hosu: 1, yuebei: 1, futing: 1, xijian: 1, nanlong: 1, woqi: 1, zhengyuan: 1, banbei: 1, bannan: 1, gusen: 1 };   // 2026-10-20：吉山、奉主也套；2026-10-26 作者：東鶴也要
   const LS = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { } return null; };
   const want = id => { const v = LS('tfl-ckpix-' + id); return v ? v === '1' : !!PIXCITY[id]; };
-  const active = () => { const tw = W.town; return !!(tw && tw.ck && W.scene && W.scene.userData.hq && want(tw.ck)); };   // 2026-10-21 作者：照公會分館的風格把其他室內也做一做——城裡的店（CK 的房間）也用像素畫法
+  const active = () => { const tw = W.town; return !!(tw && tw.ck && W.scene && W.scene.userData.hq && want(tw.ck)); };   // 2026-10-21 作者：照公會分館的風格把其他室內也做一做──城裡的店（CK 的房間）也用像素畫法
   R.ckPixOn = active;
   // ---------- 畫布、著色器 ----------
   const S = {};
@@ -73,9 +73,9 @@
     p.x += dr * e[0] + du * e[4]; p.y += dr * e[1] + du * e[5]; p.z += dr * e[2] + du * e[6]; cam.updateMatrixWorld();
     // 天空、倒影不畫
     const L = W.town && W.town.L, sky = L && L.sky, sv = sky && sky.visible; if (sky) sky.visible = false;
-    // 雪、雨的點是照螢幕像素算大小的：畫在小畫布上再放大會大 s 倍（2026-10-20 作者：雪還是太大顆了）——畫的時候除回去
+    // 雪、雨的點是照螢幕像素算大小的：畫在小畫布上再放大會大 s 倍（2026-10-20 作者：雪還是太大顆了）──畫的時候除回去
     const su = L && L.snow && L.snow.material && L.snow.material.uniforms && L.snow.material.uniforms.size, sz0 = su && su.value; if (su) su.value = sz0 / s * 0.75;   // 小畫布上大約 2 格
-    // 人物（玩家、路人、隊友）：先不畫進小畫布（換到第 1 層），最後用全解析度畫在上面——不換色、不加網點、素材版的細節不被壓掉
+    // 人物（玩家、路人、隊友）：先不畫進小畫布（換到第 1 層），最後用全解析度畫在上面──不換色、不加網點、素材版的細節不被壓掉
     const chars = charGroups(); setLayer(chars, 2); const cm = cam.layers.mask; cam.layers.mask = 1;
     pools(L);
     try { r.setRenderTarget(S.rt); r.clear(); r.render(W.scene, cam); } finally { if (sky) sky.visible = sv; if (su) su.value = sz0; }
@@ -157,7 +157,7 @@
     const pts = new TH.Points(pg, new TH.PointsMaterial({ color: new TH.Color('#FFF0D0').convertSRGBToLinear(), size: 1, sizeAttenuation: false, transparent: true, opacity: 0.3, depthWrite: false, blending: TH.AdditiveBlending })); pts.frustumCulled = false; pts.renderOrder = 4; g.add(pts); tw.rfx.dust = { pts, arr, seed, h };
   };
   // ---------- 窗戶的光灑到外面的地上（晚上；照 tw.D.foot 每棟房子的外框，四邊各一條從牆邊往外淡掉的光） ----------
-  // 2026-10-20 作者：晚上的感覺對——繼續做窗戶的光灑出來。暖的（燈泡）、冷的（日光燈）照房子隨機；每一面亮度不一樣，有的面是暗的。
+  // 2026-10-20 作者：晚上的感覺對──繼續做窗戶的光灑出來。暖的（燈泡）、冷的（日光燈）照房子隨機；每一面亮度不一樣，有的面是暗的。
   let WS = null;
   const winSpill = (tw, k) => {
     const D = tw.D, TH = T(); if (!D || !D.foot || tw.room) return;

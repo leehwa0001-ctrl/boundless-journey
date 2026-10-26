@@ -2,7 +2,7 @@
 // 東鶴的那一套原封不動地接到精緻城市（citykit）：props.js（視線條、偷東西、通緝、衛兵追、被抓）、streetcrime.js（扒錢包）、
 // vigilance.js（街坊警戒、哨音、路人大喊、增援、和路人說話）、punish.js（罰金、拘留、停權）。
 // - 看得到你的人：路人（tw.walkers，6 公尺）、站著說話的人＝店員、攤販（8 公尺）、衛兵（11～12 公尺）。店裡（CK.defineRoom）也算：店員看得到。
-// - 衛兵：城的設定 guards: [[x, z, rot], …]（站崗）、patrols: [[[x, z], …], …]（巡邏）；也可以在 build 裡用 B.guardPost(x, z, rot)、B.patrol(pts)。
+// - 衛兵：城的設定 guards: [[x, z, rot], ……]（站崗）、patrols: [[[x, z], ……], ……]（巡邏）；也可以在 build 裡用 B.guardPost(x, z, rot)、B.patrol(pts)。
 //   沒寫的話：出生點（車站前）兩個站崗，沿著最長的兩條路人路線各一個巡邏。增援從站崗的地方派出來（vigilance.js 的 tw.guardPosts）。
 // - 可以偷的東西：B.steal(x, z, label, owner, loot, o)（loot＝() => ({ gold }／{ gift, n }／{ mat, n }／{ potion })；店裡也可以用）。
 // - 被抓：punish.js 的懲罰照舊；放出來的地方是這座城的衛兵崗位（不是東鶴）。

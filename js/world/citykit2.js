@@ -1,11 +1,11 @@
 // 精緻城市（二）：地面、道路、人行道、水、高度、碰撞，進城、每一格、狀態列、地圖、選單、搭車（作者 2026-10-08）
-// 城市的檔案用 R.CK.define({ id, name, walk: [x0, z0, x1, z1], land, spawn, build(B) { … } })；B 是這裡的「蓋城」工具：
+// 城市的檔案用 R.CK.define({ id, name, walk: [x0, z0, x1, z1], land, spawn, build(B) { …… } })；B 是這裡的「蓋城」工具：
 //   B.road(x0, z0, x1, z1, { sw, name, line })   車道（軸對齊的長方形）；sw＝兩邊人行道的寬（自動扣掉跟別的路重疊的部分、路口畫斑馬線）
 //   B.plaza(x0, z0, x1, z1, mat)                  高 0.12 的廣場（跟人行道一樣高）
 //   B.zone(poly, mat, y)                           平的地面（草地、砂石、沙灘、泥土）
 //   B.water(poly, { level, bank })                水（地面挖洞、水面、護岸、碰撞；橋下不擋）
 //   B.bridge(x0, z0, x1, z1, { deck, rise, axis }) 走得上去的橋（拱橋：中間高）
-//   B.terrace(x0, z0, x1, z1, h, { wall, open })   台地（擋土牆、碰撞；open 是留給階梯的缺口）；B.stairs(…) 階梯
+//   B.terrace(x0, z0, x1, z1, h, { wall, open })   台地（擋土牆、碰撞；open 是留給階梯的缺口）；B.stairs(……) 階梯
 //   B.solid(x0, z0, x1, z1)                        擋人的方塊（在 B.frame 裡會跟著轉：旋轉的方塊另外算）
 //   B.inter(x, z, r, label, act, icon)、B.walk(pts, n)、B.route(pts, n)、B.lamp(x, z)、B.area(name, rect)、B.label(text, x, z)
 // 建築、屋頂、樹、街上的東西、人、車在 citykit3.js（也掛在 B 上）。
@@ -102,7 +102,7 @@
     B.zone = (poly, mat, y) => { if (poly.length === 4 && typeof poly[0] === 'number') poly = rectPoly(poly); D.zones.push({ poly, mat: mat || 'grass', y: y == null ? 0.02 : y }); };
     B.water = (poly, o) => { if (poly.length === 4 && typeof poly[0] === 'number') poly = rectPoly(poly); o = o || {}; D.water.push({ poly, level: o.level == null ? -1.2 : o.level, bank: o.bank || 'ishi', fence: !!o.fence, name: o.name || '' }); };
     B.bridge = (x0, z0, x1, z1, o) => { o = o || {}; const r = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)]; const b = Object.assign({ r, deck: 0.12, rise: 0, axis: (r[2] - r[0]) > (r[3] - r[1]) ? 'x' : 'z', rail: true, mat: 'gran', railMat: 'ashlar' }, o, { r }); D.bridges.push(b); bridgeH(b); return r; };
-    // 台地：h 高；open＝[[x0, z0, x1, z1], …] 擋土牆留的缺口（接階梯）
+    // 台地：h 高；open＝[[x0, z0, x1, z1], ……] 擋土牆留的缺口（接階梯）
     B.terrace = (x0, z0, x1, z1, h, o) => { o = o || {}; const r = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)]; D.terr.push({ r, h, wall: o.wall || 'ishi', top: o.top || 'gravel', open: o.open || [], batter: o.batter == null ? 0.12 : o.batter, rail: o.rail }); hgEach(r, () => h); return r; };
     // 階梯：dir＝往哪邊爬上去（'n'、's'、'e'、'w'），h0→h1
     B.stairs = (x0, z0, x1, z1, dir, h0, h1, o) => { o = o || {}; const r = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)]; const t = { r, stairs: dir, h0, h1, mat: o.mat || 'gran', side: o.side || 'ishi', ramp: !!o.ramp }; D.terr.push(t); stairsH(t); return r; };
@@ -283,7 +283,7 @@
     sc.add(sun); sc.add(sun.target); W.moon = sun; W.torch = null;
     sc.fog = new TH.FogExp2(0xffffff, 0.0008);
     const pts = []; const np = R.touch ? 4 : 8; for (let i = 0; i < np; i++) { const p = new TH.PointLight(new TH.Color('#FFD8A8').convertSRGBToLinear(), 0, 18, 1.8); p.position.set(0, -50, 0); sc.add(p); pts.push(p); }
-    CK.lampLights = (L0, qq) => { const n = qq >= 2 ? L0.length : qq === 1 ? Math.min(L0.length, 4) : 0; L0.forEach((p, i) => { p.visible = i < n; }); };   // 2026-10-10：路燈照地的光——低畫質不開（每個像素都要算每一盞）、中 4 盞、高 8 盞
+    CK.lampLights = (L0, qq) => { const n = qq >= 2 ? L0.length : qq === 1 ? Math.min(L0.length, 4) : 0; L0.forEach((p, i) => { p.visible = i < n; }); };   // 2026-10-10：路燈照地的光──低畫質不開（每個像素都要算每一盞）、中 4 盞、高 8 盞
     CK.lampLights(pts, q);
     tw.L = { sky, skyM, envSc, hemi, sun, pts, pm: new TH.PMREMGenerator(W.renderer), env: null, envKey: '', lastH: -1 };
     // 雪（或雨）：在鏡頭附近的一個盒子裡循環，頂點著色器自己算位置
@@ -305,7 +305,7 @@
     L.sun.color.copy(u.sunCol.value); L.sun.intensity = k.sunI; L.sunDir = k.s.dir;
     L.hemi.color.copy(u.top.value).lerp(new TH.Color(1, 1, 1), 0.35); L.hemi.groundColor.copy(lc([0.34, 0.31, 0.28])).convertSRGBToLinear(); L.hemi.intensity = k.hemiI * (k.night > 0.5 ? 0.6 : 1);
     // 環境反光：時間、天氣變了才重算
-    // 2026-10-09 作者：調低畫質還是會卡——環境反光每 15 分鐘（遊戲時間，現實約 11 秒）重算一次會頓一下：改成每小時；低畫質不用環境反光（環境光調亮補回來）
+    // 2026-10-09 作者：調低畫質還是會卡──環境反光每 15 分鐘（遊戲時間，現實約 11 秒）重算一次會頓一下：改成每小時；低畫質不用環境反光（環境光調亮補回來）
     const lowQ = CK.quality() === 0; if (u.oct) u.oct.value = CK.quality() >= 2 ? 6 : CK.quality() === 1 ? 4 : 2;
     const key = (lowQ ? 'low' : Math.round(h)) + '|' + wn; if (force || key !== L.envKey) { L.envKey = key; const old = L.env; if (lowQ) { L.env = null; W.scene.environment = null; } else { L.env = L.pm.fromScene(L.envSc, 0.02); W.scene.environment = L.env.texture; } if (old) old.dispose(); }
     if (lowQ) L.hemi.intensity *= 1.7;

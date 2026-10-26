@@ -95,7 +95,7 @@
           } else if (ev.t > 25) end();
           return;
         }
-        chaseStep(dt, t, () => { gold(ev.amt + 5); R.sfx && R.sfx('pick'); const amt = ev.amt; say('扒手', ['「哎唷！放手放手——還你就是了！」', '（拿回 ' + amt + ' 費拉，還多搜出 5 費拉。扒手一溜煙跑了。）']); end(); },
+        chaseStep(dt, t, () => { gold(ev.amt + 5); R.sfx && R.sfx('pick'); const amt = ev.amt; say('扒手', ['「哎唷！放手放手──還你就是了！」', '（拿回 ' + amt + ' 費拉，還多搜出 5 費拉。扒手一溜煙跑了。）']); end(); },
           () => end('扒手跑掉了。錢包裡少了 ' + ev.amt + ' 費拉……'), '追扒手！');
       }
     },
@@ -114,7 +114,7 @@
       },
       step: dt => {
         const t = ev.thief; ev.t += dt;
-        if (ev.st === 'grab') { const d = moveTo(t, ev.vic.x, ev.vic.z, 4.5, dt); if (d < 0.9 || ev.t > 4) { ev.st = 'flee'; ev.t = 0; ev.speed = 0.88; ev.limit = 40; t.path = null; R.toast('「小偷！誰來幫幫我——！」有人的包包被搶了！', '#E8323A'); R.sfx && R.sfx('crossing'); } return; }
+        if (ev.st === 'grab') { const d = moveTo(t, ev.vic.x, ev.vic.z, 4.5, dt); if (d < 0.9 || ev.t > 4) { ev.st = 'flee'; ev.t = 0; ev.speed = 0.88; ev.limit = 40; t.path = null; R.toast('「小偷！誰來幫幫我──！」有人的包包被搶了！', '#E8323A'); R.sfx && R.sfx('crossing'); } return; }
         if (ev.st === 'flee') {
           chaseStep(dt, t, () => { ev.st = 'return'; R.setDown && R.setDown(t.h, true); ev.downT = 0; R.toast('抓到了！把包包拿回去還給失主吧。'); R.sfx && R.sfx('pick'); showArrow(ev.vic); showHud('<b>把包包還給失主</b><small>回到剛剛被搶的人那裡</small>'); },
             () => { const v = ev.victim; v.h.g.visible = true; v.off = false; end('小偷跑掉了。'); }, '追小偷！');
@@ -194,7 +194,7 @@
           if (d > 25) { k.x = Pl.x - 1; k.z = Pl.z; k.path = null; }
           const m = ev.mom, dm = dist(m, Pl); showArrow(m); showHud('<b>帶小孩去找媽媽</b><span>' + Math.round(dm) + ' 公尺</span><small>地圖上標出來了</small>');
           m.h.g.rotation.y = Math.atan2(Pl.x - m.x, Pl.z - m.z); R.animHero(m.h, 0, dt, false);
-          if (dm < 3) { const r = 15 + Math.floor(rnd() * 16); gold(r); rep(1); if (R.addGift && rnd() < 0.5) R.addGift('rose', 1); R.sfx && R.sfx('chest'); say('小孩的媽媽', ['「小翼！你跑去哪裡了——」', '「謝謝，剛剛一轉頭人就不見了。這點錢請你收下。」', '（拿到 ' + r + ' 費拉。名聲 +1）']); if (R.clearWaypoint && S().waypoint && S().waypoint.name === '小孩的媽媽') R.clearWaypoint(); end(); }
+          if (dm < 3) { const r = 15 + Math.floor(rnd() * 16); gold(r); rep(1); if (R.addGift && rnd() < 0.5) R.addGift('rose', 1); R.sfx && R.sfx('chest'); say('小孩的媽媽', ['「小翼！你跑去哪裡了──」', '「謝謝，剛剛一轉頭人就不見了。這點錢請你收下。」', '（拿到 ' + r + ' 費拉。名聲 +1）']); if (R.clearWaypoint && S().waypoint && S().waypoint.name === '小孩的媽媽') R.clearWaypoint(); end(); }
           else if (ev.t > 300) end('小孩忽然朝街口揮手，喊著「媽媽」跑了過去。');
         }
       }
@@ -276,7 +276,7 @@
   };
   // ---------- 勸架、小孩 ----------
   const brawlSheet = () => {
-    R.sheet('<p class="kicker">深夜的街上</p><h2>兩個醉漢在吵架</h2><p>「你再說一次看看！」「說就說！你們公會的都是——」</p>',
+    R.sheet('<p class="kicker">深夜的街上</p><h2>兩個醉漢在吵架</h2><p>「你再說一次看看！」「說就說！你們公會的都是──」</p>',
       '<div class="row"><button type="button" class="btn pri" id="bw-calm">「兩位，冷靜一點。」</button><button type="button" class="btn" id="bw-firm">「再鬧我就叫衛兵了。」</button><button type="button" class="btn" id="bw-x">不管他們</button></div>');
     const done = (ok, lines) => { R.closeSheet(); ev.st = 'leave'; ev.t2 = 0; if (ok) rep(1); say('醉漢', lines); };
     document.getElementById('bw-calm').onclick = () => rnd() < 0.65 ? done(true, ['「……算了算了，今天就放過你。」', '兩個人各自搖搖晃晃地走了。（名聲 +1）']) : done(false, ['「關你什麼事！」', '「關你什麼事？」其中一人推了你一下。兩人改罵起你，罵著罵著，一起走遠了。']);

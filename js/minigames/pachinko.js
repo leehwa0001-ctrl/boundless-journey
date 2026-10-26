@@ -135,7 +135,7 @@
     if (!KINDS[kind]) return pick();
     K = KINDS[kind]; P_WIN = K.win; ROUNDS = K.rounds; ROUND_IN = K.inn;
     const S = R.S; S.pachiBalls = S.pachiBalls || 0;
-    R.sheet('<p class="kicker">柏青哥「銀河」・' + K.spec + '</p><h2>' + K.name + '</h2><p class="note">店裡吵得聽不到自己說話。找一台空著的坐下。把手轉到適合的力道、按住就會一直打；珠子進中間的「啟動口」，液晶的數字就轉一次，三個一樣是大當——右下的大入賞口打開，往右邊打。</p>'
+    R.sheet('<p class="kicker">柏青哥「銀河」・' + K.spec + '</p><h2>' + K.name + '</h2><p class="note">店裡吵得聽不到自己說話。找一台空著的坐下。把手轉到適合的力道、按住就會一直打；珠子進中間的「啟動口」，液晶的數字就轉一次，三個一樣是大當──右下的大入賞口打開，往右邊打。</p>'
       + '<div class="pachi"><canvas id="pc-cv" width="' + FW + '" height="' + FH + '"></canvas><div class="pachi-ui">'
       + '<div class="pachi-st">持珠 <b id="pc-n">0</b> 顆<small id="pc-info"></small></div>'
       + '<label class="pachi-pow">把手的力道<input type="range" id="pc-pow" min="0" max="100" value="38"><span><i>← 左邊打</i><i>右邊打 →</i></span></label>'

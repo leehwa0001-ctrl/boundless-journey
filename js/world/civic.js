@@ -48,29 +48,29 @@
       bigSign(b.x, 4.6, b.front + 1.82, 0, '東鶴縣廳', '#2E2A26', '#F4E9CD', 4.2, 0.8);
       [-6, 6].forEach(o => flagpole(b.x + o, b.front + 5, 7, flagTex));
       for (let i = 0; i < 2; i++) pineAt(b.x - 9 + i * 18, b.front + 3, 0.9); bench(b.x - 3.5, b.front + 4.6, 0); bench(b.x + 3.5, b.front + 4.6, 0);
-      inter(b.door[0], b.door[1], 2.4, '東鶴縣廳的服務台', () => talk('東鶴縣廳', E.martial ? ['「今日退位大典，縣廳只辦緊急事務。」', '大廳的收音機正在轉播皇嶺的典禮。'] : [pick(['「勇者登記請到公會分館；這裡是縣廳。」', '「戶籍和通行證都在這裡辦。先看你要辦哪一項，別排錯窗口。」', '「河西的西橋什麼時候修好？預算還在審。」'])])); });
+      inter(b.door[0], b.door[1], 2.4, '東鶴縣廳的服務台', () => talk('東鶴縣廳', E.martial ? ['「今日退位大典，縣廳只辦緊急事務。」', '大廳的收音機正在轉播皇嶺的典禮。'] : [pick(['「勇者登記？那要去公會分館喔，這裡是縣廳。」', '「戶籍和通行證都在這裡辦。先看你要辦哪一項，別排錯窗口。」', '「鶴橋要拓寬？預算還在審，你明年再來問吧。」'])])); });
     // ---------- 衛兵詰所：官廳街，衛兵輪班的地方 ----------
     { const b = civ(FAC.guardHQ[0], FAC.guardHQ[1], 13, 9, 3, { col: '#8E8A80', win: 2.0 });
       bigSign(b.x, 3.6, b.front + 1.62, 0, '衛兵詰所', '#2E3A48', '#F4E9CD', 2.8, 0.6);
       HB.add(G3.box, B_('#E04A3A', { em: '#C0281A', ei: 1 }), b.x + 3.6, 3.1, b.front + 0.3, 0.4, 0.4, 0.4);
       const g = npc(b.x + 2.2, b.front + 1.6, { top: '#3E4A5A', hair: '#2A2420', cloak: '#2E3A48', shield: true }, '詰所的衛兵', 0, 'spear', 'knight'); g.watch = { range: 11, fov: 1.0, guard: 1 }; tw.watchers.push(g); g.guard = true;
-      inter(b.door[0], b.door[1], 2.2, '衛兵詰所', () => talk('衛兵詰所', [R.crimeHud && R.crimeHud() ? '「先別走，有人報案。勇者證拿出來，配合一下。」' : pick(['「城裡的治安歸我們管。遺跡裡的事歸公會。」', '「失物招領在左邊的櫃子。撿到勇者證要送公會，不是送這裡。」'])]));
+      inter(b.door[0], b.door[1], 2.2, '衛兵詰所', () => talk('衛兵詰所', [R.crimeHud && R.crimeHud() ? '「先別走，有人報案。勇者證拿出來，配合一下。」' : pick(['「城裡的事歸我們。遺跡裡出了什麼事，去找公會。」', '「失物招領在左邊的櫃子。撿到勇者證要送公會，不是送這裡。」'])]));
       bike(b.x - 4, b.front + 1.2, 0.2); bike(b.x - 3.3, b.front + 1.2, 0.2); }
     // ---------- 大聯合國世界中央銀行 東鶴分行：國道邊、石柱的門面 ----------
     { const b = civ(FAC.bank[0], FAC.bank[1], 18, 12, 4, { col: '#C8C2B4', columns: 1, win: 1.6, door: 2.0, fh: 3.6 });
       bigSign(b.x, 4.6, b.front + 1.82, 0, '世界中央銀行・東鶴分行', '#2A2A30', '#E8D8A0', 4.6, 0.6);
-      inter(b.door[0], b.door[1], 2.2, '世界中央銀行・東鶴分行', () => talk('世界中央銀行・東鶴分行', ['「費拉的存提、兌換、匯款。」', '「赤金和昭旭的舊銅錢，請到西市兌換所驗過再拿來。」', E.martial ? '今天因為戒嚴，只開半天。' : '櫃台前排了一小排人。'])); }
+      inter(b.door[0], b.door[1], 2.2, '世界中央銀行・東鶴分行', () => talk('世界中央銀行・東鶴分行', ['「存錢、領錢、匯款都在這邊。請抽號碼牌。」', '「赤金和昭旭的舊銅錢，請到西市兌換所驗過再拿來。」', E.martial ? '今天因為戒嚴，只開半天。' : '櫃台前排了一小排人。'])); }
     // ---------- 東鶴醫院：白色的五層樓、急診的門、救護車 ----------
     { const b = civ(FAC.hospital[0], FAC.hospital[1], 24, 14, 5, { col: '#ECEAE4', trim: '#C8D8D0', win: 1.6, fh: 3.0, doorW: 3 });
       bigSign(b.x, 3.55, b.front + 1.62, 0, '東鶴醫院', '#2E5A4A', '#F4F8F4', 3.4, 0.7);
       HB.add(G3.box, B_('#3A8A5A', { em: '#2A6A3A', ei: 0.6 }), b.x + b.w / 2 - 1, b.H - 0.5, b.front + 0.1, 0.9, 0.9, 0.1);
       { const cb = R.Batch(), x = b.x - 8, z = b.front + 3; cb.at(x, z, Math.PI / 2); const wb = lam('#F0F0EC', { tex: 0 }); cb.add(G3.box, wb, 0, 1.4, 0.5, 2.0, 1.8, 3.4); cb.add(G3.box, wb, 0, 1.2, -1.8, 2.0, 1.4, 1.4); cb.add(G3.box, lam('#C83A3A', { tex: 0 }), 0, 1.2, 0.5, 2.02, 0.2, 3.42); cb.add(G3.box, lam('#9AB4C8', { em: '#203040', ei: 0.3 }), 0, 1.6, -2.45, 1.8, 0.6, 0.05); cb.flush(group); block(x - 2.5, x + 2.5, z - 1.1, z + 1.1, 'deco'); }
-      inter(b.door[0], b.door[1], 2.4, '東鶴醫院', () => talk('東鶴醫院', ['「從遺跡抬回來的勇者，請走急診的門。」', pick(['「冬天跌倒骨折的老人家特別多。」', '「這是德克斯凡出錢擴建的新病棟。」', '「魔力枯竭的病人，請先到白藤堂拿藥。」'])])); }
+      inter(b.door[0], b.door[1], 2.4, '東鶴醫院', () => talk('東鶴醫院', ['「從遺跡抬回來的勇者，請走急診的門。」', pick(['「一下雪，跌倒骨折的老人家就排到走廊上。」', '「新病棟是德克斯凡出的錢。床是多了，護士還是這幾個。」', '「魔力枯竭的病人，請先到白藤堂拿藥。」'])])); }
     // ---------- 郵局：門口有紅色的郵筒 ----------
     { const b = civ(FAC.post[0], FAC.post[1], 12, 8, 2, { col: '#C8B8A0', win: 1.8, door: 1.4 });
       bigSign(b.x, 3.55, b.front + 1.62, 0, '東鶴郵局', '#8A2A24', '#F4F0E6', 2.6, 0.6);
       const px = b.x + 3.2, pz = b.front + 0.7; SB.add(G3.cyl, lam('#C8323A', { tex: 0 }), px, 0.75, pz, 0.6, 1.5, 0.6); SB.add(G3.cyl, lam('#A82A2A', { tex: 0 }), px, 1.55, pz, 0.68, 0.12, 0.68); SB.add(G3.box, lam('#1A1A1A', { tex: 0 }), px, 1.2, pz + 0.3, 0.3, 0.06, 0.04); block(px - 0.32, px + 0.32, pz - 0.32, pz + 0.32, 'deco');
-      inter(b.door[0], b.door[1], 2.2, '東鶴郵局', () => talk('東鶴郵局', ['「信件、包裹，往皇嶺的明天就到。」', '「年底的賀年信，記得早點寄。」']));
+      inter(b.door[0], b.door[1], 2.2, '東鶴郵局', () => talk('東鶴郵局', ['「寄皇嶺的話，明天就到。」', '「年底的賀年信，記得早點寄。」']));
       inter(px, pz + 1, 1.4, '紅色的郵筒', () => R.townToast('郵筒上寫著收件時間：上午十時、下午三時。')); }
     // ---------- 東鶴日報社：瓦版就是這裡印的 ----------
     { const b = civ(FAC.paper[0], FAC.paper[1], 12, 9, 3, { col: '#9A8A7A', tex: 'wall', win: 1.6 });
@@ -85,7 +85,7 @@
       for (let i = 0; i < 6; i++) { const fx = -w / 2 + 1 + i * (w - 2) / 5; B.add(G3.box, B_('#2A2A30', { tex: 0 }), fx, 1.4, d / 2 + 1.6, 0.06, 2.8, 0.06); B.add(G3.box, B_(['#C83A3A', '#E8C03A', '#F0ECE2'][i % 3], { tex: 0 }), fx + 0.25, 1.7, d / 2 + 1.6, 0.42, 2.0, 0.03); }
       B.at(null); block(x - w / 2, x + w / 2, z - d / 2, z + d / 2, 'house');
       bigSign(x, 5.6, z + d / 2 + 0.06, 0, '東鶴座', '#1E1414', '#F4D88A', 4.4, 1.2); sign(x, 3.5, z + d / 2 + 0.68, 0, '今夜上演・《雪中的勇者》', '#3A1E14', 5.6);
-      inter(x, z + d / 2 + 2.4, 2.4, '劇場「東鶴座」', () => talk('東鶴座', E.martial ? ['「大典那天停演一天。」'] : ['「今晚的戲是《雪中的勇者》：一個勇者在遺跡裡迷路的故事。」', '「票賣完了。站票的話，開演前再來看看。」'])); }
+      inter(x, z + d / 2 + 2.4, 2.4, '劇場「東鶴座」', () => talk('東鶴座', E.martial ? ['「大典那天停演。大家都跑去聽轉播了，演了也沒人看。」'] : ['「今晚演《雪中的勇者》，講一個勇者在遺跡裡迷路。結局我不說。」', '「票賣完了。站票的話，開演前再來看看。」'])); }
     // ---------- 德克斯凡百貨：站前的六層樓、大櫥窗、垂幕、屋頂的小遊樂園 ----------
     face('dept', () => { const b = civ(FAC.dept[0], FAC.dept[1], 28, 22, 6, { col: '#D8D4CC', tex: 'wall', win: 1.4, fh: 3.8, doorW: 4 });
       [-10, -5, 5, 10].forEach(o => HB.add(G3.box, B_('#BFE0F0', { em: '#4A7A9A', ei: 0.75 }), b.x + o, 1.8, b.front + 0.06, 4.2, 2.8, 0.06));
@@ -122,7 +122,7 @@
       B.at(null); block(x - w / 2 - 1, x + w / 2 + 1, z - d / 2 - 1, z + d / 2 + 1, 'house');
       const gz = z + 10; [-2.2, 2.2].forEach(o => { HB.add(G3.box, woodM, x + o, 2, gz, 0.5, 4, 0.5); block(x + o - 0.3, x + o + 0.3, gz - 0.3, gz + 0.3, 'deco'); }); HB.add(G3.box, B_('#3A3A44', { tex: 'cap' }), x, 4.3, gz, 6.4, 0.5, 2.6); HB.add(G3.box, snowM, x, 4.6, gz, 6, 0.1, 2.2);
       { const bx = x + 9, bz = z + 2; [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([a, c]) => HB.add(G3.box, woodM, bx + a * 1.2, 2.2, bz + c * 1.2, 0.24, 4.4, 0.24)); HB.add(G3.cone, B_('#3A3A44', { tex: 'cap' }), bx, 5.2, bz, 4, 1.4, 4, 0, Math.PI / 4, 0); HB.add(G3.cyl, B_('#6A5A3A', { tex: 0 }), bx, 3.4, bz, 1.0, 1.4, 1.0); block(bx - 1.4, bx + 1.4, bz - 1.4, bz + 1.4, 'deco');
-        inter(bx, bz + 2.2, 1.8, '寺的鐘樓（敲一下）', () => { R.townToast('咚——。鐘聲在雪地裡傳得很遠。'); R.sfx && R.sfx('skill'); }); }
+        inter(bx, bz + 2.2, 1.8, '寺的鐘樓（敲一下）', () => { R.townToast('咚──。鐘聲在雪地裡傳得很遠。'); R.sfx && R.sfx('skill'); }); }
       [[-5, 6], [5, 6]].forEach(([a, c]) => { SB.add(G3.box, lam('#8C8A82', { tex: 'wall' }), x + a, 0.65, z + c, 0.26, 0.9, 0.26); SB.add(G3.box, lam('#FFD9A0', { em: '#FFB050', ei: 0.9 }), x + a, 1.3, z + c, 0.44, 0.4, 0.44); SB.add(G3.cone, lam('#EEF2F4', { tex: 'ground' }), x + a, 1.68, z + c, 1.1, 0.36, 1.1, 0, Math.PI / 4, 0); block(x + a - 0.3, x + a + 0.3, z + c - 0.3, z + c + 0.3, 'deco'); });
       // 墓碑排在本堂的西側（原本第二排跑出寺的地、插進北邊鄰居的房子）
       for (let r = 0; r < 4; r++) for (let i = 0; i < 3; i++) { const gx = x - 11.6 + i * 1.6, gz2 = z - 3.2 + r * 2.2; SB.add(G3.box, lam('#9C9A94', { tex: 'wall' }), gx, 0.6, gz2, 0.5, 1.2, 0.3); SB.add(G3.box, snowM, gx, 1.22, gz2, 0.52, 0.05, 0.32); block(gx - 0.3, gx + 0.3, gz2 - 0.2, gz2 + 0.2, 'deco'); }
@@ -170,7 +170,7 @@
       '<div class="row"><button type="button" class="btn pri" id="dp-buy">買東西（機油、零件、溫室玫瑰）</button><button type="button" class="btn" id="dp-food">到餐廳街吃飯（12 費拉）</button><button type="button" class="btn" id="dp-roof">上屋頂坐摩天輪（3 費拉）</button><button type="button" class="btn" id="dp-x">走了</button></div>');
     document.getElementById('dp-buy').onclick = () => { R.closeSheet(); if (R.dexShop) R.dexShop('parts'); };
     document.getElementById('dp-food').onclick = () => { if (!gold(12)) return; R.closeSheet(); const s = R.S; s.buff = { kind: 'dept', b: { hp: 0.04, mp: 0.06 }, until: s.day }; R.save(); R.townTalk('德克斯凡百貨・餐廳街', ['兒童午餐上插著一支小旗子。你點了大人的咖哩飯。', '（下一趟遺跡：生命 +4%、魔力 +6%，只有今天）']); };
-    document.getElementById('dp-roof').onclick = () => { if (!gold(3)) return; R.closeSheet(); R.townTalk('屋頂遊樂園', ['摩天輪慢慢轉到最上面。', '看得到整個東鶴：舊城的城牆、霜溪、北邊的山，還有站前一排一排的屋頂。']); };
+    document.getElementById('dp-roof').onclick = () => { if (!gold(3)) return; R.closeSheet(); R.townTalk('屋頂遊樂園', ['摩天輪慢慢轉到最上面。', '看得到舊城的城牆，鶴川斜斜地流過城中間，再往南是站前一排排的屋頂。北邊的山頂著雪。']); };
     document.getElementById('dp-x').onclick = R.closeSheet;
   };
   // 柏青哥、夾娃娃機：pachinko.js、claw.js（2026-10-26：這裡原本擲骰子的版本刪掉了）

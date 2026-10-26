@@ -1,4 +1,4 @@
-// 望月瀧的「刀勢」流派（2026-10-13 作者：瀧在別的遊戲裡的招式——抓破綻累積刀勢、納刀存起來、滿了進入貫勢爆發；她教的可以類似，但要轉成這個遊戲、不能跟現有技能像）
+// 望月瀧的「刀勢」流派（2026-10-13 作者：瀧在別的遊戲裡的招式──抓破綻累積刀勢、納刀存起來、滿了進入貫勢爆發；她教的可以類似，但要轉成這個遊戲、不能跟現有技能像）
 // - 跟刀客本身的刀意／收刀／居合／殘心／反切分開：刀勢只有學了瀧這一派的招式才有，存在 P.tkSei（未收）／P.tkBank（已存 0～5）。
 // - 未收的刀勢（最多 5）三種來源各 +1：
 //   看破：遺跡生物正在出招或剛出完招（破綻）時打中牠（王的霸體／無敵不算），一次破綻只算一次；
@@ -126,7 +126,7 @@
     R.sfx && R.sfx('swing');
   };
   T.tkNagare = (s, P) => { P.tkCut = s.t; P.tkCutN = 0; P.stance = Math.max(P.stance || 0, 0.25); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2.6, color: '#BFE8FF' }); };
-  T.tkNoto = (s, P) => { P.tkNoto = s.t; P.stance = Math.max(P.stance || 0, s.t); R.swingAnim && R.swingAnim(P.h, s.t, s.t + 0.02); R.num && R.num(P.x, 2.6, P.z, '納勢…', ''); };
+  T.tkNoto = (s, P) => { P.tkNoto = s.t; P.stance = Math.max(P.stance || 0, s.t); R.swingAnim && R.swingAnim(P.h, s.t, s.t + 0.02); R.num && R.num(P.x, 2.6, P.z, '納勢……', ''); };
   T.tkSoudan = (s, P, w, p) => {
     const strong = P.tkKan > 0; P.tkArmor = 0.55; P.stance = Math.max(P.stance || 0, 0.5);
     R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 1.8, color: strong ? '#FFFFFF' : '#BFE8FF' }); R.num && R.num(P.x, 2.6, P.z, strong ? '霜斷・極' : '霜斷', 'heal');
@@ -179,7 +179,7 @@
   if (L) L.sort((a, b) => a.need - b.need);   // 照等級排：靜水 10、霜返 15、三圈一結 20、流斷 25、瀧落 30、納勢 35、霜斷 45
   R.TAKI_SEI = LESSONS;
   // 圖示
-  // 2026-10-13：skill-art-map.js 比這個檔案晚載入、會把 R.SKILL_ART_MAP 整個換掉——等全部載完再登記，不然刀勢四招沒有圖示
+  // 2026-10-13：skill-art-map.js 比這個檔案晚載入、會把 R.SKILL_ART_MAP 整個換掉──等全部載完再登記，不然刀勢四招沒有圖示
   const regArt = () => { const map = R.SKILL_ART_MAP;
   if (map) { map.sheets['taki-sei'] = { file: 'taki-sei-v1.png', cols: 4, rows: 1, count: 4 }; NEW.forEach((id, i) => { if (!map.icons[id]) map.icons[id] = { sheet: 'taki-sei', tile: i, name: LESSONS[i].name, family: id }; }); } };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', regArt); else regArt();

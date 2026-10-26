@@ -1,4 +1,4 @@
-// 各城自己的玩法（2026-10-26 作者：各城都只是換皮——公會分館、設施、委託全都一樣）
+// 各城自己的玩法（2026-10-26 作者：各城都只是換皮──公會分館、設施、委託全都一樣）
 // 這個檔是共用的底：
 // - 地方委託：每座城有自己的委託（R.cityQuests[城] 登記；要真的交出東西或做到一件事才算完成，做完加這座城的聲望）。
 //   聲望每 5 點一級（最多 5 級）：這座城買賣貨物的價錢好 2%／級、委託報酬多 5%／級。
@@ -71,7 +71,7 @@
     document.querySelectorAll('[data-co]').forEach(b => { b.onclick = () => { const o = c.orders.find(x => x.k === b.dataset.co); if (!o || (c.cargo[o.g] || 0) < o.n) return; c.cargo[o.g] -= o.n; if (!c.cargo[o.g]) delete c.cargo[o.g]; o.done = true; s.gold += o.pay; R.cityRep('nanlong', 2); R.cityRep(id, 1); ok('外貿訂單交貨：+' + o.pay + ' 費拉（南瀧的聲望 +2）'); again(); }; });
   };
   const guide = id => {
-    R.sheet('<h2>各城的貨物行情</h2><p class="note">今天的價錢。買只能在出產的城，賣哪裡都可以——在需要它的城最好。</p><table class="ct-t"><tr><th>貨物</th><th>出產（買）</th><th>收得最貴的城（賣）</th></tr>'
+    R.sheet('<h2>各城的貨物行情</h2><p class="note">今天的價錢。買只能在出產的城，賣哪裡都可以──在需要它的城最好。</p><table class="ct-t"><tr><th>貨物</th><th>出產（買）</th><th>收得最貴的城（賣）</th></tr>'
       + Object.keys(GOODS).map(g => { const G = GOODS[g], best = G[3].map(cc => [cc, sellP(cc, g)]).sort((a, b) => b[1] - a[1])[0]; return '<tr><td>' + esc(G[0]) + '</td><td>' + esc(cityName(G[2])) + ' ' + buyP(G[2], g) + '</td><td>' + esc(cityName(best[0])) + ' ' + best[1] + '</td></tr>'; }).join('') + '</table>',
       '<div class="row"><button type="button" class="btn pri" id="ct-b">回貨運窗口</button></div>');
     $('ct-b').onclick = () => R.cityTrade(id);
@@ -89,7 +89,7 @@
   };
   R.CITY_FAC['nanlong:cargo'] = city => {
     const L = orders(), day = S().day || 1, c = C2();
-    R.sheet('<p class="kicker">南瀧・外貿公司</p><h2>外貿訂單</h2><p>「外國船下週要來。誰能把貨湊齊送到，我們照單付錢——比自己拿去賣好賺。」</p>'
+    R.sheet('<p class="kicker">南瀧・外貿公司</p><h2>外貿訂單</h2><p>「外國船下週要來。誰能把貨湊齊送到，我們照單付錢──比自己拿去賣好賺。」</p>'
       + L.map(o => '<div class="row ct-o"><span><b>' + o.n + ' 箱' + esc(GOODS[o.g][0]) + '</b> 送到 <b>' + esc(cityName(o.to)) + '</b>（' + esc(cityName(GOODS[o.g][2])) + '出產）・期限還有 ' + (o.until - day) + ' 天・報酬 <b>' + o.pay + '</b> 費拉</span>' + (o.mine ? '<small>已接</small>' : '<button type="button" class="btn" data-oo="' + o.k + '">接</button>') + '</div>').join('')
       + '<p class="note">接了以後，把貨運到目的地，在那座城車站的貨運窗口交貨。你的貨箱 ' + load() + '／' + cap() + '。</p>',
       '<div class="row"><button type="button" class="btn pri" id="ct-x">好了</button></div>');
@@ -136,7 +136,7 @@
   ];
   R.CITY_FAC['zhengyuan:museum'] = city => {
     const s = S(), c = C2();
-    R.sheet('<p class="kicker">征遠・軍艦博物館</p><h2>軍艦博物館</h2><p>大廳正中間是武聖號的模型，比人還高。說明牌：「昭旭最大的戰列艦。第二次大陸會戰之後，征遠只造商船與民用船——但仍是全國最大的造船廠。」</p>'
+    R.sheet('<p class="kicker">征遠・軍艦博物館</p><h2>軍艦博物館</h2><p>大廳正中間是武聖號的模型，比人還高。說明牌：「昭旭最大的戰列艦。第二次大陸會戰之後，征遠只造商船與民用船──但仍是全國最大的造船廠。」</p>'
       + '<p class="note">' + (c.plateGiven ? '大廳角落多了一塊銅銘牌：「武德號（由勇者捐贈）」。' : '館長說：「武聖號的姊妹艦武德號還擱在岸邊。要是有人能把它的銘牌帶回來……」') + '</p>',
       '<div class="row">' + (c.plate && !c.plateGiven ? '<button type="button" class="btn pri" id="mu-plate">把武德號的銘牌交給館長</button>' : '') + '<button type="button" class="btn" id="mu-q"' + (c.quizDay === s.day ? ' disabled' : '') + '>館長的問題（一天一次）</button><button type="button" class="btn" id="mu-x">好了</button></div>');
     $('mu-x').onclick = R.closeSheet;
@@ -189,7 +189,7 @@
     R.sheet('<p class="kicker">南瀧・湍遊國際大學</p><h2>湍遊國際大學</h2><p>附設魔力學院分院和聖教學院。外國留學生比本地學生多。</p>',
       '<div class="row"><button type="button" class="btn pri" id="un-l"' + (s.day < next || s.gold < 60 ? ' disabled' : '') + '>魔力學院的公開課（60 費拉・經驗書 ×1' + (s.day < next ? '・第 ' + next + ' 天再開' : '') + '）</button><button type="button" class="btn" id="un-p"' + (c.prayDay === s.day ? ' disabled' : '') + '>聖教學院的晚禱（理智回復）</button><button type="button" class="btn" id="un-x">好了</button></div>');
     $('un-x').onclick = R.closeSheet;
-    $('un-l').onclick = () => { if (s.day < next || s.gold < 60) return; s.gold -= 60; c.lecture = s.day; s.xpBooks = (s.xpBooks || 0) + 1; R.cityRep('nanlong', 1); R.save(); R.townTalk('魔力學院・公開課', ['教授在黑板上畫魔力迴路。「遺跡裡的魔力，是從地底往上滲的——」', '你抄了滿滿三頁。（經驗書 +1）']); };
+    $('un-l').onclick = () => { if (s.day < next || s.gold < 60) return; s.gold -= 60; c.lecture = s.day; s.xpBooks = (s.xpBooks || 0) + 1; R.cityRep('nanlong', 1); R.save(); R.townTalk('魔力學院・公開課', ['教授在黑板上畫魔力迴路。「遺跡裡的魔力，是從地底往上滲的──」', '你抄了滿滿三頁。（經驗書 +1）']); };
     $('un-p').onclick = () => { if (c.prayDay === s.day) return; c.prayDay = s.day; if (R.sanAdd) R.sanAdd(10); R.save(); R.townTalk('聖教學院・晚禱', ['燭光、管風琴、聽不懂的外國話。', '心裡安靜了一點。（理智回復）']); };
   };
   // 商業區拱廊：德克斯凡的舶來品店（每天換三件飾品）

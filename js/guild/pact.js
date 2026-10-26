@@ -1,5 +1,5 @@
 // 加注條款、稱號（作者：可以自己勾選項，像是回血量減半、怪物血量翻倍、都是精英怪；全部勾起來有成就或稱號，稱號可能有加成）
-// 設定上的說法：公會的特殊討伐令本來就可以附條件——勇者自願接下更苛刻的條款，公會照條款加付報酬。
+// 設定上的說法：公會的特殊討伐令本來就可以附條件──勇者自願接下更苛刻的條款，公會照條款加付報酬。
 // - 委託書上（guildtask.js 的 R.taskExtras）勾條款；每一條有一到兩級，每級幾點「加注」。上一次勾的會記住。
 // - 加注每 1 點：委託報酬 +10%、經驗 +5%、寶物數量 +3%（寶箱多開一樣東西的機率；2026-10-04 作者：「寶箱裡面多一樣」改叫「寶物數量」）。
 // - 稱號：用條款走完遺跡、五軌制成績好，就會拿到稱號；一次戴一個，各有小加成（傷害、暴擊、生命、經驗、報酬、回復）。
@@ -28,7 +28,7 @@
   ];
   const T = Object.fromEntries(TERMS.map(t => [t[0], t]));
   const MAXPTS = TERMS.reduce((a, t) => a + t[3][t[3].length - 1], 0);
-  // 2026-10-10 作者：卡索級全加注根本不可能完成——卡索級一定要帶隊友（kaso.js），「單獨」選不了；卡索級的滿注不算「單獨」
+  // 2026-10-10 作者：卡索級全加注根本不可能完成──卡索級一定要帶隊友（kaso.js），「單獨」選不了；卡索級的滿注不算「單獨」
   const maxFor = g => (g === 'kaso' ? MAXPTS - T.solo[3][0] : MAXPTS);
   const ptsOf = sel => Object.keys(sel || {}).reduce((a, k) => a + (sel[k] && T[k] ? T[k][3][sel[k] - 1] : 0), 0);
   const pact = () => { const s = S(); s.pact = s.pact || { sel: {}, best: {}, got: {}, title: null }; return s.pact; };
@@ -151,7 +151,7 @@
   if (ah1) R.allyHit = (e, dmg, by) => { if (e) { const run = W().run; e.hitAt = run ? run.t : 0; } return ah1(e, dmg, by); };
   // 易傷、鈍足
   const hp1 = R.hurtPlayer;
-  R.hurtPlayer = (raw, src, o) => hp1(on('glass') && raw > 0 ? raw * (1 + [0, 0.3, 0.6][on('glass')]) : raw, src, o);   // 2026-10-21 作者：易傷不會被吃掉——不算進減傷係數（上限 75%），直接乘在受到的傷害上
+  R.hurtPlayer = (raw, src, o) => hp1(on('glass') && raw > 0 ? raw * (1 + [0, 0.3, 0.6][on('glass')]) : raw, src, o);   // 2026-10-21 作者：易傷不會被吃掉──不算進減傷係數（上限 75%），直接乘在受到的傷害上
   const dg1 = R.dodge;
   R.dodge = () => { const P = W().P; if (P && on('nodash') && !P.pactNodash && P.dodgeCdMax) { P.pactNodash = 1; P.dodgeCdMax *= 2; } return dg1(); };
   R.pactHealK = () => (on('heal') ? 0.5 : 1);   // 不經過 R.healP 的回復（營火、泉水）也照「回復減半」
@@ -187,7 +187,7 @@
       if (full || comp >= 60) pp.best[g] = Math.max(pp.best[g] || 0, p.pts);
       if (full) { pp.bestFull = pp.bestFull || {}; pp.bestFull[g] = Math.max(pp.bestFull[g] || 0, p.pts); }
       if (comp >= 60 && p.pts > 0) award('first');   // 2026-10-21：繼續委託沒帶條款時 run.pact＝{ pts: 0 }，不算
-      // 2026-10-04 作者：用孤單跟禁藥闖很多次也沒拿到——層數加深以後「走完」太難，改成委託做到六成以上回來就算（滿注的稱號還是要走完）
+      // 2026-10-04 作者：用孤單跟禁藥闖很多次也沒拿到──層數加深以後「走完」太難，改成委託做到六成以上回來就算（滿注的稱號還是要走完）
       if (full || comp >= 60) {
         if (p.pts >= 10) award('ten'); if (p.pts >= 20) award('twenty');
         if (p.sel.nopot) award('nopot'); if (p.sel.nocry) award('back'); if (p.sel.elite) award('elite');

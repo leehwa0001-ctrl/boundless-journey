@@ -214,7 +214,7 @@
       const ball = mesh(new TH.SphereGeometry(0.28, 10, 8), new TH.MeshLambertMaterial({ color: '#D8D8E8', emissive: '#6A6A88' }), 0, 2.8, 0.6); ball.castShadow = false;
       lamp(-2.5, 2.6, 0.6, '#FF5AB8', 0.7, 7); lamp(2.5, 2.6, 0.6, '#5AE0FF', 0.7, 7); lamp(0, 2.2, -HD + 1.2, '#8A9AFF', 0.6, 6);
       inter(0, -HD + 1.6, 1.8, '點歌（一首 ' + PRICE + ' 費拉）', () => R.karaoke());
-      inter(1.6, 1.8, 1.4, '看點歌本', () => K2.talk('點歌本', SONGS.map(s => '〈' + s.title + '〉——' + s.genre + (R.S.karaoke && R.S.karaoke[s.k] ? '（你的最高分：' + R.S.karaoke[s.k] + '）' : '')).concat(['（最後一頁有人用鉛筆寫：「〈勇者證明〉最後一句要拉長。」）'])));
+      inter(1.6, 1.8, 1.4, '看點歌本', () => K2.talk('點歌本', SONGS.map(s => '〈' + s.title + '〉──' + s.genre + (R.S.karaoke && R.S.karaoke[s.k] ? '（你的最高分：' + R.S.karaoke[s.k] + '）' : '')).concat(['（最後一頁有人用鉛筆寫：「〈勇者證明〉最後一句要拉長。」）'])));
       npc(-HW + 1.6, -HD + 1.0, Math.PI / 2, { name: '包廂的店員', look: { top: '#2E2E38', hair: '#4A3424' } });
       inter(-HW + 2.6, -HD + 1.2, 1.5, '和店員說話', () => K2.talk('卡拉 OK 的店員', [['「飲料無限暢飲。麥克風請不要摔。」', '「隔壁那間是公會的人，一放假就來。每次都點同一首。」', '「分數是機器算的，我們也改不了。你剛才那首要不要再試一次？」'][Math.floor(Math.random() * 3)]]));
     };

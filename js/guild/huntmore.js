@@ -16,9 +16,9 @@
   const WILD = {
     plainwolf: { name: '原野狼', hp: 140, dmg: 14, speed: 4.6, xp: 18, size: 0.9, ai: 'chase', color: '#7A7468', eye: '#E8A040', desc: '灰褐色的狼，背上一條深色的鞍紋。三四頭一群，帶頭的頭狼特別大。有狼受了重傷就會長嚎，附近的狼一起變快、變兇；先打倒頭狼，剩下的會夾著尾巴逃走。', drop: [['wolfpelt', 1], ['meat', 1]] },
     branchstag: { name: '枝角鹿', hp: 420, dmg: 22, speed: 3.8, xp: 40, size: 1.4, ai: 'charge', color: '#7A5A3A', eye: '#E8C060', desc: '鹿角長得像冬天光禿禿的樹枝，上面還掛著幾片枯葉。正面的傷害被鹿角擋掉一半；被牠衝到會被鹿角勾住，動作變慢。從側面或背後下手。', drop: [['stagantler', 1], ['meat', 2]] },
-    swifthorn: { name: '疾角羚', hp: 120, dmg: 12, speed: 6.2, xp: 22, size: 1.0, ai: 'kite', color: '#C89A5A', eye: '#3A2A1A', flee: 1, desc: '細長的羚羊，跑起來太快，刀和箭都只能擦過（傷害六成）。每隔一陣子會停下來低頭吃草——那幾秒才是下手的時候（傷害 ×1.5）。一受傷就往遠處逃。', drop: [['swifthornpiece', 1], ['meat', 1]] },
+    swifthorn: { name: '疾角羚', hp: 120, dmg: 12, speed: 6.2, xp: 22, size: 1.0, ai: 'kite', color: '#C89A5A', eye: '#3A2A1A', flee: 1, desc: '細長的羚羊，跑起來太快，刀和箭都只能擦過（傷害六成）。每隔一陣子會停下來低頭吃草──那幾秒才是下手的時候（傷害 ×1.5）。一受傷就往遠處逃。', drop: [['swifthornpiece', 1], ['meat', 1]] },
     crageagle: { name: '岩鷲', hp: 110, dmg: 16, speed: 5.2, xp: 24, size: 1.0, ai: 'swoop', fly: 1, color: '#4A3A2A', eye: '#F0C040', desc: '白頭的大鷲。在高處盤旋的時候近戰打不到，只能用遠程；俯衝抓完人會停在地上喘一下，那時候近戰也打得到，而且特別痛。', drop: [['eaglefeather', 2]] },
-    stoneape: { name: '投石猿', hp: 130, dmg: 10, speed: 4.2, xp: 18, size: 0.8, ai: 'kite', shoot: 0.6, color: '#8A8A88', eye: '#C83A2A', desc: '紅臉的山猿，抓起石頭就丟。被牠打到，牠會順手搶走一瓶回復藥就跑——打倒牠才拿得回來。', drop: [['apefur', 1]] },
+    stoneape: { name: '投石猿', hp: 130, dmg: 10, speed: 4.2, xp: 18, size: 0.8, ai: 'kite', shoot: 0.6, color: '#8A8A88', eye: '#C83A2A', desc: '紅臉的山猿，抓起石頭就丟。被牠打到，牠會順手搶走一瓶回復藥就跑──打倒牠才拿得回來。', drop: [['apefur', 1]] },
     bambootiger: { name: '竹影虎', hp: 380, dmg: 26, speed: 5.4, xp: 45, size: 1.3, ai: 'pounce', color: '#9A9A4A', eye: '#E8E05A', desc: '金綠色的虎，身上的直紋像竹子的影子。離你遠的時候藏在竹影裡幾乎看不見，第一下撲擊特別重（×1.6）。看到地上的草在動就要小心。', drop: [['tigerpelt', 1], ['meat', 2]] },
     snowhare: { name: '雪原兔', hp: 40, dmg: 0, speed: 6, xp: 6, size: 0.5, ai: 'kite', flee: 1, harmless: 1, color: '#EEF2F6', eye: '#6AA8E8', desc: '大大的白兔，耳朵很長。不會攻擊人，一看到人就跑；被追太久會鑽進地洞不見。', drop: [['harefur', 1], ['meat', 1]] },
     reedheron: { name: '蘆鷺', hp: 100, dmg: 15, speed: 3.6, xp: 16, size: 0.9, ai: 'charge', color: '#7A8AA0', eye: '#F0D040', desc: '灰藍色的高大水鳥，長喙像槍一樣往前刺。從正面近戰打牠，常常會被長喙撥開（三成五）；繞到側面或背後。', drop: [['heronplume', 1]] }
@@ -219,7 +219,7 @@
         // 逃走的狼：跑一下就不見（驅趕委託算趕走了一頭）
         if (e.gone != null) { e.gone -= dt; if (e.gone <= 0) { e.dead = true; if (e.m && e.m.g && e.m.g.parent) e.m.g.parent.remove(e.m.g); const job = w.run.huntJob; if (job && job.kind === 'drive' && job.need[e.id]) { w.run.huntDriven = w.run.huntDriven || {}; w.run.huntDriven[e.id] = (w.run.huntDriven[e.id] || 0) + 1; } } return; }
         if (e.id === 'plainwolf') {
-          if (!e.howled && e.hp < e.hpMax * 0.5) { e.howled = 1; say(e, '嗷——'); R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 6, color: '#E8A040' }); (w.enemies || []).forEach(o => { if (!o.dead && o.id === 'plainwolf' && dist(o, e) < 18) o.rage = 6; }); }
+          if (!e.howled && e.hp < e.hpMax * 0.5) { e.howled = 1; say(e, '嗷──'); R.fx && R.fx('ring', e.x, 0.1, e.z, { r: 6, color: '#E8A040' }); (w.enemies || []).forEach(o => { if (!o.dead && o.id === 'plainwolf' && dist(o, e) < 18) o.rage = 6; }); }
           if (e.rage != null) { if (!e.baseSp) { e.baseSp = e.speed; e.baseDmg = e.dmg; } e.rage -= dt; e.speed = e.baseSp * (e.rage > 0 ? 1.35 : 1); e.dmg = e.baseDmg * (e.rage > 0 ? 1.25 : 1); if (e.rage <= 0) e.rage = null; }
         }
         if (e.id === 'swifthorn') {

@@ -182,7 +182,7 @@
     [-4, 4].forEach(x => { for (let i = 0; i < 6; i++) { const z = -HD + 2 + i * 1.3; machine(c, x - 0.5, z, -Math.PI / 2, '#C8C0D8', lit(side(x, -1))); machine(c, x + 0.5, z, Math.PI / 2, '#C8C0D8', lit(side(x, 1))); } });
     [[-5.5, -1, -4, -1], [-2.5, 1, -4, 1], [2.5, -1, 4, -1], [5.5, 1, 4, 1]].forEach(([px, pz, x, f]) => { const k = side(x, f), nm = PK[k] ? PK[k].name : ''; c.inter(px, pz, 1.8, nm ? '坐下來打「' + nm + '」（' + PK[k].spec + '）' : '找一台空著的坐下（打柏青哥）', PK[k] ? () => R.pachinko(k) : run('pachinko')); });
     for (let k = 0; k < 6; k++) { const x = (rnd() < 0.5 ? -5.4 : 5.4) * (rnd() < 0.5 ? 1 : 0.85), z = -HD + 2 + Math.floor(rnd() * 6) * 1.3; c.npc(x, z, x < 0 ? Math.PI / 2 : -Math.PI / 2, { name: '打柏青哥的人', look: look() }); }
-    counter(c, 0, HD - 2.5, 5, { col: '#C9A13A', top: '#E8D8A0' }); guest(c, 0, HD - 3.5, 0, '景品的店員', ['「鋼珠可以換香菸、零食、玩具。也可以換這個——（金色的小牌子）。」', '「這個嘛，出去轉角的小窗口會收。我什麼都沒說。」'], { top: '#C83A3A' });
+    counter(c, 0, HD - 2.5, 5, { col: '#C9A13A', top: '#E8D8A0' }); guest(c, 0, HD - 3.5, 0, '景品的店員', ['「鋼珠可以換香菸、零食、玩具。也可以換這個──（金色的小牌子）。」', '「這個嘛，出去轉角的小窗口會收。我什麼都沒說。」'], { top: '#C83A3A' });
     lamp(-4, 3.0, 0, '#FF8AC8', 0.7, 10); lamp(4, 3.0, 0, '#8AE0FF', 0.7, 10); lamp(0, 3.2, HD - 3, '#FFE070', 0.6, 8);
   });
   // ---------- 遊樂場 ----------
@@ -203,7 +203,7 @@
     if (o.furnish) o.furnish(c);
     lamp(0, 3.0, 0, o.light || '#FFE8C8', 0.8, 12);
   });
-  shop('konbini', '德克斯凡便利商店', '店內', { hint: '「歡迎光臨——」', wall: '#F0F4F4', cap: '#3A8A5A', floor: ['#D8DCDC', 'floor'], counter: '#E8E8EC', clerk: '便利商店的店員', clerkLook: { top: '#3A8A5A' }, label: '收銀台', light: '#F4FAFF', furnish: c => {
+  shop('konbini', '德克斯凡便利商店', '店內', { hint: '「歡迎光臨──」', wall: '#F0F4F4', cap: '#3A8A5A', floor: ['#D8DCDC', 'floor'], counter: '#E8E8EC', clerk: '便利商店的店員', clerkLook: { top: '#3A8A5A' }, label: '收銀台', light: '#F4FAFF', furnish: c => {
     const { HW, HD, bx, block } = c; [-1, 2.5].forEach(x => shelf(c, x, 0.5, 3.4, { alongZ: true, h: 1.5, face: 1, col: '#C8C8D0' }));
     for (let i = 0; i < 4; i++) { bx(0.8, 2.0, 0.7, '#B8C0C8', HW - 0.45, 1.0, -HD + 1 + i * 0.85); const g = bx(0.04, 1.6, 0.6, K().lam('#E8F8FF', { em: '#BFE8FF', ei: 0.6 }), HW - 0.85, 1.05, -HD + 1 + i * 0.85); g.castShadow = false; } block(HW - 0.9, HW, -HD + 0.5, -HD + 4.2, 'shelf');
     shelf(c, HW - 3, HD - 0.6, 3.4, { h: 1.0, face: -1, col: '#C8C8D0', goods: ['#E8E0D0', '#C83A3A', '#3A6ACF'] }); guest(c, HW - 3, HD - 1.6, 0, '站著看雜誌的人', ['「……」（假裝沒看到你。）', '「這期的勇者特集，有寫到城西遺跡。」']); } });
@@ -239,7 +239,7 @@
   shop('barber', '理髮店', '店內', { hint: '剪刀喀擦喀擦', wall: '#E8ECF0', cap: '#C83A3A', floor: ['#C8C8D0', 'floor'], clerk: '理髮師傅', clerkLook: { top: '#F0F4F8' }, label: '剪頭髮、聊天', furnish: c => {
     const { HW, HD, bx, block } = c; for (let i = 0; i < 2; i++) { const x = 1 + i * 3; bx(0.8, 0.9, 0.8, '#3A3A42', x, 0.45, -HD + 2); bx(0.8, 0.8, 0.15, '#C83A3A', x, 1.1, -HD + 2.35); block(x - 0.45, x + 0.45, -HD + 1.5, -HD + 2.5, 'chair'); const m = bx(1.2, 1.4, 0.04, K().lam('#DDEEFF', { em: '#8AA8C8', ei: 0.2 }), x, 1.6, -HD + 0.35); m.castShadow = false; }
     bench(c, -HW + 0.5, 1.5, 3, false); guest(c, 1, -HD + 2, 0, '剪頭髮的客人', ['「短一點就好。」', '「師傅，聽說北山礦坑又出事了？」']); } });
-  shop('photo', '寫真館', '攝影棚', { hint: '「請看這裡——」', wall: '#D8D0C8', cap: '#3A3A42', clerk: '寫真館的老闆', clerkLook: { top: '#2E2E38', acc: 'glasses' }, label: '拍一張照片（勇者證用的大頭照）', furnish: c => {
+  shop('photo', '寫真館', '攝影棚', { hint: '「請看這裡──」', wall: '#D8D0C8', cap: '#3A3A42', clerk: '寫真館的老闆', clerkLook: { top: '#2E2E38', acc: 'glasses' }, label: '拍一張照片（勇者證用的大頭照）', furnish: c => {
     const { HW, HD, bx, block } = c; bx(6, 3.4, 0.05, '#6A7A8A', 2, 1.7, -HD + 0.32, c.NW.g); chair(c, 2, -HD + 1.6, 0); bx(0.3, 1.4, 0.3, '#2A2A30', 2, 0.7, 1.5); bx(0.6, 0.4, 0.5, '#1A1A20', 2, 1.6, 1.5); block(1.7, 2.3, 1.2, 1.8, 'deco');
     [[-0.5, 0], [4.5, 0]].forEach(([x, z]) => { bx(0.1, 2.2, 0.1, '#C8C8D0', x, 1.1, z); bx(0.6, 0.6, 0.6, K().lam('#FFFFFF', { em: '#FFF8E8', ei: 0.7 }), x, 2.3, z); });
     for (let i = 0; i < 6; i++) c.bx(0.5, 0.7, 0.04, pick(['#C8B8A0', '#A8988A', '#E8E0D0']), -HW + 0.36, 1.6 + (i % 2) * 0.9, -2 + Math.floor(i / 2) * 1.2, c.WW.g); } });
@@ -367,7 +367,7 @@
     if (ins.spar) ins.spar.forEach(n => { n.t -= dt; if (n.t <= 0) { n.t = 1.1 + rnd() * 0.9; n.h.swing = 0.25; } });
   };
   // ---------- 東鶴站 ----------
-  def('trainst', { name: '東鶴站', sub: '售票口・剪票口・候車室', hint: '「往皇嶺的魔導電車，即將進站——」', w: 24, d: 14, h: 5, zoom: 0.9, wall: '#C8C0B0', cap: '#3A4A5A', floor: ['#A8A49C', 'floor'] }, c => {
+  def('trainst', { name: '東鶴站', sub: '售票口・剪票口・候車室', hint: '「往皇嶺的魔導電車，即將進站──」', w: 24, d: 14, h: 5, zoom: 0.9, wall: '#C8C0B0', cap: '#3A4A5A', floor: ['#A8A49C', 'floor'] }, c => {
     const { HW, HD, bx, block, lamp } = c;
     counter(c, -6, -HD + 2, 6, { col: '#5A6A7A', top: '#8A9AA8' }); clerk(c, -6, -HD + 1, 0, '售票口的站務員', { top: '#2E3A4A', cloak: '#2E3A4A' }, '售票口：搭魔導電車', run('trainst'));
     for (let i = 0; i < 4; i++) { const x = 3 + i * 1.6; bx(0.3, 1.0, 1.6, '#8A8A92', x, 0.5, -HD + 3); const l = bx(0.12, 0.12, 0.12, K().lam('#5AFF8A', { em: '#5AFF8A', ei: 1 }), x, 1.05, -HD + 2.5); l.castShadow = false; block(x - 0.2, x + 0.2, -HD + 2.2, -HD + 3.8, 'deco'); }

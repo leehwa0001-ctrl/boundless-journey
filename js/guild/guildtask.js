@@ -25,13 +25,13 @@
   const floorsOf = site => { if (R.floorsFor) return R.floorsFor(site); const g = R.gradeById(site.grade); return Math.max(2, g.floors + (R.TYPES[site.type] && R.TYPES[site.type].floors || 0)); };
   R.taskSpec = site => {
     const g = R.gradeById(site.grade), floors = floorsOf(site), patrol = g.id === 'hamilia'; const eqF = site.type === 'island' && R.islandZonesAvg ? floors * Math.max(1, Math.ceil(R.islandZonesAvg(g.id) / 2)) : floors;
-    return { kind: patrol ? 'patrol' : 'hunt', need: patrol ? floors : Math.max(10, Math.round(Math.min(eqF, 50) * (K[g.id] || 12))),   /* 2026-10-04 作者：委託的數量、時限還可以再調——後期一趟殺一兩千隻、30 層不到 20 小時，200 小時夠人掛機一整天。討伐數照層數算到第 50 層（原本只算到第 10 層） */ limitH: patrol ? Math.ceil(eqF * 8 * (1 + 0.08 * (g.lv - 1))) : Math.max(12, Math.ceil(Math.min(eqF, 50) * 1.6 * (1 + 0.05 * (g.lv - 1)))),   /* 2026-10-13 作者：時限全部 ×2（巡查每層 8 小時、討伐每層 1.6 小時）；浮島型照「層數 × 每層大約要走的區數（約一半）」換算 */   /* 時限：每層 0.8 小時（原本 4 小時） */ letter: g.letter || '', floors };
+    return { kind: patrol ? 'patrol' : 'hunt', need: patrol ? floors : Math.max(10, Math.round(Math.min(eqF, 50) * (K[g.id] || 12))),   /* 2026-10-04 作者：委託的數量、時限還可以再調──後期一趟殺一兩千隻、30 層不到 20 小時，200 小時夠人掛機一整天。討伐數照層數算到第 50 層（原本只算到第 10 層） */ limitH: patrol ? Math.ceil(eqF * 8 * (1 + 0.08 * (g.lv - 1))) : Math.max(12, Math.ceil(Math.min(eqF, 50) * 1.6 * (1 + 0.05 * (g.lv - 1)))),   /* 2026-10-13 作者：時限全部 ×2（巡查每層 8 小時、討伐每層 1.6 小時）；浮島型照「層數 × 每層大約要走的區數（約一半）」換算 */   /* 時限：每層 0.8 小時（原本 4 小時） */ letter: g.letter || '', floors };
   };
   const specLines = (site, sp) => { const g = R.gradeById(site.grade); return sp.lines || ['任務分級：' + sp.letter + ' 級（' + g.name + '）', sp.kind === 'patrol' ? '任務內容：巡查（走到最深處，第 ' + sp.floors + ' 層）' : '任務內容：討伐遺跡生物 ' + sp.need + ' 隻（討伐令 1433 令）', '時限：' + sp.limitH + ' 小時（超過每小時扣 3% 的效率分）']; };
   R.taskExtras = [];   // 加注條款之類的：{ html(site), bind(box, site) }
   const hubOpen = () => { const h = $('hub'); return h && !h.hidden; };
   const modal = (html, foot) => {
-    if (hubOpen()) { $('hub-sheet').innerHTML = html + foot; $('hub-modal').hidden = false; const box = $('hub-sheet'); return { box, q: id => box.querySelector('#' + id), close: () => { $('hub-modal').hidden = true; box.innerHTML = ''; } }; }   // 2026-10-10：關掉就清空、按鈕只在這一張裡找——留著的舊委託書會跟下一張的按鈕同名（按了沒反應）
+    if (hubOpen()) { $('hub-sheet').innerHTML = html + foot; $('hub-modal').hidden = false; const box = $('hub-sheet'); return { box, q: id => box.querySelector('#' + id), close: () => { $('hub-modal').hidden = true; box.innerHTML = ''; } }; }   // 2026-10-10：關掉就清空、按鈕只在這一張裡找──留著的舊委託書會跟下一張的按鈕同名（按了沒反應）
     const mapWasOpen = $('map') && !$('map').hidden; if (mapWasOpen && R.showScreen) R.showScreen('run');
     R.sheet(html, foot);
     const box = $('r-sheet'); return { box, q: id => box.querySelector('#' + id), close: () => { R.closeSheet(); if (mapWasOpen && R.showScreen && !W().run) R.showScreen('map'); } };
@@ -177,7 +177,7 @@
     const s = S(); if (!s || !s.tasks) return 0; let n = 0;
     s.tasks.forEach(t => {
       if (t.s[4] != null || t.ready > s.day) return;
-      // 反饋：民眾覺得威脅變少、生態慢慢恢復——跟完成度、環境有關；公會自己調查來的遺跡委託起伏比較小
+      // 反饋：民眾覺得威脅變少、生態慢慢恢復──跟完成度、環境有關；公會自己調查來的遺跡委託起伏比較小
       t.s[4] = clamp(58 + 0.25 * t.s[0] + 0.15 * t.s[3] + (Math.random() - 0.5) * 12 - (t.failed ? 20 : 0));
       if (R.traitTaskAxes) t.s = R.traitTaskAxes(t.s, t);   // 特質：反饋 良民 +10、英雄後裔 +35；默默無名最高 70、惡名遠洋最高 25（traitlife.js）
       t.avg = Math.round(t.s.reduce((a, b) => a + b, 0) / 5); if (R.traitTaskAvg) t.avg = R.traitTaskAvg(t.avg, t); n++;
@@ -199,7 +199,7 @@
     const ts = (s.tasks || []), done = ts.filter(x => x.avg != null), wait = ts.length - done.length, avg = R.taskAverage();
     if (s.heldTask) {
       const h = s.heldTask, tb = document.createElement('div'); tb.className = 'ft-box ti-box';
-      tb.innerHTML = '<h3>手上的委託（可自行繳交或放棄）</h3><p><b>' + esc(h.letter) + ' 級・' + esc(h.site) + '</b>：' + esc(R.heldLine(h)) + '</p><p class="note">進度夠了就按「繳交委託」結算五軌成績並領報酬 <b>' + (h.pay || 0) + '</b> 費拉；還沒做完可再下同一座遺跡繼續。不想做了按「放棄這張委託」（記為失敗、報酬拿不到）。多人連線跟上隊友時不會自動放棄——原委託會留著，可之後再回這裡處理。</p>'
+      tb.innerHTML = '<h3>手上的委託（可自行繳交或放棄）</h3><p><b>' + esc(h.letter) + ' 級・' + esc(h.site) + '</b>：' + esc(R.heldLine(h)) + '</p><p class="note">進度夠了就按「繳交委託」結算五軌成績並領報酬 <b>' + (h.pay || 0) + '</b> 費拉；還沒做完可再下同一座遺跡繼續。不想做了按「放棄這張委託」（記為失敗、報酬拿不到）。多人連線跟上隊友時不會自動放棄──原委託會留著，可之後再回這裡處理。</p>'
         + '<div class="row"><button type="button" class="btn gold" id="ti-go">繳交委託（領 ' + (h.pay || 0) + ' 費拉）</button><button type="button" class="btn" id="ti-drop">放棄這張委託</button></div>';
       card.after(tb);
       tb.querySelector('#ti-go').onclick = () => { const t0 = R.turnInTask(); R.hub(t, f); if (t0) R.toast && R.toast('繳交了「' + t0.site + '」的委託。成績明天以後登錄到勇者證。', '#E8C04A'); };

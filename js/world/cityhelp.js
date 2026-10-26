@@ -171,13 +171,13 @@
       K.bench(-5.4, 0.5, 3, Math.PI / 2); K.bench(5.4, 0.5, 3, -Math.PI / 2);
       K.plant(-7.2, 4.8); K.plant(7.2, 4.8); K.rug(0, 1.5, 4, 6, '#2E5A3A'); K.lamp(-3.5, 0); K.lamp(3.5, 0);
     } });
-    CK.defineRoom({ id: p + '_station', name: St.name + '・大廳', hint: St.hint || '「往東鶴的魔導電車，即將進站——」', w: 22, d: 12, h: 6, floor: St.floor || 'gran', wall: St.wall || 'plaster', wain: St.wain || 'woodB', trim: St.trim || 'steelD', amb: St.amb || 1.0, build(B, K) {
-      if (St.deco) St.deco(B, K, CK.M);   // 2026-10-26 作者：各城的車站不要同一間——每座城自己加東西（city_*.js）
+    CK.defineRoom({ id: p + '_station', name: St.name + '・大廳', hint: St.hint || '「往東鶴的魔導電車，即將進站──」', w: 22, d: 12, h: 6, floor: St.floor || 'gran', wall: St.wall || 'plaster', wain: St.wain || 'woodB', trim: St.trim || 'steelD', amb: St.amb || 1.0, build(B, K) {
+      if (St.deco) St.deco(B, K, CK.M);   // 2026-10-26 作者：各城的車站不要同一間──每座城自己加東西（city_*.js）
       K.counter(-7, 1.0, 5, 0.9, { mat: 'woodB', top: 'wood' });
       K.wallSign(St.name, 'n', 0, 4.8, { size: 1.0, bg: '#F4ECD8', fg: '#2A1A10' });
       K.wallSign(St.dest || '東鶴　皇嶺　吉山', 'n', 0, 3.8, { size: 0.42, bg: '#2A2420', fg: '#F4D88A', lit: 1 });
       B.inter(-7, 2.2, 2.4, '售票口（回東鶴、轉往他城）', () => CK.ticket(), '#5A8AC8');
-      B.talker(-7, 0, 0, '售票口的站務員', St.lines || ['「往東鶴的票嗎？」']);
+      B.talker(-7, 0, 0, '售票口的站務員', St.lines || ['「要去哪裡？東鶴的話，這邊買。」']);
       K.shelf(8, 1.5, 4, -Math.PI / 2, { cols: ['#E8E4DC', '#C83A3A', '#2E5A9A', '#E8B830'] });
       B.inter(6.6, 1.5, 2, '車站的小賣店', () => az().food(city), '#E8A03A');
       K.counter(6, -4.2, 5, 0.9, { mat: 'steelD', top: 'wood' });

@@ -13,12 +13,12 @@
   const hour = () => (R.hourNow ? ((R.hourNow() % 24) + 24) % 24 : 12);
   const TOPS = ['#3A4A5A', '#5A3A3A', '#3A5A4A', '#6A5A3A', '#4A3A5A', '#7A6A5A', '#2E2E38', '#8A4A3A', '#3A6A8A', '#C8B8A0'], HAIRS = ['#1A1410', '#2A2420', '#4A3424', '#6A4A2E', '#8A8A88', '#C8C0B0'], HS = ['short', 'long', 'ponytail', 'bun', 'bob', 'crop', 'spiky'];
   const ROLES = {
-    old: { name: '老人家', hair: ['#C8C0B0', '#8A8A88'], lines: ['「年輕的時候，這條街還沒有魔導路燈，晚上黑漆漆的。」', '「冬天曬太陽最舒服。」', '「我孫子也想當勇者……我叫他去念書。」', '「這張長椅我坐了三十年。換過兩次油漆。」'] },
-    student: { name: '學生', top: ['#2E3A5A', '#1E2A3A'], lines: ['「明天要考試……可是好想去遊樂場。」', '「勇者證要十六歲才能考。再等兩年。」', '「聽說遺跡的入口晚上會發光。」'] },
-    salary: { name: '上班族', top: ['#2E2E38', '#3A3A48'], lines: ['「午休只剩十分鐘……」', '「德克斯凡的新機器，課長說要學會操作。」', '「最近竊案很多，公司的保險箱多加了一道鎖。」'] },
-    mama: { name: '主婦', top: ['#8A4A5A', '#6A5A3A', '#C8A888'], lines: ['「市場的白蘿蔔今天特價。」', '「孩子的學費又漲了。」', '「下雪天晾不了衣服，煩死了。」'] }
+    old: { name: '老人家', hair: ['#C8C0B0', '#8A8A88'], lines: ['「年輕的時候，這條街還沒有魔導路燈，晚上黑漆漆的。」', '「冬天啊，就是要曬太陽。曬著曬著就睡著了。」', '「我孫子也想當勇者……我叫他去念書。」', '「這張長椅我坐了 30 年，油漆都換過兩次了。人倒是沒換。」'] },
+    student: { name: '學生', top: ['#2E3A5A', '#1E2A3A'], lines: ['「明天要考試……可是好想去遊樂場。」', '「勇者證要十六歲才能考。還有兩年……好久喔。」', '「聽說遺跡的入口晚上會發光。」'] },
+    salary: { name: '上班族', top: ['#2E2E38', '#3A3A48'], lines: ['「午休只剩十分鐘……」', '「課長說德克斯凡那台新機器，下禮拜前要學會。說明書是外文的耶。」', '「最近竊案很多，公司的保險箱多加了一道鎖。」'] },
+    mama: { name: '主婦', top: ['#8A4A5A', '#6A5A3A', '#C8A888'], lines: ['「市場的白蘿蔔今天特價，快去，晚了就沒了。」', '「孩子的學費又漲了。」', '「又下雪。衣服晾了三天還是濕的，煩死了。」'] }
   };
-  const GOSSIP0 = ['「聽說公會的委託板最近貼滿了遺跡的委託。」', '「德克斯凡的人又來收購土地了。」', '「魔導電車今天又誤點了。」', '「有個勇者在遺跡裡撿到會說話的劍——騙人的吧。」', '「議會選舉快到了，四個黨的海報貼得到處都是。」'];
+  const GOSSIP0 = ['「聽說公會的委託板最近貼滿了遺跡的委託。」', '「德克斯凡的人又來問要不要賣地。我家那塊？想都別想。」', '「魔導電車今天又誤點了。」', '「聽說有個勇者在遺跡裡撿到會說話的劍。……騙人的吧？」', '「議會選舉快到了，四個黨的海報貼得到處都是。」'];
   // ---------- 蓋城的工具：記下長椅的位置 ----------
   const eb0 = CK.extendBuilder;
   CK.extendBuilder = B => { eb0(B); B.D.benches = []; const b0 = B.bench; B.bench = (x, z, ry) => { b0(x, z, ry); const [wx, wz] = B.toWorld(x, z); B.D.benches.push([wx, wz, (ry || 0) + B.yaw(), B.Bt.yOff || 0]); }; };
@@ -50,7 +50,7 @@
     const homes = (D.foot || []).filter(f => f.r && /house|machiya|wafu|apt/.test(f.kind || ''));
     const doorstep = () => { const f = pick(homes), r = f.r, e = Math.floor(rnd() * 4), t = 0.2 + rnd() * 0.6; return e === 0 ? [r[0] + (r[2] - r[0]) * t, r[3] + 1.6] : e === 1 ? [r[0] + (r[2] - r[0]) * t, r[1] - 1.6] : e === 2 ? [r[2] + 1.6, r[1] + (r[3] - r[1]) * t] : [r[0] - 1.6, r[1] + (r[3] - r[1]) * t]; };
     const spot = (fn, tries) => { for (let k = 0; k < (tries || 14); k++) { const p = fn(); if (p && free(p[0], p[1])) return p; } return null; };
-    // 2026-10-22 修：貓狗常被放在圍起來的院子、房子之間的窄縫裡（看得到、走不過去摸）——門口的點要能直直走到最近的路人路線
+    // 2026-10-22 修：貓狗常被放在圍起來的院子、房子之間的窄縫裡（看得到、走不過去摸）──門口的點要能直直走到最近的路人路線
     const segs = []; (tw.walkers || []).forEach(n => { const P = n.path || []; for (let i = 1; i < P.length; i++) segs.push([P[i - 1], P[i]]); });
     const reachable = p => { let best = null, bd = 14; segs.forEach(([a, b]) => { const dx = b[0] - a[0], dz = b[1] - a[1], L = dx * dx + dz * dz, t = L ? Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / L)) : 0, q = [a[0] + dx * t, a[1] + dz * t], d = Math.hypot(q[0] - p[0], q[1] - p[1]); if (d < bd) { bd = d; best = q; } }); if (!best) return false; const n = Math.ceil(bd / 0.4); for (let k = 1; k < n; k++) { const x = p[0] + (best[0] - p[0]) * k / n, z = p[1] + (best[1] - p[1]) * k / n; if (!free(x, z, 0.3)) return false; } return true; };
     // 離路人路線多近（屋台不要擺在路線上）
@@ -95,7 +95,7 @@
     // ---- 玩雪的學生（最大的草地） ----
     if (grass[0]) { const r = grass[0], cx = (r[0] + r[2]) / 2, cz = (r[1] + r[3]) / 2, rr = Math.min(r[2] - r[0], r[3] - r[1]) * 0.3; for (let i = 0; i < 3; i++) { const k = mkNpc(tw, cx, cz, 0, 'student', { walk: 1, kid: 1, cx, cz, rr: rr * (0.6 + i * 0.25), ph: i * 2.1, sp: 0.5 + rnd() * 0.3 }); S2.kids.push(k); } }
     // ---- 街頭藝人、屋台（廣場） ----
-    { const p = spot(() => [plaza[0] + 7 + (rnd() - 0.5) * 4, plaza[1] + (rnd() - 0.5) * 4], 10); if (p) { const n = mkNpc(tw, p[0], p[1], Math.PI, 'old'); S2.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { R.townTalk('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); if (R.SL && R.SL.shamisen) R.SL.shamisen(); R.townTalk('街頭藝人', [pick(['「謝謝。這一段是〈雪路〉。」', '「天冷，手指不太聽話。再聽一段？」', '「這把三味線是我師父留下來的。」'])]); } }); } }
+    { const p = spot(() => [plaza[0] + 7 + (rnd() - 0.5) * 4, plaza[1] + (rnd() - 0.5) * 4], 10); if (p) { const n = mkNpc(tw, p[0], p[1], Math.PI, 'old'); S2.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { R.townTalk('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); if (R.SL && R.SL.shamisen) R.SL.shamisen(); R.townTalk('街頭藝人', [pick(['「謝謝。這一段是〈雪路〉。」', '「天冷，手指不太聽使喚。再來一段？」', '「這把三味線是我師父留下來的。」'])]); } }); } }
     const cart = (x, z, name, col, menu) => {
       { const cand = [[0, 0], [0, 3], [0, -3], [3, 0], [-3, 0], [0, 6], [0, -6], [6, 0], [-6, 0]].map(([a, b]) => [x + a, z + b]), p = cand.find(([a, b]) => free(a, b, 1.4) && !nearWalk(a, b, 2.2)) || cand.find(([a, b]) => free(a, b, 1.4)); if (!p) return; x = p[0]; z = p[1]; }   // 先找附近不在路人路線上的位置，找不到才擺原位
       const TH = THREE, g = new TH.Group(), lam = c2 => CK.mat('yatai|' + c2, { tex: 'wood', col: c2 });
@@ -111,7 +111,7 @@
     const eat = (who, food, price, buff, lines) => () => { if (R.S.gold < price) { R.toast('錢不夠。'); return; } R.S.gold -= price; R.S.buff = { kind: 'yatai', b: buff, until: R.S.day }; R.ateFood && R.ateFood(R.S.buff); R.save(); R.townTalk(who, lines.concat(['（今天下遺跡有加成）'])); };
     // 長椅上的人、聊天的人也看得到你（ckcrime.js 的視線條）
     if (tw.watchers) S2.sit.concat(...S2.pairs).forEach(n => { n.watch = { range: 6, fov: 1.1, civ: 1 }; tw.watchers.push(n); });
-    cart(plaza[0] - 12, plaza[1] + 2, '屋台拉麵（一碗 8 費拉）', '#C83A3A', eat('拉麵屋台的老闆', '拉麵', 8, { hp: 0.05 }, ['「醬油拉麵一碗——來了！」', '你喝了幾口湯，老闆把小碟推過來，叫你小心燙。']));
+    cart(plaza[0] - 12, plaza[1] + 2, '屋台拉麵（一碗 8 費拉）', '#C83A3A', eat('拉麵屋台的老闆', '拉麵', 8, { hp: 0.05 }, ['「醬油拉麵一碗──來了！」', '你喝了幾口湯，老闆把小碟推過來，叫你小心燙。']));
     cart(plaza[0] + 14, plaza[1] + 2, '屋台關東煮（一份 6 費拉）', '#E8C04A', eat('關東煮屋台的阿婆', '關東煮', 6, { mp: 0.06 }, ['「白蘿蔔、蛋、竹輪，再來一塊豆腐？」', '湯頭是昆布熬的，很清甜。']));
   };
   const sl0 = CK.spawnLife;
@@ -128,7 +128,7 @@
     L.sit.forEach(n => { n.h.g.visible = day; });
     L.pairs.forEach(([a, b], i) => { const on = h >= 8 && h < 21 && !E.blizzard; a.h.g.visible = b.h.g.visible = on; if (on && !a.lookA) a.h.g.rotation.y = Math.sin(L.t * 0.9 + i) > 0.97 ? a.rot + 0.3 : a.rot; });
     L.kids.forEach(k => { k.h.g.visible = day; if (!day) return; const a = L.t * k.sp + k.ph, x = k.cx + Math.sin(a) * k.rr, z = k.cz + Math.cos(a * 1.3) * k.rr * 0.7, yaw = Math.atan2(x - k.x, z - k.z); k.x = x; k.z = z; k.h.g.position.set(x, CK.heightAt(x, z), z); k.h.g.rotation.y = yaw; R.animHero(k.h, 2.4, dt, false); });
-    if (day && L.kids.length) { L.ballT -= dt; if (L.ballT <= 0) { L.ballT = 25 + rnd() * 30; if (L.kids.some(k => Math.hypot(k.x - P.x, k.z - P.z) < 9)) R.toast(pick(['一顆雪球打在你背上。學生們笑著跑開了。', '「對不起——！」雪球從你頭上飛過去。'])); } }
+    if (day && L.kids.length) { L.ballT -= dt; if (L.ballT <= 0) { L.ballT = 25 + rnd() * 30; if (L.kids.some(k => Math.hypot(k.x - P.x, k.z - P.z) < 9)) R.toast(pick(['一顆雪球打在你背上。學生們笑著跑開了。', '「對不起──！」雪球從你頭上飛過去。'])); } }
     if (L.busk) L.busk.h.g.visible = eve;
     L.carts.forEach(c => { c.g.visible = night; c.v.h.g.visible = night; c.b.on = night; });
     // 坐著的時候：面向、高度

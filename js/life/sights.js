@@ -34,7 +34,7 @@
     if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = Object.keys(g).length, all = n >= SIGHTS.length;
     R.sheet('<p class="kicker">觀光景點・' + esc(sg[3]) + '</p><h2>' + esc(sg[2]) + '</h2>' + (PC ? PC.card(pid(sg), !!G[sg[0]]) : '') + '<p>' + esc(sg[4]) + '</p>'
-      + (PC ? '<p class="note">最佳時刻：' + esc(PC.best(pid(sg))) + (isBest ? '——就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : G[sg[0]] ? '限定明信片已經有了。' : '') + '</p>' : '')
+      + (PC ? '<p class="note">最佳時刻：' + esc(PC.best(pid(sg))) + (isBest ? '──就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : G[sg[0]] ? '限定明信片已經有了。' : '') + '</p>' : '')
       + '<p class="note">' + (first ? '在觀光手冊上蓋了章、收下一張明信片。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
       '<div class="row"><button type="button" class="btn pri" id="sg-x">好</button><button type="button" class="btn" id="sg-book">觀光手冊</button></div>');
     document.getElementById('sg-x').onclick = R.closeSheet; document.getElementById('sg-book').onclick = book;

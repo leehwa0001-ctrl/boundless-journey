@@ -1,6 +1,6 @@
 // 拉霸機「鶴之舞」（作者 2026-10-04：柏青哥可以加拉霸機）
 // 日式拉霸（斯洛）：三軸、一條中線。拉桿（空白鍵）開始轉，按停止鈕（1、2、3 或 J、K、L）一軸一軸停；轉的時候再按空白鍵＝從左邊停（作者 2026-10-04）。
-// - 拉桿的時候機台裡面就先抽好結果（內部抽選）；停的時候轉軸最多再滑四格去對齊那個結果——
+// - 拉桿的時候機台裡面就先抽好結果（內部抽選）；停的時候轉軸最多再滑四格去對齊那個結果──
 //   鈴鐺、Replay 每四格就有一個，一定對得上；西瓜、櫻桃、7、BAR 很少，要自己看準了再按（目押し）。
 // - 抽到大獎（BIG：7 7 7、REG：BAR BAR BAR）的那一下，旁邊的「GOGO!」燈會亮；沒對齊的話獎會留著，燈一直亮到你對齊為止。
 // - 代幣：50 枚 10 費拉，6 枚換 1 費拉（和柏青哥一樣抽成）；沒換完的存在店裡（R.S.medals）。一次押 3 枚，Replay 下一把免費。
@@ -51,7 +51,7 @@
     };
     const settle = () => {
       const w = lineWin(M.line);
-      if (M.carry && !M.gogo) { M.gogo = true; R.sfx && R.sfx('chest'); info('GOGO!——大獎在等你對齊（7 或 BAR）。'); }
+      if (M.carry && !M.gogo) { M.gogo = true; R.sfx && R.sfx('chest'); info('GOGO!──大獎在等你對齊（7 或 BAR）。'); }
       if (w) {
         if (w === 'replay') { M.free = true; M.msg = 'REPLAY'; }
         else { const pay = PAY[w]; S.medals += pay; M.win = pay; M.msg = NAME[w] + '  +' + pay; }
@@ -122,7 +122,7 @@
   const pc0 = R.pachinko;
   R.pachinko = kind => { const r = pc0(kind); if (!kind) { const box = document.querySelector('.pachi-kinds'); if (box && !box.querySelector('[data-slot]')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'pachi-kind'; b.dataset.slot = '1'; b.style.setProperty('--pk', '#FF5AA8'); b.style.setProperty('--pkb', '#2A1A3A'); b.innerHTML = '<b>拉霸機・鶴之舞</b><small>斯洛：三軸、自己按停（目押し）</small><span>GOGO! 燈亮了就是大獎在等你對齊。押 3 枚，期望值大約九成。</span>'; b.onclick = () => R.slotMachine(); box.appendChild(b); } } return r; };
   const FN = R.INTERIOR_FURNISH;
-  // 店裡東邊的牆邊一排拉霸機（原本擺在大門前面，把出口擋住了——作者 2026-10-04 回報）
+  // 店裡東邊的牆邊一排拉霸機（原本擺在大門前面，把出口擋住了──作者 2026-10-04 回報）
   if (FN && FN.pachinko) { const f0 = FN.pachinko; FN.pachinko = c => { const r = f0(c); try { const { HW, bx, lamp } = c, x0 = HW - 0.6; for (let i = 0; i < 4; i++) { const z = -3 + i * 2; bx(0.7, 1.9, 1.2, '#3A2450', x0, 0.95, z); bx(0.05, 0.6, 0.9, R.INTERIOR_KIT && R.INTERIOR_KIT.lam ? R.INTERIOR_KIT.lam('#FF8AC8', { em: '#FF5AA8', ei: 0.8 }) : '#FF8AC8', x0 - 0.36, 1.35, z); } c.block(HW - 1, HW - 0.2, -3.8, 3.8, 'machine'); c.inter(HW - 1.9, 0, 2.2, '坐下來打拉霸機「鶴之舞」', () => R.slotMachine()); lamp(HW - 1.4, 2.8, 0, '#FF8AC8', 0.6, 8); } catch (e) { console.warn('[slots]', e); } return r; }; }
   const css = document.createElement('style');
   css.textContent = '.sl{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-start}.sl canvas{width:min(300px,100%);image-rendering:auto;border:3px solid #6A4A8A;border-radius:8px;background:#2A1A3A}.sl-ui{flex:1;min-width:220px;display:grid;gap:8px}.sl-st b{font-size:1.4em;color:var(--gold,#C9A13A)}.sl-st small{display:block;opacity:.85}.sl-stops{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.sl-stops .btn{font-weight:bold}.sl-lever small{display:block;opacity:.8;font-size:.8em}.sl-pay{font-size:12px}';

@@ -79,7 +79,7 @@
     const C = R.CITY, toS = v => (ck() ? v : v / C.S + 500);
     R.setWaypoint(toS(p[0]), toS(p[1]), '跑腿：' + st.txt);
   };
-  // 2026-10-14 作者：「委託按下去要有指示（指引地圖）」——點「手上的委託」裡的一行：設好這一站的目的地、打開地圖給你看；
+  // 2026-10-14 作者：「委託按下去要有指示（指引地圖）」──點「手上的委託」裡的一行：設好這一站的目的地、打開地圖給你看；
   //   要搭電車的站、或人不在東鶴的時候，先指到售票口；跑完了指回公會。畫面上的方向箭頭在 questguide.js。
   // 售票口在車站裡面（精緻版的城，站房是走進去的房間）：外面找不到就指到車站門口
   const interAt = re => { const t = W().town; return t && (t.inter || []).find(i => typeof i.label === 'string' && !i.follow && re.test(i.label)); };

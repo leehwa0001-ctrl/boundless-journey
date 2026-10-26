@@ -6,9 +6,9 @@
 //   中間：千燈通商店街（有拱廊）、新堂町商務區的大樓、奉主百貨；燈籠堀（運河）兩岸是霓虹招牌、紅燈籠、大章魚、
 //         招福橋邊「奉主製菓」揮手的魔導人偶大看板；運河上有遊覽船。
 //   西邊：奉主城（護城河、石垣、城門、天守閣）和公園；南邊：長屋町、新町和奉主塔。
-//   最南邊：臨海工業區——奉主製鐵所（廠房、高爐、煙囪）、魔導機關工廠（德克斯凡合資，藍色的魔導管線、球形槽）、奉主港（貨櫃、起重機、貨船）。
+//   最南邊：臨海工業區──奉主製鐵所（廠房、高爐、煙囪）、魔導機關工廠（德克斯凡合資，藍色的魔導管線、球形槽）、奉主港（貨櫃、起重機、貨船）。
 // 走路、鏡頭、互動、隊友用城裡（town.js）的那一套：W.town.hosu 標記是奉主；townStep、townHud、小地圖、大地圖、選單在奉主的時候換成這個檔案的
-// （東鶴的那些包裝——路人、車、犯罪、導航——都不會在奉主跑）。
+// （東鶴的那些包裝──路人、車、犯罪、導航──都不會在奉主跑）。
 // 觀光章六個（蓋齊：800 費拉、稱號「奉主通」）；小吃（章魚燒、串炸、奉主燒、喫茶、豬肉包）和東鶴的餐廳一樣，吃了當天下遺跡有加成（R.S.buff）。
 // 這個檔案要放在 index.html 的最後面（所有包住 townStep、townHud、townMenu、bigMap 的檔案之後）。
 (function (R) {
@@ -46,7 +46,7 @@
 
   // ---------- 觀光章 ----------
   const SIGHTS = [
-    ['station', '奉主站', '站前廣場', '昭旭南部最大的車站。魔導電車、環狀線、往港區的貨運線都在這裡交會，一天進出的人比整個東鶴的人還多。站前的鐘一分不差——奉主人說，東鶴的鐘慢三分鐘，是因為東鶴人不趕時間。'],
+    ['station', '奉主站', '站前廣場', '昭旭南部最大的車站。魔導電車、環狀線、往港區的貨運線都在這裡交會，一天進出的人比整個東鶴的人還多。站前的鐘一分不差──奉主人說，東鶴的鐘慢三分鐘，是因為東鶴人不趕時間。'],
     ['castle', '奉主城', '奉主城公園', '昭光帝國時代的城。2646 年本土被登陸、打城市戰的時候燒掉了一半，天守閣是戰後照舊圖重建的。石垣的大石頭是從北邊的山裡一塊一塊運來的，最大的一塊有一百多噸。'],
     ['billboard', '招福橋的大看板', '燈籠堀・招福橋', '「奉主製菓」揮手的魔導人偶，從戰後掛到現在，燈換過五次。來奉主的人都要在招福橋上學它舉手。'],
     ['canal', '燈籠堀', '燈籠堀', '兩岸掛滿紅燈籠和霓虹招牌的運河。白天是運貨的小船，晚上是遊覽船；掉進河裡的東西，據說隔天會在港口撈到。'],
@@ -63,7 +63,7 @@
     if (goldNew) { G[id] = S().day || 1; S().gold += 150; if (R.sanAdd) R.sanAdd(5); }
     if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = Object.keys(g).length;
-    R.sheet('<p class="kicker">奉主・' + esc(sg[2]) + '</p><h2>' + esc(sg[1]) + '</h2>' + (PC ? PC.card('hs_' + id, !!G[id]) : '') + '<p>' + esc(sg[3]) + '</p>' + (PC ? '<p class="note">最佳時刻：' + esc(PC.best('hs_' + id)) + (isBest ? '——就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : '') + '</p>' : '') + '<p class="note">' + (first ? '在奉主觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
+    R.sheet('<p class="kicker">奉主・' + esc(sg[2]) + '</p><h2>' + esc(sg[1]) + '</h2>' + (PC ? PC.card('hs_' + id, !!G[id]) : '') + '<p>' + esc(sg[3]) + '</p>' + (PC ? '<p class="note">最佳時刻：' + esc(PC.best('hs_' + id)) + (isBest ? '──就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : '') + '</p>' : '') + '<p class="note">' + (first ? '在奉主觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
       '<div class="row"><button type="button" class="btn pri" id="hv-x">好</button><button type="button" class="btn" id="hv-book">奉主觀光手冊</button></div>');
     $('hv-x').onclick = R.closeSheet; $('hv-book').onclick = book;
     if (first && n >= SIGHTS.length && n0 < SIGHTS.length) { S().gold += 800; R.save(); R.awardTitle && R.awardTitle('hosutsu'); setTimeout(() => R.banner && R.banner('奉主的觀光章蓋齊了！', '奉主觀光局送來 800 費拉和稱號「奉主通」。'), 600); }
@@ -349,7 +349,7 @@
       for (let x2 = -95; x2 < 158; x2 += 6) { if (BRIDGES.some(b => x2 > b[0] - 1 && x2 < b[1] + 1)) continue; [21.4, 34.6].forEach(z => { add(g3.box, M.lamp, x2, 1.4, z, 0.1, 2.8, 0.1); add(g3.sph, M.lantern, x2, 2.6, z, 0.55, 0.7, 0.55); }); }
       inter(-30, 19.5, 2.4, '觀光景點：燈籠堀（觀光章）', () => visit('canal'), '#E8C04A');
       const boat = new TH.Group(), hull = new TH.Mesh(g3.box, lam('#E8E4DC', { tex: 0 })); hull.scale.set(9, 0.9, 3); hull.position.y = 0.3; const cab = new TH.Mesh(g3.box, lam('#3A5A8A', { tex: 0 })); cab.scale.set(5, 1.2, 2.4); cab.position.set(-0.5, 1.3, 0); const rf = new TH.Mesh(g3.box, lam('#C83A3A', { tex: 0 })); rf.scale.set(5.6, 0.15, 2.8); rf.position.set(-0.5, 2.0, 0); boat.add(hull, cab, rf);
-      // 2026-10-08 作者：船經過橋會穿模——橋是平的、跟地面一樣高，船不能從底下過。改成兩艘，各在兩座橋之間來回（船長 9，橋前 1 公尺掉頭）
+      // 2026-10-08 作者：船經過橋會穿模──橋是平的、跟地面一樣高，船不能從底下過。改成兩艘，各在兩座橋之間來回（船長 9，橋前 1 公尺掉頭）
       tw.boats = [[-85, -53], [95, SEA_X - 2]].map(([a, b], i) => { const g = i ? boat.clone() : boat; group.add(g); return { g, lo: a + 5.5, hi: b - 5.5, x: i ? b - 6 : a + 6, d: i ? -1 : 1 }; });
     }
 
@@ -532,7 +532,7 @@
   function towerTop() {
     const s = S(); if (s.gold < 5) { R.toast('要 5 費拉。'); return; }
     s.gold -= 5; R.save(); R.sfx && R.sfx('coin');
-    R.townTalk('奉主塔・展望台', ['電梯晃了一下，停在離地九十公尺的展望台。', '腳下是新町的屋頂和霓虹，北邊燈籠堀的紅燈籠連成一條線；', '再過去是新堂町的大樓、奉主站，和像腰帶一樣繞著城的環狀線。', '塔頂的燈今天是' + pick(['白的——明天會放晴。', '橘的——明天是陰天。', '藍的——明天要下雨，記得帶傘。'])]);
+    R.townTalk('奉主塔・展望台', ['電梯晃了一下，停在離地九十公尺的展望台。', '腳下是新町的屋頂和霓虹，北邊燈籠堀的紅燈籠連成一條線；', '再過去是新堂町的大樓、奉主站，和像腰帶一樣繞著城的環狀線。', '塔頂的燈今天是' + pick(['白的──明天會放晴。', '橘的──明天是陰天。', '藍的──明天要下雨，記得帶傘。'])]);
   }
   const backToDonghe = () => {
     R.enterTownNow(null, [0, 0]);

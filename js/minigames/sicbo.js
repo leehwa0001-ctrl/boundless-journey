@@ -38,7 +38,7 @@
         clearInterval(t); box.textContent = d.map(v => FACE[v - 1]).join(' ');
         const s = d[0] + d[1] + d[2], tri = d[0] === d[1] && d[1] === d[2], ok = win(k, d), got = ok ? b * (payOf(k) + 1) : 0;
         S.gold += got; S.sicbo.n++; if (got - b > S.sicbo.best) S.sicbo.best = got - b; R.save();
-        $('sb-msg').textContent = '開：' + d.join('、') + '＝' + s + (tri ? '（豹子！）' : s >= 11 ? '（大）' : '（小）') + (ok ? '——押中「' + nameOf(k) + '」，拿回 ' + got + ' 費拉！' : '——沒中，' + b + ' 費拉歸莊家。');
+        $('sb-msg').textContent = '開：' + d.join('、') + '＝' + s + (tri ? '（豹子！）' : s >= 11 ? '（大）' : '（小）') + (ok ? '──押中「' + nameOf(k) + '」，拿回 ' + got + ' 費拉！' : '──沒中，' + b + ' 費拉歸莊家。');
         if (ok) R.sfx && R.sfx(payOf(k) >= 12 ? 'chest' : 'coin');
         rolling = false; sel();
       }, 80);

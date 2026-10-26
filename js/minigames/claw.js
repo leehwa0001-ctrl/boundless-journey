@@ -1,6 +1,6 @@
 // 無境之旅：夾娃娃機（取代 civic.js 原本只擲骰子的 R.ufoCatcher）
 // 投一枚 3 費拉（四次 10 費拉）。← → 移動爪子（按住），按「放下」爪子就會降下去夾；夾不夾得住看對得準不準和娃娃的重量，
-// 拉上去和搬到出口的路上也可能掉——掉在出口上面一樣算你的。夾到的娃娃是「小東西」，可以送人（R.GIFTS）。
+// 拉上去和搬到出口的路上也可能掉──掉在出口上面一樣算你的。夾到的娃娃是「小東西」，可以送人（R.GIFTS）。
 (function (R) {
   const FW = 220, FH = 300, FLOOR = 286, TOP = 34, CHUTE = [6, 50], CHUTE_Y = 232, RAIL = [56, 206];
   const KINDS = [
@@ -30,7 +30,7 @@
 
   R.ufoCatcher = () => {
     const S = R.S; S.clawCoins = S.clawCoins || 0; refill();
-    R.sheet('<p class="kicker">站前・遊樂場</p><h2>夾娃娃機</h2><p class="note">玻璃後面堆著一堆娃娃。投幣之後，按住 ← → 移動爪子，按「放下」——爪子就會降下去夾。對準娃娃的正中間比較夾得住；大的比較重。</p>'
+    R.sheet('<p class="kicker">站前・遊樂場</p><h2>夾娃娃機</h2><p class="note">玻璃後面堆著一堆娃娃。投幣之後，按住 ← → 移動爪子，按「放下」──爪子就會降下去夾。對準娃娃的正中間比較夾得住；大的比較重。</p>'
       + '<div class="pachi claw"><canvas id="cl-cv" width="' + FW + '" height="' + FH + '"></canvas><div class="pachi-ui">'
       + '<div class="pachi-st">還可以玩 <b id="cl-n">0</b> 次<small id="cl-info">先投幣。</small></div>'
       + '<div class="row claw-pad"><button type="button" class="btn" id="cl-l">← 移動</button><button type="button" class="btn" id="cl-r">移動 →</button></div>'

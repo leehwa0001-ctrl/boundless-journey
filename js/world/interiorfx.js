@@ -5,7 +5,7 @@
 // 3. 小東西：桌上的杯子、盤子、蠟燭，角落的木箱、酒桶，地上的污漬。
 // 4. 調色＋光暈：跟遺跡同一套（ruinfx.js），火、蠟燭、窗戶透出像素格的光暈。
 // - 只在「遺跡畫質」中、高（R.ruinGfx() > 0）的時候加；低畫質跟以前一樣。
-// - 2026-10-21 作者：照公會分館的風格把其他室內也做一做——所有室內都套（generic：吊燈、桌上的蠟燭和杯子、浮塵）；公會一樓另外有手擺的（furnishGuild）。
+// - 2026-10-21 作者：照公會分館的風格把其他室內也做一做──所有室內都套（generic：吊燈、桌上的蠟燭和杯子、浮塵）；公會一樓另外有手擺的（furnishGuild）。
 // 放在 interior.js 和所有包 R.interiorHud 的檔案後面（進屋 enterNow 最後會呼叫 R.interiorHud(true)）。
 (function (R) {
   const W = R.W, T = () => THREE;
@@ -73,7 +73,7 @@
     for (let i = 0; i < 4; i++) mug(8.6 + i * 0.5, 1.2, -5.9 + (i % 2) * 0.12, i % 2 ? '#8A6A4A' : '#C8B89A');
     candle(13.4, 1.2, -5.85);
     // 吊燈：原本只有光、看不到燈；補上掛下來的燈籠
-    // 2026-10-20 作者：燈籠從上往下看會疊在人物身上——在畫面上跟人重疊的時候，那盞燈籠淡掉（stepDust）
+    // 2026-10-20 作者：燈籠從上往下看會疊在人物身上──在畫面上跟人重疊的時候，那盞燈籠淡掉（stepDust）
     const lantern = (x, y, z) => { const ms = [box(0.02, WH - y - 0.2, 0.02, '#2A2018', x, (WH + y + 0.2) / 2, z), box(0.36, 0.06, 0.36, '#3A2A1C', x, y + 0.24, z), box(0.36, 0.06, 0.36, '#3A2A1C', x, y - 0.24, z), box(0.28, 0.42, 0.28, lam('#FFE0A0', { em: '#FFC060', ei: 1.3 }), x, y, z)];
       ms[3].castShadow = false; ms.forEach(m => { m.material = m.material.clone(); m.material.transparent = true; m.renderOrder = 5; }); ins.ifx.lanterns.push({ x, y, z, ms, op: 1 }); };
     // 原本的燈 → 燈籠掛的位置（避開一直站著的人：館員、酒場的勇者；光也一起移過去）
@@ -90,7 +90,7 @@
     beams(ins, c, [[-HW + 0.1, 2.9, 4.5, 1, 0], [-4.8, 2.9, -HD + 0.1, 0, 1]]);
   };
   // ---------- 窗戶照進來的光（白天）：地上一塊光斑＋一道斜的光束＋光裡的灰塵 ----------
-  // wins：[[窗戶中心 x, y, z, 往屋裡的方向 nx, nz], …]
+  // wins：[[窗戶中心 x, y, z, 往屋裡的方向 nx, nz], ……]
   const beams = (ins, c, wins) => {
     const { flatQ, TH } = c, tx = tex();
     const h = R.S && R.S.hour != null ? R.S.hour : 12, day = h >= 7 && h < 17, dusk = (h >= 16 && h < 18) || (h >= 6 && h < 8);
@@ -168,7 +168,7 @@
   // 灰塵慢慢飄（沿著光束上下、左右晃）
   const stepDust = (ins, dt) => {
     const f = ins.ifx; if (!f) return; f.t = (f.t || 0) + dt;
-    // 燈籠：在畫面上跟任何一個人（玩家、隊友、屋裡的人）重疊就淡掉——照鏡頭把燈籠、人的上下左右投影到畫面比
+    // 燈籠：在畫面上跟任何一個人（玩家、隊友、屋裡的人）重疊就淡掉──照鏡頭把燈籠、人的上下左右投影到畫面比
     if (f.lanterns.length && W.camera) {
       const cam = W.camera, v = f.v || (f.v = new (T().Vector3)()), rect = (x, y0, y1, z, hw) => { v.set(x - hw, y0, z).project(cam); const ax = v.x, ay = v.y; v.set(x + hw, y1, z).project(cam); return [Math.min(ax, v.x), Math.min(ay, v.y), Math.max(ax, v.x), Math.max(ay, v.y)]; };
       const ppl = [W.P && W.P.h && W.P.h.g].concat((ins.npcs || []).map(n => n.h && n.h.g), (W.town && W.town.allies || []).map(a => a.h && a.h.g)).filter(Boolean).map(g => rect(g.position.x, 0, 2.1, g.position.z, 0.65));

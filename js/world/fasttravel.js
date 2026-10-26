@@ -1,5 +1,5 @@
 // 快速移動（2026-10-04 回饋：遺跡出來直接站在遺跡門口、城很大、走路慢，想接任務要從頭走一遍）
-// - 公會的接駁馬車（免費）：城裡按 T、或選單的「快速移動」——公會、鐵匠鋪、白藤堂、倉庫、赤提燈、東鶴站、驛站、銀行、醫院、自己的家，
+// - 公會的接駁馬車（免費）：城裡按 T、或選單的「快速移動」──公會、鐵匠鋪、白藤堂、倉庫、赤提燈、東鶴站、驛站、銀行、醫院、自己的家，
 //   還有城邊的遺跡入口。開車的時候、被通緝的時候不載。
 // - 從遺跡回來：結算畫面多一個「搭接駁馬車回公會」。
 // 放在 town.js、gtamap.js、vehicles.js、home.js 後面。
@@ -17,7 +17,7 @@
   const go = sp => {
     const P = W.P; if (!P || !W.town) return;
     R.closeSheet && R.closeSheet();
-    // 在建築物裡面（新手指引的「前往」會直接叫這裡）：先走出門，回到城裡的場景再搭車——不然會被傳到建築物場景外面的一片黑暗裡
+    // 在建築物裡面（新手指引的「前往」會直接叫這裡）：先走出門，回到城裡的場景再搭車──不然會被傳到建築物場景外面的一片黑暗裡
     if (W.inside) { if (R.exitInterior) R.exitInterior(); let n = 0; const t = setInterval(() => { if (!W.inside) { clearInterval(t); go(sp); } else if (++n > 40) clearInterval(t); }, 100); return; }
     R.fade(() => {
       P.x = sp.x; P.z = sp.z + 1.6; if (R.collide) R.collide(P, 0.42); if (P.h) P.h.g.position.set(P.x, 0, P.z);
@@ -49,7 +49,7 @@
   const tm = R.townMenu;
   if (tm) R.townMenu = (...a) => { const r = tm(...a), row = $('r-sheet') && $('r-sheet').querySelector('.row'); if (row && !row.querySelector('#ft-open') && W.town && !W.town.hosu) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ft-open'; b.textContent = '快速移動（T）'; b.onclick = () => { R.closeSheet(); setTimeout(R.fastTravel, 50); }; row.insertBefore(b, row.children[1] || null); } return r; };
   // 遺跡回來：直接回公會
-  // 2026-10-15：回歸水晶先選好「回到東鶴」或「直接回公會」（run.js 的 R.askExtract）——結算畫面就只留那一個
+  // 2026-10-15：回歸水晶先選好「回到東鶴」或「直接回公會」（run.js 的 R.askExtract）──結算畫面就只留那一個
   let toGuild = false, pre = null;
   R.setReturnDest = d => { pre = d; };
   const rs0 = R.results;

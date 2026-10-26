@@ -1,4 +1,4 @@
-// 無境之旅：東鶴的城外——像日本郊區那樣的城市
+// 無境之旅：東鶴的城外──像日本郊區那樣的城市
 // 東鶴是陪都：城牆裡是舊城，城市一路長到城牆外。
 // 鐵路（德克斯凡技術的魔導電車、平交道、鐵橋）與東鶴站、站前廣場、站前商店街、站東的住宅區；
 // 河西住宅區（小學、兒童公園、鎮守的小祠、墓地、超市）；城南沿著城牆的住宅、南渠外的田；北郊的倉庫、農家、溫室；
@@ -110,8 +110,8 @@
       B.at(null); rblock(l.r);
       const [sx, sz] = toW(fr, 0, d / 2 + 0.1); sign(sx, l.low ? 2.85 : 3.35, sz, fr.ry, l.name, l.sc, Math.min(w - 0.6, 3.0));
       const [ix, iz] = toW(fr, 0, d / 2 + 1.6);
-      const said = { book: ['「冬天就是要窩著看書。」', '「《公會館員日誌》？那是館員自己寫的，不賣喔。」'], barber: ['「下遺跡前剪短一點？頭髮卡在頭盔裡很難受的。」'], diner: ['「今天的定食是霜背鮒的味噌煮。」', '「下遺跡的勇者都吃大碗的。」'], watch: ['「德克斯凡的機芯，走得準。」', '「鐘樓那個鐘也是我們修的。」'], photo: ['「勇者證的照片？公會分館裡就能拍。」', '櫥窗裡掛著幾張合照，穿禮服的人站得很整齊，前排的小孩卻沒看鏡頭。'], dex: ['「魔導暖爐、魔導燈，德克斯凡來的新貨。」', '「最近大家都在買收音機，聽退位大典的轉播。」'] }[l.kind];
-      if (l.kind === 'wagashi') inter(ix, iz, 2.0, '甘味處・和菓子（銅鑼燒、糰子）', () => (R.stallSheet ? R.stallSheet('和菓子店的老闆娘', ['「銅鑼燒剛做好。」', '「下遺跡的孩子，帶兩個在路上吃。」']) : null));
+      const said = { book: ['「這種天氣，不窩著看書要幹嘛？」', '「《公會館員日誌》？那是館員自己寫的，不賣喔。」'], barber: ['「下遺跡前剪短一點？頭髮卡在頭盔裡很難受的。」'], diner: ['「今天是霜背鮒的味噌煮。飯可以續喔。」', '「下遺跡的都點大碗的。你也大碗？」'], watch: ['「德克斯凡的機芯，一個月差不到兩秒。」', '「鐘樓那個鐘也是我們修的。」'], photo: ['「勇者證的照片？公會分館裡就能拍。」', '櫥窗裡掛著幾張合照，穿禮服的人站得很整齊，前排的小孩卻沒看鏡頭。'], dex: ['「新貨剛到，魔導暖爐。今年冬天這麼冷，賣得可好了。」', '「最近大家都在買收音機，聽退位大典的轉播。」'] }[l.kind];
+      if (l.kind === 'wagashi') inter(ix, iz, 2.0, '甘味處・和菓子（銅鑼燒、糰子）', () => (R.stallSheet ? R.stallSheet('和菓子店的老闆娘', ['「銅鑼燒剛出爐，還燙的。」', '「下遺跡的孩子，帶兩個在路上吃。」']) : null));
       else if (said) inter(ix, iz, 1.8, l.name, () => talk(l.name, said));
     };
     // 便利商店、診所
@@ -136,7 +136,7 @@
     const warehouse = l => { const fr = frame(l.r, l.f), B = HB, { w, d } = fr, H = 4.2; B.at(fr.x, fr.z, fr.ry); B.add(G3.box, B_('#8A8E94', { tex: 'cap' }), 0, H / 2, 0, w, H, d); B.add(G3.box, B_('#5A5C62', { tex: 'cap' }), -w / 4, 1.6, d / 2 + 0.03, w / 3, 3.2, 0.06); gableB(B, w, d, H, 0, '#8A8E94'); B.at(null); rblock(l.r); };
     const farm = l => { const fr = frame(l.r, l.f), B = HB, { w, d } = fr, H = 3.2; B.at(fr.x, fr.z, fr.ry); B.add(G3.box, B_('#9A7A5A', { tex: 'planks' }), 0, H / 2, 0, w, H, d); B.add(G3.box, B_('#5A3E26', { tex: 'planks' }), 0, 1.1, d / 2 + 0.03, 1.2, 2.0, 0.06); winRow(B, 1.7, w, d / 2 + 0.03, 2); gableB(B, w, d, H, 0, '#9A7A5A'); B.at(null); rblock(l.r);
       const [cx, cz] = toW(fr, w / 2 + 1.6, 0.5); SB.add(G3.box, lam('#6A4A2E', { tex: 'planks' }), cx, 0.9, cz, 1.6, 1.8, 2.2); SB.add(G3.box, snowL, cx, 1.85, cz, 1.7, 0.1, 2.3); block(cx - 0.8, cx + 0.8, cz - 1.1, cz + 1.1, 'deco');
-      const [ix, iz] = toW(fr, 0, d / 2 + 1.3); inter(ix, iz, 1.8, '敲農家的門', () => talk('農家', [pick(['「田都被雪蓋住了，春天才忙。」', '「冰鼬又來偷雞了。」', '「電車經過的時候，屋子都在晃。」'])])); };
+      const [ix, iz] = toW(fr, 0, d / 2 + 1.3); inter(ix, iz, 1.8, '敲農家的門', () => talk('農家', [pick(['「田都埋在雪底下了。春天再說吧，現在只能修修農具。」', '「冰鼬又來偷雞了。」', '「電車經過的時候，屋子都在晃。」'])])); };
     const greens = l => { const r = l.r, n = Math.max(2, Math.floor((r[2] - r[0]) / 18)), len = (r[3] - r[1]) * S, gm = B_('#E8F0F0', { em: '#9AB0B0', ei: 0.25, side: 1 }); for (let i = 0; i < n; i++) { const x = WX(r[0] + 9 + i * (r[2] - r[0] - 18) / Math.max(1, n - 1)), z = WZ((r[1] + r[3]) / 2); HB.add(G3.cyl, gm, x, 0, z, 3.0, len, 3.0, Math.PI / 2, 0, 0); HB.add(G3.box, snowM, x, 1.48, z, 1.4, 0.08, len - 0.2); block(x - 1.5, x + 1.5, z - len / 2, z + len / 2, 'deco'); } };
     // 停車場、菜園
     const parking = l => { const r = l.r, n = Math.floor((r[2] - r[0] - 6) / 10); for (let i = 0; i < n; i++) if (rnd() < (l.big ? 0.7 : 0.5)) carAt(WX(r[0] + 8 + i * 10), WZ((r[1] + r[3]) / 2), l.f === 1 ? Math.PI : 0); };
@@ -227,7 +227,7 @@
       inter(cx, z1 + 2.6, 2.6, '東鶴站・售票口（搭魔導電車到昭旭全國的遺跡）', () => (E.martial ? talk('東鶴站', ['售票口的窗簾拉下來了：「退位大典，全線停駛。」']) : R.openMapPaused ? R.openMapPaused('nation') : R.openMap('nation')));
       inter(cx - 6.5, z1 + 1.2, 1.8, '看東鶴站的時刻表', () => talk('東鶴站的時刻表', [R.today ? R.dateLabel() : '', '上行・往皇嶺：每天四班（其中兩班是特急）。', '下行・往吉山、奉主：每天三班。', R.nextTrainDest && R.nextTrainDest() ? '下一班：往' + R.nextTrainDest() + '。' : '', E.martial ? '本日退位大典：全線停駛。' : E.blizzard ? '暴風雪：全線誤點。' : '本日正常行駛。']));
       const staff = npc(cx + 3.2, z1 + 1.4, { top: '#2E3A48', hair: '#2A2420', cloak: '#2E3A48', hs: 'crop', acc: 'glasses' }, '站務員', 0);
-      inter(cx + 3.2, z1 + 2.4, 1.8, '和站務員說話', () => talk('站務員', [pick(['「魔導電車是德克斯凡的技術。剛通車那年，整個東鶴的人都跑來看。」', '「平交道的柵欄放下來的時候，千萬別鑽過去。」', '「往皇嶺的特急，這幾天因為大典，票都賣光了。」'])]), { follow: staff });
+      inter(cx + 3.2, z1 + 2.4, 1.8, '和站務員說話', () => talk('站務員', [pick(['「剛通車那年，整個東鶴的人都跑來看電車。我也是，那時候我才這麼高。」', '「平交道的柵欄放下來的時候，千萬別鑽過去。」', '「往皇嶺的特急，這幾天因為大典，票都賣光了。」'])]), { follow: staff });
       // 月台：島式月台、雨棚、站名牌、長椅
       const px0 = WX(PLAT[0]), px1 = WX(PLAT[2]), pz0 = WZ(PLAT[1]), pz1 = WZ(PLAT[3]), pcx = (px0 + px1) / 2, pcz = (pz0 + pz1) / 2, pw = px1 - px0, pd = pz1 - pz0;
       HB.add(G3.box, B_('#B4B0A6', { tex: 'cap' }), pcx, 0.45, pcz, pw, 0.9, pd); [pz0 + 0.1, pz1 - 0.1].forEach(z => HB.add(G3.box, B_('#E8C040', { tex: 0 }), pcx, 0.91, z, pw, 0.02, 0.2));
@@ -313,7 +313,7 @@
     const kasai = plan.nodes.map((p, i) => i).filter(i => plan.nodes[i][0] < 180 && plan.nodes[i][1] > 420);
     for (let i = 0; i < Math.round(16 * many); i++) walker(kasai[Math.floor(rnd() * kasai.length)]);
     // 站在車站前、公車站等車的人
-    [[C.FAC.busStop[0][0] + 6, C.FAC.busStop[0][1] - 4, '等公車的上班族', ['「德克斯凡的公司早上八點半就要打卡。」', '「下雪天，公車永遠都遲到。」']], [(STATION[0] + STATION[2]) / 2 + 12, STATION[3] + 8, '剛下電車的旅客', ['「從皇嶺來的。大典那邊人擠人，還是東鶴安靜。」']], [420, 330, '商店街的會長', ['「站前商店街，從電車通車那年就熱鬧起來了。」', '「年底的福引抽獎，頭獎是德克斯凡的魔導暖爐。」']]].forEach(([sx, sy, nm, lines], i) => { const n = npc(WX(sx), WZ(sy), looks(), nm, i === 2 ? 0 : Math.PI); n.watch = { range: 6, fov: 1.0, civ: 1 }; tw.watchers.push(n); inter(WX(sx), WZ(sy) + 1, 1.6, '和' + nm + '說話', () => talk(nm, lines), { follow: n }); });
+    [[C.FAC.busStop[0][0] + 6, C.FAC.busStop[0][1] - 4, '等公車的上班族', ['「德克斯凡的公司早上八點半就要打卡。」', '「下雪天的公車喔，沒有一次準時的。」']], [(STATION[0] + STATION[2]) / 2 + 12, STATION[3] + 8, '剛下電車的旅客', ['「從皇嶺來的。大典那邊人擠人，還是東鶴安靜。」']], [420, 330, '商店街的會長', ['「這條商店街啊，是電車通了以後才熱鬧起來的。以前這裡是田。」', '「年底的福引抽獎，頭獎是德克斯凡的魔導暖爐。」']]].forEach(([sx, sy, nm, lines], i) => { const n = npc(WX(sx), WZ(sy), looks(), nm, i === 2 ? 0 : Math.PI); n.watch = { range: 6, fov: 1.0, civ: 1 }; tw.watchers.push(n); inter(WX(sx), WZ(sy) + 1, 1.6, '和' + nm + '說話', () => talk(nm, lines), { follow: n }); });
 
     // ---------- 魔導電車 ----------
     { const g = new TH.Group(), CL = 8.6, GAP = 0.5, N = 3, len = N * CL + (N - 1) * GAP, cb = R.Batch();

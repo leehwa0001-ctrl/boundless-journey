@@ -36,7 +36,7 @@
           bx(0.5, 0.08, 0.5, '#5A3E28', tx + ox, 0.46, tz + oz); bx(0.08, 0.46, 0.08, '#3A2A1C', tx + ox, 0.23, tz + oz);
           if (busy && !(mine && i === 0)) { const lk = LOOKS[(((i + Math.round(tx * 3 + tz)) % LOOKS.length) + LOOKS.length) % LOOKS.length], n = npc(tx + ox, tz + oz, rot, { name: '打麻將的客人', look: { top: lk[0], hair: lk[1], cloak: lk[0] } }); if (n && n.h) n.h.sit = true; }
         });
-        if (busy && !mine) inter(tx, tz + 1.9, 1.7, '和這桌的客人打麻將', () => R.mahjong());   // 每一桌都能坐下打（作者：麻將館不能打麻將？——原本只有一張空桌能坐，找不到）
+        if (busy && !mine) inter(tx, tz + 1.9, 1.7, '和這桌的客人打麻將', () => R.mahjong());   // 每一桌都能坐下打（作者：麻將館不能打麻將？──原本只有一張空桌能坐，找不到）
         if (mine) inter(tx, tz + 1.9, 1.7, '找空的那張桌子坐下（打麻將）', () => R.mahjong());
       };
       table(-3.6, -2.2, 1); table(3.6, -2.2, 1); table(-3.6, 2.4, 1); table(3.6, 2.4, 0, 1);

@@ -42,7 +42,7 @@
       + '<button type="button" class="mini" id="tr-n"></button><button type="button" class="mini" id="tr-mv"></button><button type="button" class="mini" id="tr-cd"></button><button type="button" class="mini" id="tr-hp"></button><button type="button" class="mini" id="tr-reset">重置數字</button><button type="button" class="mini gold" id="tr-out">離開訓練場</button></div>';
     document.body.appendChild(panel);
     $('tr-n').onclick = () => { T.n = T.n === 1 ? 5 : 1; place(); reset(); label(); };
-    // 2026-10-17 作者：木樁多一個【自由】——可以被擊退、推動（不會自己回原位）；固定 → 移動 → 自由 → 固定
+    // 2026-10-17 作者：木樁多一個【自由】──可以被擊退、推動（不會自己回原位）；固定 → 移動 → 自由 → 固定
     $('tr-mv').onclick = () => { T.mode = { fixed: 'move', move: 'free', free: 'fixed' }[T.mode || 'fixed']; T.move = T.mode === 'move'; if (T.mode !== 'free') dummies.forEach(e => { e.kx = e.kz = 0; if (e.home) { e.x = e.home[0]; e.z = e.home[1]; } }); label(); };   // 2026-10-13 作者：木樁可以切成會移動的
     $('tr-cd').onclick = () => { T.nocd = !T.nocd; label(); };
     $('tr-hp').onclick = () => { const opts = [100, 75, 50, 25, 10, 1]; T.hpPct = opts[(opts.indexOf(T.hpPct) + 1) % opts.length]; applyHp(); label(); };
@@ -69,7 +69,7 @@
     const w = W(), P = w.P; if (!here() || !P) return;
     dummies.forEach(e => { e.dead = true; if (e.m && e.m.g && e.m.g.parent) e.m.g.parent.remove(e.m.g); }); w.enemies = w.enemies.filter(e => !e.tdummy);
     const spots = T.n === 1 ? [[0, 0]] : [[0, 0], [1.6, 0.4], [-1.6, 0.4], [0.9, -1.4], [-0.9, -1.4]];
-    // 2026-10-05 作者回報（截圖）：木樁卡在牆裡——原本固定放在前方 4.5 公尺、沒看那裡是不是牆。
+    // 2026-10-05 作者回報（截圖）：木樁卡在牆裡──原本固定放在前方 4.5 公尺、沒看那裡是不是牆。
     // 現在：前方、斜前方、兩旁、後面、近一點遠一點輪流試，挑一個每根木樁都站在空地上、跟你之間沒隔著牆的地方。
     const loose = (x, z) => R.isFloor(x, z) && !R.pointBlocked(x, z) && ![[0.6, 0], [-0.6, 0], [0, 0.6], [0, -0.6]].some(([u, v]) => R.pointBlocked(x + u, z + v));
     // 2026-10-05 作者又一張截圖：木樁站在桌子後面（鏡頭那一側被桌子擋住），只看得到名牌。
@@ -106,7 +106,7 @@
   const leave = () => {
     const w = W(), run = w.run; if (!isTrain(run)) return;
     run.done = true; if (panel) panel.hidden = true;
-    if (R.clearMonTags) R.clearMonTags(); if (R.clearNums) R.clearNums();   // 2026-10-05 作者：木樁的血條會跑到主世界——直接切回城裡沒經過收尾，名牌留在畫面上
+    if (R.clearMonTags) R.clearMonTags(); if (R.clearNums) R.clearNums();   // 2026-10-05 作者：木樁的血條會跑到主世界──直接切回城裡沒經過收尾，名牌留在畫面上
     w.allies = []; R.ensureRoster && R.ensureRoster(true);
     if (w.scene && w.P) w.scene.remove(w.P.h.g); if (w.scene && R.disposeScene) R.disposeScene(w.scene);
     w.run = null; w.P = null; w.scene = null; dummies = [];
@@ -141,7 +141,7 @@
     return r;
   };
 
-  // 訓練場的記號：2026-10-08 作者回報「訓練場換技能沒有正確運作（技能沒有真的換上去）」——
+  // 訓練場的記號：2026-10-08 作者回報「訓練場換技能沒有正確運作（技能沒有真的換上去）」──
   // 開始遺跡的時候 W.run 是晚一點才建好的（中間有淡出），startRun 包裝那時候看到的還不是訓練場，
   // run.train 一直沒設，技能書、被動就當成在遺跡裡不給換。改成載入樓層的時候（那時一定有 W.run）再補一次。
   const mark = run => { if (!isTrain(run) || run.train) return; run.pact = null; run.train = 1; run.grade = Object.assign({}, run.grade, { name: '訓練場', letter: '—', passive: 1 }); run.floors = 1; };

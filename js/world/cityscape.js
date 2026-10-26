@@ -1,4 +1,4 @@
-// 無境之旅：東鶴的街景（3D）——地面、水、橋、道路、標線、斑馬線、紅綠燈、天橋、路燈、電線桿、行道樹、護欄、販賣機、電話亭……
+// 無境之旅：東鶴的街景（3D）──地面、水、橋、道路、標線、斑馬線、紅綠燈、天橋、路燈、電線桿、行道樹、護欄、販賣機、電話亭……
 // 照 city.js 的資料蓋。地面不是一張大貼圖，而是一塊一塊的路面（點陣材質照世界座標貼），城市放大也不吃記憶體。
 // 合併繪製（R.Batch）會照位置分區塊，畫面外的區塊不畫。
 (function (R) {
@@ -217,7 +217,7 @@
     spots.forEach(([x, y, ux, uy, sd]) => {
       const r0 = rnd(), px = WX(x), pz = WZ(y);
       if (r0 < 0.07 && vend < 26) { vending(px, pz); vend++; }
-      else if (r0 < 0.1 && phone < 6) { phone++; SB.add(G3.box, lam('#3E7A48', { tex: 0 }), px, 1.2, pz, 1.0, 2.4, 1.0); SB.add(G3.box, lam('#BFD8E8', { em: '#4A6A7A', ei: 0.4 }), px, 1.3, pz + 0.51, 0.8, 1.6, 0.02); SB.add(G3.box, M.snowbank, px, 2.44, pz, 1.0, 0.08, 1.0); block(px - 0.5, px + 0.5, pz - 0.5, pz + 0.5, 'deco'); inter(px, pz + 1.1, 1.4, '公共電話', () => R.townToast('綠色的公共電話。投一枚銅板，聽見嘟——的聲音。')); }
+      else if (r0 < 0.1 && phone < 6) { phone++; SB.add(G3.box, lam('#3E7A48', { tex: 0 }), px, 1.2, pz, 1.0, 2.4, 1.0); SB.add(G3.box, lam('#BFD8E8', { em: '#4A6A7A', ei: 0.4 }), px, 1.3, pz + 0.51, 0.8, 1.6, 0.02); SB.add(G3.box, M.snowbank, px, 2.44, pz, 1.0, 0.08, 1.0); block(px - 0.5, px + 0.5, pz - 0.5, pz + 0.5, 'deco'); inter(px, pz + 1.1, 1.4, '公共電話', () => R.townToast('綠色的公共電話。投一枚銅板，聽見嘟──的聲音。')); }
       else if (r0 < 0.13 && post < 6) { post++; SB.add(G3.cyl, M.red, px, 0.65, pz, 0.6, 1.3, 0.6); SB.add(G3.cyl, M.red, px, 1.36, pz, 0.66, 0.12, 0.66); SB.add(G3.box, M.snowbank, px, 1.45, pz, 0.6, 0.06, 0.6); block(px - 0.3, px + 0.3, pz - 0.3, pz + 0.3, 'deco'); inter(px, pz + 0.9, 1.3, '紅色的郵筒', () => R.townToast('郵筒上寫著「東鶴郵局　收件：每天兩次」。')); }
       else if (r0 < 0.22) bike(px, pz, -Math.atan2(uy, ux) + Math.PI / 2);
       else if (r0 < 0.4) SB.add(G3.sph, M.snowbank, px, 0, pz, 1.4 + rnd(), 0.5, 0.8 + rnd() * 0.5);

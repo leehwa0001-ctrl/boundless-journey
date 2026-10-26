@@ -10,12 +10,12 @@
   const hour = () => (R.hourNow ? ((R.hourNow() % 24) + 24) % 24 : 12);
   const HS = ['short', 'long', 'ponytail', 'bun', 'bob', 'crop', 'spiky'];
   const ROLES = {
-    old: { name: '老人家', hair: ['#C8C0B0', '#8A8A88'], lines: ['「年輕的時候，東鶴還沒有魔導路燈，晚上黑漆漆的。」', '「以前要約人，就約在城門。我到現在還是不太會認新路名。」', '「冬天曬太陽最舒服。」', '「我孫子也想當勇者……我叫他去念書。」'] },
-    student: { name: '學生', top: ['#2E3A5A', '#1E2A3A'], lines: ['「明天要考試……可是好想去遊樂場。」', '「聽說城西遺跡的入口，晚上會發光。」', '「勇者證要十六歲才能考。再等兩年。」'] },
-    salary: { name: '上班族', top: ['#2E2E38', '#3A3A48'], lines: ['「午休只剩十分鐘……」', '「德克斯凡的新機器，課長說要學會操作。」', '「最近竊案很多，公司的保險箱多加了一道鎖。」'] },
-    mama: { name: '主婦', top: ['#8A4A5A', '#6A5A3A', '#C8A888'], lines: ['「河西超市的白蘿蔔今天特價。」', '「孩子的學費又漲了。」', '「聽說赤提燈的老闆娘以前也是勇者。」'] }
+    old: { name: '老人家', hair: ['#C8C0B0', '#8A8A88'], lines: ['「年輕的時候，東鶴還沒有魔導路燈，晚上黑漆漆的。」', '「以前要約人，就約在城門。我到現在還是不太會認新路名。」', '「冬天啊，就是要曬太陽。曬著曬著就睡著了。」', '「我孫子也想當勇者……我叫他去念書。」'] },
+    student: { name: '學生', top: ['#2E3A5A', '#1E2A3A'], lines: ['「明天要考試……可是好想去遊樂場。」', '「聽說城西遺跡的入口，晚上會發光。」', '「勇者證要十六歲才能考。還有兩年……好久喔。」'] },
+    salary: { name: '上班族', top: ['#2E2E38', '#3A3A48'], lines: ['「午休只剩十分鐘……」', '「課長說德克斯凡那台新機器，下禮拜前要學會。說明書是外文的耶。」', '「最近竊案很多，公司的保險箱多加了一道鎖。」'] },
+    mama: { name: '主婦', top: ['#8A4A5A', '#6A5A3A', '#C8A888'], lines: ['「河西超市的白蘿蔔今天特價，快去，晚了就沒了。」', '「孩子的學費又漲了。」', '「聽說赤提燈的老闆娘以前也是勇者。」'] }
   };
-  const GOSSIP = ['「北山礦坑的深層，又有人沒回來。」', '「西市口的兌換所說，赤金越來越難驗了。」', '「聽說公會二樓的資料室，有一本禁止外借的圖鑑。」', '「望月家的人，刀快得看不見。」', '「德克斯凡的貨車昨天在國道上翻了，滿地都是零件。」', '「魔族？東鶴哪有魔族。……你別嚇我。」', '「縣廳要蓋新的大橋，預算還在吵。」', '「站前的柏青哥，昨天有人大當十連莊。」', '「湯山村的溫泉旅館，冬天的客人變少了。」', '「海那邊的千歲空，聽說也冒出了新的遺跡。」'];
+  const GOSSIP = ['「北山礦坑的深層，又有人沒回來。」', '「西市口的兌換所說，赤金越來越難驗了。」', '「聽說公會二樓的資料室，有一本禁止外借的圖鑑。」', '「望月家的人，刀快得看不見。」', '「德克斯凡的貨車昨天在國道上翻了，滿地都是零件。」', '「魔族？東鶴哪有魔族。……你別嚇我。」', '「縣廳說要再蓋一座橋過鶴川。吵了三年了，連個影子都沒有。」', '「昨天站前的柏青哥，有人連莊十次。不是我啦。」', '「湯山村的溫泉旅館，冬天的客人變少了。」', '「海那邊的千歲空，聽說也冒出新的遺跡了。到處都在冒，真受不了。」'];
   let L = null;
   const mkNpc = (tw, x, z, rot, role, extra, full) => {
     const r = ROLES[role] || {}, v = Math.floor(rnd() * 4), top = r.top ? r.top[v % r.top.length] : TOPS[(v * 3 + role.length) % TOPS.length], hair = r.hair ? r.hair[v % r.hair.length] : HAIRS[v % HAIRS.length];
@@ -71,7 +71,7 @@
     const parks = [C.Z && C.Z.park, C.PARKS && C.PARKS[0]].filter(Boolean);
     parks.forEach(pk => { const cx = C.WX((pk[0] + pk[2]) / 2), cz = C.WZ((pk[1] + pk[3]) / 2), rr = Math.min(pk[2] - pk[0], pk[3] - pk[1]) * C.S * 0.3; for (let i = 0; i < 3; i++) { const k = mkNpc(tw, cx, cz, 0, 'student', { off: true, cx, cz, rr: rr * (0.6 + i * 0.25), ph: i * 2.1, sp: 0.5 + rnd() * 0.3 }); L.kids.push(k); tw.inter.push({ follow: k, x: k.x, z: k.z, r: 1.6, label: '和玩雪的學生說話', act: () => say('玩雪的學生', [pick(['「要不要一起打雪仗？」', '「我堆的雪人比較大！」', '「放學了！」'])]), when: () => k.h.g.visible }); } });
     // 站前的街頭藝人
-    { const p = freeNear(C.WX((C.PLAZA[0] + C.PLAZA[2]) / 2 + 40), C.WZ(C.PLAZA[1] + 10)); if (p) { const n = mkNpc(tw, p[0], p[1], 0, 'old'); L.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { say('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); shamisen(); say('街頭藝人', [pick(['「謝啦。這一首叫《雪夜的渡口》。」', '「還想聽哪首？先說，我不一定會彈。」', '「年輕人，下遺跡要小心。」']), '（琴聲在站前廣場上散開。）']); } }); } }
+    { const p = freeNear(C.WX((C.PLAZA[0] + C.PLAZA[2]) / 2 + 40), C.WZ(C.PLAZA[1] + 10)); if (p) { const n = mkNpc(tw, p[0], p[1], 0, 'old'); L.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { say('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); shamisen(); say('街頭藝人', [pick(['「謝啦。這一首叫《雪夜的渡口》。」', '「還想聽哪首？先說，我不一定會彈。」', '「年輕人，下遺跡啊……算了，你們都不聽的。小心點就是了。」']), '（琴聲在站前廣場上散開。）']); } }); } }
     // 屋台：拉麵、關東煮（晚上才擺出來）
     const cart = (sx, sy, name, col, menu) => {
       const p = freeNear(C.WX(sx), C.WZ(sy)); if (!p) return; const [x, z] = p, g = new TH.Group(), lam = c2 => new TH.MeshLambertMaterial({ color: c2 });
@@ -87,7 +87,7 @@
       L.carts.push({ g, b, v });
     };
     const eat = (who, food, price, buff, lines) => () => { if (R.S.gold < price) { R.toast('錢不夠。'); return; } R.S.gold -= price; R.S.buff = { kind: 'yatai', b: buff, until: R.S.day }; R.ateFood && R.ateFood(R.S.buff); R.save(); say(who, lines.concat(['（下一趟遺跡：' + Object.keys(buff).map(k => ({ hp: '生命', mp: '魔力', regen: '回復' })[k] + ' 稍微提高').join('、') + '）'])); };
-    cart(566, 312, '屋台拉麵（一碗 8 費拉）', '#C83A3A', eat('拉麵屋台的老闆', '拉麵', 8, { hp: 0.05 }, ['「醬油拉麵一碗——來了！」', '你喝了幾口湯，老闆把裝白蘿蔔的小碟推過來，叫你小心燙。']));
+    cart(566, 312, '屋台拉麵（一碗 8 費拉）', '#C83A3A', eat('拉麵屋台的老闆', '拉麵', 8, { hp: 0.05 }, ['「醬油拉麵一碗──來了！」', '你喝了幾口湯，老闆把裝白蘿蔔的小碟推過來，叫你小心燙。']));
     cart(674, 312, '屋台關東煮（一份 6 費拉）', '#E8C04A', eat('關東煮屋台的阿婆', '關東煮', 6, { mp: 0.06 }, ['「白蘿蔔、蛋、竹輪，再來一塊豆腐？」', '湯頭是昆布熬的，很清甜。']));
   };
   // ---------- 每一格 ----------
@@ -98,7 +98,7 @@
     L.sit.forEach(n => { n.h.g.visible = day; });
     L.pairs.forEach(([a, b], i) => { const on = h >= 8 && h < 21 && !E.blizzard; a.h.g.visible = b.h.g.visible = on; if (on && Math.sin(L.t * 0.9 + i) > 0.97) { const t2 = a.rot; a.h.g.rotation.y = t2 + 0.3; } });
     L.kids.forEach(k => { k.h.g.visible = day; if (!day) return; const a = L.t * k.sp + k.ph, x = k.cx + Math.sin(a) * k.rr, z = k.cz + Math.cos(a * 1.3) * k.rr * 0.7; const yaw = Math.atan2(x - k.x, z - k.z); k.x = x; k.z = z; k.h.g.position.set(x, 0, z); k.h.g.rotation.y = yaw; R.animHero(k.h, 2.4, dt, false); });
-    if (day && L.kids.length && P) { L.ballT -= dt; if (L.ballT <= 0) { L.ballT = 25 + rnd() * 30; if (L.kids.some(k => Math.hypot(k.x - P.x, k.z - P.z) < 9)) R.toast(pick(['一顆雪球打在你背上。學生們笑著跑開了。', '「對不起——！」雪球從你頭上飛過去。'])); } }
+    if (day && L.kids.length && P) { L.ballT -= dt; if (L.ballT <= 0) { L.ballT = 25 + rnd() * 30; if (L.kids.some(k => Math.hypot(k.x - P.x, k.z - P.z) < 9)) R.toast(pick(['一顆雪球打在你背上。學生們笑著跑開了。', '「對不起──！」雪球從你頭上飛過去。'])); } }
     if (L.busk) L.busk.h.g.visible = eve;
     L.carts.forEach(c => { const st = c.g.userData.steam; if (st && night) { const k = (L.t * 0.5) % 1; st.position.y = 1.3 + k * 1.2; st.scale.setScalar(0.6 + k); st.material.opacity = 0.35 * (1 - k); } c.g.visible = night; c.v.h.g.visible = night; c.b.on = night; });
   };

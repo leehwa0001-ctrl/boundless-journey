@@ -6,7 +6,7 @@
   const MJ = R.MJ || window.MJCore; if (!MJ) { console.warn('[mahjong2] mjcore.js 沒載入'); return; }
   const $ = id => document.getElementById(id), esc = s => (R.esc ? R.esc(s) : String(s));
   const FEE = 20, PRIZE = [80, 30, 10, 0], MULS = [1, 2, 5, 10];
-  // 2026-10-24 作者：不要只有那幾個 NPC——每一局從這些常客裡抽三個
+  // 2026-10-24 作者：不要只有那幾個 NPC──每一局從這些常客裡抽三個
   const FOES = ['老闆娘・玉枝', '退休衛兵・權藏', '上班族・新田', '計程車司機・大門', '漁港的阿勝', '女學生・小雪', '和尚・了然', '茶屋的阿菊', '鐵匠學徒・鐵平', '報社記者・早瀨',
     '藥師・白藤', '常客・六郎', '魔導技師・柯恩', '德克斯凡商人・瑪莎', '冒險者・荒木', '老賭徒・銀次', '站員・森', '花店的小百合', '劇場演員・鳳', '護理師・千鶴',
     '旅館掌櫃・松本', '巫女・朱音', '碼頭工人・剛', '占卜師・夜見'];
@@ -301,7 +301,7 @@
   let JV; const jaVoice = () => { if (JV === undefined) { const vs = window.speechSynthesis ? speechSynthesis.getVoices() : []; if (vs.length) JV = vs.find(v => /^ja/i.test(v.lang)) || null; } return JV || null; };
   const shout = (s, txt) => {
     const sy = window.speechSynthesis; if (!OPT.sound || !sy || !CALL[txt]) return;
-    try { const u = new SpeechSynthesisUtterance(CALL[txt]); u.voice = jaVoice(); u.lang = 'ja-JP'; u.pitch = [1, 0.7, 1.4, 0.9][rel(s)]; u.rate = 1.35; u.volume = 0.9; sy.cancel(); sy.speak(u); } catch (e) { }   // 2026-10-25 作者：音效有點延遲——不排隊（新的一句直接蓋掉還沒唸完的）
+    try { const u = new SpeechSynthesisUtterance(CALL[txt]); u.voice = jaVoice(); u.lang = 'ja-JP'; u.pitch = [1, 0.7, 1.4, 0.9][rel(s)]; u.rate = 1.35; u.volume = 0.9; sy.cancel(); sy.speak(u); } catch (e) { }   // 2026-10-25 作者：音效有點延遲──不排隊（新的一句直接蓋掉還沒唸完的）
   };
   const ann = (s, txt) => { if (!txt || !ROOT) return; shout(s, txt); const p = ANNPOS[rel(s)], d = document.createElement('div'); d.className = 'mj-ann'; d.textContent = txt; d.style.left = p[0] + 'px'; d.style.top = p[1] + 'px'; $('mjs-st').appendChild(d); setTimeout(() => d.remove(), 1200); };
   const tenpaiDiscards = hand => { const me = V.seats[V.me]; if (hand.length % 3 !== 2) return []; const out = []; const seen = {}; hand.forEach(t => { const id = t >> 2; if (seen[id] == null) seen[id] = MJ.waitsIfDiscard(hand, t, me.melds.length).length > 0; if (seen[id]) out.push(t); }); return out; };
@@ -380,7 +380,7 @@
     st.querySelectorAll('[data-a]').forEach(el => { el.onclick = e => { e.stopPropagation(); button(el.dataset.a, +el.dataset.i); }; });
     const on = (id, f) => { const b = $(id); if (b) b.onclick = f; };
     on('mjs-x', askLeave); on('mjs-out', () => close()); on('mjs-rule', showRules);
-    on('mjs-next', () => { if (MODE === 'off') { MJ.nextHand(OFF.G); offTick(); } else { netSend({ t: 'next' }); const b = $('mjs-next'); if (b) { b.disabled = true; b.textContent = '等其他人…'; } } });
+    on('mjs-next', () => { if (MODE === 'off') { MJ.nextHand(OFF.G); offTick(); } else { netSend({ t: 'next' }); const b = $('mjs-next'); if (b) { b.disabled = true; b.textContent = '等其他人……'; } } });
     on('mjs-again', () => { if (MODE === 'off') { if (RANKED) MUL = rkMul(rkOf().lv); if (R.S.gold < FEE * MUL) { R.toast && R.toast('錢不夠（桌費 ' + FEE * MUL + ' 費拉）。'); return; } R.S.gold -= FEE * MUL; R.save && R.save(); startOffline(MUL, true); } else netSend({ t: 'again' }); });
   };
   const coarse = () => { try { return matchMedia('(pointer:coarse)').matches; } catch (e) { return false; } };
@@ -469,7 +469,7 @@
         const r = rkOf(), g = rkGain(r.lv, rk), was = r.lv; r.pt += g;
         if (r.pt >= rkNeed(r.lv) && r.lv < RANKS.length - 1) { r.pt -= rkNeed(r.lv); r.lv++; } else if (r.pt < 0) { if (r.lv >= 10) { r.lv--; r.pt = Math.floor(rkNeed(r.lv) / 2); } else r.pt = 0; }
         r.best = Math.max(r.best || 0, r.lv);
-        setTimeout(() => R.toast && R.toast('段位戰・第 ' + (rk + 1) + ' 名：段位分 ' + (g >= 0 ? '+' : '') + g + (r.lv > was ? '——升到「' + RANKS[r.lv] + '」！' : r.lv < was ? '——降到「' + RANKS[r.lv] + '」' : '（' + RANKS[r.lv] + ' ' + r.pt + '／' + rkNeed(r.lv) + '）'), r.lv > was ? '#E8C04A' : r.lv < was ? '#FF9A6A' : '#CFE8FF'), 600);
+        setTimeout(() => R.toast && R.toast('段位戰・第 ' + (rk + 1) + ' 名：段位分 ' + (g >= 0 ? '+' : '') + g + (r.lv > was ? '──升到「' + RANKS[r.lv] + '」！' : r.lv < was ? '──降到「' + RANKS[r.lv] + '」' : '（' + RANKS[r.lv] + ' ' + r.pt + '／' + rkNeed(r.lv) + '）'), r.lv > was ? '#E8C04A' : r.lv < was ? '#FF9A6A' : '#CFE8FF'), 600);
       }
       R.save && R.save(); R.mjEvent && R.mjEvent('end', { rk, pr, mul: MODE === 'off' ? MUL : 1 });
     }
@@ -483,7 +483,7 @@
     if (!R.S || R.S.gold < FEE) { R.toast && R.toast('錢不夠（線上桌桌費 ' + FEE + ' 費拉）。'); return; }
     open(); MODE = 'net'; rewardDone = false; lastSeq = 0; order = []; V = null;
     NET = { code, ws: null, tries: 0, lobby: null, host: -1, bank: 20, paid: false };
-    lobbyScreen('連線中…');
+    lobbyScreen('連線中……');
     connect();
   };
   const connect = () => {
@@ -505,13 +505,13 @@
         render(); rewards(); autoPlay();
       }
     };
-    ws.onclose = () => { clearInterval(NET && NET.ping); if (!NET || NET.ws !== ws) return; if (NET.tries++ < 30) { R.toast && NET.tries === 1 && R.toast('斷線了，重新連線中…（電腦先幫你打）'); setTimeout(connect, Math.min(8000, 600 * NET.tries)); } else lobbyScreen('斷線了。'); };
+    ws.onclose = () => { clearInterval(NET && NET.ping); if (!NET || NET.ws !== ws) return; if (NET.tries++ < 30) { R.toast && NET.tries === 1 && R.toast('斷線了，重新連線中……（電腦先幫你打）'); setTimeout(connect, Math.min(8000, 600 * NET.tries)); } else lobbyScreen('斷線了。'); };
   };
   const lobbyScreen = msg => {
     if (!ROOT || V) return; const st = $('mjs-st'), L = NET && NET.lobby;
     let h = '<div class="mj-board"></div><div class="mj-ovl mj-lobbyc"><h2>線上牌桌</h2><div class="mj-who">把桌號告訴朋友，在雀莊選「加入線上桌」輸入；隊伍裡的人可以按「和隊伍同桌」。</div><div class="mj-code">' + esc(NET ? NET.code : '') + '</div>';
     if (L) { h += L.seats.map((x, i) => '<div class="mj-seat"><span>' + WIND[i] + ' 位</span><span>' + (x ? esc(x.name) + (i === L.you ? '（你）' : '') + (i === L.host ? '　★桌主' : '') + (x.on ? '' : '（離線）') : '<span style="color:#888">空位（開始時由電腦補上）</span>') + '</span></div>').join(''); }
-    h += '<div class="mj-who" style="margin-top:12px">' + esc(msg || (L ? (L.you === L.host ? '人到齊了就按「開始」。空位會由電腦補上。' : '等桌主開始…') : '')) + '</div>';
+    h += '<div class="mj-who" style="margin-top:12px">' + esc(msg || (L ? (L.you === L.host ? '人到齊了就按「開始」。空位會由電腦補上。' : '等桌主開始……') : '')) + '</div>';
     h += '<div class="mj-bt">' + (L && L.you === L.host ? '<button class="mj-gbtn" id="mjs-start">開始（桌費 ' + FEE + ' 費拉）</button>' : '') + '<button class="mj-gbtn" id="mjs-out">離開</button></div></div>';
     st.innerHTML = h;
     const b = $('mjs-start'); if (b) b.onclick = () => netSend({ t: 'start' });
