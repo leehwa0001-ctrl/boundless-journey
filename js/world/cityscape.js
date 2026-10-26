@@ -56,7 +56,7 @@
         for (let k = 0; k <= n; k++) { const sx = ax + (bx - ax) * k / n, sy = ay + (by - ay) * k / n; if (okBridge(sx, sy)) continue; const x = WX(sx), z = WZ(sy), hw = w.w * S / 2, ht = 3 * S; if (vert) block(x - hw, x + hw, z - ht, z + ht, 'water'); else block(x - ht, x + ht, z - hw, z + hw, 'water'); }
       }
     });
-    // 橋：橋面、欄杆；西橋整修中（擋住）
+    // 橋：橋面、欄杆；整修中的橋（ok: false）擋住
     C.bridges.forEach(b => {
       const x = WX(b.sx), z = WZ(b.sy), len = b.len * S, wid = b.wid * S, gB = R.Batch(); gB.at(x, z, -b.ang);
       const big = b.kind === 'river' || b.kind === 'canal';

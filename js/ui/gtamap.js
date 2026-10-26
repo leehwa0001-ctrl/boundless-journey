@@ -3,7 +3,7 @@
 //  目的地、劇情人物、委託、討伐委託的遺跡在雷達外面時，圖示貼在雷達的邊上指出方向。點一下雷達打開大地圖。
 // 大地圖（Tab 或 M）：拖曳移動、滾輪（手機兩指）縮放、點一下設目的地，再點一次標記就取消；重要設施一直標名字，商店放大才標；
 //  旁邊是圖例和目的地清單。
-// 導航：沿著路走（只能從平交道過鐵路；西橋整修中過不去），城裡在目的地立一根光柱，走到就自動清掉。
+// 導航：沿著路走（只能從平交道過鐵路），城裡在目的地立一根光柱，走到就自動清掉。
 (function (R) {
   const W = R.W, $ = id => document.getElementById(id), C = R.CITY, S = C.S, WX = C.WX, WZ = C.WZ, HALF = C.HALF;
   const T = () => THREE;
@@ -211,7 +211,7 @@
     R.sheet('<h2>東鶴 地圖</h2><div class="gmap"><canvas id="gmap-cv" width="' + cw + '" height="' + ch + '"></canvas><div class="gmap-side"><p class="note" id="gmap-info"></p>'
       + '<h3>圖例</h3><div class="glegend">' + legend + '</div><h3>目的地</h3><div class="chips">'
       + dests.map((o, i) => '<button type="button" class="chip" data-dest="' + i + '"><b style="color:' + o.col + '">' + R.esc(o.g) + '</b> ' + R.esc(o.name) + '</button>').join('') + '</div>'
-      + '<p class="note">拖曳移動、滾輪縮放（手機兩指）。黃線是路線，黃色的光柱是目的地。只能從平交道過鐵路；西橋整修中。</p></div></div>',
+      + '<p class="note">拖曳移動、滾輪縮放（手機兩指）。黃線是路線，黃色的光柱是目的地。只能從平交道過鐵路。</p></div></div>',
       '<div class="row"><button type="button" class="btn pri" id="gm-x">關上（Tab）</button><button type="button" class="btn" id="gm-me">回到自己的位置</button><button type="button" class="btn" id="gm-all">整張東鶴</button><button type="button" class="btn" id="gm-clear">清除目的地</button></div>');
     $('r-sheet').classList.add('wide');
     cvBig = $('gmap-cv');

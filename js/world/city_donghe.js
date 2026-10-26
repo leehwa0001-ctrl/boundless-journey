@@ -1,8 +1,8 @@
 // 東鶴重蓋成精緻城市（2026-10-10 作者：先讓引擎會蓋斜路，再照東鶴的地圖原樣重蓋）——第一階段：照 city.js 的地圖蓋出整座城
 // - 座標跟原本的東鶴一樣（世界座標＝(示意圖 − 500) × 0.44 公尺），所以原本的位置、互動、劇情的座標都可以直接用。
 // - 路：city.js 的每一條路都用 B.street（citykit8.js）照原本的折線蓋——主幹道、副幹道有人行道，巷子、舊城的石板路人車共用，拱廊只能走路，城外是泥土路。
-// - 水：霜溪、西河岸的河、南渠、外濠照折線外擴成水面（Clipper 合併）；橋照 city.js 的橋；東邊是海。
-// - 鐵路、東鶴站、月台、站前廣場；舊城的城牆和四個城門（櫓門）；田、公園、河西的小學、墓地、雜木林、超市。
+// - 水：霜溪、鶴川、外濠照折線外擴成水面（Clipper 合併）；橋照 city.js 的橋；東邊是海。
+// - 鐵路、東鶴站、月台、站前廣場；舊城的城牆和四個城門（櫓門）；田、公園、小學、墓地、雜木林、超市。（2026-10-26 地圖整張重新設計，全部照 city.js）
 // - 房子：city.js 自動排好的每一塊地（舊城的町家、土藏、站前的店和雜居大樓、住宅、公寓、倉庫……）照種類、樓層、顏色、門的方向蓋；
 //   設施（公會、鐵匠鋪、神社、寺、縣廳、百貨……）照 city.js 的位置和大小蓋，掛招牌。
 // - 互動、門：先在背景照原本的流程把舊的東鶴蓋一次，收下所有特別的互動（走進店裡、參拜、看委託、攤子、劇情人物……）放到同樣的位置，
@@ -72,7 +72,7 @@
   // ---------- 海岸、漁港、海水浴場、東鶴港（照 coast.js、harbor.js 原本的位置蓋；互動是背景收下來的那些） ----------
   // 海裡整片擋住，只留沙灘、碼頭、防波堤、填出來的埠頭走得上去。
   const X0 = WX(C.COAST || 975);
-  const PIERS = [[846, 854], [892, 900]], BREAK = [924, 931], BEACH = [112, 206];   // 防波堤：原本 934～941 接在南渠的出海口上，走不到
+  const PIERS = [[846, 854], [892, 900]], BREAK = [924, 931], BEACH = [112, 206];   // 防波堤（coast.js 的 934～941 太靠南，走不到）
   const HB = { cargo: [0, 180, 40, 110], ferry: [0, 140, -62, -36], mid: [0, 90, -12, 14], bwOut: [226, 232, -98, 62], bwN: [0, 232, -98, -92] };   // 東鶴港（x 從海岸線算起）
   const hr = k => { const [a, b, c, d] = HB[k]; return [X0 + (a === 0 ? -0.8 : a), c, X0 + b, d]; };
   const RAIL_X1 = X0 + 360;
@@ -209,15 +209,15 @@
   CK.define({
     id: 'donghe', name: '東鶴', seed: 1433, stationName: '東鶴站', fog: 1.1, sea: true,
     land: [[-700, -700], [WX(C.COAST || 975), -700], [WX(C.COAST || 975), 700], [-700, 700]],
-    walk: [WX(0) - 3, WZ(40), X0 + 265, WZ(998)], spawn: [WX(620), WZ(306), 0], camYaw: 0,
+    walk: [WX(0) - 3, WZ(40), X0 + 265, WZ(998)], spawn: [WX((C.PLAZA[0] + C.PLAZA[2]) / 2), WZ(C.PLAZA[1] + 12), 0], camYaw: 0,
     banner: '',
-    plaza: [WX(620), WZ(322)], plazaName: '站前廣場',
+    plaza: [WX((C.PLAZA[0] + C.PLAZA[2]) / 2), WZ((C.PLAZA[1] + C.PLAZA[3]) / 2)], plazaName: '站前廣場',
     gossip: ['「西市口的糰子攤，今天的醬油糰子特別香。」', '「德克斯凡的魔導路燈，晚上比月亮還亮。」', '「北門外面的外濠，冬天會結一層薄冰。」', '「議會選舉快到了，海報貼得到處都是。」', '「站前商店街的拱廊，下雪天走起來最舒服。」'],
-    guards: [[WX(612), WZ(476), 0], [WX(530), WZ(347), Math.PI], [WX(575), WZ(578), 0]],
-    patrols: [[[WX(470), WZ(412)], [WX(770), WZ(412)]], [[WX(620), WZ(440)], [WX(620), WZ(570)]], [[WX(560), WZ(650)], [WX(560), WZ(760)]]],
+    guards: [[WX(312), WZ(92), 0], [WX(446), WZ(916), Math.PI], [WX(296), WZ(248), 0]],
+    patrols: [[[WX(220), WZ(456)], [WX(640), WZ(456)]], [[WX(330), WZ(132)], [WX(330), WZ(240)]], [[WX(344), WZ(500)], [WX(344), WZ(740)]]],
     alleys: [rectW([404, 566, 532, 578]), rectW([620, 684, 740, 692]), rectW([404, 752, 736, 764])],
-    brawl: [[WX(430), WZ(630)], [WX(600), WZ(330)]],
-    mapNote: '北邊是東鶴站和站前廣場，中間是舊城（城牆圍著），西邊是西河岸的河、河西，東邊是新商區、官廳街和海。',
+    brawl: [[WX(236), WZ(318)], [WX(520), WZ(900)]],
+    mapNote: '北邊靠山的是舊城（城牆、外濠圍著），鶴川從北山斜斜穿過城中間流進東鶴港；河東是官廳街，南邊是鐵路、東鶴站和站前，東南角是漁港。',
     firstTip: '東鶴換成精緻版了：照原本的地圖蓋的，店都走得進去，Tab 看地圖。電腦跑不動的話，暫停選單可以換回像素版。',
     build(B) {
       const M = CK.M, g = B.g, P = B.part, rnd = B.rnd, rr = B.rr, pk = B.pk, tw = W.town;
@@ -248,7 +248,7 @@
       // ---------- 鐵路、東鶴站、站前廣場 ----------
       { const RL = C.RAIL, x0 = WX(-60), x1 = WX((C.COAST || 975) - 4);
         RL.t.forEach((t, i) => B.rail([[x0, WZ(t)], [RAIL_X1, WZ(t)]], { col: i ? '#3E7A48' : '#C8C0A8', stripe: i ? '#F4F0E6' : '#2E5A9A', cars: 4, v: 13 }));
-        B.bridge(WX(168), WZ(RL.y0), WX(234), WZ(RL.y1), { axis: 'x', mat: 'concD', railMat: 'steelD', deck: 0.12 });   // 鐵橋
+        B.bridge(WX(C.BRIDGE[0] - 2), WZ(RL.y0), WX(C.BRIDGE[1] + 2), WZ(RL.y1), { axis: 'x', mat: 'concD', railMat: 'steelD', deck: 0.12 });   // 鐵橋
         // 柵欄（平交道留缺口）
         [RL.fn, RL.fs].forEach(y => { let a = x0; (C.CROSS || []).slice().sort((p, q) => p - q).concat([1e9]).forEach(cx => { const b = Math.min(x1, cx === 1e9 ? x1 : WX(cx - 14)); if (b > a + 2) B.fence(a, WZ(y) - 0.05, b, WZ(y) + 0.05, 1.2, 'steelD'); a = cx === 1e9 ? x1 : WX(cx + 14); }); });
         // 平交道的柵欄桿
@@ -314,7 +314,7 @@
         if (f.name && f.h >= 9) B.label(f.name.replace(/「|」/g, ''), cx, cz);
       });
       // 望月家（道場）：圍牆、正屋、道場
-      { const d = C.FAC.dojo; if (d) { const [x0, z0, x1, z1] = rectW(d); B.zone([x0, z0, x1, z1], 'gravel', 0.025); B.dobei(x0, z0, x1, z1, 0, { gaps: [[WX(696), z1 - 1, WX(704), z1 + 1]] }); B.bld({ r: [x0 + 2, z0 + 2, x0 + (x1 - x0) * 0.55, z0 + (z1 - z0) * 0.5], h: 4.4, style: 'machiya', face: 's' }); B.bld({ r: [x0 + (x1 - x0) * 0.6, z0 + 2, x1 - 2, z0 + (z1 - z0) * 0.55], h: 5.2, style: 'house', face: 's', col: '#C8B898', roof: 'gable', plain: 1 }); B.label('望月家道場', (x0 + x1) / 2, (z0 + z1) / 2); } }
+      { const d = C.FAC.dojo; if (d) { const [x0, z0, x1, z1] = rectW(d); B.zone([x0, z0, x1, z1], 'gravel', 0.025); B.dobei(x0, z0, x1, z1, 0, { gaps: [[WX(C.SPOTS.dojoGate[0] - 4), z1 - 1, WX(C.SPOTS.dojoGate[0] + 4), z1 + 1]] }); B.bld({ r: [x0 + 2, z0 + 2, x0 + (x1 - x0) * 0.55, z0 + (z1 - z0) * 0.5], h: 4.4, style: 'machiya', face: 's' }); B.bld({ r: [x0 + (x1 - x0) * 0.6, z0 + 2, x1 - 2, z0 + (z1 - z0) * 0.55], h: 5.2, style: 'house', face: 's', col: '#C8B898', roof: 'gable', plain: 1 }); B.label('望月家道場', (x0 + x1) / 2, (z0 + z1) / 2); } }
       // 攤子（西市街）
       (C.FAC.stalls || []).forEach(([sx, sy]) => { const x = WX(sx), z = WZ(sy); B.box(M('woodD'), x - 1.8, 0, z - 0.8, x + 1.8, 0.9, z + 0.8); B.box(CK.mat('dhStall2', { col: '#3A6A8A', tex: 'paint', rough: 0.8 }), x - 2.1, 2.3, z - 1.1, x + 2.1, 2.42, z + 1.1); [-1.7, 1.7].forEach(o => B.box(M('woodB'), x + o - 0.06, 0.9, z - 0.06, x + o + 0.06, 2.3, z + 0.06)); B.solid(x - 1.8, z - 0.8, x + 1.8, z + 0.8, 'deco'); });
       // 公團住宅（兩棟）
@@ -333,7 +333,7 @@
       // ---------- 地名 ----------
       (C.DISTRICTS || []).slice().sort((a, b) => a.r - b.r).forEach(d => { const k = d.r * 0.75; B.area(d.n, [WX(d.x - k), WZ(d.y - k), WX(d.x + k), WZ(d.y + k)]); });
       (C.AREAS || []).forEach(d => { const k = d.r * 0.75; B.area(d.n, [WX(d.x - k), WZ(d.y - k), WX(d.x + k), WZ(d.y + k)]); });
-      ['西市口', '站前商店街', '官廳街', '新商區', '寺町', '河西', '城西', '城東', '城南'].forEach(n => { const d = (C.DISTRICTS || []).find(q => q.n === n); if (d) B.label(n, WX(d.x), WZ(d.y)); });
+      ['西市口', '站前商店街', '官廳街', '新商區', '寺町', '城西', '城南', '河東'].forEach(n => { const d = (C.DISTRICTS || []).find(q => q.n === n); if (d) B.label(n, WX(d.x), WZ(d.y)); });
       // ---------- 收下的互動、劇情人物 ----------
       const H = CK._dongheH;
       if (H) {

@@ -24,7 +24,7 @@
       name: '望月瀧', short: '瀧', race: 'human', adult: 1, romance: 1, recruit: 1, sil: 1, cls: 'blade', weapon: 'katana', lv: 40, card: 'HR-2830-3317', rank: '特攻段',
       look: { top: '#26262C', hair: '#E6EAF0', cloak: '#1E1E24', hs: 'ponytail', skin: '#F4E2D2', eye: '#8A929C', pants: '#1E1E24', sig: 'taki' },   // 照作者的設定圖（storylooks.js）
       likes: { strings: 3, tackle: 2, fish: 1, dango: 1, dorayaki: 1, tea: 1 },
-      hint: '南橋下，有人在釣魚。',
+      hint: '鶴川河畔公園的岸邊，有人在釣魚。',
       sched: (dd, E) => {
         const a = dd.abs;
         if (a < k(10, 20)) return E.blizzard ? null : 'town:survey';

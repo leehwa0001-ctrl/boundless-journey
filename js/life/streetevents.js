@@ -161,7 +161,7 @@
     brawl: {
       ok: h => h >= 19 || h < 1,
       start: () => {
-        const Pl = P(), spots = (CKT() ? (W.town.city.brawl || []).map(([x, z]) => [toS(x), toS(z)]) : [[600, 330], [C.FAC.tavern && C.FAC.tavern[0], C.FAC.tavern && C.FAC.tavern[1] + 16]]).filter(s => s[0] != null).map(([sx, sy]) => [toW(sx), toW(sy)]).filter(([x, z]) => Math.hypot(x - Pl.x, z - Pl.z) < 40);
+        const Pl = P(), spots = (CKT() ? (W.town.city.brawl || []).map(([x, z]) => [toS(x), toS(z)]) : [[(C.PLAZA[0] + C.PLAZA[2]) / 2, C.PLAZA[1] + 30], [C.FAC.tavern && C.FAC.tavern[0], C.FAC.tavern && C.FAC.tavern[1] + 16]]).filter(s => s[0] != null).map(([sx, sy]) => [toW(sx), toW(sy)]).filter(([x, z]) => Math.hypot(x - Pl.x, z - Pl.z) < 40);
         const b = spots[0] ? freeNear(spots[0][0], spots[0][1]) : freeNear(Pl.x + Math.sin(Pl.yaw) * 10, Pl.z + Math.cos(Pl.yaw) * 10); if (!b) return false;
         const a = mk(b[0], b[1], { top: '#5A3A3A', hair: '#2A2420' }, { pool: 'drunk0' }), c = mk(b[0] + 1.2, b[1], { top: '#3A4A5A', hair: '#6A4A2E' }, { pool: 'drunk1' });
         ev = { kind: 'brawl', st: 'fight', t: 0, npcs: [a, c], a, c };

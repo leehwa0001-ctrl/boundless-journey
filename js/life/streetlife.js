@@ -71,7 +71,7 @@
     const parks = [C.Z && C.Z.park, C.PARKS && C.PARKS[0]].filter(Boolean);
     parks.forEach(pk => { const cx = C.WX((pk[0] + pk[2]) / 2), cz = C.WZ((pk[1] + pk[3]) / 2), rr = Math.min(pk[2] - pk[0], pk[3] - pk[1]) * C.S * 0.3; for (let i = 0; i < 3; i++) { const k = mkNpc(tw, cx, cz, 0, 'student', { off: true, cx, cz, rr: rr * (0.6 + i * 0.25), ph: i * 2.1, sp: 0.5 + rnd() * 0.3 }); L.kids.push(k); tw.inter.push({ follow: k, x: k.x, z: k.z, r: 1.6, label: '和玩雪的學生說話', act: () => say('玩雪的學生', [pick(['「要不要一起打雪仗？」', '「我堆的雪人比較大！」', '「放學了！」'])]), when: () => k.h.g.visible }); } });
     // 站前的街頭藝人
-    { const p = freeNear(C.WX(604), C.WZ(302)); if (p) { const n = mkNpc(tw, p[0], p[1], 0, 'old'); L.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { say('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); shamisen(); say('街頭藝人', [pick(['「謝啦。這一首叫《雪夜的渡口》。」', '「還想聽哪首？先說，我不一定會彈。」', '「年輕人，下遺跡要小心。」']), '（琴聲在站前廣場上散開。）']); } }); } }
+    { const p = freeNear(C.WX((C.PLAZA[0] + C.PLAZA[2]) / 2 + 40), C.WZ(C.PLAZA[1] + 10)); if (p) { const n = mkNpc(tw, p[0], p[1], 0, 'old'); L.busk = n; tw.inter.push({ follow: n, x: n.x, z: n.z, r: 2.2, label: '聽街頭藝人彈三味線（投 1 費拉）', when: () => n.h.g.visible, act: () => { if (R.S.gold < 1) { say('街頭藝人', ['（他朝你點點頭，繼續彈。）']); return; } R.S.gold -= 1; R.save(); shamisen(); say('街頭藝人', [pick(['「謝啦。這一首叫《雪夜的渡口》。」', '「還想聽哪首？先說，我不一定會彈。」', '「年輕人，下遺跡要小心。」']), '（琴聲在站前廣場上散開。）']); } }); } }
     // 屋台：拉麵、關東煮（晚上才擺出來）
     const cart = (sx, sy, name, col, menu) => {
       const p = freeNear(C.WX(sx), C.WZ(sy)); if (!p) return; const [x, z] = p, g = new TH.Group(), lam = c2 => new TH.MeshLambertMaterial({ color: c2 });

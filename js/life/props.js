@@ -235,13 +235,13 @@
     $('ex-x').onclick = R.closeSheet;
     if ($('ex-report')) $('ex-report').onclick = () => { s.fake = 0; const b = 30; s.gold += b; s.rep = (s.rep || 0) + 2; R.addDeed && R.addDeed('有勇者把私人委託收到的假赤金交給衛兵。衛兵說：「最近這種很多。」'); R.save(); R.closeSheet(); R.toast('衛兵給了 ' + b + ' 費拉的通報獎金。'); };
   };
-  // 南橋下釣魚：看準時機收線
+  // 鶴川邊釣魚：看準時機收線
   R.fishing = () => {
-    const s = S(); if (!((s.gifts || {}).tackle) && !s.rod) { R.townTalk('南橋下', ['沒有釣具。', '（雜貨店有賣。）']); return; }
-    if (s.fishDay === s.day && (s.fishN || 0) >= 3) { R.townTalk('南橋下', ['今天的魚好像都不咬了。']); return; }
+    const s = S(); if (!((s.gifts || {}).tackle) && !s.rod) { R.townTalk('鶴川邊', ['沒有釣具。', '（雜貨店有賣。）']); return; }
+    if (s.fishDay === s.day && (s.fishN || 0) >= 3) { R.townTalk('鶴川邊', ['今天的魚好像都不咬了。']); return; }
     if (s.fishDay !== s.day) { s.fishDay = s.day; s.fishN = 0; }
     let t = 0, bite = 1.2 + Math.random() * 2.5, tm = 0, done2 = false;
-    R.sheet('<p class="kicker">南橋下</p><h2>釣魚</h2><p id="fs-t">把線拋進冰縫裡……等浮標沉下去，馬上收線。</p><div class="meter" style="height:14px"><i id="fs-bar" style="width:0;background:#7FC8FF"></i></div>', '<div class="row"><button type="button" class="btn pri" id="fs-pull">收線！</button><button type="button" class="btn" id="fs-x">不釣了</button></div>');
+    R.sheet('<p class="kicker">鶴川邊</p><h2>釣魚</h2><p id="fs-t">把線拋進冰縫裡……等浮標沉下去，馬上收線。</p><div class="meter" style="height:14px"><i id="fs-bar" style="width:0;background:#7FC8FF"></i></div>', '<div class="row"><button type="button" class="btn pri" id="fs-pull">收線！</button><button type="button" class="btn" id="fs-x">不釣了</button></div>');
     const iv = setInterval(() => { if (done2 || !$('fs-bar')) { clearInterval(iv); return; } t += 0.05; if (t > bite) { tm += 0.05; $('fs-t').textContent = '浮標沉下去了！'; $('fs-bar').style.width = Math.min(100, tm / 0.7 * 100) + '%'; if (tm > 0.7) { done2 = true; clearInterval(iv); $('fs-t').textContent = '……魚跑了。'; } } }, 50);
     $('fs-pull').onclick = () => { if (done2) { R.closeSheet(); return; } done2 = true; clearInterval(iv); if (t > bite && tm <= 0.7) { s.fishN = (s.fishN || 0) + 1; addGift('fish', 1); R.save(); $('fs-t').textContent = '釣到一條霜背鮒！'; } else $('fs-t').textContent = '收得太早了。'; $('fs-pull').textContent = '好'; };
     $('fs-x').onclick = () => { done2 = true; clearInterval(iv); R.closeSheet(); };

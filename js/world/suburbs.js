@@ -244,7 +244,7 @@
       const shelter = (sx, sy) => { const x = WX(sx), z = WZ(sy); HB.add(G3.box, B_('#BFD8E8', { em: '#5A7A8A', ei: 0.25 }), x, 1.2, z - 0.7, 3, 1.8, 0.06); HB.add(G3.box, B_('#3A3C42', { tex: 'cap' }), x, 2.5, z, 3.4, 0.12, 1.8); HB.add(G3.box, snowM, x, 2.58, z, 3.2, 0.05, 1.6); [-1.5, 1.5].forEach(o => HB.add(G3.box, metal, x + o, 1.25, z - 0.7, 0.08, 2.5, 0.08)); HB.add(G3.box, woodM, x, 0.45, z - 0.4, 2.4, 0.1, 0.4); block(x - 1.6, x + 1.6, z - 0.8, z - 0.6, 'deco'); };
       FAC.busStop.forEach(([sx, sy]) => shelter(sx, sy));
       { const bx = (FAC.busStop[0][0] + FAC.busStop[1][0]) / 2; SB.add(G3.box, metal, WX(bx), 1.3, WZ(FAC.busStop[0][1] - 2), 0.08, 2.6, 0.08); SB.add(G3.box, lam('#2E5A8A', { tex: 0 }), WX(bx), 2.5, WZ(FAC.busStop[0][1] - 2), 0.6, 0.6, 0.04);
-        inter(WX(bx), WZ(FAC.busStop[0][1] + 2), 1.8, '公車站的站牌', () => talk('公車站', ['環城線：東鶴站 → 北門 → 西市口 → 南門 → 寺町 → 河西。', '往皇嶺的長途巴士：每天一班，國道一號經由。'])); }
+        inter(WX(bx), WZ(FAC.busStop[0][1] + 2), 1.8, '公車站的站牌', () => talk('公車站', ['環城線：東鶴站 → 大手通 → 南門 → 西市口 → 東門 → 官廳街 → 港通 → 東鶴站。', '往皇嶺的長途巴士：每天一班，國道一號經由。'])); }
       // 花壇與時鐘柱（環道中間的島）
       { const x = WX((P0[0] + P0[2]) / 2), z = WZ(P0[3] - 19); SB.add(G3.box, concrete, x, 0.3, z, 30, 0.6, 2.6); SB.add(G3.box, snowL, x, 0.62, z, 29.6, 0.06, 2.2); for (let i = 0; i < 5; i++) pineAt(x - 12 + i * 6, z, 0.7); SB.add(G3.box, metal, x, 2.2, z, 0.16, 4.4, 0.16); SB.add(G3.box, lam('#F4ECD8', { em: '#FFE8B0', ei: 0.5 }), x, 4.4, z, 0.7, 0.7, 0.7); block(x - 15, x + 15, z - 1.3, z + 1.3, 'deco'); inter(x, z + 2, 1.8, '站前的時鐘柱', () => R.townToast('時鐘柱底下刻著：「魔導電車東鶴站 開業紀念」。')); }
       for (let i = 0; i < 8; i++) bike(WX(P0[0] + 4), WZ(P0[1] + 8 + i * 4), Math.PI / 2);
@@ -262,7 +262,7 @@
     { const r = Z.ruins, fm = lam('#8A7A5A', { tex: 'planks' });
       const fence = (ax, ay, bx2, by) => { const x0 = WX(Math.min(ax, bx2)), x1 = WX(Math.max(ax, bx2)), z0 = WZ(Math.min(ay, by)), z1 = WZ(Math.max(ay, by)), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, wx = Math.max(0.1, x1 - x0), wz = Math.max(0.1, z1 - z0); SB.add(G3.box, fm, cx, 0.9, cz, wx, 0.1, wz); SB.add(G3.box, fm, cx, 0.5, cz, wx, 0.1, wz); const n = Math.max(1, Math.round(Math.max(wx, wz) / 1.6)); for (let i = 0; i <= n; i++) SB.add(G3.box, fm, x0 + (x1 - x0) * i / n, 0.55, z0 + (z1 - z0) * i / n, 0.1, 1.1, 0.1); block(x0 - 0.06, x1 + 0.06, z0 - 0.06, z1 + 0.06, 'wall'); };
       fence(r[0], r[1], r[2], r[1]); fence(r[0], r[3], 80, r[3]); fence(100, r[3], r[2], r[3]); fence(r[0], r[1], r[0], r[3]); fence(r[2], r[1], r[2], r[3]);
-      sign(WX(104), 1.6, WZ(r[3]) + 0.3, 0, '公會調查點・閒人勿入', '#2E4A34', 2.6);
+      sign(WX(r[0] + 4), 1.6, WZ(r[3]) + 0.3, 0, '公會調查點・閒人勿入', '#2E4A34', 2.6);
       for (let i = 0; i < 5; i++) pineAt(WX(r[0] + 8 + i * 6), WZ(r[3] - 8 - (i % 2) * 6), 0.8); }
     // 河西小學：校舍、體育館、操場、校門
     { const r = Z.school, B = HB, cx = WX((r[0] + r[2]) / 2), bz = WZ(r[1] + 13), w = (r[2] - r[0] - 30) * S;
