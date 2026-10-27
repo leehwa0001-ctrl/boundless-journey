@@ -249,8 +249,9 @@
   };
 
   // ---------- 鐵匠鋪的新分頁 ----------
-  const TABS = [['acc', '飾品工房'], ['refine', '精煉・重鑄・附魔'], ['buy', '買素材']];
+  const TABS = [['acc', '飾品工房'], ['refine', '精煉・重鑄・附魔'], ['buy', '買素材'], ['bomb', '炸藥']];   // 2026-10-27：炸藥從白藤堂（藥鋪）搬來（內容是 bomb.js 放的）
   let csub = null;
+  R.smithSub = () => csub;
   const matsTxt = m => Object.keys(m).map(k => (R.matChip ? R.matChip(k, R.matHave(k) + '／' + m[k]) : esc(R.MATS[k].name) + ' ' + R.matHave(k) + '／' + m[k])).join(' ');
   const card = (it, btns) => '<div class="item-card" data-iid="' + it.id + '" style="--c:' + R.rarityColor(it) + '">' + (R.itemIconTag ? R.itemIconTag(it, 'card') : '') + '<b>' + esc(R.itemName(it)) + '</b>' + (R.itemInfo ? R.itemInfo(it) : '<small class="rar">' + (it.identified ? R.RARITY[it.rarity].name : '？？？') + (it.plus ? '・+' + it.plus : '') + '</small><ul>' + R.itemLines(it).map(l => '<li>' + esc(l) + '</li>').join('') + '</ul>') + '<div class="row">' + btns + '</div></div>';
   const accTab = () => '<p class="note">「照圖做的東西，做出來是什麼樣子我心裡有數。」配方上寫的詞綴一定會有；其他的詞綴看運氣。做出來當場就鑑定好了。</p><div class="recipes">'
@@ -298,7 +299,7 @@
     tabs.querySelectorAll('.tab').forEach(b => { if (b.dataset.sub) b.classList.remove('on'); });
     // 換掉分頁下面的內容（留著最下面「手邊的素材」）
     let n = tabs.nextSibling; while (n && !(n.tagName === 'H3' && n.textContent === '手邊的素材')) { const nx = n.nextSibling; n.remove(); n = nx; }
-    const box = document.createElement('div'); box.innerHTML = csub === 'acc' ? accTab() : csub === 'refine' ? refineTab() : buyTab(); tabs.after(box);
+    const box = document.createElement('div'); box.innerHTML = csub === 'acc' ? accTab() : csub === 'refine' ? refineTab() : csub === 'bomb' ? '<div class="bomb-slot"></div>' : buyTab(); tabs.after(box);
     const on = (sel, fn) => box.querySelectorAll(sel).forEach(b => { b.onclick = () => fn(b); });
     on('[data-cacc]', b => { const it = R.craftNamed(ACC_RC[+b.dataset.cacc]); if (it) { R.hub(); R.say('做好了：' + R.itemName(it), R.rarityColor(it)); } });
     on('[data-refine]', b => { const it = R.itemById(b.dataset.refine); if (R.refine(it)) { R.hub(); R.say('精煉成功：' + R.itemName(it), R.rarityColor(it)); } });

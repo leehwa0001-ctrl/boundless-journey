@@ -73,11 +73,11 @@
   R.hub = (t, f) => {
     hub0(t, f);
     try {
-      const tab = document.querySelector('[data-htab][aria-selected="true"]'), body = $('hub-body'), s = S(); if (!body || !tab || tab.dataset.htab !== 'shop' || !s) return;
+      const slot = document.querySelector('#hub-body .bomb-slot'), s = S(); if (!slot || !s || !R.smithSub || R.smithSub() !== 'bomb') return;   // 2026-10-27：搬到老岩的鐵匠鋪（原本在白藤堂：藥鋪賣炸藥說不通）
       const box = document.createElement('div'); box.className = 'bomb-shop';
-      box.innerHTML = '<h3>遺跡用炸藥</h3><p class="note">遺跡裡按 ' + (R.keyName ? R.keyName('bomb') : 'G') + ' 丟出選中的那一種（快捷列的「炸彈」那格點一下換種類）。炸得越大，佩特拉越會注意到你；爆裂核心一定會引起反應。帶進去用掉就沒了。</p><div class="recipes">'
+      box.innerHTML = '<p class="note">「北山礦坑用的就是這幾種。遺跡的牆比礦脈硬，量別省。」</p><p class="note">遺跡裡按 ' + (R.keyName ? R.keyName('bomb') : 'G') + ' 丟出選中的那一種（快捷列的「炸彈」那格點一下換種類）。炸得越大，佩特拉越會注意到你；爆裂核心一定會引起反應。帶進去用掉就沒了。</p><div class="recipes">'
         + IDS.map(id => { const T = TYPES[id], n = cnt(id), ok = s.gold >= T.price && (!T.core || (s.mats.core || 0) >= T.core); return '<div class="recipe"><img src="' + icon(id) + '" alt="" style="width:32px;height:32px;image-rendering:auto"><b style="color:' + T.color + '">' + T.name + ' ×' + n + '</b><small>' + T.desc + '範圍 ' + T.rad(lvOf()).toFixed(1) + ' 公尺；佩特拉的注意 ' + (T.aware === 'max' ? '直接到 100' : '+' + T.aware) + '。一顆 ' + T.price + ' 費拉' + (T.core ? '＋魔力核心 ' + T.core + ' 顆' : '') + '。</small><div class="row"><button type="button" class="btn pri" data-bomb="' + id + ':1"' + (ok ? '' : ' disabled') + '>買一顆</button>' + '<button type="button" class="btn" data-bomb="' + id + ':5"' + (ok ? '' : ' disabled') + '>買五顆</button>' + '</div></div>'; }).join('') + '</div>';
-      body.querySelector('.panel-doc') ? body.querySelector('.panel-doc').appendChild(box) : body.appendChild(box);
+      slot.appendChild(box);
       box.querySelectorAll('[data-bomb]').forEach(b => { b.onclick = () => {
         const [id, m] = b.dataset.bomb.split(':'), T = TYPES[id]; let k = +m || 1;
         k = Math.min(k, Math.floor(s.gold / T.price), T.core ? Math.floor((s.mats.core || 0) / T.core) : 99); if (k <= 0) return;
