@@ -4,7 +4,7 @@
 //   另外：POST /__snap?f=名字.png 會把收到的圖存到 tools/snaps/（自動測試截圖用，snaps 不要 commit）
 const http = require('http'), fs = require('fs'), path = require('path');
 const root = path.join(__dirname, '..'), port = +process.argv[2] || 5182, snaps = path.join(__dirname, 'snaps');
-const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp' };
+const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.webp': 'image/webp', '.webmanifest': 'application/manifest+json', '.svg': 'image/svg+xml' };
 http.createServer((req, res) => {
   const p = decodeURIComponent(req.url.split('?')[0]);
   if (req.method === 'POST' && p === '/__snap') {
@@ -16,7 +16,7 @@ http.createServer((req, res) => {
   if (p === '/' || p === '/index.html') {
     const body = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
     res.writeHead(200, { 'Content-Type': types['.html'], 'Cache-Control': 'no-store' });
-    return res.end('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>' + body + '</body></html>');
+    return res.end('<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#110E14"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="無境之旅"><link rel="apple-touch-icon" href="assets/icon-192.png"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>' + body + '</body></html>');
   }
   const f = path.join(root, p);
   if (!f.startsWith(root)) { res.writeHead(403); return res.end(); }

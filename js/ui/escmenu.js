@@ -60,6 +60,12 @@
         const lab = () => { b.textContent = '減少閃光：' + (R.lessFlash() ? '開' : '關'); };
         lab(); b.onclick = () => { try { localStorage.setItem('tfl_lessflash', R.lessFlash() ? '0' : '1'); } catch (e) { } lab(); }; slot(w, 'screen').appendChild(b);
       }
+      // 手機：全螢幕／隱藏網址列（2026-10-27，fullscreen.js）
+      if (R.fsCan && R.fsCan() && !sh.querySelector('#fs-tg')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'fs-tg';
+        const lab = () => { b.textContent = R.fsLabel(); };
+        lab(); b.onclick = () => { R.fsToggle(); lab(); }; slot(w, 'screen').appendChild(b);
+      }
       // 城裡的快捷鍵欄（2026-10-18，townbar.js）
       if (R.townBarOn && !sh.querySelector('#tb-tg')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'tb-tg';

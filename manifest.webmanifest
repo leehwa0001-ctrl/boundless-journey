@@ -1,0 +1,17 @@
+{
+  "name": "無境之旅",
+  "short_name": "無境之旅",
+  "description": "艾菲爾斯特・昭旭聯合王國的 2.5D 遺跡冒險戰鬥",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#110E14",
+  "theme_color": "#110E14",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

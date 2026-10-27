@@ -32,10 +32,11 @@ jobs:
           build() {
             src="$1"; out="$2"; mkdir -p "$out"
             cp "$src/emblem.png" "$src/flag.webp" "$out/"
+            [ -f "$src/manifest.webmanifest" ] && cp "$src/manifest.webmanifest" "$out/"   # 2026-10-27：加到主畫面＝全螢幕的 App（手機沒有網址列）
             cp -R "$src/js" "$out/"   # 2026-10-14：程式照負責的事分資料夾放在 js/ 底下
             cp -R "$src/assets" "$out/"
             {
-              printf '%s\n' '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'
+              printf '%s\n' '<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#110E14"><link rel="manifest" href="manifest.webmanifest"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="無境之旅"><link rel="apple-touch-icon" href="assets/icon-192.png"><style>:root{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'
               cat "$src/index.html"
               printf '%s\n' '</body></html>'
             } > "$out/index.html"
