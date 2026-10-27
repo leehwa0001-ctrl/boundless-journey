@@ -5,6 +5,7 @@
   // ---------- 技能說明的固定句型 ----------
   P(/^（二轉・覺醒）(.+?。)威力 ×([\d.]+)；增益的加成 ×1\.5、持續時間 ×1\.25（熟練度沿用原版）。$/, (m, t, e) => t(m[1]) && (e ? '(2nd class · Awakened) ' + t(m[1]) + ' Power ×' + m[2] + '; buff strength ×1.5, duration ×1.25 (proficiency carries over).' : '(2. Klasse · Erweckt) ' + t(m[1]) + ' Kraft ×' + N(m[2], e) + '; Buffstärke ×1,5, Dauer ×1,25 (Können wird übernommen).'));
   P(/^（二轉・覺醒）(.+)$/, (m, t, e) => t(m[1]) && (e ? '(2nd class · Awakened) ' : '(2. Klasse · Erweckt) ') + t(m[1]));
+  P(/^(.+)。([^。]+教的)。$/, (m, t, e) => t(m[1]) && t(m[2]) && t(m[1]) + '. ' + t(m[2]) + '.');
   P(/^【(\d+) 級】(.+)$/, (m, t, e) => t(m[2]) && (e ? '[Lv ' : '[Stufe ') + m[1] + '] ' + t(m[2]));
   R.i18nAdd([
     ['千本', 'Thousand Arrows', 'Tausend Pfeile'], ['終', 'End', 'Ende'],
