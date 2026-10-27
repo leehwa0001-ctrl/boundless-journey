@@ -60,6 +60,13 @@
         const lab = () => { b.textContent = '減少閃光：' + (R.lessFlash() ? '開' : '關'); };
         lab(); b.onclick = () => { try { localStorage.setItem('tfl_lessflash', R.lessFlash() ? '0' : '1'); } catch (e) { } lab(); }; slot(w, 'screen').appendChild(b);
       }
+      // 語言（2026-10-27，i18n.js）：中文 → English → Deutsch，換了重新載入
+      if (R.LANGS && R.setLang && !sh.querySelector('#lang-tg')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'lang-tg'; b.setAttribute('translate', 'no');
+        const i = Math.max(0, R.LANGS.findIndex(x => x[0] === R.lang));
+        b.textContent = '🌐 ' + R.LANGS[i][1] + ' → ' + R.LANGS[(i + 1) % R.LANGS.length][1];
+        b.onclick = () => R.setLang(R.LANGS[(i + 1) % R.LANGS.length][0]); slot(w, 'screen').appendChild(b);
+      }
       // 手機：全螢幕／隱藏網址列（2026-10-27，fullscreen.js）
       if (R.fsCan && R.fsCan() && !sh.querySelector('#fs-tg')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'fs-tg';
