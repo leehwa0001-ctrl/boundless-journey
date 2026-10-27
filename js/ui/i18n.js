@@ -42,7 +42,7 @@
   document.documentElement.lang = lang;
   const D = () => R.I18N[lang] || { WORDS: {}, PATTERNS: [] };
   const CJK = /[㐀-鿿！-～]/;
-  const cache = new Map();
+  const cache = new Map(), subCache = new Map();
   const tr = s => {
     if (cache.has(s)) return cache.get(s);
     const out = tr0(s, 0); cache.set(s, out); return out;
@@ -52,7 +52,8 @@
     const W = D().WORDS;
     if (Object.prototype.hasOwnProperty.call(W, s)) return W[s];
     if (depth > 4) return null;
-    const sub = x => { if (x == null || x === '') return x; const t = tr0(x, depth + 1); return t == null ? null : t; };
+    // 子句也記起來（2026-10-27：句型多了以後，同一段會被不同句型一再拆開來查，不記的話會卡住整個畫面）
+    const sub = x => { if (x == null || x === '') return x; const key = (depth + 1) + '\u0001' + x; if (subCache.has(key)) return subCache.get(key); const t = tr0(x, depth + 1); subCache.set(key, t); return t; };
     for (const [re, fn] of D().PATTERNS) {
       const m = s.match(re); if (!m) continue;
       const r = fn(m, sub); if (r != null && !CJK.test(r)) return r;

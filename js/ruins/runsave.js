@@ -87,7 +87,8 @@
     $('rs-give').onclick = giveUp; $('rs-x').onclick = () => R.closeSheet();
   };
   // 標題上「繼續冒險」的小字：探索中就寫在哪一層（main.js 每次畫標題都會重寫小字，看著它補上）
-  const tagGo = () => { const S = R.S, go = $('t-go'), sm = go && go.querySelector('small'); if (S && S.runSave && sm && sm.textContent && sm.textContent.indexOf('探索中') < 0) sm.textContent += '・探索中：' + placeName(S.runSave); };
+  // 2026-10-27：英文、德文版會把「探索中」翻掉，所以翻好的字（Exploring／Erkundung）也算已經補過，不然會一直補、一直被翻，整個畫面卡死
+  const tagGo = () => { const S = R.S, go = $('t-go'), sm = go && go.querySelector('small'); if (S && S.runSave && sm && sm.textContent && !/探索中|Exploring|Erkundung/.test(sm.textContent)) sm.textContent += '・探索中：' + placeName(S.runSave); };
   const hook = () => { const go = $('t-go'); if (!go) return setTimeout(hook, 300); go.addEventListener('click', askOnGo, true); tagGo(); new MutationObserver(tagGo).observe(go, { childList: true, subtree: true, characterData: true }); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', hook); else hook();
   // 標題上「繼續冒險」的小字：探索中就寫在哪一層
