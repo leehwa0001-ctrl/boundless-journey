@@ -43,6 +43,8 @@
       if (note) note.after(host); else sec.prepend(host);
       cols.classList.add('sb-on');
       render();
+      // 2026-10-27：任務道具包已經在背包畫面的右下（baglayout.js），questbag.js 另外放在頁面最下面的那份拿掉（原本倉庫頁看得到兩份）
+      body.querySelectorAll('.qb-box').forEach(b => { if (!host.contains(b)) b.remove(); });
     } catch (e) { console.warn('[stashbag]', e); }
     return r;
   };

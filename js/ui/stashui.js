@@ -49,6 +49,6 @@
   css.textContent = '.st-cols{display:grid;grid-template-columns:minmax(260px,36%) 1fr;gap:16px;align-items:start}.st-left .cs-box{margin:0}.st-left .cs-grid{grid-template-columns:1fr}.st-right>section{margin-top:0}'
     + '.st-tip{font-size:12px;opacity:.7;font-weight:normal}'
     + '[data-sell].st-holding{background:linear-gradient(90deg,rgba(232,192,74,.55) 0,rgba(232,192,74,.55) 0) no-repeat;animation:st-fill .6s linear forwards}@keyframes st-fill{from{background-size:0% 100%}to{background-size:100% 100%}}'
-    + '@media (max-width:860px){.st-cols{grid-template-columns:1fr}}';
+    + '@media (max-width:860px){.st-cols{grid-template-columns:minmax(0,1fr)}}.st-left,.st-right{min-width:0}';
   document.head.appendChild(css);
 })(window.R);

@@ -22,7 +22,7 @@
       const price = k => (R.shopPrice ? R.shopPrice(R.FAT_ITEMS[k].price, 'shop') : R.FAT_ITEMS[k].price);
       if (price('wake') == null) return r;   // 不賣東西給你（特質、通緝）
       const box = document.createElement('div'); box.className = 'recipes fat-shop';
-      box.innerHTML = (atShop ? '' : '<h3 style="grid-column:1/-1">公會補給・旅行用品</h3>') + keys.map(k => { const F = R.FAT_ITEMS[k], p = price(k); return '<div class="recipe"><b style="color:' + F.color + '">' + F.name + ' ×' + cnt(k) + '</b><small>' + (atShop ? '' : '旅行用品・') + F.desc + '</small><button type="button" class="btn pri" data-fatbuy="' + k + '"' + (s.gold < p ? ' disabled' : '') + '>買（' + p + ' 費拉）</button></div>'; }).join('');
+      box.innerHTML = (atShop ? '' : '<h3 style="grid-column:1/-1">公會補給・旅行用品</h3>') + keys.map(k => { const F = R.FAT_ITEMS[k], p = price(k); return '<div class="recipe"><b style="color:' + F.color + '">' + F.name + ' ×' + cnt(k) + '</b><small>' + F.desc + '</small><button type="button" class="btn pri" data-fatbuy="' + k + '"' + (s.gold < p ? ' disabled' : '') + '>買（' + p + ' 費拉）</button></div>'; }).join('');
       sec.appendChild(box);
       box.querySelectorAll('[data-fatbuy]').forEach(b => { b.onclick = () => {
         const k = b.dataset.fatbuy, p = price(k); if (p == null || s.gold < p) return;
