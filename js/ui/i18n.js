@@ -57,10 +57,13 @@
       const m = s.match(re); if (!m) continue;
       const r = fn(m, sub); if (r != null && !CJK.test(r)) return r;
     }
-    for (const [sep, join] of [['・', ' · '], ['、', ', '], ['，', ', '], ['：', ': ']]) {
+    // 句尾的「。」：先翻前面，再補句點（2026-10-27 第二階段：技能、被動的說明多半是這樣）
+    if (/。$/.test(s)) { const t = sub(s.slice(0, -1)); if (t != null) return t + '.'; }
+    for (const [sep, join] of [['。', '. '], ['；', '; '], ['・', ' · '], ['、', ', '], ['，', ', '], ['：', ': ']]) {
       if (s.indexOf(sep) < 0) continue;
       const parts = s.split(sep), outs = parts.map(p => p.trim() ? sub(p.trim()) : '');
-      if (outs.every(o => o != null)) return outs.join(join).replace(/^ · | · $/g, '');
+      // 英文：逗號、分號後面那一段的開頭改小寫（HP、MP 這種縮寫不動）；德文的名詞本來就大寫，不改
+      if (outs.every(o => o != null)) return outs.map((o, i) => (lang === 'en' && i && (join === ', ' || join === '; ') ? o.replace(/^([A-Z])(?=[a-z])/, c => c.toLowerCase()) : o)).join(join).replace(/^ · | · $/g, '');
     }
     return null;
   };

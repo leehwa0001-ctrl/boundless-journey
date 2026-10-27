@@ -370,7 +370,7 @@
       [/^(\d+(?:\.\d+)?) 秒$/, m => m[1] + ' s'],
       [/^(\d+) 魔力$/, m => m[1] + ' MP'],
       [/^(\d+) 生命$/, m => m[1] + (e ? ' HP' : ' LP')],
-      [/^(.+?) ([+−-][\d.]+%)$/, (m, t) => t(m[1]) && t(m[1]) + ' ' + m[2]],
+      [/^(.+?) ([+−-][\d.]+)%$/, (m, t) => t(m[1]) && t(m[1]) + ' ' + (e ? m[2] + '%' : m[2].replace(/(\d)\.(\d)/, '$1,$2') + ' %')],
       [/^已勾 (\d+) 件・(\d+)$/, m => (e ? m[1] + ' selected · ' : m[1] + ' gewählt · ') + m[2]],
       [/^吃乾糧（(\d+)）$/, m => (e ? 'Eat rations (' : 'Proviant essen (') + m[1] + ')'],
       [/^(.+?) ×(\d+)（全部 (\d+)）$/, (m, t) => t(m[1]) && t(m[1]) + ' ×' + m[2] + (e ? ' (total ' : ' (gesamt ') + m[3] + ')'],
@@ -407,4 +407,9 @@
   R.I18N = R.I18N || {};
   R.I18N.en = build(1, 'en');
   R.I18N.de = build(2, 'de');
+  // 其他字典檔（i18n-data*.js：技能、被動、素材……）用這個加進來，一樣是 [中文, English, Deutsch]
+  R.i18nAdd = rows => rows.forEach(r => { if (r[1] != null) R.I18N.en.WORDS[r[0]] = r[1]; if (r[2] != null) R.I18N.de.WORDS[r[0]] = r[2]; });
+  // 句型也可以從別的檔加：f(m, t, e)，e＝英文；德文的小數點用逗號（R.i18nNum）
+  R.i18nPat = (re, f) => { R.I18N.en.PATTERNS.push([re, (m, t) => f(m, t, true)]); R.I18N.de.PATTERNS.push([re, (m, t) => f(m, t, false)]); };
+  R.i18nNum = (x, e) => (e ? x : String(x).replace(/(\d)\.(\d)/g, '$1,$2'));
 })(window.R = window.R || {});
