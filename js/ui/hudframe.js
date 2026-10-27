@@ -118,6 +118,9 @@
   css.textContent = [
     // 遺跡那格
     '#r-where.hf-where{position:relative;--gc:#C8C0B0;border:2px solid var(--gc);padding-left:14px;padding-right:46px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 0 18px -6px var(--gc),0 0 10px -4px var(--gc);background:linear-gradient(90deg,color-mix(in srgb,var(--gc) 22%,transparent),rgba(10,8,14,.78) 45%)}',
+    // 2026-10-27：日期和時鐘原本黏在一起（「槍手 Lv 1清晨 7:19」），窄的畫面還被切掉：中間加「・」；手機上各一行
+    '#r-where #r-clock::before{content:"・"}',
+    '@media (max-width:640px),(max-height:500px){#r-where small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#r-where #r-clock::before{content:none}}',
     '#r-where.hf-where::before{content:"";position:absolute;left:4px;top:5px;bottom:5px;width:4px;border-radius:2px;background:linear-gradient(var(--gc),color-mix(in srgb,var(--gc) 35%,#000))}',
     '#r-where.hf-where::after{content:"";position:absolute;inset:-5px;pointer-events:none;--k:10px;background:linear-gradient(var(--gc),var(--gc)) top left/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) top left/2px var(--k) no-repeat,linear-gradient(var(--gc),var(--gc)) top right/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) top right/2px var(--k) no-repeat,linear-gradient(var(--gc),var(--gc)) bottom left/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) bottom left/2px var(--k) no-repeat,linear-gradient(var(--gc),var(--gc)) bottom right/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) bottom right/2px var(--k) no-repeat}',
     '#r-where .hf-badge{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-width:30px;padding:2px 5px;font-style:normal;font-weight:800;font-size:11px;text-align:center;color:#0E0C12;background:var(--gc);border-radius:4px;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px -2px var(--gc);white-space:nowrap}',
