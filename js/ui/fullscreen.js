@@ -5,6 +5,7 @@
 // - iPhone 的 Safari 不讓網頁全螢幕：要用「分享」→「加入主畫面」，從主畫面的圖示打開就沒有網址列
 //   （manifest.webmanifest、apple-mobile-web-app-capable 在 pages.yml 包的 <head> 裡）。iPhone 第一次進城跳一次說明，選單裡也看得到。
 // 已經從主畫面打開（standalone／fullscreen）的就什麼都不做。
+// 2026-10-27 作者：手機應該要能橫式遊玩 → 直的、橫的都能玩，不鎖方向；橫的版面見 mobilehub.js、mobileland.js。
 (function (R) {
   const de = document.documentElement;
   const can = !!(de.requestFullscreen || de.webkitRequestFullscreen) && (document.fullscreenEnabled !== false || document.webkitFullscreenEnabled);

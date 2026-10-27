@@ -516,7 +516,7 @@
   };
 
   // ---------- 操作 ----------
-  R.touch = (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window;
+  R.touch = (typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches) || 'ontouchstart' in window || /[?&]touch=1/.test(location.search);   // ?touch=1：在電腦上測手機版（2026-10-27）
   R.input = { keys: {}, fire: false, mouseNDC: null, moveStick: null, aimStick: null, run: false, shiftAt: 0 };
   R.running = () => { const I = R.input; return I.run || (!!I.keys.shift && (W.town || performance.now() - (I.shiftAt || 0) >= 200)); };
   R.bindInput = () => {
