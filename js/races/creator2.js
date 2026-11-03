@@ -77,7 +77,9 @@
   const raceCard = (id, i) => { const r = R.RACES[id], T0 = R.TIERS[r.tier]; return '<button type="button" class="c2-tile' + (st.pick === i ? ' sel' : '') + '" data-pick="' + i + '" style="--c:' + T0.color + '" title="' + esc(r.name + '：' + r.line) + '"><span>' + T0.name + '</span><b>' + esc(r.name) + '</b></button>'; };
   const raceBox = () => { if (!st.race) return '<div class="c2-race"><b>選擇的種族</b><small>還沒選。抽完以後點下面的格子。</small></div>'; const r = R.RACES[st.race], T0 = R.TIERS[r.tier]; return '<div class="c2-race" style="--c:' + T0.color + '"><b><span class="tier">' + T0.name + '</span>' + esc(r.name) + '</b><small>' + esc(r.from) + '</small><span>' + esc(r.line) + '</span><em>' + esc(R.raceBonusText(st.race).join('・')) + '</em>' + (R.XENO_TEXT && R.XENO_TEXT[r.xeno] ? '<i>' + esc(R.XENO_TEXT[r.xeno]) + '</i>' : '') + '</div>'; };
   const sw = (key, list, cur, dis) => '<div class="swatches">' + list.map(c => '<button type="button" class="sw' + (c === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + c + '" style="--c:' + c + '" aria-label="' + c + '"' + (dis ? ' disabled' : '') + '></button>').join('') + '</div>';
-  const chips = (key, list, cur) => '<div class="chips">' + list.map(([v, n]) => '<button type="button" class="chip' + (v === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + v + '">' + esc(n) + '</button>').join('') + '</div>';
+  // 2026-11-03：英文、德文版「身高」的「高」要翻成 Tall／Groß，不是字典裡威脅度、等級用的 High——查「身高：高」
+  const chipName = (key, n) => key === 'height' && (R.lang === 'en' || R.lang === 'de') && R.tr ? R.tr('身高：' + n) : n;
+  const chips = (key, list, cur) => '<div class="chips">' + list.map(([v, n]) => '<button type="button" class="chip' + (v === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + v + '">' + esc(chipName(key, n)) + '</button>').join('') + '</div>';
   const optsHTML = () => {
     if (!st.race) return '<div class="c2-empty">先在左邊抽種族、選一個，<br>這裡就會出現外觀的選項。</div>';
     const k = K(), r = R.RACES[st.race], L = st.look, bald = !!r.look.bald, fixedHair = !!r.hairCol, O = R.LOOK_OPTS, FCOL = { ears: 'earCol', horns: 'hornCol', wings: 'wingCol', tail: 'tailCol' };
