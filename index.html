@@ -1202,6 +1202,8 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ruins/runsave.js"></script><!-- 2026-10-21 遺跡裡存檔、下次再來探索（每層自動存一次；Esc「存檔，回到標題」；標題「繼續冒險」問要不要接著探索） -->
 <script src="js/ui/escunify.js"></script><!-- 2026-10-21 Esc 選單分頁、每個畫面同一個樣子（escmenu.js 分好的區塊變成分頁：遊戲／角色／地圖・委託／設定／說明／數值） -->
 <script src="js/ui/title2.js"></script><!-- 2026-10-21 標題畫面整理：大的「繼續冒險」、新的冒險／選擇存檔、一排小連結；存檔收進面板 -->
+<!-- 2026-11-03 英文、德文的字典（將近 1 MB）包在 template 裡：中文玩家不用下載；選了 English／Deutsch 才由 template 後面那一小段照原本的順序寫進頁面，在 i18n.js 之前跑完（tools/bust.js 一樣會幫這些 script 加版本號） -->
+<template id="i18n-dicts">
 <script src="js/ui/i18n-dict.js"></script><!-- 2026-10-27 英文、德文的字典（一列：中文、English、Deutsch） -->
 <script src="js/ui/i18n-data1.js"></script><!-- 2026-10-27 字典・職業說明、大招、天賦、技能變化、詞綴 -->
 <script src="js/ui/i18n-data2.js"></script><!-- 2026-10-27 字典・被動技能 -->
@@ -1230,4 +1232,6 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ui/i18n-data25.js"></script><!-- 2026-11-03 字典・新手教學、東鶴指南、建角色 -->
 <script src="js/ui/i18n-data26.js"></script><!-- 2026-11-03 字典・建角色的外觀選項、種族技能、族種和出身地、主要種族 -->
 <script src="js/ui/i18n-data27.js"></script><!-- 2026-11-03 字典・種族名字和說明（第一批字根：獸人、兩棲、半身） -->
+</template>
+<script>(function () { var m = /[?&]lang=(en|de|zh)/.exec(location.search), l = m ? m[1] : 'zh'; if (!m) { try { l = localStorage.getItem('tfl_lang') || 'zh'; } catch (e) { } } if (l !== 'zh') { var t = document.getElementById('i18n-dicts'); if (t) document.write(t.innerHTML); } })();</script><!-- 和 i18n.js 一樣的判斷：網址的 ?lang= 優先，再看 localStorage 'tfl_lang' -->
 <script src="js/ui/i18n.js"></script><!-- 2026-10-27 英文、德文版：畫面上翻譯（中文時什麼都不做）；放最後面，R.say、R.toast 都包好了再包 -->
