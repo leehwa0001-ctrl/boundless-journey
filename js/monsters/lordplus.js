@@ -2,7 +2,7 @@
 // - 增強（11 種領主體）：生命 ×1.6、傷害 ×1.25、移動 ×1.1、護甲 +10%（最多 45%）、魔抗 25%（dmgtype.js）、經驗 ×1.5。
 //   暈眩最多 0.5 秒，暈過一次之後 4 秒內不會再暈（霸體）。血剩 35% 以下發狂：傷害再 +20%、移動 +20%，身上冒紅光。
 // - 專屬裝備：每一種領主體一件（傳說稀有度的防具，名字和效果固定）。第一次打倒一定掉，之後三成五。
-// - 專屬戰鬥音樂：領主體醒著、在 20 公尺內，原本的音樂先停（R.musicHold），換成那一隻的曲子——
+// - 專屬戰鬥音樂：領主體醒著、在 20 公尺內，原本的音樂先停（R.musicHold），換成那一隻的曲子──
 //   音階、速度、旋律、音色照領主體決定（每一隻都不一樣）；發狂後鼓更密、旋律高八度。瀏覽器即時合成，不用音檔。
 // 放在 lords.js、data.js、items.js、dmgtype.js、audio.js 後面。
 (function (R) {
@@ -26,7 +26,8 @@
     faceforest: ['萬面冠', 'head_plume', { regen: 1.5, calm: 0.15 }, '每秒回復生命 +1.5、佩特拉的注意上升 −15%'],
     bonewyvern: ['朽翼護脛', 'legs_wrap', { speed: 0.1, crit: 0.05 }, '移動 +10%、暴擊率 +5%'],
     thunderape: ['雷鳴戰靴', 'feet_war', { stun: 0.15, patk: 0.1 }, '打中時 15% 機率暈眩、物理傷害 +10%'],
-    windelder: ['緋面', 'head_light', { critMult: 0.3, skillCd: 0.1 }, '暴擊傷害 +30%、技能冷卻 −10%']
+    windelder: ['緋面', 'head_light', { critMult: 0.3, skillCd: 0.1 }, '暴擊傷害 +30%、技能冷卻 −10%'],
+    carrionvulture: ['緋喙羽冠', 'head_plume', { regen: 1, dmg: 0.06 }, '每秒回復生命 +1、傷害 +6%']
   };
   R.LORD_GEAR = GEAR;
   const NUM = { speed: (P, v) => { P.speed *= 1 + v; }, dmg: (P, v) => { P.dmgMult *= 1 + v; }, def: (P, v) => { P.def = (P.def || 0) + v; }, mdef: (P, v) => { P.mdef = (P.mdef || 0) + v; }, hp: (P, v) => { P.hpMax = Math.round(P.hpMax * (1 + v)); },
@@ -53,9 +54,9 @@
       const run = W().run, s = S(), g = e && GEAR[e.id];
       if (was && e.dead && run && g && isLord(e.def)) {
         s.lordGot = s.lordGot || {}; const first = !s.lordGot[e.id];
-        if (first || rnd() < 0.35) {
+        if (first || rnd() < 0.12) {   /* 2026-10-22：之後改成用素材打造（lordmats.js），掉落從 35% 降到 12% */
           s.lordGot[e.id] = (s.lordGot[e.id] || 0) + 1;
-          const it = R.makeItem({ kind: 'armor', base: g[1], ilvl: Math.max(1, ((run.grade.lv || 1) - 1) * 2 + (run.depthK && run.depthK !== 1 ? Math.round(run.floor * run.depthK) : run.floor) + 3), rarity: 4, identified: true }); it.lord = e.id;   // 2026-10-19 修正：原本用實際層數（層數變多的遺跡會越打越高級）——改成跟寶箱一樣換算回原本的層數
+          const it = R.makeItem({ kind: 'armor', base: g[1], ilvl: Math.max(1, ((run.grade.lv || 1) - 1) * 2 + (run.depthK && run.depthK !== 1 ? Math.round(run.floor * run.depthK) : run.floor) + 3), rarity: 4, identified: true }); it.lord = e.id;   // 2026-10-19 修正：原本用實際層數（層數變多的遺跡會越打越高級）──改成跟寶箱一樣換算回原本的層數
           setTimeout(() => { if (W().run === run) { R.dropItem(it, e.x, e.z + 1); R.banner && R.banner('掉了專屬裝備', '【領主】' + g[0] + '：' + g[3]); } }, 900);
         }
       }
@@ -75,7 +76,7 @@
         if (e.st.root > 0.5) e.st.root = 0.5;
         e.lpImm = (e.lpImm || 0) - dt;
       }
-      if (!e.lpRage && e.hp < e.hpMax * 0.35) { e.lpRage = 1; e.dmg = Math.round(e.dmg * 1.2); e.speed = (e.speed || 0) * 1.2; R.banner && R.banner(e.def.name + '發狂了', '剩下的血不多了——牠的攻擊更重、更快'); R.shake && R.shake(0.4); }
+      if (!e.lpRage && e.hp < e.hpMax * 0.35) { e.lpRage = 1; e.dmg = Math.round(e.dmg * 1.2); e.speed = (e.speed || 0) * 1.2; R.banner && R.banner(e.def.name + '發狂了', '剩下的血不多了──牠的攻擊更重、更快'); R.shake && R.shake(0.4); }
       if (e.lpRage) { e.lpFx = (e.lpFx || 0) - dt; if (e.lpFx <= 0) { e.lpFx = 1.2; R.fx && R.fx('ring', e.x, 0.1, e.z, { r: (e.def.size || 2) * 0.9, color: '#FF3A3A' }); } }
       if (w.P && e.aggro && Math.hypot(e.x - w.P.x, e.z - w.P.z) < 20) fight = e;
     });
@@ -131,7 +132,7 @@
     if (M && lord) { if (lord !== M.lord && lord.id !== M.th.id) { M.th = themeOf(lord.id); } M.lord = lord; M.rage = !!lord.lpRage; }
     if (!want && M) { const m = M; M = null; clearInterval(m.iv); m.bus.gain.setTargetAtTime(0.0001, m.ctx.currentTime, 0.6); setTimeout(() => { try { m.bus.disconnect(); } catch (e) { } }, 3000); if (held) { R.musicHold = false; held = false; } }
   };
-  // 2026-10-16 修正：領主戰中用水晶回城（或倒下），R.step 不再跑，戰鬥音樂會一直在城裡響、城裡的音樂也一直被停著——回城時收掉
+  // 2026-10-16 修正：領主戰中用水晶回城（或倒下），R.step 不再跑，戰鬥音樂會一直在城裡響、城裡的音樂也一直被停著──回城時收掉
   const endL0 = R.endRun; if (endL0) R.endRun = (...a) => { if (M) { const m = M; M = null; clearInterval(m.iv); try { m.bus.disconnect(); } catch (e) { } } if (held) { R.musicHold = false; held = false; } return endL0(...a); };
   R.lordMusicDebug = { themeOf, get M() { return M; } };
 })(window.R);

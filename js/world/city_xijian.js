@@ -7,7 +7,8 @@
 (function (R) {
   const CK = R.CK, S = () => R.S; if (!CK || !CK.H) return;
   const H = CK.H, az = () => R.azuki, C = 'xijian', COAST = -70;
-  const CUT = { port: [-150, -70, 150, -52], beach: [-150, -40, -86.5, -14], wh1: [-73.5, -40, -10, -14], wh2: [10, -40, 73.5, -14], guild: [86.5, -40, 150, -14], consul: [-150, -2, -86.5, 40.5], yokan1: [-73.5, -2, -46.5, 40.5], yokan2: [-73.5, 47.5, -46.5, 88], uni: [86.5, -2, 150, 40.5], tank: [86.5, 47.5, 150, 88], fish: [10, 47.5, 33.5, 68], station: [-46, 100, 46, 150] };
+  // 2026-10-22 修：地標的範圍要在路（半寬）＋人行道外面──中通、洋館通、站前通原本少算了路的半寬，領事館的牆、洋館、刺身店伸進人行道
+  const CUT = { port: [-150, -70, 150, -52], beach: [-150, -40, -86.5, -14], wh1: [-73.5, -40, -10, -14], wh2: [10, -40, 73.5, -14], guild: [86.5, -40, 150, -14], consul: [-150, 2, -86.5, 37.5], yokan1: [-73.5, 2, -46.5, 37.5], yokan2: [-73.5, 50.5, -46.5, 84], uni: [86.5, 2, 150, 37.5], tank: [86.5, 50.5, 150, 84], fish: [10, 50.5, 33.5, 68], station: [-46, 100, 46, 150] };
   CK.define({
     id: C, name: '西見', seed: 1878, stationName: '西見站', fog: 1.3, sea: true,
     land: [[-1000, COAST], [1000, COAST], [1000, 980], [-1000, 980]],
@@ -39,9 +40,7 @@
       H.fac(B, 65, -54, C, 'fish', '#7AC8E8');
       B.talker(56, -60, 0, '拍賣場的魚販', ['「鯖魚箱子比人高。清晨來，聲音比汽笛大。」', '「港灣刺身定食，去本町通那間吃。」']);
       const sx = 122, sz = -88;
-      P(g.box, M('paint', { col: '#6A7078' }), sx, -0.4, sz, 9, 3.4, 40); P(g.cone, M('paint', { col: '#6A7078' }), sx, -0.4, sz - 23, 9, 6, 3.4, Math.PI / 2, 0, 0);
-      P(g.box, M('paint', { col: '#7A8088' }), sx, 2.8, sz + 4, 6, 3, 12); P(g.box, M('paint', { col: '#7A8088' }), sx, 6, sz + 5, 3.4, 3.4, 5); P(g.cyl8, M('steelD'), sx, 9.5, sz + 5, 0.3, 4, 0.3);
-      [-10, 14].forEach(dz => { P(g.cyl24, M('paint', { col: '#5A6068' }), sx, 1.9, sz + dz, 3.4, 1.4, 3.4); P(g.cyl8, M('steelD'), sx, 2.1, sz + dz + (dz < 0 ? -3 : 3), 0.4, 4, 0.4, Math.PI / 2, 0, 0); });
+      B.ship('warship', sx, sz, Math.PI / 2, { y: -1.2, L: 48, W: 9, col: '#6A7078', top: '#7A8088', funnel: '#7A8088', solid: false });   // 2026-10-22 船重做（shipkit.js）：退役巡洋艦（船首朝北）
       B.bridge(108, -76, 116, COAST + 0.5, { deck: 0.3, mat: 'planks', rail: true, railMat: 'steelD' });
       H.fac(B, 112, -60, C, 'ship', '#9AA0A8');
       B.area('西見港', [-150, -100, 150, -52]); B.label('西見港', -10, -64);
@@ -74,7 +73,7 @@
         H.sight(B, x1 + 1.4, cz, C, 'xj_consul'); H.fac(B, x1 + 1.4, cz - 8, C, 'consul', '#9AA0A8');
         B.talker(x1 - 0.2, cz + 9, -Math.PI / 2, '領事館的衛兵', ['「……預約？沒有的話，請在外面。」', '「這面牆，是會戰以後蓋的。」']);
         B.area('艾美利亞領事館', CUT.consul); B.label('艾美利亞領事館', (x0 + x1) / 2, cz); }
-      [CUT.yokan1, CUT.yokan2].forEach(r => { const [x0, z0, x1, z1] = r; for (let z = z0 + 1; z + 11 <= z1 - 1; z += 13) { const col = pk(['#E8DCC4', '#D8E0E4', '#E8D0C0', '#F0ECE0']); B.bld({ r: [x0 + 1, z, x1 - 4, z + 11], h: 8, style: 'house', face: 'e', col, top: false }); B.roof((x0 + x1 - 3) / 2, z + 5.5, x1 - x0 - 5, 11, { type: 'hip', y: 8, h: 3, o: 0.6, mat: pk(['copper', 'kawara']) }); P(g.box, M('white'), x1 - 3.1, 3.6, z + 5.5, 1.8, 0.2, 6.6); [-1, 1].forEach(s => { P(g.cyl8, M('white'), x1 - 2.4, 1.8, z + 5.5 + s * 2.8, 0.35, 3.6, 0.35); B.solid(x1 - 2.6, z + 5.3 + s * 2.8, x1 - 2.2, z + 5.7 + s * 2.8, 'deco'); }); }
+      [CUT.yokan1, CUT.yokan2].forEach(r => { const [x0, z0, x1, z1] = r, n = Math.max(1, Math.round((z1 - z0 - 2) / 13)), L = Math.min(11, (z1 - z0 - 2 - (n - 1) * 2) / n); for (let k = 0; k < n; k++) { const z = z0 + 1 + k * (L + 2), hl = L / 2, col = pk(['#E8DCC4', '#D8E0E4', '#E8D0C0', '#F0ECE0']); B.bld({ r: [x0 + 1, z, x1 - 4, z + L], h: 8, style: 'house', face: 'e', col, top: false, plain: 1 }); B.roof((x0 + x1 - 3) / 2, z + hl, x1 - x0 - 5, L, { type: 'hip', y: 8, h: 3, o: 0.6, mat: pk(['copper', 'kawara']) }); P(g.box, M('white'), x1 - 3.1, 3.6, z + hl, 1.8, 0.2, Math.min(6.6, L - 1)); [-1, 1].forEach(s => { const pz = z + hl + s * Math.min(2.8, hl - 0.8); P(g.cyl8, M('white'), x1 - 2.4, 1.8, pz, 0.35, 3.6, 0.35); B.solid(x1 - 2.6, pz - 0.2, x1 - 2.2, pz + 0.2, 'deco'); }); }   /* 2026-10-22：範圍改對以後短了，洋館照長度平均排（每排一樣三棟） */
         B.area('洋館街', r); });
       B.label('洋館街', -60, 44);
       // ---------- 東：西見海洋大學 ----------
@@ -84,15 +83,15 @@
         B.sign('西見海洋大學', 's', z0 + 24, (x0 + x1) / 2, 11, { size: 1.0, bg: '#1A2A4A', fg: '#F4ECD8', box: 1 });
         for (let i = 0; i < 8; i++) B.tree(rr(x0 + 4, x1 - 4), rr(z0 + 32, z1 - 3), pk(['bare', 'round', 'pine']), rr(1, 1.3));
         H.fac(B, (x0 + x1) / 2, z0 + 26, C, 'uni', '#7AC8E8');
-        B.talker(x0 + 12, z0 + 27, 0, '大學的教授', ['「水下迷宮的遺跡，就在我們訓練營旁邊。」', '「海洋學院的學生，冬天也要下水。」']);
+        B.talker(x0 + 12, z0 + 27, 0, '大學的教授', ['「我們在訓練營閉氣練習，練到一半，水底下的牆就動了一下。教官叫我們別說出去。」', '「海洋學院的學生，冬天也要下水。」']);
         B.walk([[x0 + 3, z0 + 30], [x1 - 3, z0 + 30]], 4);
         B.area('西見海洋大學', CUT.uni); B.label('海洋大學', (x0 + x1) / 2, z0 + 14); }
       { const [x0, z0, x1, z1] = CUT.tank;
         B.box(M('concD'), x0 + 4, 0, z0 + 4, x1 - 6, 0.6, z1 - 4); B.box(M('glassL'), x0 + 4.4, 0.6, z0 + 4.4, x1 - 6.4, 4.2, z1 - 4.4); B.box(M('paint', { col: '#2A7AA8' }), x0 + 4.8, 0.6, z0 + 4.8, x1 - 6.8, 3.4, z1 - 4.8);
         B.solid(x0 + 4, z0 + 4, x1 - 6, z1 - 4, 'house');
         B.sign('水下訓練營', 'w', x0 + 4, (z0 + z1) / 2, 5.2, { size: 0.6, bg: '#1A2A4A', fg: '#F4ECD8', box: 1 });
-        H.sight(B, x0 + 1.4, (z0 + z1) / 2, C, 'xj_uni'); B.inter(x0 + 1.4, z0 + 8, 2.4, '水下訓練營體驗（18 費拉）', () => az().act(C), '#7AC8E8');
-        B.talker(x0 + 1.4, z1 - 6, -Math.PI / 2, '穿潛水衣的學生', ['「閉氣三分鐘，是畢業的最低標準。」', '「水下迷宮的遺跡，就在訓練營附近發現的。」']); }
+        H.sight(B, x0 + 1.4, (z0 + z1) / 2, C, 'xj_uni'); B.inter(x0 + 1.4, z0 + 8, 2.4, '水下訓練營・潛水打撈（18 費拉）', () => az().act(C), '#7AC8E8');
+        B.talker(x0 + 1.4, z1 - 6, -Math.PI / 2, '穿潛水衣的學生', ['「三分鐘。閉不到三分鐘的，畢不了業。」', '「水下迷宮是潛水課的學生先發現的。發現的那個，現在不太下水了。」']); }
       // ---------- 中：港灣刺身 ----------
       { const [x0, z0, x1, z1] = CUT.fish; B.bld({ r: [x0 + 1, z0 + 1, x1 - 1, z1 - 1], h: 6.4, style: 'machiya', face: 'w', name: '港灣刺身', noren: '#1A3A5A' }); H.door(B, x0 - 0.6, (z0 + z1) / 2, 'xj_fish', '走進港灣刺身（刺身定食、鹽烤鯖魚）', '#E8A03A', -Math.PI / 2); }
       // ---------- 南：西見站 ----------
@@ -107,8 +106,8 @@
   H.rooms({
     p: 'xj', city: C,
     guild: { name: '公會西見分館', hint: '靠碼頭的石樓，門口貼著潮汐表', board: ['水下迷宮：訓練營附近的入口，退潮的時候才進得去。', '西岸城區遺跡：轟炸過的舊街區裡，遺跡生物住進了彈坑。', '港口護衛：夜裡的貨櫃區有東西在走。'], lines: ['「西見的委託，一半跟海有關。潮汐表先看一下。」', '「城西的西岸遺跡，以前是殖民地的商館街。」', '「潛水的話去大學借裝備。」'] },
-    station: { name: '西見站', dest: '東鶴　南瀧　征遠　皇嶺', lines: ['「往東鶴的票嗎？」', '「機場的接駁巴士在站前。」'], waiting: ['「回大學。今天又要練閉氣。」'] },
-    food: { id: 'xj_fish', name: '港灣刺身', hint: '吧台後面的冰櫃裡，今天早上的魚', floor: 'tatami', bg: '#1A3A5A', say: '「漁港直送。今天的鯖魚最好。」', cook: '刺身店的師傅', lines: ['「拍賣場清晨四點開。我三點就到了。」', '「鹽烤鯖魚，路邊攤也有。可是我的比較好。」'] }
+    station: { name: '西見站', floor: 'wfloor', deco: (B, K, M) => { [[-10.9, -3], [-10.9, -1]].forEach(([x, z]) => { B.box(M('paint', { col: '#F4ECD8' }), x, 1.6, z - 0.6, x + 0.1, 2.2, z + 0.6); B.box(M('paint', { col: '#C83A3A' }), x, 1.75, z - 0.2, x + 0.11, 2.05, z + 0.2); }); B.box(CK.mat('xjPoster', { col: '#7AC8E8', em: '#9AD8F0', ei: 0.3 }), -7.6, 1.4, -5.95, -4.4, 3.4, -5.9); B.inter(-6, -4.8, 2.2, '海灘公園的海報（看看）', () => R.townTalk('海報', ['「西見海灘公園──浪聲蓋過機場的引擎」', '角落小字：港外仍有舊水雷，潛水請找港務局。'])); }, dest: '東鶴　南瀧　征遠　皇嶺', lines: ['「東鶴的車剛走喔。下一班要等一下，去港邊晃晃吧。」', '「機場的接駁巴士在站前。」'], waiting: ['「回大學。今天又要練閉氣。」'] },
+    food: { id: 'xj_fish', name: '港灣刺身', deco: (B, K, M) => { B.box(CK.mat('xjTank2', { col: '#3A8AC8', em: '#5AB8F0', ei: 0.4 }), 3.8, 0.9, -4.3, 5.8, 1.9, -3.5); }, hint: '吧台後面的冰櫃裡，今天早上的魚', floor: 'tatami', bg: '#1A3A5A', say: '「漁港直送。今天的鯖魚最好。」', cook: '刺身店的師傅', lines: ['「拍賣場清晨四點開。我三點就到了。」', '「鹽烤鯖魚，路邊攤也有。可是我的比較好。」'] }
   });
   // 紅磚倉庫（裡面是店）
   [['xj_wh1', '赤煉瓦倉庫・一號館', '紅磚牆、鐵的樑，咖啡和舶來品的香味', [['港灣咖啡', 6, '用鐵壺煮的，很濃', { mp: 0.04 }], ['碼頭蛋糕', 8, '海鹽糖霜', { hp: 0.03, mp: 0.03 }]]], ['xj_wh2', '赤煉瓦倉庫・二號館', '玻璃、帆布包、艾美利亞的雜貨', [['艾美利亞汽水', 3, '瓶子是紅的', { mp: 0.02 }], ['鹽烤鯖魚', 9, '倉庫外面的攤子做的', { hp: 0.05 }]]]].forEach(([id, name, hint, menu]) => CK.defineRoom({ id, name, hint, w: 22, d: 12, h: 6, floor: 'wfloor', wall: 'brick', wain: 'woodB', trim: 'steelD', amb: 1.0, build(B, K) {
@@ -120,4 +119,20 @@
     [[-5, 2], [0, 3], [5, 2]].forEach(([x, z]) => K.cafeSet(x, z, { top: 'wood' }));
     K.lamp(-5, 0); K.lamp(0, 0); K.lamp(5, 0);
   } }));
+  // 2026-10-26 作者：各城的公會分館不要同一間──西見分館是靠碼頭的石樓：潮汐表、海圖桌、港務局的窗口、救生圈和漁網
+  CK.defineRoom({ id: 'xj_guild', name: '公會西見分館', hint: '靠碼頭的石樓，海風從門縫灌進來', w: 18, d: 12, h: 4.8, floor: 'wfloor', wall: 'ashlar', wain: 'woodD', trim: 'woodD', amb: 0.95, build(B, K) {
+    const M = CK.M;
+    K.counter(-4, -3.8, 7, 0.9, { mat: 'woodD', top: 'wood' }); K.register(-6, -3.8);
+    K.wallSign('公會西見分館', 'n', -4, 3.6, { size: 0.6, bg: '#1E3A5A', fg: '#F4ECD8' });
+    K.wallSign('今日潮汐　滿潮 06:12　乾潮 12:40', 'n', 4.6, 2.8, { size: 0.36, bg: '#F4ECD8', fg: '#1E3A5A' });
+    B.inter(-4, -2.6, 2.4, '櫃台：今日地方委託', () => R.azuki.quest('xijian'), '#3E9A5A');
+    B.talker(-2, -4.8, 0, '分館的館員', ['「水下迷宮的入口退潮才進得去。看潮汐表。」', '「港務局的掃雷委託，賞金比看起來好賺──前提是你別碰錯。」', '「沉船裡的舊照片，艾美利亞領事館的人很在意。」']);
+    K.table(4.6, -0.6, 4, 2.4, { mat: 'woodD' }); B.box(CK.mat('xjChart', { col: '#D8C8A0' }), 2.8, 0.74, -1.6, 6.4, 0.76, 0.4);   // 海圖桌
+    B.inter(4.6, 1, 2.4, '海圖桌：港務局的掃雷委託', () => R.azuki.fac('xijian', 'port'), '#7AC8E8');
+    B.talker(7, -0.6, -Math.PI / 2, '港務局的駐館員', ['「海圖上的紅點都是還沒清的水雷。」', '「會戰的時候，這張海圖是軍艦用的。」']);
+    [[-8.4, 1], [-8.4, 3.4]].forEach(([x, z]) => { B.box(M('paint', { col: '#E8E4DC' }), x, 1.6, z - 0.6, x + 0.1, 2.2, z + 0.6); B.box(M('paint', { col: '#C83A3A' }), x, 1.75, z - 0.2, x + 0.11, 2.05, z + 0.2); });   // 救生圈
+    B.box(M('paint', { col: '#6A5A3A' }), 8.6, 0.4, 2, 8.75, 3.6, 5.4);   // 掛在牆上的漁網
+    B.talker(-5, 2.4, Math.PI / 2, '剛上岸的勇者', ['「潛水打撈別貪。氧氣條變紅就往上游。」', '「我在沉船裡撿到一張舊照片，領事看了好久。」']);
+    K.bench(-6.6, 1.8, 3, Math.PI / 2); K.plant(7.6, 5); K.lamp(-4, -1); K.lamp(4, 1); K.lamp(0, 3.6);
+  } });
 })(window.R);

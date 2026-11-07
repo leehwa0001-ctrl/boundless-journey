@@ -4,12 +4,12 @@
 //   荒（高一級）：顏色變暗偏紅、眼睛發紅、背上長出短刺。
 //   獰（高兩級）：更暗、刺更長、露出獠牙，身體大一成。
 //   淵（高三級以上）：幾乎全黑帶紫、眼睛發紫光、一圈紫色的光邊，身體大兩成。
-// 數值只多一點（生命 +15／30／45%、傷害 +10／20／30%，跑快一點）——分級本來就有加強。
-// 2026-10-04 作者：同種怪物越深層越容易出現變種；變異種只在深層出現，越深外觀越危險——
+// 數值只多一點（生命 +15／30／45%、傷害 +10／20／30%，跑快一點）──分級本來就有加強。
+// 2026-10-04 作者：同種怪物越深層越容易出現變種；變異種只在深層出現，越深外觀越危險──
 //   出現的機率、兇的程度照走到第幾成（R.variantAt；淺層沒有、最深全是）。原本固定七成、只看分級。圖鑑不另外列（noDex），打倒的次數算在原本那一種上。
 // 有特別寫法的不變（三連貂、福影童、預言犢、分裂膠、喚群燈、行壁、礦殼的礦脈房……）。
 (function (R) {
-  const W = R.W, rnd = Math.random, ART = R.BEAST_ART;
+  const W = R.W, rnd = Math.random;
   const TIER = [null, { pre: '荒', hp: 1.15, dmg: 1.1, sp: 1.04, sc: 1.0, eye: '#FF5A2A', spike: '#3A2A24' }, { pre: '獰', hp: 1.3, dmg: 1.2, sp: 1.08, sc: 1.1, eye: '#FF2A2A', spike: '#24160F' }, { pre: '淵', hp: 1.45, dmg: 1.3, sp: 1.12, sc: 1.2, eye: '#C88AFF', spike: '#180A22' }];
   const SKIP_AI = ['trio', 'luck', 'prophet', 'core', 'lord', 'split', 'alarm', 'wall', 'giant'], SKIP_ID = ['kamaitachi', 'kudan', 'fukudo', 'splitgel', 'splitgel_s', 'chochin', 'nurikabe', 'petra', 'muddoll_s', 'kitsune_ghost'];
   const hex = c => { const n = parseInt(String(c).slice(1, 7), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; };
@@ -18,29 +18,12 @@
     if (!/^#[0-9a-fA-F]{6}/.test(c)) return c; let [r, g, b] = hex(c); const L = (r * 0.3 + g * 0.59 + b * 0.11);
     if (t === 1) return toHex([r * 0.82 + 22, g * 0.72, b * 0.7]);
     if (t === 2) return toHex([L * 0.25 + r * 0.45 + 18, L * 0.25 + g * 0.35, L * 0.2 + b * 0.35]);
-    return toHex([L * 0.22 + 26, L * 0.12 + 10, L * 0.3 + 40]);
+    // 2026-10-22 作者：淵看不出是誰──保留原本的顏色、花紋，整體壓暗、帶一點紫（原本整隻變成單一的深紫）
+    return toHex([r * 0.6 + L * 0.06 + 22, g * 0.5 + L * 0.04 + 6, b * 0.62 + L * 0.08 + 38]);
   };
-  const FREE = 'ZYQXVUWT'.split('');
-  const mkArt = (base, t) => {
-    const A = ART[base]; if (!A || !A.a) return null;
-    const used = new Set(Object.keys(A.pal)); const ch = FREE.filter(c => !used.has(c)); if (ch.length < 3) return null;
-    const [SP, FG, AU] = ch, T = TIER[t], pal = {};
-    Object.keys(A.pal).forEach(k => { pal[k] = k === 'e' ? T.eye : shade(A.pal[k], t); });
-    pal[SP] = T.spike; pal[FG] = '#F2F0E8'; pal[AU] = '#8A4AE8';
-    const frame = rows => {
-      const w = Math.max(...rows.map(r => r.length)), g = [Array(w).fill('.'), Array(w).fill('.')].concat(rows.map(r => (r + '.'.repeat(w)).slice(0, w).split('')));
-      const H = g.length, solid = (y, x) => y >= 0 && y < H && x >= 0 && x < w && g[y][x] !== '.';
-      // 背上的刺：每一欄最上面的那一格往上長
-      const step = t === 1 ? 3 : 2;
-      for (let x = 1; x < w - 1; x++) { if (x % step) continue; let y = 0; while (y < H && !solid(y, x)) y++; if (y >= H || y < 1) continue; g[y - 1][x] = SP; if (t >= 2 && x % 4 === 0 && y >= 2) g[y - 2][x] = SP; }
-      // 獠牙：眼睛下面兩格是身體的話，點一顆白的
-      if (t >= 2) for (let y = 0; y < H - 2; y++) for (let x = 0; x < w; x++) if (g[y][x] === 'e' && solid(y + 2, x) && g[y + 2][x] !== 'e') g[y + 2][x] = FG;
-      // 淵：一圈紫色的光邊
-      if (t >= 3) { const edge = []; for (let y = 0; y < H; y++) for (let x = 0; x < w; x++) if (g[y][x] === '.' && [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => solid(y + dy, x + dx) && g[y + dy][x + dx] !== SP)) edge.push([y, x]); edge.forEach(([y, x]) => { g[y][x] = AU; }); }
-      return g.map(r => r.join(''));
-    };
-    return { pal, a: frame(A.a), b: frame(A.b || A.a) };
-  };
+  R.VARIANT_TIER = TIER; R.variantShade = shade;   // beastpaint.js 的手點新圖也照這套改（顏色、紅眼、刺、淵的紫光邊）
+  // 圖：荒、獰、淵都有重新畫的點陣圖（beastpix.js 的 id_v1～3；沒有的照本體換色：beastpaint.js 的 variantPix）。2026-10-26 舊的換色點陣圖刪掉了
+
   // 每一種生物「本來」在哪一級（最低出現的分級）
   const home = {};
   const order = ['hamilia', 'amile', 'mors', 'kesent'];
@@ -49,15 +32,14 @@
   Object.keys(home).forEach(id => {
     const d = R.ENEMIES[id]; if (!d || d.boss || d.elite || d.env || d.noDex || SKIP_ID.includes(id) || SKIP_AI.includes(d.ai) || home[id] > 4) return;   /* 克森特級原生的也有變種（深層才出現） */
     for (let t = 1; t <= 3; t++) {
-      const art = mkArt(id, t); if (!art) continue; const vid = id + '_v' + t, T = TIER[t];
-      ART[vid] = art;
+      const vid = id + '_v' + t, T = TIER[t];
       R.ENEMIES[vid] = Object.assign({}, d, { name: T.pre + d.name, hp: Math.round(d.hp * T.hp), dmg: Math.round(d.dmg * T.dmg * 10) / 10, speed: d.speed * T.sp, xp: Math.round(d.xp * (1 + 0.15 * t)), size: d.size * T.sc, noDex: 1, vbase: id, vtier: t, desc: (d.desc || '') + '（' + T.pre + '：更高分級的遺跡裡長出來的變種）' });
       (VAR[id] = VAR[id] || [])[t] = vid;
     }
   });
   R.VARIANTS = VAR;
   // 照深度（0～1，走到第幾成）決定變種的機率、變成哪一級；gd＝這座遺跡比牠原本的分級高幾級
-  // 2026-10-04 作者：越深越容易出現變種要再極端一點——第一層就遇到理論上深層才會出現的怪物了。
+  // 2026-10-04 作者：越深越容易出現變種要再極端一點──第一層就遇到理論上深層才會出現的怪物了。
   //   （原本：第一層就有一成、而且照分級差直接是「淵」。）現在：
   //   淺層（前三分之一）：沒有變種。中層：兩成到六成，「荒」（遺跡比牠高兩級以上是「獰」）。
   //   深層：七成到全部，「獰」；最深的一成五、或遺跡比牠高兩級以上是「淵」。圖鑑的遺跡頁（dexruins.js）也照這個。
@@ -77,5 +59,5 @@
   // 打倒的次數也算在原本那一種上（圖鑑、之後的寵物）
   const k0 = R.killEnemy;
   R.killEnemy = (e, by) => { const r = k0(e, by); const run = W.run; if (e && e.vbase && run) { run.killIds = run.killIds || {}; run.killIds[e.vbase] = (run.killIds[e.vbase] || 0) + 1; } return r; };
-  R.variantDebug = { home, VAR, mkArt };
+  R.variantDebug = { home, VAR };
 })(window.R);

@@ -1,9 +1,9 @@
 // 狩獵考核、狩獵委託（照作者的《公會簡章》與〈浮標〉）
-// - 《公會簡章》：新人段升冒險段的「公會段位考核」有兩次狩獵任務，平均 70% 以上合格。〈浮標〉：狩獵考核的目標是指定的野獸——
+// - 《公會簡章》：新人段升冒險段的「公會段位考核」有兩次狩獵任務，平均 70% 以上合格。〈浮標〉：狩獵考核的目標是指定的野獸──
 //   蓑背熊（背上的毛會把樹枝捲住）、土鎧豬（額頭有厚甲），公會的專員在旁邊記錄，不出手、不救人。
 // - 地點：湯山村後山的狩獵場（山腳、山腰兩段）。白天的雪地山林，不是遺跡：沒有佩特拉的注意、寶箱、房門的膜、謎題、其他隊伍，也不暗。
 //   野獸不是遺跡生物：體內沒有魔力水晶；打倒了拿得到毛皮、額甲、肉（素材，可以做飾品、賣給公會）。
-// - 蓑背熊：背上的毛捲著樹枝，從背後打傷害減半。土鎧豬：額頭的厚甲，從正面打只有兩成五——要繞到側面或背後。
+// - 蓑背熊：背上的毛捲著樹枝，從背後打傷害減半。土鎧豬：額頭的厚甲，從正面打只有兩成五──要繞到側面或背後。
 // - 考核用五軌制打分（guildtask.js）：目標是蓑背熊 1 頭、土鎧豬 3 頭；多殺的獵物扣環境分（生態）。合格兩次拿稱號「獵人」，之後公會開放狩獵委託（可以一直接）。
 // - 存檔：R.S.hunt = { passed, tries }；任務成績上 t.exam。
 (function (R) {
@@ -92,7 +92,7 @@
     const t = F.tile; woodsF = null; if (!t || !F.wallMeshes) return;
     F.wallMeshes.concat(F.ghosts || []).forEach(m => { m.visible = false; });
     const TH = THREE, { nx, nz, T: TT, TS } = t, N = nx * nz;
-    const snow = new TH.Mesh(new TH.PlaneGeometry(nx * TS + 60, nz * TS + 60), new TH.MeshLambertMaterial({ color: '#E4ECF0' }));
+    const snow = new TH.Mesh(new TH.PlaneGeometry(nx * TS + 60, nz * TS + 60), new TH.MeshLambertMaterial({ color: (W().run && W().run.site && W().run.site.ground) || '#E4ECF0' }));
     snow.rotation.x = -Math.PI / 2; snow.position.set(t.X0 + nx * TS / 2, -0.06, t.Z0 + nz * TS / 2); snow.receiveShadow = true; F.group.add(snow);
     // 每一格牆離空地幾格（1 是貼著空地的那一圈）
     const d = new Uint8Array(N); let q = [];
@@ -117,7 +117,9 @@
       for (let k = 0; k < N; k++) { if (!dv[k]) continue; const n = dv[k] <= 2 ? 2 : 1, tx = k % nx, tz = (k - tx) / nx; for (let i = 0; i < n; i++) list.push({ x: t.cX(tx) + (rnd() - 0.5) * TS * 0.8, z: t.cZ(tz) + (rnd() - 0.5) * TS * 0.8, s: 0.9 + rnd() * 0.45, near: dv[k] === 1 }); } }
     // 遠的先畫、近的後畫（同一種大小的樹是一批）
     list.sort((a, b) => a.z - b.z);
-    woodsF = { F, list, near: list.filter(x => x.near), field: R.treeField(list, F.group) };
+    // 2026-10-22 其他狩獵場：落葉的樹、竹林（huntmore.js 的 R.huntTreeField）
+    const site = W().run && W().run.site, tf = site && site.trees && R.huntTreeField ? R.huntTreeField(site.trees, list, F.group) : null;
+    woodsF = { F, list, near: list.filter(x => x.near), field: tf || R.treeField(list, F.group) };
   };
   // 擋在鏡頭和人物中間的樹先藏起來（跟遺跡的牆變矮一樣）
   const woodsStep = () => {
@@ -146,7 +148,7 @@
   const lf0 = R.loadFloor;
   R.loadFloor = (f, o) => {
     const r = lf0(f, o), run = W().run, F = W().F; if (!run || !run.site || !run.site.outdoor || run.site.kind === 'train' || !F) return r;   // 公會的訓練場（training.js）也是戶外，但沒有野獸、考核
-    if (run.exam == null) { run.exam = pending !== 'job'; if (run.exam) hs().tries++; pending = null; }   // 第一層是在 startRun 裡面載入的，這時就要知道是不是考核
+    if (run.exam == null) { run.exam = run.site.id === ID && pending !== 'job';   /* 2026-10-22：其他狩獵場（huntmore.js）沒有考核 */ if (run.exam) hs().tries++; pending = null; }   // 第一層是在 startRun 裡面載入的，這時就要知道是不是考核
     const ab = $('r-aware-box'); if (ab) ab.hidden = true;   // 山裡沒有佩特拉核心
     dress(F);
     // 遺跡生物不會在山裡（福影童、預言犢那種「每層一成五會出現」的也不行）
@@ -157,7 +159,8 @@
     // 野獸：山腳四頭土鎧豬；山腰一頭蓑背熊（最遠的地方）、一頭土鎧豬
     const rooms = F.rooms.filter((x, i) => i > 0 && x.type !== 'stairs').sort((a, b) => (b.dist || 0) - (a.dist || 0));
     const put = (id, room) => { if (!room) return; const [x, z] = R.roomPoint ? R.roomPoint(room, {}) : [room.x, room.z]; R.spawnEnemy(id, x, z, room.i, { quiet: true }); };
-    if (run.floor === 0) rooms.slice(0, 4).forEach(rm => put('yoroiboar', rm));
+    if (run.site.id !== ID) { if (R.huntSpawn) R.huntSpawn(run, F, rooms, put); }   // 其他狩獵場的野獸（huntmore.js）
+    else if (run.floor === 0) rooms.slice(0, 4).forEach(rm => put('yoroiboar', rm));
     else { put('minobear', rooms[0]); put('yoroiboar', rooms[1] || rooms[0]); }
     // 公會的專員：跟在後面記錄，不出手
     if (run.exam) {
@@ -196,7 +199,7 @@
     // 多殺扣環境分（2026-10-21 作者：放寬）：先衝過來打到你的那幾頭算自衛，不算多殺
     const k = run.huntKills || {}, dv = run.huntDefend || {}, got = Math.min(k.minobear || 0, NEED.minobear) + Math.min(k.yoroiboar || 0, NEED.yoroiboar), over = id => Math.max(0, Math.max(0, (k[id] || 0) - NEED[id]) - (dv[id] || 0)), extra = over('minobear') + over('yoroiboar');
     run.kills = got;
-    // 2026-10-21 修正：委託報酬只有「走完」才付（run.js），走完要看到最深處的房間——狩獵場的空地都改成了 fight，永遠走不完，狩獵委託一直是 0 費拉。
+    // 2026-10-21 修正：委託報酬只有「走完」才付（run.js），走完要看到最深處的房間──狩獵場的空地都改成了 fight，永遠走不完，狩獵委託一直是 0 費拉。
     // 狩獵委託：指定的獵物都打到了、人在山腰，就算走完（報酬、加注加付都照遺跡的算法）。考核不付報酬。
     const Fh = W().F; if (!run.exam && got >= NEED.minobear + NEED.yoroiboar && Fh && run.floor === run.floors - 1) { const rm = Fh.rooms.find(x => x.type !== 'start' && x.type !== 'stairs'); if (rm) { rm.type = 'deep'; rm.visited = true; rm.cleared = true; } }
     const r = ex0(how);

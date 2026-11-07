@@ -8,7 +8,8 @@
 (function (R) {
   const CK = R.CK, S = () => R.S; if (!CK || !CK.H) return;
   const H = CK.H, az = () => R.azuki, C = 'futing';
-  const CUT = { hq: [-48, -130, 48, -104], camp: [-150, -92, -16, -28], park: [16, -92, 150, -28], shrine: [-150, -12, -107.5, 29.5], homes: [107.5, -12, 150, 29.5], guild: [-100.5, 42.5, -55.5, 84], mess: [16, 42.5, 48.5, 66], station: [-46, 100, 46, 150] };
+  // 2026-10-22 修：地標的範圍要在路（半寬）＋人行道外面──西通、東通、營區通、官舍通原本少算了路的半寬 3 公尺，神社的高台、宿舍、食堂伸進人行道
+  const CUT = { hq: [-48, -130, 48, -104], camp: [-150, -92, -16, -28], park: [16, -92, 150, -28], shrine: [-150, -12, -110.5, 29.5], homes: [110.5, -12, 150, 29.5], guild: [-97.5, 42.5, -58.5, 84], mess: [16, 42.5, 45.5, 66], station: [-45.5, 100, 45.5, 150] };
   CK.define({
     id: C, name: '府廳', seed: 1951, stationName: '府廳站', fog: 1.2, snow: 1.2,
     walk: [-150, -130, 150, 150], spawn: [0, 108, 0], camYaw: 0, banner: '軍事城市・欅樹大道', plaza: [0, 108],
@@ -51,7 +52,11 @@
       B.walk([[cx0 + 10, cz1 - 14], [cx1 - 30, cz1 - 14], [cx1 - 30, cz0 + 40], [cx0 + 10, cz0 + 40], [cx0 + 10, cz1 - 14]], 10);
       [[cx0 + 30, cz1 - 20], [cx0 + 60, cz1 - 26], [cx0 + 90, cz1 - 20]].forEach(([x, z]) => { P(g.box, M('concD'), x, 0.8, z, 4, 1.6, 0.6); B.solid(x - 2, z - 0.3, x + 2, z + 0.3, 'deco'); });
       H.fac(B, cx1 - 26, cz1 - 2, C, 'camp', '#C8C0A0');
-      B.talker(cx1 - 18, cz1 - 2.5, 0, '帶隊的教官', ['「勇者？黃線外面一步都不准踩。」', '「新兵！再跑三圈！」', '「皇武軍的訓練，遺跡的人也來借場地。」']);
+      { const n = B.person(cx1 - 18, cz1 - 2.5, 0); n.near = 1; B.solid(cx1 - 18.35, cz1 - 2.85, cx1 - 17.65, cz1 - 2.15, 'npc'); B.inter(cx1 - 18, cz1 - 2.5, 2, '和帶隊的教官說話', () => R.futing.letterTo()); }   // 帶隊的教官（cityland.js：軍眷的信）
+      // 射擊場（操場東南角，黃線外面看得到的靶）
+      for (let i = 0; i < 4; i++) { const x = cx1 - 46 + i * 5; P(g.box, M('woodB'), x, 1.1, cz1 - 24, 1.2, 1.6, 0.12); P(g.box, M('paint', { col: '#E8E4DC' }), x, 1.3, cz1 - 24.07, 0.7, 0.7, 0.02); B.solid(x - 0.6, cz1 - 24.2, x + 0.6, cz1 - 23.9, 'deco'); }
+      B.box(M('concD'), cx1 - 50, 0, cz1 - 8, cx1 - 28, 1, cz1 - 7.4); B.sign('射擊場', 's', cz1 - 7.4, cx1 - 39, 1.6, { size: 0.5, bg: '#2A3A2A', fg: '#F4ECD8', box: 1 });
+      B.inter(cx1 - 39, cz1 - 5.6, 2.4, '射擊場（10 費拉）', () => R.futing.range(), '#C8A040');
       B.area('軍營・操場', CUT.camp); B.label('操場', -80, -50);
       // ---------- 東北：戰爭公園 ----------
       const [px0, pz0, px1, pz1] = CUT.park, pcx = (px0 + px1) / 2, pcz = (pz0 + pz1) / 2;
@@ -63,7 +68,7 @@
       for (let i = 0; i < 18; i++) { const x = rr(px0 + 4, px1 - 4), z = rr(pz0 + 4, pz1 - 4); if (Math.abs(x - pcx) < 20 && Math.abs(z - pcz) < 14) continue; if (Math.abs(z - pcz - 12) < 2 || Math.abs(x - pcx - 24) < 2) continue; B.tree(x, z, pk(['bare', 'pine', 'bare']), rr(1, 1.4)); }
       [[pcx - 10, pcz + 10], [pcx + 10, pcz + 10], [pcx - 10, pcz - 10], [pcx + 10, pcz - 10]].forEach(([x, z]) => B.bench(x, z, 0));
       B.walk([[px0 + 4, pcz + 12], [px1 - 4, pcz + 12]], 4); B.walk([[pcx + 24, pz0 + 4], [pcx + 24, pz1 - 4]], 3);
-      H.sight(B, pcx, pcz + 5, C, 'ft_park'); B.inter(pcx - 9, pcz + 5, 2.4, '戰爭公園・體能課（10 費拉）', () => az().act(C), '#C8A040'); H.fac(B, pcx + 9, pcz + 5, C, 'park', '#8AA07A');
+      H.sight(B, pcx, pcz + 5, C, 'ft_park'); B.inter(pcx - 9, pcz + 5, 2.4, '越野障礙賽（10 費拉）', () => az().act(C), '#C8A040'); H.fac(B, pcx + 9, pcz + 5, C, 'park', '#8AA07A');
       B.talker(pcx - 14, pcz - 4, Math.PI / 2, '公園的解說員', ['「這些砲，是第二次大陸會戰的時候守北邊的。」', '「紀念碑上沒有名字。太多了，刻不完。」']);
       B.area('戰爭公園', CUT.park); B.label('戰爭公園', pcx, pz0 + 6);
       // ---------- 西：台地上的軍神社 ----------
@@ -72,28 +77,24 @@
       B.ishigaki(sx0 + 2, sz0 + 1, sx1 - 8, sz1 - 1, 0, 5, { batter: 0.2, sides: 'nse' });
       B.stairs(sx1 - 8, scz - 4, sx1 - 0.5, scz + 4, 'w', 0.12, 5, { mat: 'gran' });
       B.Bt.yOff = 5;
-      B.roof(sx0 + 18, scz, 16, 10, { type: 'irimoya', y: 4.6, h: 2.8, o: 1.2, sori: 0.3, mat: 'copper' });
-      B.box(M('woodB'), sx0 + 11, 0, scz - 4.4, sx0 + 25, 4.6, scz + 4.4); B.box(M('shopLit'), sx0 + 24.95, 0.6, scz - 3, sx0 + 25, 4, scz + 3);
-      for (let i = 0; i < 6; i++) P(g.hemi, M('paint', { col: '#4A5A3A' }), sx0 + 27.5, 0.9, scz - 3.5 + i * 1.4, 0.5, 0.4, 0.5);
-      P(g.box, M('woodB'), sx0 + 27.5, 0.4, scz, 0.8, 0.8, 8.6);
-      H.sight(B, sx0 + 31, scz, C, 'ft_shrine'); H.fac(B, sx0 + 31, scz + 7, C, 'shrine', '#E8C04A');
+      B.jinja(sx0 + 18, scz, { w: 10, d: 8, face: 'e', mat: 'copper', name: '軍神社' });   // 2026-10-22 神社重做（shrinekit.js）
+      H.sight(B, sx0 + 31, scz, C, 'ft_shrine'); B.inter(sx0 + 31, scz + 7, 2.4, '求武運籤（10 費拉）', () => R.futing.omikuji(), '#E8C04A');
       B.Bt.yOff = 0;
       B.torii(sx1 - 4, scz, Math.PI / 2, 5, 4.4, 'black');
-      B.solid(sx0 + 10.6, scz - 4.8, sx0 + 25.4, scz + 4.8, 'house');
-      for (let i = 0; i < 8; i++) B.tree(rr(sx0 + 4, sx0 + 9), rr(sz0 + 3, sz1 - 3), 'cedar', rr(1.1, 1.4));
+      for (let i = 0; i < 8; i++) B.tree(rr(sx0 + 4, sx0 + 9), i % 2 ? rr(sz0 + 3, scz - 6) : rr(scz + 6, sz1 - 3), 'cedar', rr(1.1, 1.4));   // 本殿的玉垣在中間：杉樹種在兩邊
       B.area('軍神社', CUT.shrine); B.label('軍神社', sx0 + 20, sz0 + 4);
       // ---------- 東：軍眷宿舍（晾衣繩） ----------
       const [hx0, hz0, hx1] = CUT.homes;
       for (let i = 0; i < 2; i++) { const z0 = hz0 + 2 + i * 21; B.bld({ r: [hx0 + 2, z0, hx1 - 2, z0 + 11], h: 11.6, style: 'apt', face: 's', col: '#D8D0C0', top: false }); for (let x = hx0 + 6; x < hx1 - 6; x += 8) { P(g.box, M('black'), x + 3, 2.6, z0 + 14, 6, 0.03, 0.03); [-2, 0, 2].forEach(o => P(g.box, M('paint', { col: pk(['#4A5A3A', '#E8E4DC', '#4A5A3A']) }), x + 3 + o, 2.1, z0 + 14, 1.2, 0.9, 0.04)); } }
-      H.fac(B, hx0 + 1, hz0 + 18, C, 'house', '#C8A060');
-      B.talker(hx0 + 1.2, hz0 + 26, -Math.PI / 2, '軍眷的太太', ['「我先生在軍部上班，一個月回家兩次。」', '「晾衣繩上全是制服。分不出是誰的。」']);
+      B.inter(hx0 + 1, hz0 + 18, 2.4, '軍眷宿舍的信箱', () => R.futing.letter(), '#C8A060');
+      B.talker(hx0 + 1.2, hz0 + 26, -Math.PI / 2, '軍眷的太太', ['「他說下個月會多放兩天假。上個月也是這麼說的。」', '「晾衣繩上全是制服。分不出是誰的。」']);
       B.area('軍眷宿舍', CUT.homes);
       // ---------- 西南：公會特劃區（鐵絲網裡的臨時館舍） ----------
       const [gx0, gz0, gx1, gz1] = CUT.guild, gcz = (gz0 + gz1) / 2;
       [[gx0 + 1, gz0 + 1, gx1 - 1, gz0 + 1], [gx0 + 1, gz1 - 1, gx1 - 1, gz1 - 1], [gx0 + 1, gz0 + 1, gx0 + 1, gz1 - 1], [gx1 - 1, gz0 + 1, gx1 - 1, gcz - 4], [gx1 - 1, gcz + 4, gx1 - 1, gz1 - 1]].forEach(([a, b, c, d]) => B.fence(a, b, c, d, 2.4, 'steelD'));
       H.guild(B, [gx0 + 5, gz0 + 6, gx1 - 14, gz1 - 6], 'e', { p: 'ft', name: '公會府廳特劃區', h: 5, style: 'factory', col: '#B8BCB4' });
       B.box(M('concD'), gx1 - 5, 0, gcz - 6, gx1 - 3, 3, gcz - 4.4); B.box(M('concD'), gx1 - 5, 0, gcz + 4.4, gx1 - 3, 3, gcz + 6); B.solid(gx1 - 5, gcz - 6, gx1 - 3, gcz - 4.4, 'deco'); B.solid(gx1 - 5, gcz + 4.4, gx1 - 3, gcz + 6, 'deco');
-      B.talker(gx1 - 0.2, gcz + 5, Math.PI / 2, '特劃區的衛兵', ['「通行證。……勇者證？好，進去吧。」', '「特劃區裡面不准拍照。」']);
+      B.talker(gx1 - 0.2, gcz + 5, Math.PI / 2, '特劃區的衛兵', ['「通行證。……勇者證？好，進去吧。」', '「相機收起來。特劃區裡面，拍了會被沒收。」']);
       B.area('公會特劃區', CUT.guild);
       // ---------- 東南：特劃區食堂 ----------
       const [mx0, mz0, mx1, mz1] = CUT.mess;
@@ -111,7 +112,23 @@
   H.rooms({
     p: 'ft', city: C,
     guild: { name: '公會府廳特劃區', hint: '鐵絲網裡的臨時館舍，衛兵比館員多', board: ['舊兵營遺跡外圍：特劃區只開放討伐段以上。今天的巡邏缺一個人。', '軍部委託：營區的倉庫晚上有東西在翻箱子。', '戰爭公園：舊火砲裡面好像住了什麼。'], lines: ['「特劃區只開放給登記過的勇者。軍方看得很嚴。」', '「舊兵營那邊的遺跡，越來越往營區裡面長。」', '「我們跟軍方借地方。椅子都是軍用的。」'] },
-    station: { name: '府廳站', dest: '東鶴　皇嶺　吉山', lines: ['「往東鶴的票嗎？」', '「軍用列車不賣票。」'], waiting: ['「休假三天。先回家吃一頓。」'] },
-    food: { id: 'ft_mess', name: '特劃區食堂', hint: '鐵盤子、長桌，吃飯很快', say: '「今天的便當，跟皇武軍吃的一樣。」', cook: '食堂的大嬸', lines: ['「軍糧便當，份量是照新兵算的。」', '「黑咖啡苦到說話變少。軍部的人都喝這個。」'] }
+    station: { name: '府廳站', floor: 'conc', wall: 'concD', wain: 'concD', amb: 0.9, deco: (B, K, M) => { B.box(M('steelD'), -10.6, 0, -5.6, -8.4, 2.6, -3.4); B.box(CK.mat('ftBooth', { col: '#E8E4C8', em: '#FFF4C8', ei: 0.5 }), -10.4, 1.4, -3.45, -8.6, 2.2, -3.4); B.talker(-9.5, -2.6, 0, '檢查站的憲兵', ['「勇者證。……好。府廳城內禁止拍照。」', '「軍用列車的月台在另一邊，不要走錯。」']); K.wallSign('軍用列車　不對一般乘客開放', 'n', -6, 3.4, { size: 0.36, bg: '#2A3A2A', fg: '#F4ECD8' }); for (let i = 0; i < 4; i++) B.box(M('paint', { col: '#8A7A5A' }), 8.6 + (i % 2) * 1.1, 0, 4 + (i >> 1) * 0.9, 9.6 + (i % 2) * 1.1, 0.5, 4.8 + (i >> 1) * 0.9); }, dest: '東鶴　皇嶺　吉山', lines: ['「東鶴？民用的車在這邊，軍用列車不載人。」', '「軍用列車不賣票。」'], waiting: ['「三天假欸。我要先回家睡兩天。」'] },
+    food: { id: 'ft_mess', name: '特劃區食堂', deco: (B, K, M) => { K.wallSign('今日：軍糧便當', 'n', 3.6, 2.6, { size: 0.36, bg: '#2A3A2A', fg: '#F4ECD8' }); }, hint: '鐵盤子、長桌，吃飯很快', say: '「今天的便當，跟皇武軍吃的一樣。」', cook: '食堂的大嬸', lines: ['「軍糧便當，份量是照新兵算的。」', '「黑咖啡苦到說話變少。軍部的人都喝這個。」'] }
   });
+  // 2026-10-26 作者：各城的公會分館不要同一間──府廳的特劃區是軍方借的作戰室
+  CK.defineRoom({ id: 'ft_guild', name: '公會府廳特劃區・作戰室', hint: '沙包、作戰桌、無線電的雜音', w: 18, d: 13, h: 4.6, floor: 'conc', wall: 'concD', wain: 'steelD', trim: 'steelD', amb: 0.85, build(B, K) {
+    const M = CK.M;
+    K.table(0, -1.2, 6, 3.2, { mat: 'woodD', h: 0.9 }); B.box(CK.mat('ftMap', { col: '#3A5A3A', em: '#6AE08A', ei: 0.35 }), -2.9, 0.9, -2.7, 2.9, 0.93, 0.3);
+    B.inter(0, 0.9, 2.6, '作戰桌：附近的遺跡情報', () => R.futing.intel(), '#6AE08A');
+    K.wallSign('府廳特劃區・作戰室', 'n', 0, 3.6, { size: 0.6, bg: '#2A3A2A', fg: '#F4ECD8' });
+    K.counter(-5.6, -4.8, 4, 0.9, { mat: 'steelD', top: 'woodD' });
+    B.inter(-5.6, -3.6, 2.2, '情報官：今日地方委託', () => R.azuki.quest('futing'), '#3E9A5A');
+    B.talker(-5.6, -5.6, 0, '情報官', ['「特劃區只開放討伐段以上。」', '「舊兵營遺跡的魔力濃度，今天又高了一點。」', '「軍部不准我們進的地方，你也別進。」']);
+    for (let i = 0; i < 3; i++) B.box(M('woodB'), 6.4, 0, -5.6 + i * 1.6, 8.6, 1.9, -4.4 + i * 1.6);
+    B.inter(6, -3.8, 2.2, '補給架：軍需處（軍功章換東西）', () => R.azuki.fac('futing', 'hq'), '#C8C0A0');
+    for (let i = 0; i < 4; i++) B.box(M('paint', { col: '#8A7A5A' }), -8.6 + i * 1.2, 0, 4.6, -7.6 + i * 1.2, 0.5 + (i % 2) * 0.4, 5.8);   // 沙包
+    B.talker(-4.6, 2.6, Math.PI / 2, '待命的勇者', ['「特劃區的委託都跟軍方有關。報酬不錯，就是規矩多。」', '「教官說新兵的越野賽，S 級的人可以拿三枚軍功章。」']);
+    B.talker(4.6, 2.4, -Math.PI / 2, '無線電兵', ['「……收到。重複，舊兵營外圍無異狀。」', '「無線電一直有雜音。遺跡出現以後就這樣。」']);
+    K.bench(-6.4, 1, 3, Math.PI / 2); K.lamp(-3, -1); K.lamp(3, -1); K.lamp(0, 3);
+  } });
 })(window.R);

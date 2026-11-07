@@ -3,7 +3,7 @@
 // - 基本技能：每個新職業多 5 招（17、19、21、23、25 級）。
 // - 轉職路線：補到 6 招（11、18、21、24 級；轉職以後的技能等級照 promote.js 的 R.skillNeedLv 往後挪）。
 //   鬼武者、外修者、式神使原本 3 招，也補到 6 招。
-// - 奏域師（諧鳴奏域派系「瑟蘭派」）照《法術統整》第四項第一節：奏域裡的四種諧鳴加成——鎮頻（壓制）、共振（增幅）、轉調（轉換元素）、定頻（必中）。
+// - 奏域師（諧鳴奏域派系「瑟蘭派」）照《法術統整》第四項第一節：奏域裡的四種諧鳴加成──鎮頻（壓制）、共振（增幅）、轉調（轉換元素）、定頻（必中）。
 // 格式和 skillbook.js 一樣：[id, 名字, 職業, 等級, 冷卻, 魔力, 型, 參數, 說明, 轉職路線]。放在 skillbook.js、skillbook2.js、classes2b.js 後面。
 (function (R) {
   const L = R.SKILL_LIB; if (!L) return;
@@ -30,7 +30,7 @@
     // 附魔師
     ['en_gale', '附魔・風', 'enchanter', 17, 14, 10, 'buff', { t: 8, speed: 1.2, crit: 0.1, color: '#BFF0D0' }, '把風的咒文刻進鞋底和刀身：8 秒內移動 +20%、暴擊率 +10%。'],
     ['en_cross', '十字刻印', 'enchanter', 19, 8, 12, 'xslash', { n: 2, spread: 1.57, len: 4, width: 0.7, k: 1.6, color: '#FFB86A' }, '刻出一個發光的十字，兩刀交錯斬出。'],
-    ['en_drainblade', '吸魔刃', 'enchanter', 21, 14, 12, 'buff', { t: 8, vamp: 0.04, dmg: 1.1, color: '#C86AA8' }, '在刀刃刻上吸魔的咒文：8 秒內造成傷害的 4% 回復成生命。'],
+    ['en_drainblade', '吸魔刃', 'enchanter', 21, 14, 12, 'buff', { t: 8, vamp: 0.04, dmg: 1.1, color: '#C86AA8' }, '在刀刃刻上吸魔的咒文：8 秒內打出去的傷害有 4% 變成生命。'],
     ['en_quake', '地裂斬', 'enchanter', 23, 10, 16, 'wave', { n: 6, step: 1.8, r: 1.6, k: 1.2, kb: 1, gap: 70, fx: 'ring', color: '#C8A878' }, '刀插進地面，咒文沿著地面一路裂過去。'],
     ['en_masterwork', '傑作', 'enchanter', 25, 24, 22, 'buff', { t: 8, dmg: 1.35, burn: 1, frost: 1, shock: 1, color: '#FFFFFF' }, '一生一次的刻印：8 秒內焰、霜、雷一起附上，傷害 +35%。'],
     // 符卷師
@@ -59,7 +59,7 @@
     ['dm_finale', '終章大鼓', 'bard', 24, 18, 26, 'nova', { r: 5, k: 2.6, kb: 4, stun: 1, color: '#FF5A3A' }, '用盡全力的最後一擊：周圍的敵人重傷、被震飛暈眩。', 'drummer'],
     // 奏域師（瑟蘭派）：諧鳴的四種加成
     ['se_suppress', '鎮頻', 'bard', 11, 14, 16, 'mark', { range: 11, r: 4, t: 6, slow: 3, stun: 0.8, k: 0.3 }, '在奏域裡改寫對手法術的「m」頻，讓它不穩定：準心附近的敵人停頓、變慢，6 秒內受到的傷害 +30%。', 'serane'],
-    ['se_amp', '共振', 'bard', 18, 18, 14, 'buff', { t: 8, dmg: 1.3, color: '#FFB8E0' }, '改寫自己法術的「k」「f」頻：施法前花得少、施法後放得大——8 秒內傷害 +30%。', 'serane'],
+    ['se_amp', '共振', 'bard', 18, 18, 14, 'buff', { t: 8, dmg: 1.3, color: '#FFB8E0' }, '改寫自己法術的「k」「f」頻：施法前花得少、施法後放得大──8 秒內傷害 +30%。', 'serane'],
     ['se_shift', '轉調', 'bard', 21, 14, 20, 'combo', { parts: [['at', { range: 10, r: 3, k: 1.4, delay: 200, burn: 1, fx: 'boom', color: '#FF8A4A' }], ['at', { range: 10, r: 3, k: 1.2, root: 1.5, delay: 100, fx: 'ring', color: '#9AD8FF' }, 350], ['at', { range: 10, r: 3, k: 1.2, stun: 0.5, delay: 100, fx: 'pillar', color: '#E8E07A' }, 700]] }, '改寫「a」「o」頻，把魔力帶動的元素換來換去：焰、霜、雷輪流落在準心處。', 'serane'],
     ['se_lock', '定頻', 'bard', 24, 12, 20, 'shots', { n: 8, spread: 6.28, k: 1.2, homing: 9, kind: 'holy', sp: 18, life: 2.4 }, '改寫「r」「e」「l」「y」頻：八道音波必定追著目標，無視方向和障礙。', 'serane'],
     // 萬獸師
@@ -118,7 +118,7 @@
     ['sl_wall', '符陣', 'scroll', 21, 18, 16, 'buff', { t: 8, kekkai: 1, def: 0.3, regen: 0.01, color: '#F2E6A0' }, '四面貼符：8 秒內擋投射物、受到的傷害 −30%、慢慢回血。', 'sealer'],
     ['sl_grand', '大封印', 'scroll', 24, 22, 26, 'mark', { range: 11, r: 4.5, t: 8, stun: 2.5, k: 0.6 }, '準心附近的敵人全部封住 2.5 秒，8 秒內受到的傷害 +30%。', 'sealer'],
     // 諾克薩的傳人
-    ['nx_delay', '延遲卷', 'scroll', 11, 10, 16, 'at', { range: 10, r: 3, k: 2.6, delay: 1500, fx: 'boom', color: '#FF8A4A' }, '把卷軸丟出去，1.5 秒後才炸——炸得更大。', 'noxa'],
+    ['nx_delay', '延遲卷', 'scroll', 11, 10, 16, 'at', { range: 10, r: 3, k: 2.6, delay: 1500, fx: 'boom', color: '#FF8A4A' }, '把卷軸丟出去，1.5 秒後才炸──炸得更大。', 'noxa'],
     ['nx_mine', '預載地雷', 'scroll', 18, 14, 18, 'zone', { zone: 'trap', range: 9, r: 1.4, life: 30, k: 3, count: 4 }, '預先寫好的四張地雷卷，踩到就炸。', 'noxa'],
     ['nx_auto', '自動施放', 'scroll', 21, 18, 22, 'turret', { t: 12, rate: 0.45, reach: 10, k: 0.7, kind: 'orb', look: 'lamp', color: '#C8A85A' }, '設好條件的卷軸，12 秒內敵人一靠近就自己發動。', 'noxa'],
     ['nx_doom', '終焉預載', 'scroll', 24, 24, 34, 'combo', { parts: [['shots', { n: 12, spread: 6.28, k: 0.9, kind: 'orb', sp: 18 }], ['at', { range: 11, r: 4, k: 2.6, delay: 200, fx: 'boom', color: '#FF5A3A' }, 600]] }, '先放出一圈預載的卷軸，再在準心處引爆最後一張。', 'noxa'],
@@ -140,9 +140,9 @@
     ['on_cleave', '鬼哭斬', 'warrior', 21, 10, 16, 'arc', { range: 3.8, arc: 3.6, k: 2.8, kb: 2, stun: 0.6 }, '戴著鬼面橫掃一刀，周圍的敵人嚇得愣住。', 'onimusha'],
     ['on_rage', '百鬼夜行', 'warrior', 24, 24, 24, 'combo', { parts: [['buff', { t: 8, dmg: 1.4, def: -0.15, color: '#C83A3A' }], ['nova', { r: 4.5, k: 2.4, stun: 1, color: '#8A2A2A' }, 150]] }, '讓鬼面完全上身：周圍的敵人重傷暈眩，8 秒內傷害 +40%（受到的傷害 +15%）。', 'onimusha'],
     // 外修者（術士）
-    ['wx_pulse', '氣脈', 'mage', 18, 18, 0, 'heal', { shield: 0.25, mp: 0.2, color: '#9AE8FF' }, '獲得可吸收相當於最大生命 25% 傷害的護盾，回復最大魔力的 20%。', 'waixiu'],
-    ['wx_rain', '氣彈雨', 'mage', 21, 10, 16, 'shots', { burst: 4, gap: 80, n: 3, spread: 0.5, k: 0.9, kind: 'eorb', sp: 26 }, '將魔力罩化成氣彈，連射四輪，每輪三發。', 'waixiu'],
-    ['wx_storm', '氣旋', 'mage', 24, 16, 22, 'aura', { t: 5, r: 3.6, gap: 0.2, k: 0.7, color: '#9AE8FF' }, '將魔力罩化為氣旋，持續 5 秒傷害周圍敵人。', 'waixiu']
+    ['wx_pulse', '氣脈', 'mage', 18, 18, 0, 'heal', { shield: 0.25, mp: 0.2, color: '#9AE8FF' }, '得到一面擋得下最大生命 25% 傷害的護盾，回復最大魔力的 20%。', 'waixiu'],
+    ['wx_rain', '氣彈雨', 'mage', 21, 10, 16, 'shots', { burst: 4, gap: 80, n: 3, spread: 0.5, k: 0.9, kind: 'eorb', sp: 26 }, '把魔力罩捏成氣彈，連射四輪，每輪三發。', 'waixiu'],
+    ['wx_storm', '氣旋', 'mage', 24, 16, 22, 'aura', { t: 5, r: 3.6, gap: 0.2, k: 0.7, color: '#9AE8FF' }, '把魔力罩轉成氣旋，5 秒內一直刮傷周圍的敵人。', 'waixiu']
   ];
   NEW.forEach(([id, name, cls, lv, cd, mp, type, p, desc, adv]) => {
     if (L[id]) return;

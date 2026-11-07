@@ -93,7 +93,7 @@
       const t = mesh(new THREE.CylinderGeometry(0.15, 0.6, 4.5, 8), M('#5A2A4A', { em: '#3A1A2A', ei: 0.3 }), x, 2.2, z, A.g); setTimeout(() => { A.g.remove(t); }, 700);
       R.fx && R.fx('poof', x, 0.4, z, { color: '#A8E0F0', n: 20 }); if (hitP(x, z, 2.2, 0.1, '觸手', { knock: 0.5 })) R.shake && R.shake(0.3);
     });
-    if (Lr && !A.told) { A.told = true; R.toast && R.toast('深水會冒出觸手——地上亮起來就快閃', '#3AA8C8'); }
+    if (Lr && !A.told) { A.told = true; R.toast && R.toast('深水會冒出觸手──地上亮起來就快閃', '#3AA8C8'); }
   });
 
   // ---------- 天狂風神：斷崖上的平台 ----------
@@ -112,7 +112,7 @@
     }
     if (!fighting(F, A.r) || !every(A, 'gt', dt, 7)) return;
     const a = Math.atan2(P.x - A.r.x, P.z - A.r.z) + (rnd() - 0.5) * 0.8; A.dx = Math.sin(a); A.dz = Math.cos(a);
-    R.banner && R.banner('強風', '要被吹到崖邊了——往裡面走'); R.fx && R.fx('aim', P.x, 0.3, P.z, { a, len: 6, t: 0.6 });
+    R.banner && R.banner('強風', '要被吹到崖邊了──往裡面走'); R.fx && R.fx('aim', P.x, 0.3, P.z, { a, len: 6, t: 0.6 });
     setTimeout(() => { A.push = 1.1; }, 600);
   });
 
@@ -146,7 +146,7 @@
     const Lr = lordOf(A.r); if (!moved(A, Lr)) return;
     const q = A.beams.filter(b => !b.gone).sort((a, b) => Math.hypot(a.x - P.x, a.z - P.z) - Math.hypot(b.x - P.x, b.z - P.z))[0]; if (!q || Math.hypot(q.x - P.x, q.z - P.z) > 12) return;
     q.gone = true; tele(q.x, q.z, 2.6, 1200, '#C8A060', () => { breakProp(q); R.fx && R.fx('poof', q.x, 1, q.z, { color: '#8A7050', n: 26 }); R.shake && R.shake(0.3); hitP(q.x, q.z, 2.6, 0.15, '塌下來的木樑'); });
-    if (!A.told) { A.told = true; R.toast && R.toast('木樑要塌了——快離開亮起來的地方', '#C8A060'); }
+    if (!A.told) { A.told = true; R.toast && R.toast('木樑要塌了──快離開亮起來的地方', '#C8A060'); }
   });
 
   // ---------- 無主大鎧：王座廳 ----------
@@ -192,7 +192,7 @@
       R.fx && R.fx('ring', x, 0.1, z, { r: 2.2, color: '#FFE84A' }); R.shake && R.shake(0.25);
       if (rod) { rod.fl = 0.4; hitP(x, z, 2.2, 0.03, '落雷（被石柱引走）'); } else hitP(x, z, 2.2, 0.12, '落雷');
     });
-    if (!A.told) { A.told = true; R.toast && R.toast('雷會劈你站的地方——站到避雷石柱旁邊，雷會被引走', '#FFE84A'); }
+    if (!A.told) { A.told = true; R.toast && R.toast('雷會劈你站的地方──站到避雷石柱旁邊，雷會被引走', '#FFE84A'); }
   });
 
   // ---------- 沙海吞天：流沙場 ----------
@@ -207,7 +207,7 @@
     if (P.dead || P.air || !inRoom(A.r, P) || ell(A.r, P, 0.85) > 1 || A.rocks.some(q => Math.hypot(q.x - P.x, q.z - P.z) < 1.5)) { A.hot = 0; return; }
     const d = Math.hypot(A.r.x - P.x, A.r.z - P.z) || 1, k = fighting(F, A.r) ? 2.2 : 1.2;
     P.x += (A.r.x - P.x) / d * k * dt; P.z += (A.r.z - P.z) / d * k * dt; R.collide && R.collide(P, 0.42);
-    if (!A.told) { A.told = true; R.toast && R.toast('流沙在把你往中間拉——站到石台上就不會被拉', '#D8B878'); }
+    if (!A.told) { A.told = true; R.toast && R.toast('流沙在把你往中間拉──站到石台上就不會被拉', '#D8B878'); }
     if (d < 2.4) { A.hot = (A.hot || 0) - dt; if (A.hot <= 0) { A.hot = 0.6; P.iframe = 0; R.hurtPlayer(P.hpMax * 0.06 + 2, { name: '流沙的中心' }); } }
   });
 

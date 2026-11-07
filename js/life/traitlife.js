@@ -8,7 +8,7 @@
 //   怕生、默默無名、惡名遠洋 遺跡裡遇到的勇者不會跟你組隊（不跳出邀請）。
 // - 委託（guildtask.js 的 post）：「反饋率」＝五軌的第五項「反饋」（作者 2026-10-15）。良民 反饋 +10、英雄後裔 反饋 +35（最高 100，先加再封頂，F14）；
 //   默默無名 反饋最高 70、惡名遠洋 反饋最高 25；其他四項照算，成績＝五項平均。
-//   默默無名：完成 50 件 B 級以上、成績 60% 以上 → 解除（永久效果：名聲不帶來優惠——現在名聲本來就沒有優惠）；
+//   默默無名：完成 50 件 B 級以上、成績 60% 以上 → 解除（永久效果：名聲不帶來優惠──現在名聲本來就沒有優惠）；
 //   惡名遠洋：完成 100 件 A 級以上、成績 70% 以上 → 解除。以前的紀錄也算（Q04）。
 //   越戰越勇：完成一次遺跡的討伐委託、成績 70% 以上 +1 點（最多 150；以前的紀錄也算）。
 // - 犯罪：良民 不能偷、扒、搶車、對勇者動手（props.js、streetcrime.js、vehicles.js、ckmove.js、這裡）、打不到遺跡裡的勇者（燒、毒、反傷這些被動的傷害照算）、
@@ -133,7 +133,7 @@
     const rows = [];
     (bm ? bm.list : []).forEach((x, i) => rows.push('<div class="recipe"><b style="color:' + R.rarityColor(x.it) + '">' + esc(R.itemName(x.it)) + '</b><small>' + x.price + ' 費拉（訂金 ' + Math.ceil(x.price * 0.35) + '）</small><button type="button" class="btn pri" data-bmb="' + i + '"' + (s.gold < x.price ? ' disabled' : '') + '>買回來</button><button type="button" class="btn" data-bmh="' + i + '"' + (s.gold < Math.ceil(x.price * 0.35) ? ' disabled' : '') + '>付訂金保留一天</button></div>'));
     hold.forEach((x, i) => rows.push('<div class="recipe"><b style="color:' + R.rarityColor(x.it) + '">' + esc(R.itemName(x.it)) + '</b><small>保留到第 ' + x.until + ' 天，還要付 ' + (x.price - x.paid) + ' 費拉</small><button type="button" class="btn pri" data-bmp="' + i + '"' + (s.gold < x.price - x.paid ? ' disabled' : '') + '>付清帶走</button></div>'));
-    R.sheet('<p class="kicker">黑市</p><h2>老相識的黑市商人</h2><p>「聽說你在下面栽了。你掉的東西，我先幫你收著了——價錢嘛，你懂的。」</p>' + (rows.length ? '<div class="recipes">' + rows.join('') + '</div>' : '<p class="note">現在沒有你的東西。</p>')
+    R.sheet('<p class="kicker">黑市</p><h2>老相識的黑市商人</h2><p>「聽說你在下面栽了。你掉的東西，我先幫你收著了──價錢嘛，你懂的。」</p>' + (rows.length ? '<div class="recipes">' + rows.join('') + '</div>' : '<p class="note">現在沒有你的東西。</p>')
       + '<p class="note">身上有 ' + s.gold + ' 費拉。關掉以後，沒買也沒保留的就不在了（有保險的照舊等霧島）。</p>', '<div class="row"><button type="button" class="btn" id="bm2-x">走了</button></div>');
     $('bm2-x').onclick = () => { T.bm = null; R.save && R.save(); R.closeSheet(); };
     document.querySelectorAll('[data-bmb]').forEach(b => { b.onclick = () => { const x = bm.list[+b.dataset.bmb]; if (!x || s.gold < x.price) return; s.gold -= x.price; s.stash.push(x.it); insDrop(x.it); bm.list = bm.list.filter(y => y !== x); R.save && R.save(); R.sfx && R.sfx('coin'); R.blackDealer(); }; });

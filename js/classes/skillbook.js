@@ -71,7 +71,7 @@
     ['k_sweep', '橫掃', 'knight', 8, 8, 12, 'arc', { range: 3.4, arc: 2.6, k: 1.4, kb: 2.5, stun: 0.4 }, '用盾和劍橫掃一大片，把敵人推開。'],
     ['k_bulwark', '不動', 'knight', 10, 18, 14, 'buff', { t: 4, def: 0.6, regen: 0.02, speed: 0.6, color: '#C9A13A' }, '4 秒內受到的傷害 −60%、每秒回復 2% 生命，但走得慢。'],
     ['k_judge', '制裁', 'knight', 12, 10, 16, 'dash', { len: 5, dur: 0.25, k: 2, stun: 1, end: { r: 2.6, k: 1.2, color: '#FFE8A0' } }, '衝上去撞暈敵人，落地再震一圈。'],
-    ['k_vow', '誓約', 'knight', 15, 20, 20, 'heal', { pct: 0.25, shield: 0.25 }, '回復 25% 生命，並獲得可吸收相當於最大生命 25% 傷害的護盾。'],
+    ['k_vow', '誓約', 'knight', 15, 20, 20, 'heal', { pct: 0.25, shield: 0.25 }, '回復 25% 生命，再得到一面擋得下最大生命 25% 傷害的護盾。'],
     // ---------- 轉職路線的技能 ----------
     ['s_headshot', '爆頭', 'gunner', 8, 9, 14, 'line', { len: 18, width: 0.4, k: 5, crit: 1, delay: 600, color: '#FFE08A' }, '瞄準 0.6 秒，射出必定暴擊的一槍。', 'sniper'],
     ['s_camo', '偽裝', 'gunner', 14, 16, 12, 'buff', { t: 4, crit: 0.3, invis: 3, color: '#6A7A5A' }, '披上偽裝隱身 3 秒；4 秒內暴擊率 +30%。', 'sniper'],
@@ -83,7 +83,7 @@
     ['ar_barrage', '魔弓連射', 'archer', 14, 10, 18, 'shots', { burst: 6, gap: 80, k: 0.9, homing: 6 }, '連射六支會追蹤的魔箭。', 'arcane'],
     ['ra_net', '投網', 'archer', 8, 10, 12, 'at', { range: 9, r: 3, k: 0.3, root: 2.5, fx: 'ring', color: '#C8B888' }, '往準心丟出網子：範圍內的敵人被纏住 2.5 秒。', 'ranger'],
     ['ra_field', '陷阱陣', 'archer', 14, 14, 18, 'zone', { zone: 'trap', range: 8, r: 1.2, life: 25, k: 2, count: 3 }, '在準心附近一次布下三個捕獸夾。', 'ranger'],
-    ['hm_seal', '破魔結印', 'archer', 8, 12, 18, 'nova', { r: 4.5, k: 2, stun: 1, color: '#FFFFFF' }, '結印：以自己為中心放出破魔之光，周圍的遺跡生物暈眩。', 'hama'],
+    ['hm_seal', '破魔結印', 'archer', 8, 12, 18, 'nova', { r: 4.5, k: 2, stun: 1, color: '#FFFFFF' }, '結印：身上放出破魔的光，周圍的遺跡生物全部暈眩。', 'hama'],
     ['hm_volley', '破魔連矢', 'archer', 14, 10, 20, 'shots', { n: 3, spread: 0.3, k: 2, pierce: 99, kind: 'hama', sp: 34 }, '三支破魔矢一起射出，射穿直線上的一切。', 'hama'],
     ['bs_thirst', '嗜血', 'warrior', 8, 12, 10, 'buff', { t: 6, dmg: 1.2, vamp: 0.04, color: '#B8322A' }, '6 秒內傷害 +20%，打出去的傷害有 4% 變成生命。', 'berserker'],
     ['bs_rampage', '暴走', 'warrior', 14, 14, 16, 'arc', { range: 3.4, arc: 6.28, k: 1.3, hits: 4, gap: 160, kb: 1.5 }, '失去理智地亂砍四圈。', 'berserker'],
@@ -92,7 +92,7 @@
     ['in_breath', '吐納', 'monk', 8, 14, 0, 'heal', { pct: 0.1, mp: 0.3 }, '吐納遺跡裡飄散的魔力質：回復 30% 魔力、10% 生命。', 'inner'],
     ['in_palm', '崩拳', 'monk', 14, 9, 14, 'line', { len: 5, width: 1.2, k: 3, kb: 3, stun: 0.8, color: '#BFE8FF' }, '一拳把氣勁打成一直線，震退、震暈前方的敵人。', 'inner'],
     ['el_blizzard', '暴風雪', 'mage', 8, 14, 28, 'at', { range: 12, r: 3.5, k: 0.7, slow: 3, waves: 6, gap: 400, fx: 'poof', color: '#DDF2FF' }, '在準心處召來 2.4 秒的暴風雪：敵人持續受傷、變慢。', 'elementalist'],
-    ['el_inferno', '煉獄', 'mage', 14, 16, 32, 'nova', { r: 5, k: 2.5, burn: 1, color: '#FF7A3A' }, '以自己為中心燒出一片煉獄：周圍的敵人重傷並燃燒。', 'elementalist'],
+    ['el_inferno', '煉獄', 'mage', 14, 16, 32, 'nova', { r: 5, k: 2.5, burn: 1, color: '#FF7A3A' }, '腳下燒出一片煉獄：周圍的敵人重傷，還會一直燒。', 'elementalist'],
     ['hx_drain', '吸取', 'mage', 8, 8, 14, 'drain', { range: 10, k: 2, heal: 0.5 }, '從準心方向最近的敵人身上吸走生命：傷害的一半回到你身上。', 'hexer'],
     ['hx_plague', '疫咒', 'mage', 14, 14, 24, 'mark', { range: 12, r: 5, t: 8, slow: 4, k: 0.5 }, '大範圍的詛咒：8 秒內受到的傷害 +30%、變慢。', 'hexer'],
     ['sk_crane', '紙鶴', 'mage', 8, 10, 16, 'shots', { n: 5, spread: 0.6, k: 0.9, homing: 6, kind: 'spirit', sp: 16, life: 1.8 }, '放出五隻紙鶴式神，追著敵人撞上去。', 'shikigami'],
@@ -113,7 +113,7 @@
     ['sd_stitch', '影縫', 'blade', 14, 12, 16, 'at', { range: 9, r: 3, k: 0.8, root: 2, invis: 2, fx: 'ring', color: '#3A2A4A' }, '以影子束縛敵人：範圍內的敵人定身 2 秒，你隱身 2 秒。', 'shadow'],
     ['yt_drink', '啜血', 'blade', 8, 10, 10, 'arc', { range: 3, arc: 6.28, k: 1.2, vamp: 0.15 }, '妖刀轉一圈啜飲：傷害的 15% 變成你的生命。', 'yoto'],
     ['yt_mad', '妖氣', 'blade', 14, 16, 14, 'buff', { t: 6, dmg: 1.35, def: -0.15, color: '#B83AE8' }, '釋放妖刀吸收的魔力質：6 秒內傷害 +35%，但受到的傷害 +15%。', 'yoto'],
-    ['tp_aegis', '神盾', 'knight', 8, 16, 16, 'heal', { shield: 0.4, color: '#C9A13A' }, '獲得可吸收相當於最大生命 40% 傷害的神盾。', 'templar'],
+    ['tp_aegis', '神盾', 'knight', 8, 16, 16, 'heal', { shield: 0.4, color: '#C9A13A' }, '得到一面擋得下最大生命 40% 傷害的神盾。', 'templar'],
     ['tp_crusade', '聖戰', 'knight', 14, 14, 18, 'nova', { r: 4, k: 2, stun: 1, taunt: 4, color: '#C9A13A' }, '高舉長劍：周圍的敵人暈眩，接下來 4 秒改打你。', 'templar'],
     ['pl_hands', '按手禮', 'knight', 8, 16, 20, 'heal', { pct: 0.4, allies: 0.3 }, '你回復 40% 生命，隊友回復 30%。', 'paladin'],
     ['pl_hammer', '審判之錘', 'knight', 14, 10, 18, 'at', { range: 10, r: 2.6, k: 3, stun: 1.2, delay: 400, fx: 'pillar', color: '#FFE8A0' }, '在準心處落下光之錘，敵人暈眩。', 'paladin'],
@@ -141,7 +141,7 @@
     // 外修者（術士的外修派「東方派」：體外的魔力罩當矛也當盾；2026-10-04 從武術家搬過來）
     ['wx_burst', '氣爆', 'mage', 8, 8, 14, 'nova', { r: 3.4, k: 1.9, kb: 4, color: '#9AE8FF' }, '把體外的魔力罩一口氣炸開：震飛、震傷周圍的敵人。', 'waixiu'],
     ['wx_palm', '隔空掌', 'mage', 14, 5, 10, 'shots', { k: 2.2, kind: 'eorb', sp: 30, pierce: 1 }, '用魔力罩的魔力隔空打一掌，幾乎沒有前搖。', 'waixiu'],
-    ['wx_shell', '氣罩', 'mage', 14, 14, 14, 'heal', { shield: 0.35, color: '#9AE8FF' }, '強化魔力罩，獲得可吸收相當於最大生命 35% 傷害的護盾。', 'waixiu'],
+    ['wx_shell', '氣罩', 'mage', 14, 14, 14, 'heal', { shield: 0.35, color: '#9AE8FF' }, '強化魔力罩，得到一面擋得下最大生命 35% 傷害的護盾。', 'waixiu'],
     // 鬼武者（戰士的第三條路，2026-10-04 內修者搬到武術家之後補上）
     ['on_rend', '鬼斬', 'warrior', 8, 8, 14, 'arc', { range: 3.4, arc: 2.6, k: 2.4, stun: 0.6, kb: 1.5 }, '戴著鬼面往前大斬一刀，打中的敵人被嚇得愣住。', 'onimusha'],
     ['on_mask', '鬼面', 'warrior', 14, 16, 12, 'buff', { t: 6, dmg: 1.3, def: -0.1, color: '#C83A3A' }, '讓鬼面的惡意上身：6 秒內傷害 +30%，但受到的傷害 +10%。', 'onimusha'],
@@ -163,7 +163,7 @@
   // ---------- 學會了沒、裝了什麼 ----------
   const need = (s, st) => (R.skillNeedLv ? R.skillNeedLv(s, st) : s.lv);   // 轉職路線的技能：轉職等級調高以後往後挪（promote.js）
   const known = (cls, st, id) => { const s = info(id); return !!s && s.cls === cls && st.lv >= need(s, st) && (!s.adv || s.adv === st.adv); };
-  const allOf = cls => [...new Set(Object.keys(OLD).filter(id => OLD[id].cls === cls).concat(Object.keys(LIB).filter(id => LIB[id].cls === cls)))];   // 去掉重複（2026-10-04 作者：鬼武者有兩招一樣——轉職技能「鬼斬」同時也在技能書的清單裡）
+  const allOf = cls => [...new Set(Object.keys(OLD).filter(id => OLD[id].cls === cls).concat(Object.keys(LIB).filter(id => LIB[id].cls === cls)))];   // 去掉重複（2026-10-04 作者：鬼武者有兩招一樣──轉職技能「鬼斬」同時也在技能書的清單裡）
   // 2026-10-10 吟遊詩人的 R 改成和弦（bardchord.js）：R.SLOT_OFF[職業]＝前面幾個按鍵不放技能，技能從後面的鍵開始放（開格的等級照舊從第一格算）
   const off = cls => (R.SLOT_OFF && R.SLOT_OFF[cls]) || 0;
   R.slotOff = off;

@@ -83,7 +83,7 @@
     // 攻擊範圍每 +1%，普攻與技能的蓄陣前搖 +0.5%（射程加成 rangeMult＋Loop 的攻擊範圍）
     E.rangeUp = Math.max(0, ((P && P.rangeMult) || 1) - 1 + E.loopArea); E.windMul = 1 + 0.5 * E.rangeUp;
     E.pvArea = pv('ry2') ? 0.3 : 0;   // 抑制圈：技能範圍 +30%（另外乘）
-    const wb = P && P.item && P.item.base, penK = wb === 'chalk' ? 0.8 : 1;   // 2026-10-18 作者：陣筆——所有法陣的前搖 −20%
+    const wb = P && P.item && P.item.base, penK = wb === 'chalk' ? 0.8 : 1;   // 2026-10-18 作者：陣筆──所有法陣的前搖 −20%
     E.charge = Math.max(0.2, 1 - E.skWind - E.loopWind) * E.windMul * (pv('ry1') ? 0.75 : 1) * (pv('ry3') ? 2 : 1) * (legLine ? 0.8 : 1) * penK;
     E.naDelay = Math.max(0.1, 0.5 * (1 - E.naWind) * (1 - Math.min(0.8, E.loopWind))) * E.windMul * penK;
     E.reach = (pv('ry4') ? 1.5 : 1) * (wb === 'compass' ? 1.3 : 1);   // 定點；羅盤：法陣可以放的範圍 +30%（2026-10-18 作者）
@@ -149,7 +149,7 @@
     if (!remote && !self && x != null && off && Math.hypot(x - P.x, z - P.z) > off.d + 0.05) { shifted = true; P.x = x - off.dx; P.z = z - off.dz; P.aimA = Math.atan2(off.dx, off.dz); }
     const c0 = cdOf(P, i), mp0 = P.mp, id = idOf(P, i);
     if (echo) setCd(P, i, 0);
-    // 2026-10-15 修：傳送陣（blink 型）以前照技能本身的 8 公尺從腳下算，法陣畫在比較遠的地方就傳不到法陣裡——改成直接傳到法陣中心
+    // 2026-10-15 修：傳送陣（blink 型）以前照技能本身的 8 公尺從腳下算，法陣畫在比較遠的地方就傳不到法陣裡──改成直接傳到法陣中心
     const Lb = libOf(id), gate = !self && x != null && Lb && Lb.type === 'blink' && !(Lb.p && (Lb.p.back || Lb.p.behind));
     if (gate) { P.x = px; P.z = pz; P._blinkTo = [x, z]; }
     try { inCast = true; if (i === 0) us0(); else cs0(i); } finally { inCast = false; P._blinkTo = null; if (shifted && !gate) { P.x = px; P.z = pz; } if (remote) { P.x = px; P.z = pz; } if (!self) { P.aimX = ax; P.aimZ = az; P.aimA = aa; } }
@@ -178,7 +178,7 @@
     const dur = E().charge; let t = 0, fired = 0;
     const me = { i, m, x, z, r }; chgs.push(me); live.push(me);
     const done = () => { chgs = chgs.filter(c => c !== me); live = live.filter(c => c !== me); };
-    R.num && R.num(P.x, 2.6, P.z, '蓄陣…', 'heal');
+    R.num && R.num(P.x, 2.6, P.z, '蓄陣……', 'heal');
     R.fx && R.fx('mark', x, 0, z, { r, t: E().charge, color: col });   // 2026-10-18 作者：蓄陣時就顯示施放時的六芒星法陣
     tick(dt => {
       if (dt < 0) { if (!fired) m.rm(); done(); return false; }
@@ -237,7 +237,7 @@
   }, true);
   window.addEventListener('keydown', e => { if (e.key === 'Escape' && pend) { clearPend(); e.stopPropagation(); } }, true);
 
-  // 2026-10-18 作者：術陣師的武器——陣盤：1 秒 1 下、一段傷害、傷害 ×5（7 → 35）、每發 2.5 魔力；羅盤：1 秒 1.5 下、傷害跟陣筆一樣（13）
+  // 2026-10-18 作者：術陣師的武器──陣盤：1 秒 1 下、一段傷害、傷害 ×5（7 → 35）、每發 2.5 魔力；羅盤：1 秒 1.5 下、傷害跟陣筆一樣（13）
   { const Wp = R.WEAPONS || {}; if (Wp.disc) Object.assign(Wp.disc, { dmg: 35, pellets: 1, rate: 1, mp: 2.5, spread: 0 }); if (Wp.compass) Object.assign(Wp.compass, { dmg: 13, rate: 1.5 }); }
   // ---------- 普攻：地面法陣 ----------
   let naCap = null, naN = 0;
@@ -258,7 +258,7 @@
     const e = E();
     if ((P.atkCd || 0) > cd0 + 0.001 && e.atkSpd > 0) P.atkCd /= 1 + e.atkSpd;
     P.mp = Math.min(P.mpMax, Math.max(0, mp0 - cost));
-    const nth = (naN = (naN + 1) % 2) === 0;   // 第 2、4、6…下
+    const nth = (naN = (naN + 1) % 2) === 0;   // 第 2、4、6……下
     const [x, z] = aimPt(P, (P.ws.range || 12) * e.reach), r = 2 * (1 + e.naArea + e.loopArea), dmg = cap0.dmg * (1 + e.naDmg), dl = e.naDelay;
     const m = naRune(x, z, r); let t = 0, fired = 0;
     const me = { x, z, r }; live.push(me);
@@ -341,7 +341,7 @@
       }, wait * 1000);
     }
   };
-  // 每格：清掉過期的法陣；結界師——敵人穿過技能法陣的邊界就暈 1 秒（同一隻 1.5 秒內不重複）
+  // 每格：清掉過期的法陣；結界師──敵人穿過技能法陣的邊界就暈 1 秒（同一隻 1.5 秒內不重複）
   const stA0 = R.step;
   R.step = dt => {
     const out = stA0(dt), w = W(), P = w && w.P;
@@ -530,7 +530,7 @@
     C.help = P => { const e = E(); return '陣紋：X 打開。點節點＝核心（普攻），拖線＝線段（技能），拖回起點＝Loop（光環）。'
       + '普攻：在滑鼠處放一個畫著你陣紋的法陣，' + (Math.round(e.naDelay * 100) / 100) + ' 秒後爆開，耗魔 1.5＋每個核心 0.25。'
       + '技能：按技能鍵先看範圍、左鍵確認（再按一次取消；熟練度 ★1 起可以改成按下就放的快速施法），蓄力 ' + (Math.round(e.charge * 100) / 100) + ' 秒後放出。法陣的中心能放在普攻射程內，放下就不會跟著你移動；增益和回復會作用在那個圈裡的隊友。蓄力時也能普攻。攻擊範圍每 +1%，普攻和技能的蓄力 +0.5%。'; };
-    C.gauge = P => { const e = E(), L = shapes(), sk = pend ? (R.SKILLS[pend.id] || {}).name : null; return { name: '陣紋 ' + used(L) + '／' + cap(P), v: used(L), max: cap(P), text: chgs.length ? '蓄陣中…' + (chgs.length > 1 ? '×' + chgs.length : '') : sk ? sk + '：左鍵施放、再按一次取消' : (e.lines.length ? e.lines.length + ' 個圖形生效' : '還沒畫陣紋'), x: '陣紋' }; };
+    C.gauge = P => { const e = E(), L = shapes(), sk = pend ? (R.SKILLS[pend.id] || {}).name : null; return { name: '陣紋 ' + used(L) + '／' + cap(P), v: used(L), max: cap(P), text: chgs.length ? '蓄陣中……' + (chgs.length > 1 ? '×' + chgs.length : '') : sk ? sk + '：左鍵施放、再按一次取消' : (e.lines.length ? e.lines.length + ' 個圖形生效' : '還沒畫陣紋'), x: '陣紋' }; };
   }
   // ---------- 主畫面左邊：陣紋與加成 ----------
   let hud = null, hudSig = '', hudT = 0;

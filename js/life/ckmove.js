@@ -102,7 +102,7 @@
       // 租的車：今天租過的，再進城也停在原來的地方
       const key = () => tw.ck + ':' + S().day;
       const parkBike = p => { const v = V.park('bike', 'bike', p[0], p[1], 0, { rent: true, col: '#C8B040' }); if (v) v.g.position.y = CK.heightAt(v.x, v.z); return v; };
-      const parkCar = p => { const q = free(p[0], p[1], 1.8) || p, v = V.park('car', 'sedan', q[0], q[1], p[2] == null ? Math.PI / 2 : p[2], { rent: true, col: '#E8E4DC' }); if (v) { const g = CK.makeCar('#E8E4DC', 'car'); g.position.set(v.x, CK.heightAt(v.x, v.z), v.z); g.rotation.y = v.yaw; v.g.parent.remove(v.g); tw.group.add(g); v.g = g; } return v; };
+      const parkCar = p => { const q = free(p[0], p[1], 1.8) || p, v = V.park('car', 'sedan', q[0], q[1], p[2] == null ? Math.PI / 2 : p[2], { rent: true, col: '#E8E4DC' }); if (v) { const g = CK.makeCar('#E8E4DC', 'car'); g.position.set(v.x, CK.heightAt(v.x, v.z), v.z); g.rotation.y = v.yaw; if (v.g.parent) v.g.parent.remove(v.g); tw.group.add(g); v.g = g; } return v; };
       const has = (k, at, fn) => V.V.list.some(v => v.rent && v.type === k) || (V.V.cur && V.V.cur.rent && V.V.cur.type === k) ? R.toast('今天已經租了。' + (k === 'car' ? '車' : '腳踏車') + '就在旁邊。') : fn(at);
       const rentBike = at => { const s = S(); if (s.ckBike === key()) return has('bike', at, parkBike); const fee = R.cost ? R.cost(8, 'service') : 8; if (s.gold < fee) { R.toast('錢不夠。'); return; } s.gold -= fee; s.ckBike = key(); R.save(); parkBike(at); R.toast('租了一台腳踏車（今天都可以騎）。B 鍵騎上去。'); };
       const rentCar = at => { const s = S(); if (s.ckCar === key()) return has('car', at, parkCar); const fee = R.cost ? R.cost(40, 'service') : 40; if (s.gold < fee) { R.toast('錢不夠。'); return; } s.gold -= fee; s.ckCar = key(); R.save(); parkCar(at); R.toast('租了一台魔導車（今天都可以開）。B 鍵上車；W／S 油門煞車、A／D 轉彎。'); };
@@ -116,7 +116,7 @@
       (tw.cars || []).forEach(c => tw.inter.push({ get x() { return c.x != null ? c.x : c.g.position.x; }, get z() { return c.z != null ? c.z : c.g.position.z; }, r: 3, label: '把司機拉下來搶車（犯罪）', when: () => !(R.hasTrait && R.hasTrait('liangmin')) && !R.inVehicle() && (c.v || 0) < 1.5 && (tw.cars || []).includes(c), act: () => {
         tw.cars = tw.cars.filter(o => o !== c);
         const Cr = R.crime; if (Cr) { Cr.heat = Math.min(3, Cr.heat + 2); Cr.lostT = 0; if (R.alertGuards) R.alertGuards(c.x, c.z, 70); }
-        R.banner('搶車！', '司機摔在路上大喊：「有人搶車——！」（通緝 ' + '★'.repeat(Cr ? Cr.heat : 2) + '）');
+        R.banner('搶車！', '司機摔在路上大喊：「有人搶車──！」（通緝 ' + '★'.repeat(Cr ? Cr.heat : 2) + '）');
         const v = { type: 'car', model: c.g.userData.kind === 'truck' ? 'van' : 'sedan', g: c.g, x: c.x, z: c.z, yaw: c.g.rotation.y, v: 0, stolen: true }; V.mount(v);
       } }));
     }

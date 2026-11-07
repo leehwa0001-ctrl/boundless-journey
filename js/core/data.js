@@ -217,7 +217,7 @@ window.R = window.R || {};
   // 名字是公會東鶴分館的圖鑑取的（看牠們的樣子和習性），不用民間傳說的名字。「礦殼」「佩特拉核心」是公會正式文件裡的名字（《遺跡》第一章第五節）。
   R.ENEMIES = {
     kousaku: { name: '礦殼', ref: '公會文件', hp: 50, dmg: 10, speed: 2.5, xp: 7, size: 0.85, ai: 'chase', armor: 0.35, ore: 1, color: '#6E5A4A', eye: '#FFD24A',
-      desc: '背上長著水晶或礦石的類甲蟲生物，會群聚成礦脈的樣子。殺死之後可以「掘礦」。' },
+      desc: '扁平的圓頂殼像一塊會走動的岩層，背上長著水晶或礦石，會群聚成礦脈的樣子。殺死之後可以「掘礦」。' },   // 2026-10-22 作者：不能再叫「類甲蟲生物」
     kamaitachi: { name: '三連貂', ref: '', hp: 20, dmg: 7, speed: 6.4, xp: 5, size: 0.55, ai: 'trio', color: '#C9D6E0', eye: '#7FE0FF',
       desc: '三隻一組出現：第一隻把人絆倒，第二隻用前肢的鐮刀劃開傷口，第三隻替同伴療傷。先打第三隻。' },
     onibi: { name: '游焰', ref: '', hp: 16, dmg: 9, speed: 3.2, xp: 6, size: 0.5, ai: 'kite', shoot: 0.55, fly: 1, color: '#7FD8FF', eye: '#FFFFFF',
@@ -241,9 +241,9 @@ window.R = window.R || {};
     yukionna: { name: '霜衣', ref: '', hp: 40, dmg: 10, speed: 3.6, xp: 9, size: 0.75, ai: 'kite', freeze: 1, env: 'snow', color: '#E8F2F8', eye: '#5FB8FF',
       desc: '北州的遺跡才看得到。白衣、黑長髮的人形，吐出的寒氣會讓人動作變慢。' },
     tsuchigumo: { name: '領主體・巢織蛛', ref: '', hp: 520, dmg: 20, speed: 3, xp: 70, size: 2.2, ai: 'lord', armor: 0.2, color: '#3A3430', eye: '#FF5A3A', boss: 1,
-      desc: '克森特級遺跡的「領主體」：支配一區的巨型個體。吐出的蛛網會黏住人，還會把幼體從天花板放下來。' },
+      desc: '一整區都歸牠管的巨型蜘蛛。吐出的蛛網會黏住人，還會把幼體從天花板放下來。' },
     omukade: { name: '領主體・千節蟲', ref: '', hp: 640, dmg: 22, speed: 4.4, xp: 80, size: 2, ai: 'centipede', armor: 0.25, color: '#6A2A1E', eye: '#FFD04A', boss: 1,
-      desc: '克森特級遺跡的「領主體」。身體一節一節的，只有頭會受傷。繞著房間爬，越打越快。' },
+      desc: '身體一節一節的，只有頭會受傷。繞著房間爬，越打越快。' },
     hyakume: { name: '群瞳', ref: '', hp: 150, dmg: 11, speed: 3.2, xp: 24, size: 1.25, ai: 'eye', fly: 1, color: '#E8D8D0', eye: '#9A2A3A', coreChance: 0.15, modelScale: 0.7,
       desc: '全身長滿眼睛的遺跡生物。被它看見的時候，佩特拉的注意會一直往上升。會瞬移、放出凝視的光線。先打掉它。' },
     // ---- v14 新增 ----
@@ -264,7 +264,7 @@ window.R = window.R || {};
     ushioni: { name: '蛛身牛', ref: '', hp: 220, dmg: 20, speed: 3, xp: 30, size: 1.5, ai: 'charge', armor: 0.15, elite: 1, color: '#3A2E3A', eye: '#FF3A3A', coreChance: 0.2,
       desc: '牛的頭、蛛的身子。低頭刨地就是要衝過來了——閃到旁邊，讓牠撞牆暈過去。靠太近會被踩。摩爾斯級以上才看得到。' },
     gashadokuro: { name: '領主體・地出巨骸', ref: '', hp: 760, dmg: 24, speed: 1.6, xp: 90, size: 2.6, ai: 'giant', armor: 0.2, color: '#E8E0CC', eye: '#FF5A3A', boss: 1,
-      desc: '克森特級遺跡的「領主體」。從地底探出上半身的巨大骸骨。揮手掃過一大片、拍地，還會叫守墓骨兵出來。' },
+      desc: '從地底探出上半身的巨大骸骨。揮手掃過一大片、拍地，還會叫守墓骨兵出來。' },
     // ---- 人（遺跡裡的壞人、私人賞金獵人）：不是遺跡生物，不放進圖鑑 ----
     rogue: { name: '惡質的勇者', ref: '', human: 1, hp: 105, dmg: 13, speed: 5.4, xp: 16, size: 0.7, ai: 'chase', color: '#5A4A3A', eye: '#FFFFFF', desc: '' },
     rogue_shot: { name: '惡質的勇者', ref: '', human: 1, hp: 80, dmg: 11, speed: 5.0, xp: 16, size: 0.7, ai: 'kite', shoot: 0.6, shot: 'bullet', color: '#5A4A3A', eye: '#FFFFFF', desc: '' },
@@ -363,12 +363,12 @@ window.R = window.R || {};
     { id: 'ukishima', map: 'nation', x: 38.94, z: -22.22, kind: 'ruin', grade: 'kesent', type: 'island', env: 'deep', name: '外海・浮島遺跡', src: '遊戲', desc: '只會出現在海上的浮島型遺跡，島上還長著好幾座偽裝成高塔型的遺跡。', status: 'lock' },
     { id: 'kaso', map: 'nation', x: 40.32, z: -25.02, kind: 'forbidden', grade: 'kaso', type: 'island', name: '封鎖海域', src: '遊戲', desc: '公會明文禁止任何個人單獨進入卡索級遺跡。航海圖上這一塊，是用紅筆整片塗掉的。', status: 'forbidden' },
     // 東鶴近郊（x、y：0～100 的示意座標）
-    { id: 'dh-town', map: 'donghe', x: 57, y: 62, kind: 'city', name: '東鶴', src: '設定', desc: '公會東鶴分館、鐵匠鋪、白藤堂、倉庫。遺跡回來的第一站。', hub: 1 },
+    { id: 'dh-town', map: 'donghe', x: 32, y: 26, kind: 'city', name: '東鶴', src: '設定', desc: '公會東鶴分館、鐵匠鋪、白藤堂、倉庫。遺跡回來的第一站。', hub: 1 },
     { id: 'dh-sokkutsu', map: 'donghe', x: 80, y: 7, kind: 'ruin', grade: 'hamilia', type: 'maze', name: '霜溪石窟', src: '遊戲', desc: '霜溪上游的哈米莉亞級遺跡。一般民眾經登記也能進去採藥草。第一次下遺跡就從這裡開始。', status: 'open' },
-    { id: 'dh-josai', map: 'donghe', x: 10, y: 32, kind: 'ruin', grade: 'amile', type: 'maze', name: '城西遺跡', src: '館員', desc: '公會在入口設了調查點，調查點主任真壁每天派人把報告送回分館。最近遺跡裡的魔力濃度一直往上升，外圍第一層已經標出了十二處危險點。', status: 'open' },
+    { id: 'dh-josai', map: 'donghe', x: 13, y: 15, kind: 'ruin', grade: 'amile', type: 'maze', name: '城西遺跡', src: '館員', desc: '公會在入口設了調查點，調查點主任真壁每天派人把報告送回分館。最近遺跡裡的魔力濃度一直往上升，外圍第一層已經標出了十二處危險點。', status: 'open' },
     { id: 'dh-kouzan', map: 'donghe', x: 56, y: 5, kind: 'ruin', grade: 'amile', type: 'city', name: '北山礦坑・深層', src: '遊戲', desc: '德克斯凡礦務公司的北山礦坑，往下挖穿了一座遺跡。礦殼成群，整面牆都是礦脈。入口仍留著礦務公司的運輸軌道。', status: 'open' },
     { id: 'dh-yuyama', map: 'donghe', x: 13, y: 6, kind: 'village', name: '湯山村', src: '東鶴', desc: '矮丘山口另一邊的溫泉村。' },
-    { id: 'dh-farm', map: 'donghe', x: 76, y: 18, kind: 'village', name: '北郊農舍', src: '東鶴', desc: '冬天常被冰鼬騷擾的農家。' }
+    { id: 'dh-farm', map: 'donghe', x: 59, y: 14, kind: 'village', name: '北郊農舍', src: '東鶴', desc: '冬天常被冰鼬騷擾的農家。' }
   ];
   R.GRADE_COLOR = { hamilia: '#4E9A5A', amile: '#C98A2E', mors: '#7A4FC8', kesent: '#C8323A', kaso: '#1A1A1A' };
 

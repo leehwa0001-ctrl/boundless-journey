@@ -183,25 +183,27 @@
   const made = new WeakMap();   // 文字節點 → { val: 切完剩下的字, nodes: [放進去的圖示、切出去的字] }
   const isG = n => !!(n && n.nodeType === 1 && n.classList.contains('goldi'));
   const mk = () => { const img = document.createElement('img'); img.className = 'goldi'; img.alt = ''; img.src = R.goldIconURL(); return img; };
+  // 2026-10-27：英文、德文版要等句子翻好才切（先切的話整句被切成好幾段，翻譯就對不上），所以找的是翻好的「Fera」
+  const tok = () => (R.lang === 'en' || R.lang === 'de' ? 'Fera' : '費拉');
   const deco = t => {
     const old = made.get(t);
     if (old) { if (t.nodeValue === old.val) return; made.delete(t); old.nodes.forEach(n => { if (n.parentNode) n.parentNode.removeChild(n); }); }   // 被整段改寫：收回上次的
-    const v = t.nodeValue; let i = v.indexOf('費拉'); if (i < 0) return;
+    const T = tok(), v = t.nodeValue; let i = v.indexOf(T); if (i < 0) return;
     const p = t.parentNode; if (!p || SKIP[p.nodeName] || (p.closest && p.closest('[data-nogicon]'))) return;
-    if (i === 0 && isG(t.previousSibling)) { i = v.indexOf('費拉', 2); if (i < 0) return; }   // 這段是之前切出來的，前面已經有圖示
+    if (i === 0 && isG(t.previousSibling)) { i = v.indexOf(T, T.length); if (i < 0) return; }   // 這段是之前切出來的，前面已經有圖示
     const rec = { val: null, nodes: [] };
     let cur = t;
     while (i >= 0) {
       const r = i ? cur.splitText(i) : cur; if (r !== t) rec.nodes.push(r);
       const img = mk(); p.insertBefore(img, r); rec.nodes.push(img);
-      cur = r; i = cur.nodeValue.indexOf('費拉', 2);
+      cur = r; i = cur.nodeValue.indexOf(T, T.length);
     }
     rec.val = t.nodeValue; made.set(t, rec);
   };
   const scan = n => {
     if (n.nodeType === 3) return deco(n);
-    if (n.nodeType !== 1 || SKIP[n.nodeName] || n.textContent.indexOf('費拉') < 0) return;
-    const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT), list = []; let t; while ((t = w.nextNode())) if (t.nodeValue.indexOf('費拉') >= 0) list.push(t);
+    const T = tok(); if (n.nodeType !== 1 || SKIP[n.nodeName] || n.textContent.indexOf(T) < 0) return;
+    const w = document.createTreeWalker(n, NodeFilter.SHOW_TEXT), list = []; let t; while ((t = w.nextNode())) if (t.nodeValue.indexOf(T) >= 0) list.push(t);
     list.forEach(deco);
   };
   const goObs = () => { scan(document.body); new MutationObserver(ms => { for (const m of ms) { if (m.type === 'characterData') deco(m.target); else m.addedNodes.forEach(scan); } }).observe(document.body, { childList: true, subtree: true, characterData: true }); };

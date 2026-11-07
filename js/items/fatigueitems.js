@@ -15,14 +15,19 @@
   R.hub = (t, f) => {
     const r = hub0(t, f);
     try {
-      const tab = document.querySelector('[data-htab][aria-selected="true"]'), body = $('hub-body'), s = S(); if (!body || !tab || tab.dataset.htab !== 'shop' || !s) return r;
-      const sec = body.querySelector('section.panel-doc'); if (!sec || sec.querySelector('.fat-shop')) return r;
+      const tab = document.querySelector('[data-htab][aria-selected="true"]'), body = $('hub-body'), s = S(); if (!body || !tab || !s || (tab.dataset.htab !== 'shop' && tab.dataset.htab !== 'stash')) return r;
+      // 2026-10-27：提神藥是藥，留在白藤堂；乾糧、小帳篷是旅行用品，搬到倉庫的公會補給
+      const atShop = tab.dataset.htab === 'shop', keys = atShop ? ['wake'] : ['ration', 'tent'];
+      const sec = atShop ? body.querySelector('section.panel-doc') : body; if (!sec || sec.querySelector('.fat-shop')) return r;
       const price = k => (R.shopPrice ? R.shopPrice(R.FAT_ITEMS[k].price, 'shop') : R.FAT_ITEMS[k].price);
       if (price('wake') == null) return r;   // 不賣東西給你（特質、通緝）
       const box = document.createElement('div'); box.className = 'recipes fat-shop';
-      box.innerHTML = Object.keys(R.FAT_ITEMS).map(k => { const F = R.FAT_ITEMS[k], p = price(k); return '<div class="recipe"><b style="color:' + F.color + '">' + F.name + ' ×' + cnt(k) + '</b><small>旅行用品・' + F.desc + '</small><button type="button" class="btn pri" data-fatbuy="' + k + '"' + (s.gold < p ? ' disabled' : '') + '>買（' + p + ' 費拉）</button></div>'; }).join('');
-      sec.appendChild(box);
-      box.querySelectorAll('[data-fatbuy]').forEach(b => { b.onclick = () => {
+      box.innerHTML = (atShop ? '' : '<h3 style="grid-column:1/-1">公會補給・旅行用品</h3>') + keys.map(k => { const F = R.FAT_ITEMS[k], p = price(k); return '<div class="recipe"><b style="color:' + F.color + '">' + F.name + ' ×' + cnt(k) + '</b><small>' + F.desc + '</small><button type="button" class="btn pri" data-fatbuy="' + k + '"' + (s.gold < p ? ' disabled' : '') + '>買（' + p + ' 費拉）</button></div>'; }).join('');
+      // 2026-10-27：白藤堂的提神藥放進回復藥、魔力藥那一排（原本自己一塊排在下面）
+      const row = atShop && [...sec.querySelectorAll(':scope > .recipes')].find(x => x.querySelector('[data-buy], .recipe') && !/符卷/.test(x.textContent));
+      const btns = [...box.querySelectorAll('[data-fatbuy]')];
+      if (row) { row.classList.add('fat-shop'); [...box.children].forEach(c => row.appendChild(c)); } else sec.appendChild(box);
+      btns.forEach(b => { b.onclick = () => {
         const k = b.dataset.fatbuy, p = price(k); if (p == null || s.gold < p) return;
         if (R.bagCanAdd && !R.bagCanAdd('pot:' + k, 1)) { R.bagFullMsg && R.bagFullMsg(R.FAT_ITEMS[k].name); return; }
         s.gold -= p; s.potions = s.potions || {}; s.potions[k] = cnt(k) + 1; R.save && R.save(); R.sfx && R.sfx('coin'); R.hub(t, f);

@@ -43,7 +43,7 @@
       });
       const search = document.createElement('label'); search.className = 'sx-f sx-search';
       search.innerHTML = '<span>搜尋</span>';
-      const inp = document.createElement('input'); inp.type = 'search'; inp.id = 'st-q'; inp.placeholder = '名字…'; inp.value = stashQ; inp.autocomplete = 'off';
+      const inp = document.createElement('input'); inp.type = 'search'; inp.id = 'st-q'; inp.placeholder = '名字……'; inp.value = stashQ; inp.autocomplete = 'off';
       search.appendChild(inp); row2.appendChild(search);
       const clr = document.createElement('button'); clr.type = 'button'; clr.className = 'mini sx-clr'; clr.textContent = '清除篩選';
       clr.title = '屬性、職業、搜尋都清掉'; row2.appendChild(clr);

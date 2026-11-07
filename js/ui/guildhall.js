@@ -115,7 +115,16 @@
       all.sort(cmp).forEach(c => wrap.insertBefore(c, mapBtn || null));
       const cnt = bar.querySelector('#gh-cnt'); cnt.textContent = '可接 ' + n + ' 件';
       bar.querySelectorAll('[data-ghg]').forEach(b => b.classList.toggle('on', b.dataset.ghg === ui.grade));
-      let none = wrap.querySelector('.gh-none'); if (!all.some(c => !c.hidden)) { if (!none) { none = document.createElement('p'); none.className = 'note gh-none'; none.textContent = '沒有符合條件的委託。'; wrap.prepend(none); } } else if (none) none.remove();
+      // 2026-10-27：清單空了要說為什麼（記住的篩選是「克森特級」、新人什麼都看不到），附一顆按鈕回到全部
+      let none = wrap.querySelector('.gh-none'); if (none) none.remove();
+      if (!all.some(c => !c.hidden)) {
+        const gname = ui.grade === 'all' ? '' : ((R.gradeById(ui.grade) || {}).name || ui.grade), hid = all.filter(c => c.classList.contains('gh-lock') && (ui.grade === 'all' || c.dataset.g === ui.grade)).length;
+        const why = q ? '沒有名字裡有「' + q + '」的遺跡' : (gname ? gname + '沒有你現在能接的委託' : '現在沒有能接的委託') + (hid && !ui.locked ? '（另外有 ' + hid + ' 件還沒開放）' : '');
+        none = document.createElement('div'); none.className = 'note gh-none';
+        none.innerHTML = '<p>' + esc(why) + '。</p><button type="button" class="btn">看全部的委託</button>';
+        none.querySelector('button').onclick = () => { ui.grade = 'all'; ui.q = ''; ui.ok = 0; const qi = bar.querySelector('#gh-q'), oi = bar.querySelector('#gh-ok'); if (qi) qi.value = ''; if (oi) oi.checked = false; keep(); apply(); };
+        wrap.prepend(none);
+      }
     };
     bar.querySelectorAll('[data-ghg]').forEach(b => { b.onclick = () => { ui.grade = b.dataset.ghg; keep(); apply(); }; });
     bar.querySelector('#gh-sort').onchange = e => { ui.sort = e.target.value; keep(); apply(); };

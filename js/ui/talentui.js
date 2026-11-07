@@ -167,7 +167,7 @@
   };
   const scrolls = () => [$('hub-sheet'), $('r-sheet'), document.scrollingElement].filter(Boolean).map(el => [el, el.scrollTop]);
   const sp0 = R.skillPoints;
-  // 2026-10-04 作者：滑桿直接加在技能那一側，天賦樹跟細節欄位置固定——寬的畫面：技能那一欄的高度跟天賦樹一樣、自己捲（整頁不用捲）
+  // 2026-10-04 作者：滑桿直接加在技能那一側，天賦樹跟細節欄位置固定──寬的畫面：技能那一欄的高度跟天賦樹一樣、自己捲（整頁不用捲）
   const fitSkills = () => { const sk = document.querySelector('.tu-skills'), tr = document.querySelector('.tu-tree'); if (!sk || !tr) return; if (window.matchMedia && window.matchMedia('(max-width: 900px)').matches) { sk.style.maxHeight = ''; return; } sk.style.maxHeight = tr.offsetHeight + 'px'; };
   R.skillPoints = (where, keep) => {
     const sc = keep && scrolls(), sk0 = document.querySelector('.tu-skills'), skY = keep && sk0 ? sk0.scrollTop : 0, r = sp0(where, keep);

@@ -18,27 +18,33 @@
     ['light', /^在燈塔下看海/, '東鶴燈塔', '漁港的防波堤', '「昭旭沿岸第十二號燈塔」。晚上的光一圈一圈地轉，船在很遠的海上就看得到。'],
     ['whitelight', /^在白燈塔下看海/, '東鶴港的白燈塔', '東鶴港', '新港落成時一起蓋的白燈塔，和漁港的紅燈塔一南一北。情侶喜歡在這裡等日出。'],
     ['brick', /^紅磚倉庫/, '東鶴港的紅磚倉庫', '東鶴港', '以前放德克斯凡進口貨的倉庫，紅磚是從華爾納蘭特運來的。現在有幾間改成了店。'],
-    ['bridge', /^在南橋下釣魚/, '霜溪南橋', '城南的霜溪', '霜溪流進東鶴前的最後一座橋。橋下釣得到霜背鮒；冬天河面結薄冰，釣客會敲一個洞。'],
+    ['bridge', /^在鶴川邊釣魚/, '鶴川河畔', '鶴川河畔公園', '鶴川從北山流下來，在這裡轉個彎就出海。岸邊釣得到霜背鮒；冬天河面結薄冰，釣客會敲一個洞。'],
     ['hokora', /^向鎮守的小祠合掌/, '河西的鎮守小祠', '河西', '河西的居民自己守著的小祠，祠前總是放著新鮮的供品。據說遺跡出現以前就在了。'],
     ['onsen', /^泡一下溫泉/, '湯山村的露天溫泉', '湯山村', '湯山村的露天溫泉，看得到雪山。泡完之後身體一整天都是暖的。']
   ];
   R.SIGHTS = SIGHTS;
   const got = () => { const s = S(); s.sights = s.sights || {}; return s.sights; };
   R.addTitle && R.addTitle(['tourist', '東鶴通', '在東鶴的每一個觀光景點蓋了觀光章', '委託報酬 +2%', { pay: 0.02 }]);
+  const gold = () => { const s = S(); s.sightsGold = s.sightsGold || {}; return s.sightsGold; };
+  const pid = sg => 'dh_' + sg[0];
   const visit = sg => {
-    const g = got(), first = !g[sg[0]], n0 = Object.keys(g).length;
-    if (first) { g[sg[0]] = S().day || 1; R.save(); R.sfx && R.sfx('pick'); }
+    const PC = R.postcard, g = got(), first = !g[sg[0]], n0 = Object.keys(g).length, G = gold(), isBest = PC && PC.isNow(pid(sg)), goldNew = isBest && !G[sg[0]];
+    if (first) g[sg[0]] = S().day || 1;
+    if (goldNew) { G[sg[0]] = S().day || 1; S().gold += 150; if (R.sanAdd) R.sanAdd(5); }
+    if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = Object.keys(g).length, all = n >= SIGHTS.length;
-    R.sheet('<p class="kicker">觀光景點・' + esc(sg[3]) + '</p><h2>' + esc(sg[2]) + '</h2><p>' + esc(sg[4]) + '</p>'
-      + '<p class="note">' + (first ? '在觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
+    R.sheet('<p class="kicker">觀光景點・' + esc(sg[3]) + '</p><h2>' + esc(sg[2]) + '</h2>' + (PC ? PC.card(pid(sg), !!G[sg[0]]) : '') + '<p>' + esc(sg[4]) + '</p>'
+      + (PC ? '<p class="note">最佳時刻：' + esc(PC.best(pid(sg))) + (isBest ? '──就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : G[sg[0]] ? '限定明信片已經有了。' : '') + '</p>' : '')
+      + '<p class="note">' + (first ? '在觀光手冊上蓋了章、收下一張明信片。' : '這裡的章已經蓋過了。') + '（' + n + '／' + SIGHTS.length + '）</p>',
       '<div class="row"><button type="button" class="btn pri" id="sg-x">好</button><button type="button" class="btn" id="sg-book">觀光手冊</button></div>');
     document.getElementById('sg-x').onclick = R.closeSheet; document.getElementById('sg-book').onclick = book;
     if (first && all && n0 < SIGHTS.length) { S().gold += 800; R.save(); R.awardTitle && R.awardTitle('tourist'); setTimeout(() => R.banner && R.banner('觀光章蓋齊了！', '東鶴觀光協會送來 800 費拉和稱號「東鶴通」。'), 600); }
   };
   const book = () => {
     const g = got();
-    R.sheet('<p class="kicker">東鶴觀光協會</p><h2>觀光手冊</h2><p class="note">走到景點旁邊的說明牌就能蓋章。蓋齊 ' + SIGHTS.length + ' 個：800 費拉和稱號「東鶴通」。</p><ul class="sg-list">'
-      + SIGHTS.map(sg => '<li class="' + (g[sg[0]] ? 'ok' : '') + '"><b>' + (g[sg[0]] ? '✓ ' : '・') + esc(sg[2]) + '</b><small>' + esc(sg[3]) + '</small></li>').join('') + '</ul>',
+    const G = gold(), PC = R.postcard;
+    R.sheet('<p class="kicker">東鶴觀光協會</p><h2>東鶴明信片冊</h2><p class="note">走到景點旁邊的說明牌就能蓋章。蓋齊 ' + SIGHTS.length + ' 個：800 費拉和稱號「東鶴通」。</p><div class="pc-grid">'
+      + SIGHTS.map(sg => '<figure class="pc-cell' + (g[sg[0]] ? '' : ' none') + '">' + (g[sg[0]] && PC ? PC.card(pid(sg), !!G[sg[0]]) : '<div class="pc empty">？</div>') + '<figcaption><b>' + esc(sg[2]) + '</b><small>' + esc(sg[3]) + (PC ? '・最佳：' + esc(PC.best(pid(sg))) : '') + '</small></figcaption></figure>').join('') + '</div>',
       '<div class="row"><button type="button" class="btn pri" id="sg-x">關上</button></div>');
     document.getElementById('sg-x').onclick = R.closeSheet;
   };

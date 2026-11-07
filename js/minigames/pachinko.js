@@ -14,7 +14,10 @@
     ginga: { name: '銀河', spec: '大當 1/50・3 回合', desc: '店裡最多的標準機台。', win: 1 / 50, rounds: 3, inn: 6, bg: ['#2A2A6A', '#141436', '#0A0A1E'], band: '#8A7AFF', plate: '#2A1A4A', lamp: '#9AD8FF' },
     kaijin: { name: '海神', spec: '甘：大當 1/22・2 回合', desc: '中得勤、一次出得少，適合慢慢玩。', win: 1 / 22, rounds: 2, inn: 4, bg: ['#1A6A8A', '#0E2E4A', '#061624'], band: '#3AD8C8', plate: '#0E3A4A', lamp: '#7AF0E0' },
     sekiryu: { name: '赤龍', spec: '大當 1/90・4 回合・確變', desc: '大當結束時有四成的機會進入「龍神時間」：接下來 8 次，每次 1/10 就再中一次。', win: 1 / 90, rounds: 4, inn: 6, st: { p: 0.4, n: 8, win: 1 / 10, name: '龍神時間' }, bg: ['#7A1A1A', '#3A0A0A', '#1A0404'], band: '#FFB83A', plate: '#5A0E0E', lamp: '#FFB83A' },
-    tsukikage: { name: '月影', spec: '一發台：大當 1/150・8 回合', desc: '很久才中一次，中了就是一大盒。', win: 1 / 150, rounds: 8, inn: 7, bg: ['#3A3A5A', '#1A1A2E', '#08080F'], band: '#E8E4C8', plate: '#1A1A2E', lamp: '#F4F0D0' }
+    tsukikage: { name: '月影', spec: '一發台：大當 1/150・8 回合', desc: '很久才中一次，中了就是一大盒。', win: 1 / 150, rounds: 8, inn: 7, bg: ['#3A3A5A', '#1A1A2E', '#08080F'], band: '#E8E4C8', plate: '#1A1A2E', lamp: '#F4F0D0' },
+    // 2026-10-24 作者：賭博也新增
+    hanabi: { name: '花火', spec: '大當 1/35・3 回合', desc: '比銀河中得勤一點、一次出得少一點，燈很熱鬧。', win: 1 / 35, rounds: 3, inn: 5, bg: ['#3A1A4A', '#1A0E2E', '#0A0614'], band: '#FF7AC8', plate: '#2A0E3A', lamp: '#FFD24A' },
+    kitsune: { name: '九尾', spec: '大當 1/70・5 回合・確變', desc: '大當結束時有五成五的機會進入「九尾連舞」：接下來 5 次，每次 1/8 就再中一次。', win: 1 / 70, rounds: 5, inn: 6, st: { p: 0.55, n: 5, win: 1 / 8, name: '九尾連舞' }, bg: ['#8A4A1A', '#3A1A0A', '#140804'], band: '#FFE08A', plate: '#4A1E0A', lamp: '#FFC84A' }
   };
   let K = KINDS.ginga;
   R.PACHI_KINDS = KINDS;
@@ -132,7 +135,7 @@
     if (!KINDS[kind]) return pick();
     K = KINDS[kind]; P_WIN = K.win; ROUNDS = K.rounds; ROUND_IN = K.inn;
     const S = R.S; S.pachiBalls = S.pachiBalls || 0;
-    R.sheet('<p class="kicker">柏青哥「銀河」・' + K.spec + '</p><h2>' + K.name + '</h2><p class="note">店裡吵得聽不到自己說話。找一台空著的坐下。把手轉到適合的力道、按住就會一直打；珠子進中間的「啟動口」，液晶的數字就轉一次，三個一樣是大當——右下的大入賞口打開，往右邊打。</p>'
+    R.sheet('<p class="kicker">柏青哥「銀河」・' + K.spec + '</p><h2>' + K.name + '</h2><p class="note">店裡吵得聽不到自己說話。找一台空著的坐下。把手轉到適合的力道、按住就會一直打；珠子進中間的「啟動口」，液晶的數字就轉一次，三個一樣是大當──右下的大入賞口打開，往右邊打。</p>'
       + '<div class="pachi"><canvas id="pc-cv" width="' + FW + '" height="' + FH + '"></canvas><div class="pachi-ui">'
       + '<div class="pachi-st">持珠 <b id="pc-n">0</b> 顆<small id="pc-info"></small></div>'
       + '<label class="pachi-pow">把手的力道<input type="range" id="pc-pow" min="0" max="100" value="38"><span><i>← 左邊打</i><i>右邊打 →</i></span></label>'

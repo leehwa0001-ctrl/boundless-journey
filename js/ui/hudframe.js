@@ -108,7 +108,7 @@
     } catch (e) { }
   };
   setInterval(badge, 400);
-  // 2026-10-10 作者：「東鶴」牌子一直閃——精緻城市的狀態列時間一走就整個重寫，牌子被洗掉、要等下一次（最多 0.4 秒）才補回來。
+  // 2026-10-10 作者：「東鶴」牌子一直閃──精緻城市的狀態列時間一走就整個重寫，牌子被洗掉、要等下一次（最多 0.4 秒）才補回來。
   // 重寫的當下馬上補回去（MutationObserver 在畫面更新之前就跑）
   { let mo = null, el0 = null; setInterval(() => { const el = $('r-where'); if (!el || el === el0) return; el0 = el; if (mo) mo.disconnect(); mo = new MutationObserver(() => { const w = W(); if (w && !w.run && !el.querySelector('.hf-badge')) badge(); }); mo.observe(el, { childList: true }); }, 1000); }
 
@@ -118,6 +118,9 @@
   css.textContent = [
     // 遺跡那格
     '#r-where.hf-where{position:relative;--gc:#C8C0B0;border:2px solid var(--gc);padding-left:14px;padding-right:46px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 0 18px -6px var(--gc),0 0 10px -4px var(--gc);background:linear-gradient(90deg,color-mix(in srgb,var(--gc) 22%,transparent),rgba(10,8,14,.78) 45%)}',
+    // 2026-10-27：日期和時鐘原本黏在一起（「槍手 Lv 1清晨 7:19」），窄的畫面還被切掉：中間加「・」；手機上各一行
+    '#r-where #r-clock::before{content:"・"}',
+    '@media (max-width:640px),(max-height:500px){#r-where small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#r-where #r-clock::before{content:none}}',
     '#r-where.hf-where::before{content:"";position:absolute;left:4px;top:5px;bottom:5px;width:4px;border-radius:2px;background:linear-gradient(var(--gc),color-mix(in srgb,var(--gc) 35%,#000))}',
     '#r-where.hf-where::after{content:"";position:absolute;inset:-5px;pointer-events:none;--k:10px;background:linear-gradient(var(--gc),var(--gc)) top left/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) top left/2px var(--k) no-repeat,linear-gradient(var(--gc),var(--gc)) top right/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) top right/2px var(--k) no-repeat,linear-gradient(var(--gc),var(--gc)) bottom left/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) bottom left/2px var(--k) no-repeat,linear-gradient(var(--gc),var(--gc)) bottom right/var(--k) 2px no-repeat,linear-gradient(var(--gc),var(--gc)) bottom right/2px var(--k) no-repeat}',
     '#r-where .hf-badge{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-width:30px;padding:2px 5px;font-style:normal;font-weight:800;font-size:11px;text-align:center;color:#0E0C12;background:var(--gc);border-radius:4px;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px -2px var(--gc);white-space:nowrap}',
@@ -151,7 +154,7 @@
     '.hf-env-snow::before{left:0;right:0;top:0;height:12px;background:' + ICE + ' 0 0/46px 12px repeat-x;filter:drop-shadow(0 1px 1px rgba(0,0,0,.4))}',
     '.hf-env-snow::after{left:0;right:0;top:9px;height:22px;background:radial-gradient(ellipse 1.2px 2px,#E6F4FF 60%,transparent 70%) 29px 0/46px 22px repeat-x,radial-gradient(ellipse 1.2px 2px,#E6F4FF 60%,transparent 70%) 16px 0/46px 22px repeat-x;animation:hfDrip 1.6s ease-in infinite}',
     '@keyframes hfDrip{0%{background-position:29px -2px,16px -10px;opacity:1}80%{opacity:.9}100%{background-position:29px 20px,16px 12px;opacity:0}}',
-    // 熔爐（奉主兵工廠）：機關——鐵板和鉚釘、底下一條黃黑警示條（像輸送帶一樣往前走）、右邊一個會轉的齒輪（作者 2026-10-04：場地效果改成地刺、絞肉機、輸送帶，跟火焰沒關係了）
+    // 熔爐（奉主兵工廠）：機關──鐵板和鉚釘、底下一條黃黑警示條（像輸送帶一樣往前走）、右邊一個會轉的齒輪（作者 2026-10-04：場地效果改成地刺、絞肉機、輸送帶，跟火焰沒關係了）
     '.hf-env-forge{--cc:#E8C04A;background:repeating-linear-gradient(90deg,rgba(74,78,86,.92) 0 22px,rgba(52,55,62,.92) 22px 23px)!important;box-shadow:inset 0 0 0 1px #14161A,inset 0 0 12px -6px #E8C04A;padding-bottom:9px!important}',
     '.hf-env-forge::before{inset:0;background:radial-gradient(circle,#A8ACB4 0 1.2px,transparent 1.6px) 4px 3px/23px 4px repeat-x,repeating-linear-gradient(-45deg,#E8C04A 0 4px,#16181C 4px 8px) 0 100%/100% 5px no-repeat;animation:hfBelt 1.2s linear infinite}',
     '.hf-env-forge::after{right:26px;top:50%;width:16px;height:16px;margin-top:-10px;border-radius:50%;background:radial-gradient(circle,#2A2C32 0 2.5px,#B8BCC4 3px 5px,transparent 5.5px),repeating-conic-gradient(#B8BCC4 0 18deg,transparent 18deg 36deg);-webkit-mask:radial-gradient(circle,#000 0 7.5px,transparent 8px);mask:radial-gradient(circle,#000 0 7.5px,transparent 8px);animation:hfSpin 3s linear infinite}',

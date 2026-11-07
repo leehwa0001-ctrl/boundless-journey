@@ -1,9 +1,9 @@
-// 領主體的樓層（2026-10-04 作者：克森特級裡領主級太常出現，應該每 3～5 層出現一隻；也許可以參考第 20 章的內容——場地的部分）
+// 領主體的樓層（2026-10-04 作者：克森特級裡領主級太常出現，應該每 3～5 層出現一隻；也許可以參考第 20 章的內容──場地的部分）
 // - 有領主體的遺跡（克森特級、卡索級）：每 3～5 層才有一隻（原本 dungeon.js 單數層一間、lords.js 每層再加一到兩間）。
 // - 照《第 20 章》：領主體守在通往樓層通道的路上；牠倒下之前，樓層通道被牠的力量封著。
-//   打倒以後，那一區照舊放金寶箱；記下當前深度，該深度以淺的存檔點（含這一層）全部可用——中間忘了按碑也不會卡。
+//   打倒以後，那一區照舊放金寶箱；記下當前深度，該深度以淺的存檔點（含這一層）全部可用──中間忘了按碑也不會卡。
 // - 領主區佈置成城堡的大廳：兩側一排柱子（可以躲在後面）、地上的金色邊線、中間的舞池、頭上的水晶吊燈。
-// - 新的領主體「棘背狼」（第 20 章的黑色巨狼）：背上、肚子都是刺——近戰打牠會被刺傷；毛又硬又尖，細碎的攻擊（比你平常一下弱很多的）只剩四成；
+// - 新的領主體「棘背狼」（第 20 章的黑色巨狼）：背上、肚子都是刺──近戰打牠會被刺傷；毛又硬又尖，細碎的攻擊（比你平常一下弱很多的）只剩四成；
 //   怕火（火屬性 ×2，燒起來以後受到的傷害 +30%）；會預判，看到投射物飛過來會往旁邊一跳；越打越兇（每 12 秒移動、傷害 +8%，最多 +60%）；
 //   吼一聲背上的刺變長、往四周射出去。
 // 放在 lords.js、lordplus.js、savepoint.js、stairguard.js、run.js 後面。
@@ -76,7 +76,7 @@
     const doors = (r.doors || []).map(k => { const tx = k % t.nx, tz = (k - tx) / t.nx; return [t.cX(tx), t.cZ(tz)]; }), nearDoor = (x, z) => doors.some(([a, b]) => Math.hypot(a - x, b - z) < 3.2);
     // 一圈柱子（白色、金色的線）：沿著房間的橢圓排（第 20 章：圓形的客廳、兩側數十根柱子）
     const hx = Math.max(3, (r.hx || 6) - 2.6), hz = Math.max(3, (r.hz || 5) - 2.4), N = Math.max(6, Math.min(12, Math.round((hx + hz) * 0.55)));   // 柱子少一點、拉開（原本最多 16 根，窄的那兩邊擠在一起，斜斜看下來一根疊一根）
-    // 2026-10-04 作者回報：柱子疊在一起——外圈放不夠的時候，原本外圈的柱子留著、再加一圈內圈（小的大廳兩圈只差半公尺，柱子一公尺粗），
+    // 2026-10-04 作者回報：柱子疊在一起──外圈放不夠的時候，原本外圈的柱子留著、再加一圈內圈（小的大廳兩圈只差半公尺，柱子一公尺粗），
     //   也沒看那裡是不是已經有別的東西；一圈最多 16 根，窄的兩邊擠在一起。現在：每根柱子要那一塊是空的、離別根柱子 2.4 公尺以上，一圈 6～12 根；外圈放不夠，就看外圈、內圈哪一圈放得多，只放那一圈。
     const clear = (x, z) => ![...R.boxesNear(x, z)].some(c => x + 0.6 > c.x0 && x - 0.6 < c.x1 && z + 0.6 > c.z0 && z - 0.6 < c.z1);
     const plan = k => { const ring = []; for (let i = 0; i < N; i++) { const a = (i + 0.5) / N * Math.PI * 2, x = r.x + Math.sin(a) * hx * k, z = r.z + Math.cos(a) * hz * k; if (floorAt(x, z) && !nearDoor(x, z) && clear(x, z) && !ring.some(o => Math.hypot(o.x - x, o.z - z) < 2.4)) ring.push({ x, z }); } return ring; };
@@ -105,7 +105,7 @@
   R.buildFloor = (scene, run, F) => { const out = bf0(scene, run, F); try { F.rooms.filter(r => r.type === 'lord').forEach(r => hall(F, r)); } catch (e) { console.warn('[lordfloor]', e); } return out; };
   // ---------- 新的領主體：棘背狼 ----------
   R.ENEMIES.spikewolf = { name: '領主體・棘背狼', ref: '', boss: 1, hp: 1600, dmg: 32, speed: 4.6, size: 2.3, xp: 130, ai: 'l_spikewolf', armor: 0.3, mres: 0.25, color: '#1A1A20', eye: '#FF3A3A', lordPlus: 1,
-    desc: '克森特級遺跡裡的領主體。三公尺長的黑色巨狼，背上、肚子都長滿尖刺，毛又硬又尖——拳頭、細碎的攻擊幾乎打不穿，近戰打牠會被刺傷。會預判飛過來的東西往旁邊跳開，越打越兇。怕火：燒焦的地方露出底下的血肉。' };
+    desc: '三公尺長的黑色巨狼，背上、肚子都長滿尖刺，毛又硬又尖：拳頭和細碎的攻擊幾乎打不穿，近戰打牠還會被刺傷。克森特級遺跡的領主體。會預判飛過來的東西往旁邊跳開，越打越兇。怕火：燒焦的地方露出底下的血肉。' };
   if (R.BEAST_ART) {
     const G = (w, h) => { const g = Array.from({ length: h }, () => Array(w).fill('.')); const o = { p(x, y, c) { x = Math.round(x); y = Math.round(y); if (y >= 0 && y < h && x >= 0 && x < w) g[y][x] = c; }, rect(x, y, ww, hh, c) { for (let j = 0; j < hh; j++) for (let i = 0; i < ww; i++) o.p(x + i, y + j, c); }, line(x0, y0, x1, y1, c) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) o.p(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, c); }, ell(cx, cy, rx, ry, c) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.05) o.p(x, y, c); }, rows: () => g.map(r => r.join('')) }; return o; };
     const draw = (g, fr) => {
@@ -137,7 +137,7 @@
       if (k === 0) { R.fx('mark', P.x, 0, P.z, { r: 2.4, t: 0.7 }); e.busy = 0.75; const x1 = P.x, z1 = P.z; later(() => { if (!e.dead) e.leap = { t: 0, x0: e.x, z0: e.z, x1, z1 }; }, 700); }   // 飛撲
       else if (k === 1) { e.busy = 1.2; [0, 450].forEach((ms, i) => later(() => { if (e.dead) return; const Pl = W().P, aa = Math.atan2(Pl.x - e.x, Pl.z - e.z); R.fx('sector', e.x, 0, e.z, { a: aa, arc: 2, range: 4, t: 0.3 }); later(() => { if (e.dead) return; R.fx('swing', e.x, 0, e.z, { a: aa, arc: 2, range: 4, color: '#E8E0CC' }); targets().forEach(t => { const dd = Math.hypot(t.x - e.x, t.z - e.z), a2 = Math.atan2(t.x - e.x, t.z - e.z); if (dd < 4.2 && Math.abs(wrap(a2 - aa)) < 1.1) hitT(t, e.dmg * 1.1 * fk, e); }); }, 300); }, ms)); }   // 兩下爪擊
       else if (k === 2) { e.busy = 0.9; R.fx('mark', e.x, 0, e.z, { r: 4.2, t: 0.6 }); later(() => { if (e.dead) return; R.fx('ring', e.x, 0.1, e.z, { r: 4.2, color: '#8A8A96' }); targets().forEach(t => { if (Math.hypot(t.x - e.x, t.z - e.z) < 4.2) hitT(t, e.dmg * 1.2 * fk, e, { knock: 0.9 }); }); }, 600); }   // 甩尾
-      else { e.busy = 1; e.howl = 6; R.banner && R.banner('棘背狼吼了一聲', '背上的刺變長了——近戰會被刺得更深'); later(() => { if (e.dead) return; for (let i = 0; i < 14; i++) R.fire({ kind: 'arrow', owner: 'e', x: e.x, z: e.z, a: i / 14 * Math.PI * 2 + rnd() * 0.2, speed: 11, dmg: e.dmg * 0.7 * fk, life: 1.4, src: e }); }, 500); }   // 吼：刺變長、往四周射
+      else { e.busy = 1; e.howl = 6; R.banner && R.banner('棘背狼吼了一聲', '背上的刺變長了──近戰會被刺得更深'); later(() => { if (e.dead) return; for (let i = 0; i < 14; i++) R.fire({ kind: 'arrow', owner: 'e', x: e.x, z: e.z, a: i / 14 * Math.PI * 2 + rnd() * 0.2, speed: 11, dmg: e.dmg * 0.7 * fk, life: 1.4, src: e }); }, 500); }   // 吼：刺變長、往四周射
     }
     if (e.howl > 0) e.howl -= dt;
     // 預判：投射物飛過來就往旁邊跳開

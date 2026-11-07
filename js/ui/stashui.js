@@ -1,5 +1,5 @@
 // 倉庫頁的排法、長按賣掉（作者 2026-10-04）
-// -「倉庫頁面左側顯示角色資訊，右側顯示背包與裝備」：倉庫頁分成兩欄——左邊是角色總數值（charsheet.js），
+// -「倉庫頁面左側顯示角色資訊，右側顯示背包與裝備」：倉庫頁分成兩欄──左邊是角色總數值（charsheet.js），
 //   右邊是原本的倉庫（裝備欄、經驗書、倉庫裡的東西）。畫面窄（手機）的時候上下排。
 // -「賣東西可以一次長按賣掉嗎」：按住「賣掉」0.6 秒，把倉庫裡（沒穿在身上的）同一個稀有度的東西一起賣掉；
 //   點一下照舊只賣那一件。史詩以上一起賣之前會再問一次。
@@ -49,6 +49,6 @@
   css.textContent = '.st-cols{display:grid;grid-template-columns:minmax(260px,36%) 1fr;gap:16px;align-items:start}.st-left .cs-box{margin:0}.st-left .cs-grid{grid-template-columns:1fr}.st-right>section{margin-top:0}'
     + '.st-tip{font-size:12px;opacity:.7;font-weight:normal}'
     + '[data-sell].st-holding{background:linear-gradient(90deg,rgba(232,192,74,.55) 0,rgba(232,192,74,.55) 0) no-repeat;animation:st-fill .6s linear forwards}@keyframes st-fill{from{background-size:0% 100%}to{background-size:100% 100%}}'
-    + '@media (max-width:860px){.st-cols{grid-template-columns:1fr}}';
+    + '@media (max-width:860px){.st-cols{grid-template-columns:minmax(0,1fr)}}.st-left,.st-right{min-width:0}';
   document.head.appendChild(css);
 })(window.R);

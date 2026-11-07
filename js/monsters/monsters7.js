@@ -62,7 +62,7 @@
     if (e.cd <= 0 && d < 5.5) { e.cd = 3 + rnd(); lunge(e, a, d + 2, 0.4, 13, 1); }
     return mv;
   };
-  // 回音蝠：發出回音（一圈），被照到的人「被標記」三秒——附近的回音蝠輪流衝過去；沒標記時亂飛
+  // 回音蝠：發出回音（一圈），被照到的人「被標記」三秒──附近的回音蝠輪流衝過去；沒標記時亂飛
   setAi('echobat', 'echo');
   AI.echo = (e, P, d, a, sp, dt, walk, H) => {
     if (lungeStep(e, P, dt, H)) return true;
@@ -250,7 +250,7 @@
     melee(e, P, d, H, 2.4, 1.5, 1.1);
     return mv;
   };
-  // 青目僧：念經——在你周圍畫一個封印圈，圈還在的時候站在裡面就被定住；身邊繞著兩團青火
+  // 青目僧：念經──在你周圍畫一個封印圈，圈還在的時候站在裡面就被定住；身邊繞著兩團青火
   setAi('aobo', 'monk');
   AI.monk = (e, P, d, a, sp, dt, walk, H) => {
     let mv = false; if (walk) { H.move(e, orbit(e, d, a, 4, 6), sp * 0.7, dt); mv = true; } e.yaw = a;
@@ -271,7 +271,7 @@
   };
 
   // ================= 舉盾（原型：守墓骨兵） =================
-  // 鏽甲兵：慢慢逼近、用盾撞人；被打會掉鏽屑（一團，踩到變慢）；血剩一半以下盔甲裂開——丟掉盾，變快、變兇
+  // 鏽甲兵：慢慢逼近、用盾撞人；被打會掉鏽屑（一團，踩到變慢）；血剩一半以下盔甲裂開──丟掉盾，變快、變兇
   setAi('rustknight', 'rust');
   AI.rust = (e, P, d, a, sp, dt, walk, H) => {
     if (!e.broke && e.hp < e.hpMax * 0.5) { e.broke = 1; e.frontK = null; e.speed *= 1.7; e.dmg *= 1.3; say(e, '盔甲裂開'); R.fx('boom', e.x, 0.6, e.z, { r: 1.5, color: '#8A5A3A' }); if (e.m.shield) e.m.shield.visible = false; }
@@ -339,7 +339,7 @@
     e.invuln = true; e.under = true; e.liftY = -1.4; let mv = false; if (walk && d > 4) { H.move(e, a, sp, dt); mv = true; }
     if (e.cd <= 0 && d < 9) {
       e.cd = 3.5; const vol = e.vol = { hit: false, x: e.x, z: e.z };
-      const surface = (x, z, tired) => { e.out = tired ? 2.5 : 2.2; e.tired = tired; e.x = x; e.z = z; e.invuln = false; e.under = false; e.liftY = null; if (e.m && e.m.g) e.m.g.position.set(x, 0, z); R.fx('boom', e.x, 0.3, e.z, { r: 1.2, color: '#5A4A3A' }); R.fx('ring', e.x, 0.5, e.z, { r: 1.4, color: '#7FD8FF' }); R.num && R.num(e.x, 2.6, e.z, tired ? '喘氣中——快打' : '爬出來了', ''); };
+      const surface = (x, z, tired) => { e.out = tired ? 2.5 : 2.2; e.tired = tired; e.x = x; e.z = z; e.invuln = false; e.under = false; e.liftY = null; if (e.m && e.m.g) e.m.g.position.set(x, 0, z); R.fx('boom', e.x, 0.3, e.z, { r: 1.2, color: '#5A4A3A' }); R.fx('ring', e.x, 0.5, e.z, { r: 1.4, color: '#7FD8FF' }); R.num && R.num(e.x, 2.6, e.z, tired ? '喘氣中──快打' : '爬出來了', ''); };
       for (let i = 0; i < 3; i++) later(() => { if (e.dead) return; const Q = W().P, [x, z] = floorAt(Q.x, Q.z); vol.x = x; vol.z = z; boom(e, x, z, 1.0, 0.5, 0.5, '#E8E0CC', t => { slowP(t, 1.3); vol.hit = true; if (!(e.out > 0)) surface(x + 1, z, false); }); }, i * 600);
       later(() => { if (e.dead || vol.hit || e.out > 0 || e.vol !== vol) return; surface(vol.x, vol.z, true); }, 2 * 600 + 650);   // 三隻都躲掉
     }

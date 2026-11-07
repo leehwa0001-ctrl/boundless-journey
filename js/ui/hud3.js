@@ -1,4 +1,4 @@
-// HUD 再改（作者 2026-10-04：hud 比較像物品欄；不好看，去網路上查）——電腦版
+// HUD 再改（作者 2026-10-04：hud 比較像物品欄；不好看，去網路上查）──電腦版
 // 照《暗黑破壞神 III／IV》那種「一整塊有框的面板」做：生命、魔力是嵌在面板兩端長方形金屬座裡的液體球（圓球置中、從下往上漲，不是圓環），
 // 中間一塊石頭和青銅的面板，技能、藥水是嵌在面板裡、同一種斜面的方格；大招是面板正上方鑲著的一顆菱形寶石，光從下往上漲；
 // 經驗是面板下緣一條細細的金線。散在畫面上、形狀不一的零件都收進同一塊面板，看起來才是一套。
@@ -58,7 +58,7 @@
     sel(SK + '.none') + '{display:none!important}',
     sel(SK + '::before') + '{content:attr(data-mp);position:absolute;right:3px;top:2px;font:800 10px/1 system-ui,sans-serif;color:#8FB8FF;text-shadow:0 1px 0 #000,0 0 3px #000;z-index:4}',
     sel(SK + ' .h2-n') + '{left:3px!important;right:auto!important;top:2px!important;bottom:auto!important;transform:none!important;font-size:9px!important;color:#E8C04A!important}',
-    /* 2026-10-05 作者：技能格要跟炸彈、藥水、背包一樣亮。灰的真正原因是冷卻遮罩（.cd）沒冷卻也整格蓋 62% 黑（index.html 已修）——圖示本身不再額外加亮，跟消耗品同一個濾鏡；魔力不夠整格也不再褪色（只留藍框和字） */
+    /* 2026-10-05 作者：技能格要跟炸彈、藥水、背包一樣亮。灰的真正原因是冷卻遮罩（.cd）沒冷卻也整格蓋 62% 黑（index.html 已修）──圖示本身不再額外加亮，跟消耗品同一個濾鏡；魔力不夠整格也不再褪色（只留藍框和字） */
     sel(SK + ':not(.lit) .h2-ic') + '{filter:drop-shadow(0 2px 0 rgba(0,0,0,.7))!important}',
     sel(SK + '.lit .h2-ic') + '{filter:brightness(1.08) saturate(1.12) drop-shadow(0 2px 0 rgba(0,0,0,.7)) drop-shadow(0 0 3px rgba(255,255,255,.3))!important}',
     sel('.act.nomp') + '{filter:none!important}',
@@ -75,7 +75,7 @@
     sel('[data-tact="bag"] .h2-ic', '[data-tact="order"] .h2-ic') + '{width:20px!important;height:20px!important}',
     sel('[data-tact="hp"] .h2-n', '[data-h2="mp"] .h2-n') + '{left:2px!important;right:auto!important;top:1px!important;bottom:auto!important;font-size:10px!important}',
     // 提示、訊息：往上移，不要壓在大招寶石上
-    D + '#run:not(.town) #r-prompt{bottom:250px!important}', D + '#run:not(.town) #r-toast{bottom:206px!important}', D + '.ul-cast{bottom:296px!important}',   /* 2026-10-05 作者：字幕會被大招的框擋住——字幕、互動提示移到大招的菱形框上面 */
+    D + '#run:not(.town) #r-prompt{bottom:250px!important}', D + '#run:not(.town) #r-toast{bottom:206px!important}', D + '.ul-cast{bottom:296px!important}',   /* 2026-10-05 作者：字幕會被大招的框擋住──字幕、互動提示移到大招的菱形框上面 */
     // 左下的人物卡：窄一點的螢幕縮小，不要被生命球蓋住
     '@media (max-width:1320px){body:not(.touch) #r-bl{width:178px!important}body:not(.touch) #r-bl .bh-row,body:not(.touch) #r-bl small{font-size:11px}}',
     // ===== 大招：面板正上方的菱形寶石 =====
@@ -102,12 +102,12 @@
       + 'linear-gradient(#E8C870,#E8C870) bottom right/14px 2px no-repeat,linear-gradient(#E8C870,#E8C870) bottom right/2px 14px no-repeat,'
       + 'linear-gradient(90deg,transparent,#7A5A2A 18%,#E8C870 50%,#7A5A2A 82%,transparent) top center/70% 2px no-repeat,'
       + 'linear-gradient(90deg,transparent,#5A4428 18%,#B8904A 50%,#5A4428 82%,transparent) bottom center/70% 2px no-repeat}',
-    // 左右鉚釘（2026-10-05：原本 background-size 100% 讓金點畫在球心、蓋住生命／魔力數字——改成左右各 6×6）
+    // 左右鉚釘（2026-10-05：原本 background-size 100% 讓金點畫在球心、蓋住生命／魔力數字──改成左右各 6×6）
     D + '.h2-badge::after{content:"";position:absolute;left:7px;right:7px;top:50%;height:6px;margin-top:-3px;pointer-events:none;z-index:6;'
       + 'background:radial-gradient(circle,#E8C870 0 1.4px,#2A1E12 1.8px 2.2px,transparent 2.4px) left center/6px 6px no-repeat,'
       + 'radial-gradient(circle,#E8C870 0 1.4px,#2A1E12 1.8px 2.2px,transparent 2.4px) right center/6px 6px no-repeat}',
     // 液體球：固定 84×84，在座裡水平／垂直置中
-    // （2026-10-05 修正：原本 inset:auto 寫在 left/top 後面，把 left:50%、top:50% 蓋掉了，球被往左上推了半顆——現在 inset 先寫）
+    // （2026-10-05 修正：原本 inset:auto 寫在 left/top 後面，把 left:50%、top:50% 蓋掉了，球被往左上推了半顆──現在 inset 先寫）
     D + '.h2-badge>i,.h2-badge .h2-core{inset:auto!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;'
       + 'width:84px!important;height:84px!important;margin:0!important;transform:translate(-50%,-50%)!important;'
       + 'border-radius:50%!important;overflow:hidden!important}',

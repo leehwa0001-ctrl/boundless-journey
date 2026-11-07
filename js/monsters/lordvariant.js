@@ -1,13 +1,13 @@
 // 領主體的異變（2026-10-05 作者：幫我設計所有領主體的變種，而且要更強，更多變化的設計，並且可以做紅武，血量更厚，就像真正的 boss 一樣）
 // - 克森特級以上，領主體有機會以「異變」的樣子出現（克森特級 25%、卡索級 45%，最深的那幾層再 +10%）：
 //   名字後面多一個異變的名號，身體大三成、染成異變的顏色、腳下一圈紅光；生命 ×4、傷害 ×1.4、護甲 +10%。
-// - 三個形態：（2026-10-05 起跟兩條血對齊，見下面）第一條血打破、第二條血剩一半的時候「異變」——1.5 秒不會受傷、震開周圍、橫幅寫第幾形態；
+// - 三個形態：（2026-10-05 起跟兩條血對齊，見下面）第一條血打破、第二條血剩一半的時候「異變」──1.5 秒不會受傷、震開周圍、橫幅寫第幾形態；
 //   第二形態多一招、第三形態再多一招（每一種領主體自己的兩招，見下面 V），而且原本的招式出得更快、移動更快。
 // - 打倒：掉「異變核心」2 個（卡索級 3 個）、一個魔力核心，15% 直接掉一件神話（紅武）；第一次打倒那一種的異變，多給 2 個異變核心。
-// - 紅武：鐵匠鋪的製作多一條「異變（紅武）」——異變核心 ×4、高純度魔力水晶 ×2、150,000 費拉，做出來一定是神話（紅色），
+// - 紅武：鐵匠鋪的製作多一條「異變（紅武）」──異變核心 ×4、高純度魔力水晶 ×2、150,000 費拉，做出來一定是神話（紅色），
 //   物品等級跟著現在的職業等級（至少 12）。
 // - 管理員面板生領主體的時候勾「異變」就是異變的（R.lordVariant(e)）。
-// - 2026-10-05 作者：圖鑑沒有記載領主變體、領主變體可以有兩條血——
+// - 2026-10-05 作者：圖鑑沒有記載領主變體、領主變體可以有兩條血──
 //   兩條血：異變的生命（本體的 4 倍）分成兩條，第一條「異變之軀」、第二條「本體」，各一半。魔王血條上面多一條細的（異變之軀），
 //   打光之前怎麼打都不會倒（多出來的傷害被吃掉）；打破的那一下就是第二形態（1.5 秒不會受傷、震開、多一招）。
 //   第二條血剩一半＝第三形態（完全異變，再多一招、出招移動更快）。原本 66%／33% 的三形態改成跟兩條血對齊。
@@ -27,7 +27,7 @@
   // ---------- 招式的積木 ----------
   const hitAt = (e, x, z, r, k, o) => targets().forEach(t => { if (Math.hypot(t.x - x, t.z - z) < r && !(t.iframe > 0)) { hitT(t, e.dmg * k, e, { knock: o && o.knock }); if (o && o.slow && !t.ally) t.slowT = Math.max(t.slowT || 0, o.slow); if (o && o.stun && !t.ally) t.knockT = Math.max(t.knockT || 0, o.stun); if (o && o.dbf && !t.ally && R.playerDebuff) R.playerDebuff(o.dbf); } });
   const blast = (e, x, z, r, t, k, col, o) => { R.fx('mark', x, 0, z, { r, t, color: col }); later(() => { if (e.dead) return; R.fx('boom', x, 0.4, z, { r, color: col }); hitAt(e, x, z, r, k, o); if (o && o.zone) { const zn = R.addZone({ kind: 'lava', x, z, r: r * 0.8, life: o.zone, dmg: e.dmg * 0.08 }); if (zn && zn.mesh) zn.mesh.material.color.set(col); } }, t * 1000); };
-  // 2026-10-08：領主體四倍大（lordlogic.js 的 e.BR＝身體半徑）——從身體邊緣算、範圍跟著放大；一般大小的 e.BR 是空的，跟原本一樣
+  // 2026-10-08：領主體四倍大（lordlogic.js 的 e.BR＝身體半徑）──從身體邊緣算、範圍跟著放大；一般大小的 e.BR 是空的，跟原本一樣
   const BR = e => e.BR || 0, G = e => (R.lordGeo ? R.lordGeo(e) : 1), sq = e => Math.sqrt(G(e));
   const B = {
     // 一圈一圈往外：牢籠、骨柱
@@ -66,6 +66,7 @@
     frostdeer: ['永凍之冠', '#7AD8FF', e => B.donut(e, { col: '#9AD8FF', k: 2, stun: 1.5 }), e => B.spiral(e, { waves: 8, n: 12, kind: 'cold', speed: 8, rot: 0.2, k: 0.6 })],
     lavajaw: ['熔獄之顎', '#FF5A1A', (e, P) => B.grid(e, P, { col: '#FF5A1A', k: 1.4, zone: 6 }), e => B.rain(e, { n: 7, r: 2, col: '#FF7A3A', k: 1.5, zone: 8 })],
     sandwhale: ['沙海吞天', '#D8B86A', e => B.pull(e, { r: 11, t: 3, s: 3.4, end: 4, col: '#D8B86A', k: 2.2 }), (e, P) => B.dive(e, P, { n: 4, r: 3.2, col: '#C8A86A', k: 1.9 })],
+    carrionvulture: ['腐天屍凰', '#8A1A3A', e => B.dashes(e, { n: 4, k: 1.5, gap: 650 }), e => B.rain(e, { n: 6, r: 2.4, col: '#8A2A3A', k: 1.6 })],
     kraken: ['深淵之主', '#6A2AAA', e => { for (let i = 0; i < 2; i++) later(() => { if (e.dead) return; for (let k = 0; k < 8; k++) { const a = k / 8 * Math.PI * 2 + i * 0.4; R.fx('aim', e.x, 0.3, e.z, { a, len: 11 + BR(e), t: 0.8 }); later(() => { if (e.dead) return; R.fx('slash', e.x, 1, e.z, { a, len: 11 + BR(e) }); targets().forEach(t => { const dx = t.x - e.x, dz = t.z - e.z, al = dx * Math.sin(a) + dz * Math.cos(a), sd = Math.abs(dx * Math.cos(a) - dz * Math.sin(a)); if (al > 0 && al < 11 + BR(e) && sd < 1 + BR(e) * 0.15 && !(t.iframe > 0)) hitT(t, e.dmg * 1.3, e, {}); }); }, 800); } }, i * 1100); }, e => { B.summon(e, { ids: ['isonade', 'kappa'], n: 3, col: '#6A2AAA' }); B.rain(e, { n: 4, r: 2.2, col: '#2A1A3A', k: 1, dbf: 'atk', zone: 6 }); }],
     faceforest: ['千面之森', '#3A8A2E', e => B.beams(e, { n: 5, k: 1.6, gap: 380, dbf: 'atk' }), (e, P) => B.grid(e, P, { col: '#5A8A3A', k: 1.5, n: 3, step: 2.4 })],
     bonewyvern: ['亡骸天災', '#7FD8FF', e => B.dashes(e, { n: 3, k: 1.6, gap: 900 }), e => { B.spiral(e, { waves: 5, n: 9, kind: 'eorb', speed: 9, rot: 0.35, k: 0.7 }); B.rain(e, { n: 4, col: '#D8D0C0', k: 1.2 }); }],
@@ -82,7 +83,8 @@
     gashadokuro: ['把整層遺跡的骸骨都吸進身體的地出巨骸，骨頭一直往下掉。', '骨柱：四圈骨柱從腳邊一圈一圈往外刺出來。', '巨骨雨：大塊的骨頭砸下來，會震退、降低護甲。'],
     frostdeer: ['鹿角結成永不融化的冰冠，周圍的空氣都凍住了。', '冰環：只有牠身邊那一圈是安全的，裡外都會炸，被打到會暈。', '寒氣彈幕：一波一波往四周旋轉射出冰彈。'],
     lavajaw: ['顎裡流著熔岩的熔岩巨顎，走到哪裡地面就燒到哪裡。', '熔岩棋盤：你周圍一格一格輪流噴發，留下熔岩地，要踩縫隙。', '火雨：每個人頭上連續落下火球，落地留熔岩。'],
-    sandwhale: ['把整片沙海吞進肚子的沙鯨，吸力大到站不穩。', '吞天：把附近所有人往牠身邊吸，最後在身邊爆開——往外跑、翻滾。', '鑽沙：潛進沙裡，連續四次從你腳下衝出來。'],
+    sandwhale: ['把整片沙海吞進肚子的沙鯨，吸力大到站不穩。', '吞天：把附近所有人往牠身邊吸，最後在身邊爆開──往外跑、翻滾。', '鑽沙：潛進沙裡，連續四次從你腳下衝出來。'],
+    carrionvulture: ['吃了深淵腐肉的屍鷲，羽毛掉下來的地方都冒著紫煙。', '連續俯衝：四次直線突進，地上先畫線。', '屍羽雨：一根根羽毛砸在每個人頭上，看地上的圈閃開。'],
     kraken: ['深淵最底層的王蛸，觸手多到數不清。', '八方觸手：兩輪觸手往八個方向橫掃（地上先畫線）。', '叫出磯撫、河童，同時下黑墨雨（攻擊降低、留下墨池）。'],
     faceforest: ['樹上的臉多到變成一整座森林，每一張臉都在盯著你。', '凝視：連續五道追著人的光束，被照到攻擊降低。', '根網：你周圍一大片棋盤格輪流冒出樹根。'],
     bonewyvern: ['只剩骨架還在飛的骸骨飛龍，翅膀颳起冰藍色的風。', '俯衝：連續三次直線突進，地上先畫線。', '骨彈螺旋＋落骨：旋轉射出骨彈，同時天上掉骨頭。'],
@@ -101,7 +103,8 @@
     const v = V[id], e = R.ENEMIES[id]; if (!v || !e) return '';
     const esc = x => R.esc(x), ok = seen(id), k = R.lordVariantKills(id), inf = INFO[id] || ['', '', ''];
     const st = k ? '打倒過 ' + k + ' 次' : ok ? '遇見過・還沒打倒' : '還沒遇見';
-    let h = '<h4 class="dx-h">異變（領主變體）</h4><div class="lv-dex' + (ok ? '' : ' unseen') + '" style="--lvc:' + v[1] + '"><b>' + esc(ok ? e.name + '【' + v[0] + '】' : e.name + '【？？？】') + '</b><small>' + st + '</small>';
+    const img = ok && R.BEAST_HD && R.BEAST_HD[id + '_muta'] && R.beastIconURL ? '<img class="lv-img" alt="" src="' + R.beastIconURL(id + '_muta', 2) + '">' : '';
+    let h = '<h4 class="dx-h">異變（領主變體）</h4><div class="lv-dex' + (ok ? '' : ' unseen') + '" style="--lvc:' + v[1] + '">' + img + '<b>' + esc(ok ? e.name + '【' + v[0] + '】' : e.name + '【？？？】') + '</b><small>' + st + '</small>';
     if (!ok) return h + '<p class="note">克森特級以上的遺跡，領主體有機會以「異變」的樣子出現（克森特級 25%、卡索級 45%，最深的那幾層再 +10%）。遇過一次之後，這裡會寫牠跟本體差在哪。</p></div>';
     const ul = l => '<ul class="lv-ul">' + l.map(x => '<li>' + x + '</li>').join('') + '</ul>';
     return h + '<p>' + esc(inf[0]) + '</p>'
@@ -116,7 +119,9 @@
     try {
       const TH = window.THREE; if (!e.m || !e.m.g || !TH) return;
       e.m.g.scale.multiplyScalar(1.3);
-      const sp = e.m.sp; if (sp && sp.mat) { if (sp.mat.color) sp.mat.color.lerp(new TH.Color(col), 0.35); }
+      const sp = e.m.sp, art = e.id + '_muta';
+      if (R.BEAST_HD && R.BEAST_HD[art] && R.beastAnimSwap) R.beastAnimSwap(e.m, art);   // 2026-10-25 作者：異變要有自己的圖（beastpix.js）
+      else if (sp && sp.mat && sp.mat.color) sp.mat.color.lerp(new TH.Color(col), 0.35);
       const ring = new TH.Mesh(new TH.RingGeometry(1.6, 2.1, 32), new TH.MeshBasicMaterial({ color: '#FF2A3A', transparent: true, opacity: 0.55, depthWrite: false, side: TH.DoubleSide, fog: true }));
       ring.rotation.x = -Math.PI / 2; ring.position.y = 0.06; e.m.g.add(ring); e.vRing = ring;
     } catch (err) { }
@@ -128,7 +133,7 @@
     e.def = Object.assign({}, e.def, { name: e.def.name + '【' + v[0] + '】' });
     e.hpMax *= 4; e.hp = e.hpMax; e.dmg *= 1.4; e.def.armor = Math.min(0.55, (e.def.armor || 0) + 0.1);
     tint(e, v[1]);
-    later(() => { R.banner && R.banner(e.def.name, '異變的領主體——兩條血：先打破「異變之軀」，再打「本體」'); R.shake && R.shake(0.4); }, 300);
+    later(() => { R.banner && R.banner(e.def.name, '異變的領主體──兩條血：先打破「異變之軀」，再打「本體」'); R.shake && R.shake(0.4); }, 300);
     return e;
   };
   const se0 = R.spawnEnemy;
@@ -147,7 +152,7 @@
   // ---------- 形態、招式 ----------
   const phaseShift = (e, ph) => {
     e.variant.phase = ph; e.invuln = true; e.vBusy = 1.5;
-    R.banner && R.banner(e.def.name, ph === 2 ? '異變之軀碎裂！第二條血（本體）——多了新的招式' : '第三形態：完全異變，出招更快');
+    R.banner && R.banner(e.def.name, ph === 2 ? '異變之軀碎裂！第二條血（本體）──多了新的招式' : '第三形態：完全異變，出招更快');
     R.fx('ring', e.x, 0.1, e.z, { r: 6, color: e.variant.col }); R.fx('boom', e.x, 0.6, e.z, { r: 3, color: e.variant.col }); R.shake && R.shake(0.5);
     targets().forEach(t => { const d = dist(t, e); if (d < 6 && d > 0.1) { hitT(t, e.dmg * 0.6, e, { knock: 0.6 }); if (!t.ally) { const k = Math.min(3, 6 - d); t.x += (t.x - e.x) / d * k; t.z += (t.z - e.z) / d * k; R.collide(t, 0.42); } } });
     if (e.st) { e.st.stun = 0; e.st.root = 0; e.st.slow = 0; }
@@ -248,12 +253,12 @@
     '#r-boss.lv-dual .meter:not(.lv-shell)::before{content:"";position:absolute;left:calc(50% - 1px);top:0;bottom:0;width:2px;background:#FFE08A;z-index:5;opacity:.8}',
     '#r-boss.lv-dual #r-boss-n::after{content:"　兩條血";font-size:11px;color:var(--lvc,#B04AFF)}',
     '.lv-dex{border-left:3px solid var(--lvc);padding:4px 0 4px 10px;margin:4px 0 8px;font-size:12.5px}.lv-dex>b{display:block;font-size:14px;color:var(--lvc)}.lv-dex>small{display:block;opacity:.75}',
-    '.lv-dex.unseen>b{color:inherit;opacity:.7}.lv-dex p{margin:5px 0}.lv-k{font-weight:700;color:var(--gold,#C9A13A);margin:8px 0 2px!important}.lv-ul{margin:2px 0 4px;padding-left:18px}.lv-ul li{margin:2px 0}',
+    '.lv-img{display:block;max-width:180px;width:60%;margin:2px auto 6px;image-rendering:pixelated}.lv-dex.unseen>b{color:inherit;opacity:.7}.lv-dex p{margin:5px 0}.lv-k{font-weight:700;color:var(--gold,#C9A13A);margin:8px 0 2px!important}.lv-ul{margin:2px 0 4px;padding-left:18px}.lv-ul li{margin:2px 0}',
     '.dx-th.lv-mut,.dr-th.lv-mut{border-color:color-mix(in srgb,var(--lvc) 70%,transparent);box-shadow:0 0 6px -1px var(--lvc) inset}.dx-th.lv-mut img,.dr-th.lv-mut img{filter:drop-shadow(0 0 2px var(--lvc)) saturate(1.4)}',
     '.dx-th.lv-mut.dim img,.dr-th.lv-mut.dim img{filter:grayscale(1) brightness(.5)}'
   ].join('\n');
   document.head.appendChild(css);
-  // ---------- 環境變種（2026-10-18 作者：一座遺跡只有一種領主會太重複——同一隻領主體在不同環境的遺跡長得、打起來不一樣） ----------
+  // ---------- 環境變種（2026-10-18 作者：一座遺跡只有一種領主會太重複──同一隻領主體在不同環境的遺跡長得、打起來不一樣） ----------
   // 有環境的遺跡（火山、凍原、沙漠、深海、熔爐）裡出現的領主體，會變成那個環境的變種：名字前面多環境的名號、染上環境的顏色、
   // 多一個環境的被動和一招環境招式（每 8～10 秒），怕的、耐的屬性也跟著變。本來就住在那個環境的（凍原的霜冠鹿、火山的熔顎蜥……）不變。
   // 跟異變可以同時有（例：霜凍・棘背狼【千棘狼王】）。
@@ -266,8 +271,8 @@
     snow: { n: '霜凍', col: '#9AD8FF', native: ['frostdeer'], weak: 'fire', resist: 'frost',
       d: '身上結著冰：靠近牠會被凍得變慢；每隔一陣子從地面冒出一圈冰柱。怕火（×1.3），冰凍不太動（×0.5）。',
       aura: (e, P, dt) => { if (dist(P, e) < BR(e) + 4) P.slowT = Math.max(P.slowT || 0, 0.4); }, move: e => B.rings(e, { n: 2, col: '#9AD8FF', k: 1.1, slow: 2 * KK() }) },
-    desert: { n: '暴風沙', col: '#D8B86A', native: ['sandwhale'], weak: 'shock', resist: 'fire',
-      d: '捲著沙暴：每隔一陣子颳一陣沙——看不清楚、被往外吹；沙裡的蒺藜扎腳。怕雷（×1.3），火不太有用（×0.5）。',
+    desert: { n: '暴風沙', col: '#D8B86A', native: ['sandwhale', 'carrionvulture'], weak: 'shock', resist: 'fire',
+      d: '捲著沙暴：每隔一陣子颳一陣沙──看不清楚、被往外吹；沙裡的蒺藜扎腳。怕雷（×1.3），火不太有用（×0.5）。',
       move: e => { targets().forEach(t => { if (t === W().P) t.blindT = Math.max(t.blindT || 0, 2.2 * KK()); const dd = dist(t, e); if (dd < BR(e) + 10 && !(t.iframe > 0)) { const a = angTo(e, t); t.x += Math.sin(a) * 3; t.z += Math.cos(a) * 3; R.collide && R.collide(t, 0.42); } }); R.fx('poof', e.x, 1, e.z, { color: '#D8B86A', n: 30 }); B.rain(e, { n: 3, r: 1.5, col: '#C8A86A', k: 1, slow: 1.5 }); } },
     deep: { n: '深淵', col: '#3A8AAA', native: ['kraken'], weak: 'shock', resist: 'frost',
       d: '身上淌著深海的水：每隔一陣子捲起漩渦把人往牠那裡拉，同時噴墨（看不清楚）。怕雷（×1.3），冰不太有用（×0.5）。',

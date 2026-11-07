@@ -49,7 +49,8 @@
   };
   window.addEventListener('keydown', onKey, true);
   // 2026-10-14：L（可改）打開／關上「手上的委託」。遊戲中由上面的轉換送出 key 'l'；視窗開著時轉換不跑，直接看實體鍵
-  const qlOpen = () => { const h = document.querySelector('#sheet h2, .sheet h2, #r-sheet h2'); return !!(R.sheetOpen && R.sheetOpen() && h && h.textContent === '手上的委託'); };
+  // 2026-11-03：英文、德文版的標題已經翻掉了，翻好的字也要認（不然開著再按 L 會重開一次，關不掉）
+  const qlOpen = () => { const h = document.querySelector('#sheet h2, .sheet h2, #r-sheet h2'), t = h && h.textContent; return !!(R.sheetOpen && R.sheetOpen() && h && (t === '手上的委託' || (R.tr && t === R.tr('手上的委託')))); };
   window.addEventListener('keydown', e => {
     if (e.repeat || typing(e) || capture || e.ctrlKey || e.altKey || e.metaKey) return;
     if (e._kb && e.key === 'l') { if (R.questLog && !qlOpen()) { e.stopImmediatePropagation(); R.questLog(); } return; }

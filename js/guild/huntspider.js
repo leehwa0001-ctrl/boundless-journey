@@ -32,7 +32,7 @@
   const later = (f, ms) => { const run = W().run; setTimeout(() => { if (W().run === run && run && !run.done) f(); }, ms); };
   const ambush = (w, P) => {
     const run = w.run, x = P.x, z = P.z, n = 2 + (run.floor > 0 ? 1 : 0);
-    R.toast && R.toast('頭頂的樹枝晃了一下，雪落下來——', '#C8D4DC');
+    R.toast && R.toast('頭頂的樹枝晃了一下，雪落下來──', '#C8D4DC');
     R.fx('mark', x, 0, z, { r: 2.2, t: 0.8 }); R.fx('poof', x, 3, z, { color: '#FFFFFF', n: 14 });
     later(() => {
       const P2 = W().P; if (!P2) return;

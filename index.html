@@ -621,6 +621,10 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 </style>
 
 <!-- 標題 -->
+<!-- 2026-10-22 開機畫面：程式還沒跑完以前先蓋住（不然會先看到 HTML 裡的舊標題畫面閃一下）；title2.js 排好新的標題就淡出 -->
+<style>#title:not(.t2) .t-wrap{visibility:hidden}#boot{position:fixed;inset:0;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:#0B0910;color:#C9B891;font-family:"Noto Serif TC",serif;transition:opacity .45s}#boot.out{opacity:0;pointer-events:none}#boot b{font-size:clamp(28px,5vw,46px);letter-spacing:.3em;color:#E8D49A;text-shadow:0 0 18px rgba(232,180,90,.25)}#boot i{width:160px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,#B8322A,transparent) 0 0/60% 100% no-repeat,#241C2C;animation:bootbar 1.2s linear infinite}@keyframes bootbar{from{background-position:-100% 0,0 0}to{background-position:220% 0,0 0}}</style>
+<div id="boot" aria-hidden="true"><b>無境之旅</b><i></i></div>
+<script>setTimeout(function(){var b=document.getElementById("boot");if(b){b.classList.add("out");setTimeout(function(){b.remove()},500)}},15000)</script>
 <section class="screen" id="title">
   <div class="t-wrap">
     <div class="t-kicker">《艾菲爾斯特——公會特殊討伐令－遺跡》</div>
@@ -782,6 +786,8 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/art/pixel.js"></script>
 <script src="js/story/party.js"></script>
 <script src="js/art/sprites.js"></script>
+<script src="js/art/beastpaint.js"></script><!-- 2026-10-09 遺跡生物手繪的新圖（sprites.js 後面） -->
+<script src="js/art/beastpix.js"></script><!-- 2026-10-20 小怪的新點陣圖（概念圖縮成點陣，beastpaint.js 後面） -->
 <script src="js/races/lookplus.js"></script>
 <script src="js/races/races.js"></script>
 <script src="js/core/names.js"></script>
@@ -789,7 +795,6 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/core/calendar.js"></script>
 <script src="js/world/city.js"></script>
 <script src="js/world/roadfix.js"></script>
-<script src="js/world/citynorth.js"></script>
 <script src="js/world/pedpaths.js"></script>
 <script src="js/world/town.js"></script>
 <script src="js/world/cityscape.js"></script>
@@ -817,6 +822,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/life/streetcrime.js"></script>
 <script src="js/minigames/pachinko.js"></script>
 <script src="js/minigames/slots.js"></script>
+<script src="js/minigames/sicbo.js"></script><!-- 2026-10-24 骰寶：柏青哥選台畫面的骰寶桌 -->
 <script src="js/minigames/claw.js"></script>
 <script src="js/minigames/mahjong.js"></script>
 <script src="js/minigames/mjcore.js"></script>
@@ -901,6 +907,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/guild/pact.js"></script>
 <script src="js/guild/hunt.js"></script>
 <script src="js/guild/huntspider.js"></script>
+<script src="js/guild/huntmore.js"></script><!-- 2026-10-22 更多狩獵場（枯木林、竹林溪谷、高原草地）、野獸、驅趕委託（hunt.js、huntspider.js 後面） -->
 <script src="js/guild/ranks.js"></script>
 <script src="js/items/raid.js"></script>
 <script src="js/items/carry.js"></script><!-- 2026-10-18 背包跟著角色走：背包裡的裝備、素材帶進遺跡，回來的東西留在背包（倉庫大改第二階段） -->
@@ -995,6 +1002,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/guild/training.js"></script><!-- 公會的訓練場：打木樁試技能（包 R.hurtEnemy、R.loadFloor、R.startRun、R.onPlayerDown 外面） -->
 <script src="js/net/net.js"></script>
 <script src="js/monsters/lordvariant.js"></script><!-- 領主體的異變：三個形態、各自的新招、異變核心做紅武（領主體的檔案後面、net2.js 前面） -->
+<script src="js/monsters/lordmats.js"></script><!-- 2026-10-22 領主體的素材（五種、寶玉）、領主裝備打造、紅武要寶玉、圖鑑掉落機率、背包再大一格（lordvariant.js 後面、maticons.js 前面） -->
 <script src="js/art/maticons.js"></script><!-- 素材圖示：樹枝、藥草、水晶、寶石…16×16 點陣（gems.js、lordvariant.js 後面） -->
 <script src="js/net/net2.js"></script><!-- 多人連線第二階段：房主決定遺跡生物、打怪同步、寶箱、倒下扶起、換房主（要在 net.js 後面、所有包遺跡生物函式的檔案後面） -->
 <script src="js/net/netwall.js"></script><!-- 多人連線：有人走進要清怪的房間，同一層的隊友一起被傳送進去、馬上張膜（net.js、net2.js、run.js、ruinvar.js、audio.js 後面，pvp.js 前面） -->
@@ -1013,6 +1021,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ui/craftpreview.js"></script><!-- 鐵匠鋪製作：每條配方先看做出來的數值（各稀有度的傷害、物防、魔防；所有包 R.hub、R.itemLines、R.weaponStats 的檔案後面，hubside.js 前面） -->
 <script src="js/ui/hubside.js"></script><!-- 鐵匠鋪左邊的角色總數值、倉庫的「身上的東西」：要在所有包 R.hub 的檔案後面 -->
 <script src="js/items/acc2.js"></script><!-- 第二個飾品欄、新的飾品（crafting.js、raid.js、hub.js 後面） -->
+<script src="js/art/iconpix.js"></script><!-- 2026-10-22 武器、防具、飾品、素材的新圖示（gear.js、maticons.js、acc2.js 後面） -->
 <script src="js/items/loadout.js"></script><!-- 自己登記套裝：倉庫裡把身上整套存起來、一鍵換上（hub.js、acc2.js、stashui.js 後面） -->
 <script src="js/ui/stashux.js"></script><!-- 倉庫／裝備頁優化：篩選列、搜尋、卡片排版（loadout.js、stashui.js、hubside.js 後面） -->
 <script src="js/ui/statusicons.js"></script><!-- 狀態圖示：HUD 上方一格一格、滑鼠放上去看效果（battlehud.js、debuff.js、enchinfuse.js 後面） -->
@@ -1075,11 +1084,24 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/world/citykit6.js"></script><!-- 2026-10-08 精緻城市（六）：和風高樓、石垣、土塀、櫓、天守、昭旭的旗、燈籠柱、火山、杉林（皇嶺的概念圖） -->
 <script src="js/world/citykit7.js"></script><!-- 2026-10-08 精緻城市（七）：賽博和式、重工業（霓虹、大螢幕、全像廣告、摩天樓、高爐、煙囪、高架橋、吊橋、懸浮車、無人機） -->
 <script src="js/world/citykit8.js"></script><!-- 2026-10-09 精緻城市：斜的、彎的路（B.street；Clipper 合併路面、切人行道、標線、斑馬線） -->
+<script src="js/world/housekit.js"></script><!-- 2026-10-22 住家重做：L 形、下屋、山牆朝街、現代四種格局，真的窗框、玄關、陽台、前院（包住 CK.extendBuilder 的 B.bld style house） -->
+<script src="js/world/shrinekit.js"></script><!-- 2026-10-22 神社重做：B.jinja（拜殿、本殿、向拜、狛犬、手水舍）、新的鳥居和石燈籠（包住 CK.extendBuilder） -->
+<script src="js/world/shipkit.js"></script><!-- 2026-10-22 船重做：斷面接起來的船身，漁船、拖船、渡輪、貨輪、軍艦、觀光船（CK.makeShip、B.ship） -->
+<script src="js/world/buildkit.js"></script><!-- 2026-10-22 大樓重做：辦公、公寓、玻璃、紅磚大樓外面加壁柱、基座、簷口、入口、樓頂設備（包住 B.bld） -->
+<script src="js/world/streetkit.js"></script><!-- 2026-10-22 街上的東西重做：路燈、長椅、郵筒、自動販賣機、公車站（包住 CK.extendBuilder） -->
+<script src="js/world/vehiclekit.js"></script><!-- 2026-10-22 車子重做：側面輪廓擠出來的車身（轎車、計程車、貨車、一廂車、跑車）、細管車架的腳踏車（citykit3.js、vehicles.js 後面） -->
 <script src="js/world/city_huangling.js"></script><!-- 皇嶺（首都）的 3D 城 -->
 <script src="js/world/city_jishan.js"></script><!-- 吉山（陪都）的 3D 城：霓虹十字路口、金融區、機械町、霓虹商店街、重工業區、礦場吊橋 -->
 <script src="js/world/city_hosu.js"></script><!-- 2026-10-09 奉主重蓋成精緻城市（照 hosu.js 的地圖；觀光章、小吃、公會奉主分館照舊） -->
 <script src="js/world/city_yuebei.js"></script><!-- 2026-10-20 岳北（北州・美食觀光）的 3D 城：雪的港町老街、運河和石造倉庫、漁港、食品大樓、礦山纜車 -->
-<script src="js/world/cityhelp.js"></script><!-- 2026-10-20 剩下八座城共用的蓋城工具（車站、公會、觀光章、標準房間） -->
+<script src="js/world/cityhelp.js"></script>
+<script src="js/world/civickit.js"></script><!-- 2026-10-26 車站（鐘塔、拱框、站前花壇、腳踏車架、計程車站牌）、公會分館（門廊、石階、門燈、紋章）細化：包住 CK.H.station、CK.H.guild -->
+<script src="js/world/bridgekit.js"></script><!-- 2026-10-26 橋的欄杆照材質細化（朱紅擬寶珠、木、鐵、石的欄杆柱、水泥護牆）：citykit2.js 畫橋時呼叫 CK.bridgeRail -->
+<script src="js/world/castlekit.js"></script><!-- 2026-10-26 天守（最上層的迴緣、高欄、一樓的石落、長押）、櫓（石落）細化：包住 B.tenshu、B.yagura -->
+<script src="js/world/templekit.js"></script><!-- 2026-10-26 五重塔 B.pagoda（皇嶺・昭光寺）：柱子、門、連子窗、斗栱、反翹的深簷、相輪 -->
+<script src="js/world/citylife.js"></script><!-- 2026-10-26 各城自己的玩法：地方委託、貨物、外貿訂單、船屋 --><!-- 2026-10-20 剩下八座城共用的蓋城工具（車站、公會、觀光章、標準房間） -->
+<script src="js/world/citysea.js"></script><!-- 2026-10-26 渦旗釣魚、魚市、壽司；西見潛水打撈 -->
+<script src="js/world/cityland.js"></script><!-- 2026-10-26 府廳越野賽、軍需處；板北製藥；板南通天道、妖物寺；古森植樹 -->
 <script src="js/world/citydress.js"></script><!-- 2026-10-21 八座新城的街景細節：行道樹、電線桿、長椅、郵筒、公車站、店門口的旗子和提燈 -->
 <script src="js/world/city_futing.js"></script><!-- 2026-10-20 府廳（軍事城市）：欅樹大道、軍部、操場、戰爭公園、軍神社、公會特劃區 -->
 <script src="js/world/city_xijian.js"></script><!-- 2026-10-20 西見（港都）：港、紅磚倉庫、洋館街、艾美利亞領事館、海灘公園、海洋大學 -->
@@ -1132,7 +1154,11 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ui/smithstash.js"></script><!-- 鐵匠鋪、倉庫介面重做：暖簾分頁、篩選排序、按不了的原因、強化預覽、分解確認與批次分解、簞笥倉庫、容量條、批次賣出（guildhall.js、tarkovstash.js 後面） -->
 <script src="js/items/fatigueitems.js"></script><!-- 2026-10-18 疲憊值的道具：提神藥、乾糧、小帳篷（白藤堂的旅行用品；stacks.js 後面、hakuto.js 前面） -->
 <script src="js/ui/hakuto.js"></script><!-- 白藤堂介面重做：招牌、狀態列、暖簾分頁（藥品／炸藥／背包／符卷）、一次買多瓶、全部換藥、按不了的原因、背包格數比較與確認（smithstash.js 後面） -->
+<script src="js/ui/hubtheme.js"></script><!-- 2026-10-27 公會、鐵匠鋪、倉庫、白藤堂各自的配色和底紋（只改樣子；hakuto.js 後面） -->
 <script src="js/ui/darktheme.js"></script><!-- 低眩光深色主題：公會、鐵匠鋪、倉庫、白藤堂、人物誌的卡片改成深色牌子（放在這些檔案後面） -->
+<script src="js/ui/mobilehub.js"></script><!-- 2026-10-27 手機版的四家店：分頁搬到最下面、上面一排、狀態縮成一行（hubtheme.js、darktheme.js 後面） -->
+<script src="js/ui/mobileland.js"></script><!-- 2026-10-27 橫著拿手機：HUD 避開瀏海、視窗不超過螢幕高度 -->
+<script src="js/ui/mobiletown.js"></script><!-- 2026-10-27 手機：城裡左上的錢、疲憊、信譽收成一塊，新手指引縮小 -->
 <script src="js/ui/tutorial2.js"></script><!-- 新手教學：一步一步的小提示、框出畫面上的按鈕、做到自己跳下一步、可跳過、城裡選單可重看；各職業第一次的提示（darktheme.js 後面） -->
 <script src="js/ruins/ruinis.js"></script><!-- 遺跡整改：IS（單體生存能力）、素質 ×2、每間房的數量、戰術、詞條照 IS（所有包 R.spawnEnemy、R.updateEnemies 的檔案後面） -->
 <script src="js/ruins/island.js"></script><!-- 2026-10-13 浮島型：層→區→房間、綠色的渡島晶連區、中心房間的領主擋著樓梯（biome、net、net2、ruinis、lordwing 後面） -->
@@ -1141,6 +1167,7 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/classes/summonhold.js"></script><!-- 2026-10-14 召喚師：召喚技能放出來後技能格長亮、點一下沒效果、按住 0.5 秒解除，召喚物走了才冷卻（包 castSlot／useSkill 的最外層） -->
 <script src="js/classes/bardsonic.js"></script><!-- 2026-10-14 吟遊詩人的音符炸開、技能範圍改畫成往外擴散的音波（fx1010、fxplus、bardchord 後面，包 R.fx 最外層） -->
 <script src="js/ui/escmenu.js"></script><!-- 2026-10-13 Esc 選單分類：遊戲／角色／設定（畫面・聲音・按鍵）／社群・回報／離開（所有加選單按鈕的檔案後面） -->
+<script src="js/ui/fullscreen.js"></script><!-- 2026-10-27 手機全螢幕：第一次點畫面就把網址列收起來；iPhone 說明怎麼「加入主畫面」；暫停選單「畫面」可以關 -->
 <script src="js/ui/mapzoom.js"></script><!-- 2026-10-14 Tab 大地圖（遺跡、城市）可以縮放、拖曳 -->
 <script src="js/ui/questguide.js"></script><!-- 2026-10-14 委託指路：畫面上的方向箭頭＋距離 -->
 <script src="js/ui/closex.js"></script><!-- 關閉鍵統一放右上角（r-sheet、hub-sheet、東鶴整頁） -->
@@ -1180,3 +1207,36 @@ body.touch #r-toast{top:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 
 <script src="js/ruins/runsave.js"></script><!-- 2026-10-21 遺跡裡存檔、下次再來探索（每層自動存一次；Esc「存檔，回到標題」；標題「繼續冒險」問要不要接著探索） -->
 <script src="js/ui/escunify.js"></script><!-- 2026-10-21 Esc 選單分頁、每個畫面同一個樣子（escmenu.js 分好的區塊變成分頁：遊戲／角色／地圖・委託／設定／說明／數值） -->
 <script src="js/ui/title2.js"></script><!-- 2026-10-21 標題畫面整理：大的「繼續冒險」、新的冒險／選擇存檔、一排小連結；存檔收進面板 -->
+<!-- 2026-11-03 英文、德文的字典（將近 1 MB）包在 template 裡：中文玩家不用下載；選了 English／Deutsch 才由 template 後面那一小段照原本的順序寫進頁面，在 i18n.js 之前跑完（tools/bust.js 一樣會幫這些 script 加版本號） -->
+<template id="i18n-dicts">
+<script src="js/ui/i18n-dict.js"></script><!-- 2026-10-27 英文、德文的字典（一列：中文、English、Deutsch） -->
+<script src="js/ui/i18n-data1.js"></script><!-- 2026-10-27 字典・職業說明、大招、天賦、技能變化、詞綴 -->
+<script src="js/ui/i18n-data2.js"></script><!-- 2026-10-27 字典・被動技能 -->
+<script src="js/ui/i18n-data3.js"></script><!-- 2026-10-27 字典・主動技能的名字 -->
+<script src="js/ui/i18n-data4.js"></script><!-- 2026-10-27 字典・技能說明（句型、槍手、弓箭手） -->
+<script src="js/ui/i18n-data5.js"></script><!-- 2026-10-27 字典・技能說明（戰士、術士） -->
+<script src="js/ui/i18n-data6.js"></script><!-- 2026-10-27 字典・技能說明（牧師、刀客） -->
+<script src="js/ui/i18n-data7.js"></script><!-- 2026-10-27 字典・技能說明（騎士、武術家） -->
+<script src="js/ui/i18n-data8.js"></script><!-- 2026-10-27 字典・技能說明（吟遊詩人、召喚師） -->
+<script src="js/ui/i18n-data9.js"></script><!-- 2026-10-27 字典・技能說明（術陣師、附魔師） -->
+<script src="js/ui/i18n-data10.js"></script><!-- 2026-10-27 字典・技能說明（符卷師） -->
+<script src="js/ui/i18n-data11.js"></script><!-- 2026-10-27 字典・技能表另外的說明（一開始的技能、吟遊詩人、召喚物附註） -->
+<script src="js/ui/i18n-data12.js"></script><!-- 2026-10-27 字典・素材 -->
+<script src="js/ui/i18n-data13.js"></script><!-- 2026-10-27 字典・遺跡和城市介紹、特質、稱號、段位、加注條款、跑腿、環境、套裝 -->
+<script src="js/ui/i18n-data14.js"></script><!-- 2026-10-27 字典・遺跡生物圖鑑（一） -->
+<script src="js/ui/i18n-data15.js"></script><!-- 2026-10-27 字典・遺跡生物圖鑑（二）：變種句型 -->
+<script src="js/ui/i18n-data16.js"></script><!-- 2026-10-27 字典・遺跡生物圖鑑（三） -->
+<script src="js/ui/i18n-data17.js"></script><!-- 2026-10-27 字典・新手教學、東鶴指南 -->
+<script src="js/ui/i18n-data18.js"></script><!-- 2026-10-27 字典・東鶴城裡的對話 -->
+<script src="js/ui/i18n-data19.js"></script><!-- 2026-10-27 字典・公會的台詞與訊息 -->
+<script src="js/ui/i18n-data20.js"></script><!-- 2026-10-27 字典・主要角色的台詞 -->
+<script src="js/ui/i18n-data21.js"></script><!-- 2026-10-27 字典・室內和各城的設施 -->
+<script src="js/ui/i18n-data22.js"></script><!-- 2026-10-27 字典・職業說明視窗 -->
+<script src="js/ui/i18n-data23.js"></script><!-- 2026-10-27 字典・技能機制說明 -->
+<script src="js/ui/i18n-data24.js"></script><!-- 2026-10-27 字典・遺跡 HUD、角色數值、遺跡分布圖 -->
+<script src="js/ui/i18n-data25.js"></script><!-- 2026-11-03 字典・新手教學、東鶴指南、建角色 -->
+<script src="js/ui/i18n-data26.js"></script><!-- 2026-11-03 字典・建角色的外觀選項、種族技能、族種和出身地、主要種族 -->
+<script src="js/ui/i18n-data27.js"></script><!-- 2026-11-03 字典・種族名字和說明（第一批字根：獸人、兩棲、半身） -->
+</template>
+<script>(function () { var m = /[?&]lang=(en|de|zh)/.exec(location.search), l = m ? m[1] : 'zh'; if (!m) { try { l = localStorage.getItem('tfl_lang') || 'zh'; } catch (e) { } } if (l !== 'zh') { var t = document.getElementById('i18n-dicts'); if (t) document.write(t.innerHTML); } })();</script><!-- 和 i18n.js 一樣的判斷：網址的 ?lang= 優先，再看 localStorage 'tfl_lang' -->
+<script src="js/ui/i18n.js"></script><!-- 2026-10-27 英文、德文版：畫面上翻譯（中文時什麼都不做）；放最後面，R.say、R.toast 都包好了再包 -->

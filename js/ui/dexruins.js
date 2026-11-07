@@ -1,9 +1,9 @@
 // 無境之旅：圖鑑多一頁「遺跡」（作者 2026-10-04：圖鑑感覺可以多一個專門介紹遺跡的，順便提到內部出產魔物之類的，我接任務有時候都不確定要往哪裡刷；
-//   版面照作者畫的：上面分級的分頁＋「特殊種」分頁；一列一列照深度排，黑色代表淺層、紅色代表深層——或每個頁面是那個遺跡自己的顏色，越往下越深；
+//   版面照作者畫的：上面分級的分頁＋「特殊種」分頁；一列一列照深度排，黑色代表淺層、紅色代表深層──或每個頁面是那個遺跡自己的顏色，越往下越深；
 //   變異種只在深層出現，外觀越深越危險）
 // - dexui.js 的分頁旁邊多一個「遺跡」。左頁：分級的分頁（哈米莉亞、阿彌勒、摩爾斯、克森特、特殊種）→ 那個分級的遺跡 →
 //   這座遺跡的三列（淺層、中層、深層），每一列是那個深度會遇到的生物（可以左右拖），常見的排前面、標★；
-//   中層、深層換成會出現的變種（荒、獰、淵——照 variants.js 的 R.variantAt：淺層沒有，越深越多越兇）。列的顏色是遺跡所在地區的顏色，越往下越暗、越紅。
+//   中層、深層換成會出現的變種（荒、獰、淵──照 variants.js 的 R.variantAt：淺層沒有，越深越多越兇）。列的顏色是遺跡所在地區的顏色，越往下越暗、越紅。
 // - 右頁：沒點生物的時候是遺跡的介紹（地區、分級、層數、環境、領主體、佩特拉核心的樣子）；點了生物是那一隻的大圖、說明、在哪些遺跡出現。
 // - 手機（窄的畫面）：右頁的內容跳出來。
 // - 2026-10-04 改版（作者：遺跡分層在最上面，領主和小怪分開來介紹，之後再做變體，佩特拉核心單獨介紹，圖鑑可以講場地效果）：
@@ -11,23 +11,23 @@
 //   → 遺跡生物（同一個捲動框、一條滑桿，裡面分「小怪」「領主」「變體」三段：小怪＋環境才有的、領主體、荒／獰／淵各一列）
 //   → 佩特拉核心（一張卡片，點了右頁是核心自己的介紹：這一帶的長相、在哪裡能不能打、注意和五種反應）
 //   → 場地效果（這座遺跡的環境、會抽到的樓層效果；點了右頁是詳細說明，用 hudinfo.js 的 R.FIELD_INFO、R.FLOOR_MOD_MORE）。
-// - 2026-10-05 作者：圖鑑沒有記載領主變體——克森特級以上的遺跡，「領主」那一段多一列「異變」（這座遺跡的領主體會變成的樣子，
+// - 2026-10-05 作者：圖鑑沒有記載領主變體──克森特級以上的遺跡，「領主」那一段多一列「異變」（這座遺跡的領主體會變成的樣子，
 //   遇過才亮）；特殊種分頁也有。點了右頁在生物介紹下面寫異變的說明（lordvariant.js 的 R.lordVariantDex）。
 // - 2026-10-05 作者大改：最上層的大分頁換成「總覽、哈米莉亞級、阿彌勒級、摩爾斯級、克森特級、卡索級」（dexui.js），
 //   選分級 → 那個分級的遺跡 → 點一座遺跡，再分三個小分頁：
 //   「小怪」：這座遺跡會遇到的一般生物；每一種是一直欄，本體在上、荒／獰／淵在正下方（只列這座遺跡會出現的；中間缺一級就空一格，同一列一定是同一級；
 //            順序固定：常見的★在前、精英在後，其他照生物池原本的順序）。
 //            環境才有的生物直接併進來，不再另外一類「環境生物」；偽箱、福影童、預言犢、填隙肉芽另一段「偶爾出現」。
-//   「領主體」：這座遺跡會出現的領主體——不是只在深層：第 3～5 層起每隔 3～5 層一隻；這座遺跡專屬／最常見的排前面。異變放在本體正下方。
+//   「領主體」：這座遺跡會出現的領主體──不是只在深層：第 3～5 層起每隔 3～5 層一隻；這座遺跡專屬／最常見的排前面。異變放在本體正下方。
 //   「遺跡詳情」：遺跡的介紹、分層、佩特拉核心（這一帶的長相）、場地效果（環境、樓層效果、分級的效果）。
 //   原本的「特殊種」分頁拿掉（環境的生物、領主體都歸到各自的遺跡）。
-// - 2026-10-05 作者：總覽不要先列遺跡——總覽直接三個小分頁（小怪／領主體／遺跡詳情）：
+// - 2026-10-05 作者：總覽不要先列遺跡──總覽直接三個小分頁（小怪／領主體／遺跡詳情）：
 //   小怪＝全部遺跡的全部小怪（不分難度），變種一樣排在本體正下方；領主體＝全部領主體；
 //   遺跡詳情＝各個分級的詳細情報＋東鶴有哪些那一級的遺跡。分級分頁（哈米莉亞～卡索）照舊：選分級→選遺跡→三個小分頁。
 // 放在 dexui.js、region.js 後面。
 (function (R) {
   const $ = id => document.getElementById(id), esc = s => R.esc(s);
-  let gtab = 'all', siteId = null, sub = 'mob', mon = null, pick = null;   // pick：'core'（佩特拉核心）、'env:火山…'、'mod:濃霧…'、'gfx:…'（場地效果）
+  let gtab = 'all', siteId = null, sub = 'mob', mon = null, pick = null;   // pick：'core'（佩特拉核心）、'env:火山……'、'mod:濃霧……'、'gfx:……'（場地效果）
   const wide = () => window.matchMedia && window.matchMedia('(min-width: 780px)').matches;
   const G = id => R.gradeById(id), E = () => R.ENEMIES;
   const killsOf = id => { const k = R.S && R.S.dexKills; return (k && k[id]) || 0; };
@@ -86,7 +86,7 @@
     const rg = regionOf(s), own = rg && rg.lords && rg.lords[s.id];
     if (own) return own.filter(id => E()[id]).map(id => [id, '這座遺跡專屬']);
     const ex = exclLords(), out = [], add = (id, why) => { if (id && E()[id] && isLordDef(E()[id]) && !ex.has(id) && !out.some(x => x[0] === id)) out.push([id, why]); };
-    envsOf(s).forEach(e => add(ENV_LORD[e], envName(e) + '環境專屬・最常見'));
+    envsOf(s).forEach(e => { add(ENV_LORD[e], envName(e) + '環境專屬・最常見'); if (e === 'desert') add('carrionvulture', envName(e) + '環境專屬'); });
     const tl = s.type && R.TYPES[s.type] && R.TYPES[s.type].lord; if (tl) add(tl, R.TYPES[s.type].name + '最常見');
     [].concat(G('kesent').lords || [], g.lords || [], ['spikewolf']).forEach(id => add(id, '可能出現'));
     return out;
@@ -297,6 +297,7 @@
       + (R.dexStats ? R.dexStats(id) : '') + '<p class="note">' + (n ? '打倒過 ' + n + ' 隻（包括變種）' : '還沒打倒過') + '</p>'
       + (vs.length ? '<h4 class="dx-h">分級變種</h4><div class="dx-vlist">' + [base].concat(vs).map((v, i) => { const k = killsOf(v); return '<div class="dx-var' + (k ? '' : ' dim') + '">' + (icon(v) ? '<img src="' + icon(v) + '" alt="">' : '') + '<span>' + (i ? '「' + VT[i][0] + '」' : '本體・') + esc(E()[v].name) + '<small>' + (k ? '打倒 ' + k : '還沒打倒過') + (i ? '・' + VT[i][1].split('｜')[1] : '') + '</small></span></div>'; }).join('') + '</div>' : '')
       + (R.lordVariantDex ? R.lordVariantDex(base) : '')
+      + (R.dexDrops ? R.dexDrops(base) : '')   // 2026-10-22 掉落機率（lordmats.js、huntmore.js）
       + (where.length ? '<h4 class="dx-h">出現的遺跡</h4><div class="dr-where">' + where.map(s => '<button type="button" class="dr-site sm" data-drgo="' + s.id + '" style="--rc:' + colOf(s) + '"><b>' + esc(s.name) + '</b><small>' + esc(G(s.grade).name) + ((R.siteMain ? R.siteMain(s) : []).includes(base) ? '・常見' : '') + '</small></button>').join('') + '</div>' : '')
       + back;
   };

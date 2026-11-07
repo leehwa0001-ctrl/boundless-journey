@@ -11,7 +11,7 @@
 // 做法：每次 R.loadFloor 之前，把 run.grade 換成一份複本（pool 換成這座遺跡的池子；兵工廠的 lords 換成無主大鎧），原本的分級資料不動。
 // 放在所有遺跡生物、lords.js、lordfloor.js、windelder.js 後面（index.html 後段）。
 (function (R) {
-  const W = () => R.W, rnd = Math.random, ART = R.BEAST_ART, wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+  const W = () => R.W, rnd = Math.random, wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   const later = (f, ms) => { const run = W().run; setTimeout(() => { if (W().run === run && run && !run.done) f(); }, ms); };
   const targets = () => { const w = W(); return [w.P].concat((w.allies || []).filter(a => !a.downed), R.netTargets ? R.netTargets() : []).filter(t => t && !t.dead); };   // 多人連線：房主這邊也算別人（net2.js）
   const hitT = (t, dmg, e, o) => (t.ally ? R.hurtAlly(t, dmg, e) : R.hurtPlayer(dmg, e, o));
@@ -32,82 +32,6 @@
     desc: '奉主兵工廠的領主體。一套比人高一倍的大鎧，裡面什麼都沒有。拔刀、突進、號令遺甲足輕；鎧甲打掉一半以後外殼崩落，變得更快、更兇。' };
   if (R.LORD_GEAR) R.LORD_GEAR.muhyo = ['無主胴丸', 'body_heavy', { def: 8, hp: 0.1 }, '物防 +8、生命 +10%'];
 
-  // ---------- 點陣圖 ----------
-  const grid = (w, h) => {
-    const g = Array.from({ length: h }, () => Array(w).fill('.'));
-    const o = {
-      p(x, y, c) { x = Math.round(x); y = Math.round(y); if (y >= 0 && y < h && x >= 0 && x < w) g[y][x] = c; },
-      rect(x, y, ww, hh, c) { for (let j = 0; j < hh; j++) for (let i = 0; i < ww; i++) o.p(x + i, y + j, c); },
-      line(x0, y0, x1, y1, c) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) o.p(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, c); },
-      ell(cx, cy, rx, ry, c) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) { if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1.05) o.p(x, y, c); } },
-      rows: () => g.map(r => r.join(''))
-    };
-    return o;
-  };
-  const add = (id, pal, w, h, draw) => { if (!ART) return; const fr = [0, 1].map(f => { const G = grid(w, h); draw(G, f); return G.rows(); }); ART[id] = { pal, a: fr[0], b: fr[1] }; };
-  add('ashigaru', { h: '#3A3430', H: '#5A524A', r: '#8A2A2A', a: '#4A4038', A: '#6A5E52', k: '#0E0A0A', e: '#FF7A3A', s: '#C8CED6', w: '#6A4A2A' }, 20, 26, (G, f) => {
-    G.rect(8, 2, 4, 1, 'H'); G.rect(6, 3, 8, 1, 'h'); G.rect(4, 4, 12, 1, 'h'); G.rect(3, 5, 14, 1, 'H');
-    G.rect(7, 6, 6, 4, 'k'); G.p(8, 7, 'e'); G.p(11, 7, 'e');
-    G.rect(5, 10, 10, 8, 'a'); [11, 13, 15].forEach(y => G.rect(5, y, 10, 1, 'A')); G.line(10, 10, 10, 17, 'r');
-    G.rect(3, 10, 3, 4, 'A'); G.rect(14, 10, 3, 4, 'A'); G.rect(5, 18, 10, 3, 'a'); G.p(8, 19, 'k'); G.p(11, 19, 'k'); G.p(8, 20, 'k'); G.p(11, 20, 'k');
-    G.rect(6, 21, 2, f ? 3 : 4, 'k'); G.rect(12, 21, 2, f ? 4 : 3, 'k');
-    const x0 = f ? 16 : 17, x1 = f ? 19 : 17; G.line(x0, 25, x1, 3, 'w'); G.rect(x1, 0, 1, 3, 's'); G.p(x1 - 1, 2, 's'); G.p(x1 + 1, 2, 's'); G.rect(15, 14, 2, 2, 'A');
-  });
-  add('teppo', { c: '#2A2430', C: '#3E3646', k: '#0A080C', e: '#FFB04A', g: '#5A4A3A', m: '#8A8A92', f: '#FF6A2A', s: '#9A9AA0' }, 22, 22, (G, f) => {
-    G.ell(9, 15, 6, 6, 'c'); G.line(5, 12, 4, 20, 'C'); G.ell(9, 6, 5, 5, 'c'); G.ell(9, 7, 3, 3, 'k'); G.p(8, 7, 'e'); G.p(10, 7, 'e');
-    G.line(5, 14, 13, 13, 'g'); G.line(13, 13, 21, 12, 'm'); G.p(12, f ? 11 : 12, 'f'); if (f) { G.p(21, 10, 's'); G.p(20, 9, 's'); G.p(19, 10, 's'); }
-    for (let x = 4; x <= 14; x += 2) G.p(x + (f ? 1 : 0), 21, 'c');
-  });
-  add('hatarei', { p: '#5A3A24', r: '#8A2A2A', R: '#B83A3A', t: '#2A0A0A', e: '#FFE04A', w: '#E8E0CC', g: '#C8A040' }, 20, 26, (G, f) => {
-    G.line(4, 0, 4, 25, 'p'); G.rect(3, 0, 3, 1, 'g');
-    for (let y = 2; y <= 19; y++) { const off = Math.round(Math.sin((y + f * 2) / 3)); G.rect(5 + off, y, 12, 1, y % 5 === 0 ? 'R' : 'r'); }
-    for (let x = 0; x < 12; x += 2) G.p(5 + x + Math.round(Math.sin((20 + f * 2) / 3)), 20 + (x % 3), 'r');
-    G.ell(11, 8, 3, 3, 'w'); G.ell(11, 8, 1.5, 1.5, 'r'); G.p(9, 13, 'e'); G.p(13, 13, 'e'); G.p(7, 16, 't'); G.p(14, 5, 't'); G.p(12, 18, 't');
-  });
-  add('gunba', { b: '#D8D0BC', B: '#A8A08C', k: '#1A1414', e: '#FF3A3A', c: '#6A2A2A', C: '#8A3A3A', m: '#5A5A62' }, 32, 22, (G, f) => {
-    G.ell(14, 10, 9, 4, 'k'); for (let x = 7; x <= 21; x += 2) G.line(x, 6, x, 13, 'b'); G.line(5, 6, 23, 6, 'b');
-    G.rect(10, 5, 8, 5, 'c'); G.rect(10, 9, 8, 1, 'C'); G.p(11, 10, 'C'); G.p(15, 10, 'C');
-    G.line(23, 6, 27, 1, 'b'); G.line(24, 7, 28, 2, 'B'); G.ell(28, 3, 3, 2, 'b'); G.line(29, 4, 31, 5, 'b'); G.p(28, 2, 'e');
-    [[7, 0], [10, 1], [18, 0], [21, 1]].forEach(([x, k]) => { const up = (k + f) % 2; G.line(x, 13, x + (up ? 1 : 0), 19 - up, 'b'); G.p(x + (up ? 1 : 0), 20 - up, 'm'); });
-    G.line(5, 7, 1, 12 + f, 'B');
-  });
-  add('danto', { h: '#C8A86A', H: '#8A7040', k: '#0A0A10', e: '#BFE8FF', c: '#3A3A4A', C: '#4A4A5A', s: '#C8CED6', w: '#5A3A2A' }, 22, 26, (G, f) => {
-    G.ell(11, 14, 7, 7, 'c'); G.line(6, 10, 5, 19, 'C'); G.rect(9, 1, 4, 1, 'h'); G.rect(6, 2, 10, 1, 'h'); G.rect(3, 3, 16, 1, 'H');
-    G.rect(8, 4, 6, 3, 'k'); G.p(9, 5, 'e'); G.p(12, 5, 'e');
-    [[4, 10, 1, 8], [18, 11, 21, 9], [5, 17, 2, 19], [17, 18, 20, 20]].forEach(([a, b, c, d]) => G.line(a, b, c, d, 's'));
-    if (f) G.line(15, 14, 20, 6, 's'); else G.line(4, 15, 18, 15, 'w');
-    G.rect(8, 21, 2, 4, 'k'); G.rect(12, 21, 2, 4, 'k');
-  });
-  add('housha', { a: '#6A5A4A', A: '#8A7A62', d: '#3A3028', m: '#4A4A52', M: '#7A7A84', e: '#FFB04A', f: '#FF6A2A', c: '#B85A3A' }, 30, 20, (G, f) => {
-    [6, 10, 14, 18].forEach((x, i) => G.line(x, 14, x - 2 + ((i + f) % 2) * 4, 19, 'd'));
-    G.ell(14, 11, 10, 5, 'a'); G.ell(13, 9, 7, 2, 'A'); G.line(5, 15, 23, 15, 'd');
-    G.line(10, 7, 22, 2, 'm'); G.line(10, 6, 22, 1, 'M'); G.rect(22, 0, 2, 4, 'd'); if (f) { G.p(25, 1, 'f'); G.p(26, 2, 'f'); G.p(25, 3, 'f'); }
-    G.line(21, 8, 21, 6, 'd'); G.p(21, 5, 'e'); G.line(23, 9, 24, 7, 'd'); G.p(24, 6, 'e');
-    G.ell(26, 12, 3, 2, 'c'); G.p(29, 11, 'c'); G.p(29, 13 + f, 'c');
-  });
-  add('dankara', { b: '#C8A040', B: '#E8C860', d: '#6A5020', k: '#2A2018', f: '#FF6A2A', e: '#FF3A3A' }, 14, 10, (G, f) => {
-    [3, 6, 9].forEach((x, i) => G.line(x, 7, x + ((i + f) % 2 ? 1 : -1), 9, 'k'));
-    G.ell(6, 5, 5, 3, 'b'); G.ell(5, 4, 3, 1, 'B'); G.rect(0, 4, 2, 3, 'd'); G.line(7, 2, 8, 0, 'k'); G.p(8, 0, f ? 'f' : 'e'); G.p(11, 4, 'e');
-  });
-  add('rotsuki', { s: '#5A4A40', S: '#7A6A5A', d: '#2A201A', f: '#FF7A2A', F: '#FFD08A', e: '#FFE04A', m: '#3A3A40' }, 30, 32, (G, f) => {
-    G.rect(9, 24, 5, 7, 's'); G.rect(16, 24, 5, 7, 's'); G.rect(7, 8, 16, 16, 's'); G.rect(7, 8, 16, 2, 'S');
-    G.rect(11, 14, 8, 6, 'd'); G.rect(12, 15, 6, 4, f ? 'F' : 'f'); [13, 15, 17].forEach(x => G.line(x, 14, x, 19, 'm'));
-    G.rect(12, 2, 6, 6, 's'); G.rect(13, 4, 4, 1, 'e'); G.rect(19, 0, 3, 8, 'm');
-    G.rect(2, 10, 5, 12, 'S'); G.rect(23, 10, 5, 12, 'S'); G.rect(1, 21 - f, 7, 5, 's'); G.rect(22, 21 + f - 1, 7, 5, 's');
-    [[9, 11], [20, 12], [10, 21], [19, 22]].forEach(([x, y]) => G.p(x, y, 'f'));
-  });
-  add('muhyo', { a: '#2A2A34', A: '#4A4A5A', r: '#9A2A2A', g: '#C8A040', k: '#06040A', e: '#FF5A3A', s: '#D8DEE6', S: '#9AA0A8', c: '#5A1A1A' }, 40, 44, (G, f) => {
-    G.rect(2, 20, 6, 18, 'c'); for (let y = 38; y < 42; y += 2) G.p(3 + (y % 4), y, 'c');
-    G.rect(14, 35, 4, 8 - f, 'A'); G.rect(22, 35, 4, 7 + f, 'A');
-    G.rect(12, 30, 16, 5, 'a'); [15, 19, 23].forEach(x => G.line(x, 30, x, 34, 'k')); G.rect(12, 32, 16, 1, 'r');
-    G.rect(13, 18, 14, 12, 'a'); [20, 23, 26, 29].forEach(y => G.rect(13, y, 14, 1, 'r')); G.p(20, 22, 'g'); G.p(19, 22, 'g');
-    G.rect(5, 18, 8, 10, 'a'); G.rect(27, 18, 8, 10, 'a'); [19, 22, 25].forEach(y => { G.rect(5, y, 8, 1, 'r'); G.rect(27, y, 8, 1, 'r'); });
-    G.ell(20, 8, 8, 6, 'a'); G.ell(19, 6, 5, 3, 'A'); G.rect(10, 11, 20, 2, 'A');
-    G.line(14, 2, 20, 6, 'g'); G.line(26, 2, 20, 6, 'g'); G.p(14, 1, 'g'); G.p(26, 1, 'g');
-    G.rect(15, 12, 10, 6, 'k'); G.rect(16, 14, 2, 1, 'e'); G.rect(22, 14, 2, 1, 'e'); G.rect(16, 17, 8, 1, 'A');
-    if (f) { G.line(31, 22, 38, 3, 's'); G.line(32, 22, 39, 4, 'S'); } else { G.line(31, 24, 38, 41, 's'); G.line(32, 24, 39, 40, 'S'); }
-    G.rect(29, 21, 3, 4, 'A');
-  });
 
   // ---------- 無主大鎧的打法 ----------
   const AI = R.AI_X = R.AI_X || {};

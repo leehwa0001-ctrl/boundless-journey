@@ -12,7 +12,7 @@
   H.city = id => (R.AZUKI_CITIES || []).find(c => c.id === id) || {};
   // ---- 觀光章、設施、吃東西 ----
   H.sight = (B, x, z, city, sid, r) => { const sg = (H.city(city).sights || []).find(s => s[0] === sid), it = B.inter(x, z, r || 2.6, '觀光景點：' + (sg ? sg[1] : sid) + '（觀光章）', () => az().stamp(city, sid), '#E8C04A'); it.sight = sid; return it; };
-  H.fac = (B, x, z, city, fid, icon, r) => { const f = (H.city(city).fac || []).find(q => q[0] === fid); return B.inter(x, z, r || 2.4, (f ? f[1] : fid) + '（看看）', () => az().fac(city, fid), icon || '#C8A060'); };
+  H.fac = (B, x, z, city, fid, icon, r) => { const f = (H.city(city).fac || []).find(q => q[0] === fid); return B.inter(x, z, r || 2.4, (f ? f[1] : fid) + (R.CITY_FAC && R.CITY_FAC[city + ':' + fid] ? '' : '（看看）'), () => az().fac(city, fid), icon || '#C8A060'); };
   H.door = (B, x, z, roomId, label, icon, ry, r) => B.inter(x, z, r || 2.6, label, () => { const [wx, wz] = B.toWorld(x, z); CK.enterRoom(roomId, { x: wx, z: wz, yaw: (ry || 0) + B.yaw() }); }, icon || '#C8A060');
   H.eat = (city, title, say, menu) => {
     const s = S(), nm = H.city(city).name || '';
@@ -29,7 +29,7 @@
   // o：{ p（房間的前綴）, name, w, d, h, col, style（brick／glass／wood）, roof（材質，沒有＝平頂）, bg, fg, tt（時刻表）}
   H.station = (B, o) => {
     const M = CK.M, g = B.g, P = B.part, cx = o.cx || 0, z0 = o.z0 || 124, w = o.w || 70, d = o.d || 22, h = o.h || 10, x0 = cx - w / 2, x1 = cx + w / 2;
-    B.bld({ r: [x0, z0, x1, z0 + d], h, style: o.style || 'brick', face: 'n', col: o.col || '#A0503A', top: false });
+    B.bld({ r: [x0, z0, x1, z0 + d], h, style: o.style || 'brick', face: 'n', col: o.col || '#A0503A', top: false, plain: 1 });
     if (o.roof) B.roof(cx, z0 + d / 2, w, d, { type: 'hip', y: h, h: Math.min(6, d * 0.3), o: 0.6, mat: o.roof });
     B.box(M('steelD'), cx - 4.4, 0.3, z0 - 0.3, cx - 3.8, 4.4, z0 + 0.2); B.box(M('steelD'), cx + 3.8, 0.3, z0 - 0.3, cx + 4.4, 4.4, z0 + 0.2); B.box(M('steelD'), cx - 4.4, 4.0, z0 - 0.3, cx + 4.4, 4.4, z0 + 0.2);
     B.box(M('winLit'), cx - 3.75, 0.3, z0 - 0.12, cx + 3.75, 3.95, z0 - 0.06);
@@ -45,7 +45,7 @@
   // ---- 公會分館（石造、綠旗、招牌、門） ----
   H.guild = (B, r, face, o) => {
     const M = CK.M, [x0, z0, x1, z1] = r, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, h = o.h || 12;
-    B.bld({ r, h, style: o.style || 'brick', face, col: o.col || '#D0C8B8', top: false });
+    B.bld({ r, h, style: o.style || 'brick', face, col: o.col || '#D0C8B8', top: false, plain: 1 });
     if (o.roof) B.roof(cx, cz, x1 - x0, z1 - z0, { type: 'hip', y: h, h: Math.min(x1 - x0, z1 - z0) * 0.22, o: 0.5, mat: o.roof });
     const at = { s: [cx, z1 + 1.6, 0], n: [cx, z0 - 1.6, Math.PI], e: [x1 + 1.6, cz, Math.PI / 2], w: [x0 - 1.6, cz, -Math.PI / 2] }[face];
     const fx = { s: [x0 + 1.2, z1 + 1], n: [x0 + 1.2, z0 - 1], e: [x1 + 1, z0 + 1.2], w: [x0 - 1, z0 + 1.2] }[face];
@@ -88,7 +88,7 @@
     // ---- 道路：遇到水就變橋 ----
     const draw = (rd, vert) => {
       const pieces = subAll([rd.r], water); pieces.forEach(p => B.road(p[0], p[1], p[2], p[3], { sw: rd.sw, name: rd.name, line: rd.line || 'w' }));
-      water.forEach(w => { if (!ov(rd.r, w)) return; const s = rd.sw; if (vert) B.bridge(rd.r[0] - s, Math.max(w[1], rd.r[1]), rd.r[2] + s, Math.min(w[3], rd.r[3]), { rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); else B.bridge(Math.max(w[0], rd.r[0]), rd.r[1] - s, Math.min(w[2], rd.r[2]), rd.r[3] + s, { rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); });
+      water.forEach(w => { if (!ov(rd.r, w)) return; const s = rd.sw; if (vert) B.bridge(rd.r[0] - s, Math.max(w[1], rd.r[1]), rd.r[2] + s, Math.min(w[3], rd.r[3]), { axis: 'z', rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); else B.bridge(Math.max(w[0], rd.r[0]), rd.r[1] - s, Math.min(w[2], rd.r[2]), rd.r[3] + s, { axis: 'x', rise: 0.5, deck: 0.14, mat: 'gran', railMat: o.railMat || 'steelD', rail: true }); });   /* 2026-10-26：橋的方向照路走（川比路窄的時候，自動判斷會把欄杆裝在橋頭，整座橋過不去） */
     };
     HZ.forEach(rd => draw(rd, false)); VX.forEach(rd => draw(rd, true));
     // 開發用：地標範圍蓋到道路（含人行道）就在 console 提示
@@ -171,19 +171,24 @@
       K.bench(-5.4, 0.5, 3, Math.PI / 2); K.bench(5.4, 0.5, 3, -Math.PI / 2);
       K.plant(-7.2, 4.8); K.plant(7.2, 4.8); K.rug(0, 1.5, 4, 6, '#2E5A3A'); K.lamp(-3.5, 0); K.lamp(3.5, 0);
     } });
-    CK.defineRoom({ id: p + '_station', name: St.name + '・大廳', hint: St.hint || '「往東鶴的魔導電車，即將進站——」', w: 22, d: 12, h: 6, floor: 'gran', wall: 'plaster', wain: 'woodB', trim: 'steelD', amb: 1.0, build(B, K) {
+    CK.defineRoom({ id: p + '_station', name: St.name + '・大廳', hint: St.hint || '「往東鶴的魔導電車，即將進站──」', w: 22, d: 12, h: 6, floor: St.floor || 'gran', wall: St.wall || 'plaster', wain: St.wain || 'woodB', trim: St.trim || 'steelD', amb: St.amb || 1.0, build(B, K) {
+      if (St.deco) St.deco(B, K, CK.M);   // 2026-10-26 作者：各城的車站不要同一間──每座城自己加東西（city_*.js）
       K.counter(-7, 1.0, 5, 0.9, { mat: 'woodB', top: 'wood' });
       K.wallSign(St.name, 'n', 0, 4.8, { size: 1.0, bg: '#F4ECD8', fg: '#2A1A10' });
       K.wallSign(St.dest || '東鶴　皇嶺　吉山', 'n', 0, 3.8, { size: 0.42, bg: '#2A2420', fg: '#F4D88A', lit: 1 });
       B.inter(-7, 2.2, 2.4, '售票口（回東鶴、轉往他城）', () => CK.ticket(), '#5A8AC8');
-      B.talker(-7, 0, 0, '售票口的站務員', St.lines || ['「往東鶴的票嗎？」']);
+      B.talker(-7, 0, 0, '售票口的站務員', St.lines || ['「要去哪裡？東鶴的話，這邊買。」']);
       K.shelf(8, 1.5, 4, -Math.PI / 2, { cols: ['#E8E4DC', '#C83A3A', '#2E5A9A', '#E8B830'] });
       B.inter(6.6, 1.5, 2, '車站的小賣店', () => az().food(city), '#E8A03A');
+      K.counter(6, -4.2, 5, 0.9, { mat: 'steelD', top: 'wood' });
+      B.inter(6, -3, 2.4, '貨運窗口（買賣貨物、交外貿訂單）', () => R.cityTrade && R.cityTrade(city), '#C8A060');   // citylife.js
+      B.talker(6, -5, 0, '貨運窗口的職員', ['「這裡出產的貨在這裡最便宜。」', '「要運多一點？去征遠買條船。」']);
       K.bench(-2, 3.8, 4, 0); K.bench(3, 3.8, 4, 0);
       if (St.waiting) B.talker(1, 2, Math.PI, '等車的人', St.waiting);
       K.lamp(-7, 0); K.lamp(0, 2); K.lamp(7, 0);
     } });
-    if (F) CK.defineRoom({ id: F.id, name: F.name, hint: F.hint, w: 12, d: 9, h: 3.4, floor: F.floor || 'wfloor', wall: 'plaster', wain: 'woodB', build(B, K) {
+    if (F) CK.defineRoom({ id: F.id, name: F.name, hint: F.hint, w: 12, d: 9, h: 3.4, floor: F.floor || 'wfloor', wall: F.wall || 'plaster', wain: F.wain || 'woodB', build(B, K) {
+      if (F.deco) F.deco(B, K, CK.M);
       K.counter(0, -2.6, 8, 0.7, { mat: 'woodB', top: 'woodD' });
       K.wallSign(F.name, 'n', 0, 2.6, { size: 0.5, bg: F.bg || '#2A2420', fg: '#F4ECD8', lit: 1 });
       B.inter(0, -1.4, 2.2, '點菜', () => H.eat(city, F.name, F.say, F.menu || H.menu(city)), '#E8A03A');

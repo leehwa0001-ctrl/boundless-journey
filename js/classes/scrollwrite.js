@@ -3,10 +3,10 @@
 // - 白藤堂多一張「符卷師的書桌」：買牛皮紙（素材 parchment，一張 4 費拉），一張紙寫一張卷軸。
 //   寫的時候有進度條：職業等級越高、手上拿毛筆（稀有度越高越快）、轉職過的，寫得越快。
 //   寫好的卷軸（R.S.scrolls）放在背包裡，最多 20＋等級／2 張，下遺跡自動帶著。
-// - 遺跡裡，符卷師放技能：先用寫好的卷軸（一張，冷卻 −20%：預先寫好的零前搖）；沒有就現場寫——扣錢（4＋等級／8 費拉），沒錢就放不出來。
+// - 遺跡裡，符卷師放技能：先用寫好的卷軸（一張，冷卻 −20%：預先寫好的零前搖）；沒有就現場寫──扣錢（4＋等級／8 費拉），沒錢就放不出來。
 // - 普攻：卷軸、符紙、牛皮紙是真的紙，每打 6 下扣 1 費拉（紙錢）；毛筆是在空中寫字，不扣錢。
 // - 新武器「牛皮紙」（一次兩張、比卷軸重）。遺跡裡左上角顯示卷軸還有幾張。
-// 2026-10-13 作者：符卷師重做（諾克薩派）——
+// 2026-10-13 作者：符卷師重做（諾克薩派）──
 // - 符卷書：跟術士一樣的「法術書」（元素＋形狀＋效果三選），在書桌把法術寫到牛皮紙上：一張紙一張卷軸（S.scrollBag：法術 → 張數）。
 // - 戰鬥中：綁了法術的技能格＝撕開一張那個法術的卷軸：零前搖、不耗魔力（紙錢在寫的時候已經付了）；0.6 秒內連撕＝齊發（每張 +15%，最多 +45%）。
 //   沒綁法術的格照舊放原本的技能（先用一般卷軸 S.scrolls、冷卻 −20%）。戰鬥中不扣錢。
@@ -37,7 +37,7 @@
   const desk = () => {
     const s = S(), have = s.scrolls || 0, paper = s.mats.parchment || 0, room = Math.max(0, cap() - have), can = Math.min(room, paper), sp = secPer();
     const wb = n => '<button type="button" class="btn' + (n === can ? ' pri' : '') + '" data-sw="' + n + '"' + (can < 1 || job ? ' disabled' : '') + '>寫 ' + n + ' 張</button>';
-    R.sheet('<p class="kicker">白藤堂・二樓</p><h2>符卷師的書桌</h2><p class="note">掌櫃：「桌子借你用，紙要買。」一張牛皮紙寫一張卷軸。寫好的放在背包裡，下遺跡自動帶著；放技能時先用寫好的（冷卻短一點），用完了照樣能放（沒有卷軸的冷卻加成）——每次 ' + improv() + ' 費拉。</p>'
+    R.sheet('<p class="kicker">白藤堂・二樓</p><h2>符卷師的書桌</h2><p class="note">掌櫃：「桌子借你用，紙要買。」一張牛皮紙寫一張卷軸。寫好的放在背包裡，下遺跡自動帶著；放技能時先用寫好的（冷卻短一點），用完了照樣能放（沒有卷軸的冷卻加成）──每次 ' + improv() + ' 費拉。</p>'
       + '<div class="recipes"><div class="recipe"><b>寫好的卷軸 ' + have + '／' + cap() + ' 張</b><small>寫一張要 ' + sp.toFixed(1) + ' 秒（等級越高、拿著毛筆、轉職過的，寫得越快）</small><div class="meter" style="margin:6px 0"><i id="sw-bar" style="width:0%"></i></div><small id="sw-st">' + (job ? '寫字中……' : '') + '</small></div>'
       + '<div class="recipe"><b>牛皮紙 ' + paper + ' 張</b><small>一張 ' + PRICE + ' 費拉（身上 ' + s.gold + ' 費拉）</small><div class="row"><button type="button" class="btn" data-pb="5"' + (s.gold < PRICE * 5 ? ' disabled' : '') + '>買 5 張</button><button type="button" class="btn" data-pb="20"' + (s.gold < PRICE * 20 ? ' disabled' : '') + '>買 20 張</button></div></div></div>'
       + '<div class="row">' + [1, 5].filter(n => n < can).map(wb).join('') + (can >= 1 ? wb(can) : '<small>' + (room < 1 ? '背包裡的卷軸滿了。' : '沒有牛皮紙。') + '</small>') + '</div>',

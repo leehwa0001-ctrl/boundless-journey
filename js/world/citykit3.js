@@ -1,6 +1,6 @@
 // 精緻城市（三）：建築、屋頂（瓦、反り）、樹（冬天：落葉樹是光禿禿的枝、松和杉是綠的）、街上的東西、招牌、人、車、電車（作者 2026-10-08）
 // 全部掛在 B（citykit2.js 的蓋城工具）上：
-//   B.bld({ r, h, style, face, col, roof, name, … })  一棟樓（style：office、glass、apt、house、shop、machiya、kura、brick、factory）
+//   B.bld({ r, h, style, face, col, roof, name, …… })  一棟樓（style：office、glass、apt、house、shop、machiya、kura、brick、factory）
 //   B.roof(x, z, w, d, { type, h, o, sori, mat, ry, y })  屋頂（gable 切妻、hip 寄棟、pyramid 方形、irimoya 入母屋）
 //   B.tree(x, z, kind, s)  kind：pine、cedar、round、bare、shrub、bamboo
 //   B.lamp、B.lantern、B.vend、B.bench、B.poles、B.torii、B.sign、B.flag、B.hedge、B.fence、B.bollard、B.busStop
@@ -57,7 +57,7 @@
     g.fillStyle = o.fg || '#F4ECD8'; g.font = (o.weight || 'bold') + ' ' + Math.round(cw * 0.82) + 'px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
     if (o.neon) { g.shadowColor = o.fg || '#FFF'; g.shadowBlur = 10; }
     ch.forEach((t, i) => vert ? g.fillText(t, c.width / 2, pad + cw * i + cw / 2 + 2) : g.fillText(t, pad + cw * i + cw / 2, c.height / 2 + 2));
-    // 2026-10-09 作者：調低畫質還是會卡——每塊招牌一個材質＝一次繪製（吉山九十幾塊）。改成畫進 1024×1024 的大圖（照亮法、橫直分頁），
+    // 2026-10-09 作者：調低畫質還是會卡──每塊招牌一個材質＝一次繪製（吉山九十幾塊）。改成畫進 1024×1024 的大圖（照亮法、橫直分頁），
     // 回傳 { isSignRef, mat: 那一頁的材質, uv: 那一格 }，合併繪製（citykit.js）換材質、換 uv。太長放不下的照舊自己一張。
     const kind = (o.neon ? 'n' : o.lit ? 'l' : 'p') + (vert ? 'v' : 'h'), spot = atlasPut(kind, c);
     if (spot) { const ref = { isSignRef: true, mat: spot.mat, uv: spot.uv, userData: { aspect: c.width / c.height } }; SIGNS.set(key, ref); return ref; }
@@ -366,7 +366,7 @@
   // ---------- 會動的：路人、車、電車 ----------
   const carMats = () => ({ glass: CK.M('glass'), tire: CK.M('rubber'), head: CK.mat('carHead', { col: '#FFF8E8', em: '#FFF4D8', ei: 0, lamp: true, snow: 0 }), tail: CK.mat('carTail', { col: '#8A1A1A', em: '#FF2A1A', ei: 0.6, neon: true, snow: 0 }), chrome: CK.M('metal') });
   const paint = c => CK.mat('carPaint|' + c, { col: c, rough: 0.28, metal: 0.55, env: 1.2, snow: 0.8 });
-  // 2026-10-09 作者：調低畫質還是會卡——一台車十幾個方塊＝十幾次繪製：做好以後同一個材質的合成一塊（車、電車的每一節）
+  // 2026-10-09 作者：調低畫質還是會卡──一台車十幾個方塊＝十幾次繪製：做好以後同一個材質的合成一塊（車、電車的每一節）
   const mergeGroup = grp => { const Bt = CK.batch(); grp.children.slice().forEach(o => { if (!o.isMesh) return; Bt.add(o.geometry, o.material, o.position.x, o.position.y, o.position.z, o.scale.x, o.scale.y, o.scale.z, o.rotation.x, o.rotation.y, o.rotation.z, { uv: 'keep' }); grp.remove(o); }); Bt.flush(grp); return grp; };
   CK.makeCar = (col, kind) => {
     const TH = T(), g = CK.geo(), grp = new TH.Group(), m = carMats(), body = paint(col), add = (geo, mat, x, y, z, sx, sy, sz, rx) => { const o = new TH.Mesh(geo, mat); o.position.set(x, y, z); o.scale.set(sx, sy, sz); if (rx) o.rotation.x = rx; o.castShadow = true; grp.add(o); return o; };
@@ -446,6 +446,7 @@
       const ox = Math.cos(ang) * n.lane * dir, oz = -Math.sin(ang) * n.lane * dir;
       n.x = x + ox; n.z = z + oz; n.h.g.visible = !far;
       if (far) return;
+      { const o = { x: n.x, z: n.z }; R.collide(o, 0.28); n.x = o.x; n.z = o.z; }   // 2026-10-22 看得到的才推開：路燈柱、橋的欄杆、站著的人擋在路線上就繞過去，不會穿過去
       n.h.g.position.set(n.x, CK.heightAt(n.x, n.z), n.z); n.h.g.rotation.y = dir > 0 ? ang : ang + Math.PI; R.animHero(n.h, blocked ? 0 : n.sp, dt, false);
     });
     // 車：前面有人或車就停
@@ -455,6 +456,7 @@
       // 前面有人、同方向的車就停；交叉的車：編號小的先走（不會兩台互相卡死）
       const ahead = (ox, oz, far, wide) => { const al = ox * ux + oz * uz, sd = Math.abs(ox * uz - oz * ux); return al > 0.5 && al < far && sd < wide; };
       let stop = ahead(P.x - x, P.z - z, 7, 1.9);
+      if (!stop && tw.carStop) stop = !!tw.carStop(x, z, ux, uz);   // 城市自己的規則（東鶴：平交道的柵欄放下了）
       if (!stop) tw.cars.forEach((o, k) => { if (stop || o === c || o.x == null) return; const same = Math.sin(o.ang) * ux + Math.cos(o.ang) * uz; if (same > 0.6) stop = ahead(o.x - x, o.z - z, 8.5, 1.9); else if (k < tw.cars.indexOf(c)) stop = ahead(o.x - x, o.z - z, 6.5, 2.6); });
       c.v = Math.max(0, Math.min(c.vmax, c.v + (stop ? -18 : 4) * dt)); c.s += c.v * dt; c.x = x; c.z = z; c.ang = ang;
       c.g.position.set(x, CK.heightAt(x, z) > 0.3 ? CK.heightAt(x, z) : 0, z); c.g.rotation.y = ang + Math.PI;   // 車頭朝 -z

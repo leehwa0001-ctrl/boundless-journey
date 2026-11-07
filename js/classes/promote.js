@@ -3,7 +3,7 @@
 //   1. 公會段位：冒險段・白銀階以上（ranks.js 的 R.S.rank）；
 //   2. 轉職試煉：在公會報名之後，帶著委託（討伐令或委託板的委託）下遺跡，用這個武器類別打倒一隻精英或領主體。
 //   存在 R.S.classes[職業].trial：1＝報名了、2＝通過了。
-// - 轉職路線的技能：原本照 8 級轉職寫的（8、11、14、18、24 級），全部往後挪 7 級（15、18、21、25、31）——R.skillNeedLv。
+// - 轉職路線的技能：原本照 8 級轉職寫的（8、11、14、18、24 級），全部往後挪 7 級（15、18、21、25、31）──R.skillNeedLv。
 // - 舊存檔：這次改之前就轉職的職業（st.advLegacy）照舊，不會被退回，路線技能的等級也照舊。重選路線不用再考。
 // 放在 hub.js、ranks.js、skillbook.js、skillpoints.js、questboard.js 後面。
 (function (R) {
@@ -20,7 +20,7 @@
     return [
       { ok: st.lv >= R.PROMOTE_LV, txt: '職業等級 ' + R.PROMOTE_LV + '（現在 ' + st.lv + '）' },
       { ok: rankOk(), txt: '公會段位：冒險段・白銀階以上（現在 ' + (R.rankName ? R.rankName() : '—') + '）' },
-      { ok: st.trial === 2, txt: '轉職試煉：' + (st.trial === 2 ? '通過了' : st.trial === 1 ? '報名了——帶著委託下遺跡，用' + R.CLASSES[cls].name + '打倒一隻精英或領主體' : '還沒報名') },
+      { ok: st.trial === 2, txt: '轉職試煉：' + (st.trial === 2 ? '通過了' : st.trial === 1 ? '報名了──帶著委託下遺跡，用' + R.CLASSES[cls].name + '打倒一隻精英或領主體' : '還沒報名') },
       { ok: (s.mats.core || 0) >= 1, txt: '魔力核心 1 顆（有 ' + (s.mats.core || 0) + ' 顆）' }
     ];
   };

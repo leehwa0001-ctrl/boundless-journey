@@ -1,11 +1,11 @@
 // 精緻城市（二）：地面、道路、人行道、水、高度、碰撞，進城、每一格、狀態列、地圖、選單、搭車（作者 2026-10-08）
-// 城市的檔案用 R.CK.define({ id, name, walk: [x0, z0, x1, z1], land, spawn, build(B) { … } })；B 是這裡的「蓋城」工具：
+// 城市的檔案用 R.CK.define({ id, name, walk: [x0, z0, x1, z1], land, spawn, build(B) { …… } })；B 是這裡的「蓋城」工具：
 //   B.road(x0, z0, x1, z1, { sw, name, line })   車道（軸對齊的長方形）；sw＝兩邊人行道的寬（自動扣掉跟別的路重疊的部分、路口畫斑馬線）
 //   B.plaza(x0, z0, x1, z1, mat)                  高 0.12 的廣場（跟人行道一樣高）
 //   B.zone(poly, mat, y)                           平的地面（草地、砂石、沙灘、泥土）
 //   B.water(poly, { level, bank })                水（地面挖洞、水面、護岸、碰撞；橋下不擋）
 //   B.bridge(x0, z0, x1, z1, { deck, rise, axis }) 走得上去的橋（拱橋：中間高）
-//   B.terrace(x0, z0, x1, z1, h, { wall, open })   台地（擋土牆、碰撞；open 是留給階梯的缺口）；B.stairs(…) 階梯
+//   B.terrace(x0, z0, x1, z1, h, { wall, open })   台地（擋土牆、碰撞；open 是留給階梯的缺口）；B.stairs(……) 階梯
 //   B.solid(x0, z0, x1, z1)                        擋人的方塊（在 B.frame 裡會跟著轉：旋轉的方塊另外算）
 //   B.inter(x, z, r, label, act, icon)、B.walk(pts, n)、B.route(pts, n)、B.lamp(x, z)、B.area(name, rect)、B.label(text, x, z)
 // 建築、屋頂、樹、街上的東西、人、車在 citykit3.js（也掛在 B 上）。
@@ -102,7 +102,7 @@
     B.zone = (poly, mat, y) => { if (poly.length === 4 && typeof poly[0] === 'number') poly = rectPoly(poly); D.zones.push({ poly, mat: mat || 'grass', y: y == null ? 0.02 : y }); };
     B.water = (poly, o) => { if (poly.length === 4 && typeof poly[0] === 'number') poly = rectPoly(poly); o = o || {}; D.water.push({ poly, level: o.level == null ? -1.2 : o.level, bank: o.bank || 'ishi', fence: !!o.fence, name: o.name || '' }); };
     B.bridge = (x0, z0, x1, z1, o) => { o = o || {}; const r = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)]; const b = Object.assign({ r, deck: 0.12, rise: 0, axis: (r[2] - r[0]) > (r[3] - r[1]) ? 'x' : 'z', rail: true, mat: 'gran', railMat: 'ashlar' }, o, { r }); D.bridges.push(b); bridgeH(b); return r; };
-    // 台地：h 高；open＝[[x0, z0, x1, z1], …] 擋土牆留的缺口（接階梯）
+    // 台地：h 高；open＝[[x0, z0, x1, z1], ……] 擋土牆留的缺口（接階梯）
     B.terrace = (x0, z0, x1, z1, h, o) => { o = o || {}; const r = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)]; D.terr.push({ r, h, wall: o.wall || 'ishi', top: o.top || 'gravel', open: o.open || [], batter: o.batter == null ? 0.12 : o.batter, rail: o.rail }); hgEach(r, () => h); return r; };
     // 階梯：dir＝往哪邊爬上去（'n'、's'、'e'、'w'），h0→h1
     B.stairs = (x0, z0, x1, z1, dir, h0, h1, o) => { o = o || {}; const r = [Math.min(x0, x1), Math.min(z0, z1), Math.max(x0, x1), Math.max(z0, z1)]; const t = { r, stairs: dir, h0, h1, mat: o.mat || 'gran', side: o.side || 'ishi', ramp: !!o.ramp }; D.terr.push(t); stairsH(t); return r; };
@@ -203,7 +203,8 @@
         const t0 = i / n, t1 = (i + 1) / n, y0 = yAt(t0), y1 = yAt(t1), a = (ax ? r[0] : r[1]) + L * t0, c = L / n, slope = Math.atan2(y1 - y0, c);
         const cx = ax ? a + c / 2 : (r[0] + r[2]) / 2, cz = ax ? (r[1] + r[3]) / 2 : a + c / 2, len = Math.hypot(c, y1 - y0) + 0.02;
         const dm = M(b.mat, { ground: 1 }); if (ax) Bt.add(g.box, dm, cx, (y0 + y1) / 2 - 0.25, cz, len, 0.5, Wd, 0, 0, slope); else Bt.add(g.box, dm, cx, (y0 + y1) / 2 - 0.25, cz, Wd, 0.5, len, -slope, 0, 0);
-        if (b.rail) [-1, 1].forEach(sd => { const o = sd * (Wd / 2 - 0.15); if (ax) Bt.add(g.box, M(b.railMat), cx, (y0 + y1) / 2 + 0.45, cz + o, len, 0.9, 0.3, 0, 0, slope); else Bt.add(g.box, M(b.railMat), cx + o, (y0 + y1) / 2 + 0.45, cz, 0.3, 0.9, len, -slope, 0, 0); });
+        if (b.rail && CK.bridgeRail) CK.bridgeRail(Bt, g, M, b, { ax, cx, cz, y0, y1, len, slope, Wd, i, n, a, c });   // 2026-10-26：照材質畫柱子、橫木（bridgekit.js）
+        else if (b.rail) [-1, 1].forEach(sd => { const o = sd * (Wd / 2 - 0.15); if (ax) Bt.add(g.box, M(b.railMat), cx, (y0 + y1) / 2 + 0.45, cz + o, len, 0.9, 0.3, 0, 0, slope); else Bt.add(g.box, M(b.railMat), cx + o, (y0 + y1) / 2 + 0.45, cz, 0.3, 0.9, len, -slope, 0, 0); });
       }
       if (b.rail) [-1, 1].forEach(sd => { const o = sd * (Wd / 2 - 0.15); if (ax) R.addBox(r[0] + 0.3, r[2] - 0.3, (r[1] + r[3]) / 2 + o - 0.15, (r[1] + r[3]) / 2 + o + 0.15, 'rail'); else R.addBox((r[0] + r[2]) / 2 + o - 0.15, (r[0] + r[2]) / 2 + o + 0.15, r[1] + 0.3, r[3] - 0.3, 'rail'); });
       // 橋墩：每 12 公尺一個（拱橋沒有）
@@ -282,7 +283,7 @@
     sc.add(sun); sc.add(sun.target); W.moon = sun; W.torch = null;
     sc.fog = new TH.FogExp2(0xffffff, 0.0008);
     const pts = []; const np = R.touch ? 4 : 8; for (let i = 0; i < np; i++) { const p = new TH.PointLight(new TH.Color('#FFD8A8').convertSRGBToLinear(), 0, 18, 1.8); p.position.set(0, -50, 0); sc.add(p); pts.push(p); }
-    CK.lampLights = (L0, qq) => { const n = qq >= 2 ? L0.length : qq === 1 ? Math.min(L0.length, 4) : 0; L0.forEach((p, i) => { p.visible = i < n; }); };   // 2026-10-10：路燈照地的光——低畫質不開（每個像素都要算每一盞）、中 4 盞、高 8 盞
+    CK.lampLights = (L0, qq) => { const n = qq >= 2 ? L0.length : qq === 1 ? Math.min(L0.length, 4) : 0; L0.forEach((p, i) => { p.visible = i < n; }); };   // 2026-10-10：路燈照地的光──低畫質不開（每個像素都要算每一盞）、中 4 盞、高 8 盞
     CK.lampLights(pts, q);
     tw.L = { sky, skyM, envSc, hemi, sun, pts, pm: new TH.PMREMGenerator(W.renderer), env: null, envKey: '', lastH: -1 };
     // 雪（或雨）：在鏡頭附近的一個盒子裡循環，頂點著色器自己算位置
@@ -304,7 +305,7 @@
     L.sun.color.copy(u.sunCol.value); L.sun.intensity = k.sunI; L.sunDir = k.s.dir;
     L.hemi.color.copy(u.top.value).lerp(new TH.Color(1, 1, 1), 0.35); L.hemi.groundColor.copy(lc([0.34, 0.31, 0.28])).convertSRGBToLinear(); L.hemi.intensity = k.hemiI * (k.night > 0.5 ? 0.6 : 1);
     // 環境反光：時間、天氣變了才重算
-    // 2026-10-09 作者：調低畫質還是會卡——環境反光每 15 分鐘（遊戲時間，現實約 11 秒）重算一次會頓一下：改成每小時；低畫質不用環境反光（環境光調亮補回來）
+    // 2026-10-09 作者：調低畫質還是會卡──環境反光每 15 分鐘（遊戲時間，現實約 11 秒）重算一次會頓一下：改成每小時；低畫質不用環境反光（環境光調亮補回來）
     const lowQ = CK.quality() === 0; if (u.oct) u.oct.value = CK.quality() >= 2 ? 6 : CK.quality() === 1 ? 4 : 2;
     const key = (lowQ ? 'low' : Math.round(h)) + '|' + wn; if (force || key !== L.envKey) { L.envKey = key; const old = L.env; if (lowQ) { L.env = null; W.scene.environment = null; } else { L.env = L.pm.fromScene(L.envSc, 0.02); W.scene.environment = L.env.texture; } if (old) old.dispose(); }
     if (lowQ) L.hemi.intensity *= 1.7;
@@ -326,6 +327,22 @@
   };
   CK.applyTime = applyTime;
 
+  // ---------- 海上擋起來（2026-10-26：靠海的城原本海面整片都能走）----------
+  // land 外面的格子是海；廣場、碼頭（B.plaza）、橋、木板路（B.bridge）、路、人行道、台地、地面（B.zone，水以外）上面照樣能走。每一列連在一起的海併成一個方塊。
+  const blockSea = (B, city) => {
+    const D = B.D, w = city.walk, land = city.land, pad = 0.3;
+    const inPoly = (x, z, P) => { let c = false; for (let i = 0, j = P.length - 1; i < P.length; j = i++) { const [xi, zi] = P[i], [xj, zj] = P[j]; if ((zi > z) !== (zj > z) && x < (xj - xi) * (z - zi) / (zj - zi) + xi) c = !c; } return c; };
+    const rects = [].concat(D.slabs.map(q => q.r), D.bridges.map(q => q.r), D.roads.map(q => q.r), D.walkways || [], D.terr.map(q => q.r));
+    const zones = D.zones.filter(q => !/water|sea/.test(q.mat)).map(q => q.poly);
+    const open = (x, z) => rects.some(r => x > r[0] - pad && x < r[2] + pad && z > r[1] - pad && z < r[3] + pad) || zones.some(P => inPoly(x, z, P));
+    for (let z = Math.floor(w[1]); z < w[3]; z++) {
+      let run = null;
+      for (let x = Math.floor(w[0]); x <= w[2]; x++) {
+        const sea = x < w[2] && !inPoly(x + 0.5, z + 0.5, land) && !open(x + 0.5, z + 0.5);
+        if (sea && run == null) run = x; else if (!sea && run != null) { R.addBox(run, x, z, z + 1, 'water'); run = null; }
+      }
+    }
+  };
   // ---------- 進城 ----------
   const build = (city, sc) => {
     const TH = T(), group = new TH.Group(), tw = W.town;
@@ -335,6 +352,7 @@
     if (CK.extendBuilder) CK.extendBuilder(B);
     try { city.build(B); } catch (e) { console.error('[city ' + city.id + ']', e); }
     finishGround(B);
+    if (city.sea && city.land && city.seaBlock !== false) blockSea(B, city);
     B.Bt.flush(group);
     if (B.after) B.after.forEach(f => { try { f(); } catch (e) { console.error(e); } });
     sc.add(group); tw.group = group;
@@ -362,7 +380,6 @@
     if (R.SEE) R.SEE.r.value = 3.2;
     W.cam.yawT = city.camYaw || 0; R.placeCam(null); fixCam(0); CK.fixSprites();
     applyTime(true);
-    try { W.renderer.compile(W.scene, W.camera); } catch (e) { }
     hud(true);
     ['r-hurt', 'r-blind', 'r-field'].forEach(k => { const v = $(k); if (v) v.style.opacity = 0; });
     const s = S(); s.ck = s.ck || {}; const first = !s.ck[id]; s.ck[id] = (s.ck[id] || 0) + 1; R.save();

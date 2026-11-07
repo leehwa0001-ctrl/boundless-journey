@@ -60,6 +60,19 @@
         const lab = () => { b.textContent = '減少閃光：' + (R.lessFlash() ? '開' : '關'); };
         lab(); b.onclick = () => { try { localStorage.setItem('tfl_lessflash', R.lessFlash() ? '0' : '1'); } catch (e) { } lab(); }; slot(w, 'screen').appendChild(b);
       }
+      // 語言（2026-10-27，i18n.js）：中文 → English → Deutsch，換了重新載入
+      if (R.LANGS && R.setLang && !sh.querySelector('#lang-tg')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'lang-tg'; b.setAttribute('translate', 'no');
+        const i = Math.max(0, R.LANGS.findIndex(x => x[0] === R.lang));
+        b.textContent = '🌐 ' + R.LANGS[i][1] + ' → ' + R.LANGS[(i + 1) % R.LANGS.length][1];
+        b.onclick = () => R.setLang(R.LANGS[(i + 1) % R.LANGS.length][0]); slot(w, 'screen').appendChild(b);
+      }
+      // 手機：全螢幕／隱藏網址列（2026-10-27，fullscreen.js）
+      if (R.fsCan && R.fsCan() && !sh.querySelector('#fs-tg')) {
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'fs-tg';
+        const lab = () => { b.textContent = R.fsLabel(); };
+        lab(); b.onclick = () => { R.fsToggle(); lab(); }; slot(w, 'screen').appendChild(b);
+      }
       // 城裡的快捷鍵欄（2026-10-18，townbar.js）
       if (R.townBarOn && !sh.querySelector('#tb-tg')) {
         const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'tb-tg';
@@ -86,7 +99,7 @@
       if (cont.id === 'ps-x' && R.skillViewSheet && !sh.querySelector('#ps-skills')) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn'; b.id = 'ps-skills'; b.textContent = '查看目前技能'; b.onclick = () => R.skillViewSheet(); slot(w, 'char').prepend(b); }
       const vol = sh.querySelector('.vol-row'); if (vol && !vol.closest('.em-wrap')) { const s = w.querySelector('.em-s-sound'); s.insertBefore(vol, s.querySelector('.em-btns')); }
       [...sh.querySelectorAll('button')].forEach(b => {
-        if (b.classList.contains('cx-x') || b.closest('.em-wrap') || b.closest('.cs-box') || b.closest('.vol-row') || b.closest('details')) return;   // 2026-10-15 修：右上角的 ✕（closex.js）不要搬——搬走了 closex 又補一顆、再被搬，越長越多
+        if (b.classList.contains('cx-x') || b.closest('.em-wrap') || b.closest('.cs-box') || b.closest('.vol-row') || b.closest('details')) return;   // 2026-10-15 修：右上角的 ✕（closex.js）不要搬──搬走了 closex 又補一顆、再被搬，越長越多
         if (b.closest('.keys,.keyrow')) return;
         let k = kindOf(b); if (b === cont) k = 'game';
         const d = slot(w, k); if (b === cont) d.prepend(b); else d.appendChild(b);
@@ -106,7 +119,7 @@
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
   R.escMenuOrganize = organize;
-  // 目前技能：裝著的每一格技能——名字、種類、實際冷卻（含冷卻縮減）、魔力、完整說明、技能變化；看完「回去」回到 Esc 選單
+  // 目前技能：裝著的每一格技能──名字、種類、實際冷卻（含冷卻縮減）、魔力、完整說明、技能變化；看完「回去」回到 Esc 選單
   R.skillViewSheet = () => {
     const W = R.W, P = W && W.P; if (!P || !R.SKILLS) return; const esc = t => R.esc(String(t == null ? '' : t));
     const lo = R.loadoutOf ? R.loadoutOf(P.cls) : [P.skill], un = R.SKILL_UNLOCK || [1, 3, 6, 10, 15], ids = [];

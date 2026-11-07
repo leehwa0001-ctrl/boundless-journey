@@ -17,7 +17,7 @@
   // 一個地方有沒有被牆擋住（照射、推進碰到牆就停）
   const blocked = (x, z) => !!(R.pointBlocked && R.pointBlocked(x, z));
 
-  // ---------- 投射物的樣子：斧頭、盾、刀、紙符…（形狀、材質共用，不會越玩越卡） ----------
+  // ---------- 投射物的樣子：斧頭、盾、刀、紙符……（形狀、材質共用，不會越玩越卡） ----------
   const LOOK = {}, mat = {};
   const lookMesh = key => {
     const t = TH(); if (!LOOK[key]) {
@@ -84,7 +84,7 @@
       });
       R.sfx && R.sfx('magic');
     },
-    // 設置：在準心處立一個東西 t 秒——自動射擊（rate 秒一發）、回復（heal：每秒回復生命的比例）、強化（站在旁邊）、範圍傷害、變慢
+    // 設置：在準心處立一個東西 t 秒──自動射擊（rate 秒一發）、回復（heal：每秒回復生命的比例）、強化（站在旁邊）、範圍傷害、變慢
     turret(s, P, w, pw) {
       const t = TH(), run = w.run, [x, z] = R.nearestFloor(...(s.self ? [P.x + Math.sin(P.aimA) * 1.5, P.z + Math.cos(P.aimA) * 1.5] : aimIn(P, s.range0 || 7)));
       const g = new t.Group(); g.position.set(x, 0, z);

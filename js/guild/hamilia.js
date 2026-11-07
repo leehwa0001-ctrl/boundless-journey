@@ -147,7 +147,7 @@
       const room = R.roomIndexAt ? R.roomIndexAt(q[0], q[1]) : -1, e = R.spawnEnemy(id, q[0], q[1], room, { aggro: true });
       if (e) { e.aggro = true; e.provoked = true; e.dormant = false; e._hmTg = 1; list.push(e); }
     }
-    if (list.length) { obj.enc = list; R.banner && R.banner('有遺跡生物衝著委託人來了！', '委託人停下來了（時間暫停）——把牠們打倒。'); }
+    if (list.length) { obj.enc = list; R.banner && R.banner('有遺跡生物衝著委託人來了！', '委託人停下來了（時間暫停）──把牠們打倒。'); }
   };
   const moveNpc = (o, dt) => {
     if (o.wait > 0) { o.wait -= dt; if (R.animHero) R.animHero(o.h, 0, dt, false); return; }

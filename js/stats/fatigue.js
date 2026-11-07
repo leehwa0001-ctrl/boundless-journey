@@ -274,7 +274,7 @@
       const box = document.createElement('div'); box.className = 'fat-use';
       box.innerHTML = '<h4>疲憊值 <b style="color:' + tierCol(v) + '">' + fmt(v) + '／' + fmt(MAX()) + '</b>・' + tierName(v) + '</h4>'
         + (L.length ? '<div class="fat-btns">' + L.map(x => '<button type="button" class="mini" data-fatuse="' + x[0] + ':' + x[1] + '" title="' + (x[3] ? '疲憊值 +' + x[3] : '遺跡裡：恢復 80%') + '">' + x[2] + nameOf(x) + '（' + owned(x) + '）</button>').join('') + '</div>'
-          : '<p class="note">沒有隨身用品。白藤堂有賣提神藥、乾糧、小帳篷；糰子、銅鑼燒、驅寒茶也可以自己吃。</p>');
+          : '<p class="note">沒有隨身用品。白藤堂有賣提神藥，倉庫的公會補給有乾糧、小帳篷；糰子、銅鑼燒、驅寒茶也可以自己吃。</p>');
       side.appendChild(box);
       box.querySelectorAll('[data-fatuse]').forEach(b => { b.onclick = () => { const [g, k] = b.dataset.fatuse.split(':'); use(USE.find(x => x[0] === g && x[1] === k)); }; });
     } catch (e) { console.warn('[fatigue]', e); }

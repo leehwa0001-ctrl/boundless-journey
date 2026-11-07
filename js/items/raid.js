@@ -396,13 +396,13 @@
   const hub0 = R.hub;
   R.hub = (t, f) => {
     hub0(t, f);
-    const tab = document.querySelector('[data-htab][aria-selected="true"]'), body = $('hub-body'); if (!body || !tab || tab.dataset.htab !== 'shop') return;
+    const tab = document.querySelector('[data-htab][aria-selected="true"]'), body = $('hub-body'); if (!body || !tab || tab.dataset.htab !== 'stash') return;   // 2026-10-27：從白藤堂搬到倉庫（公會補給）
     const s = S(); packs();
     const sec = document.createElement('div'); sec.className = 'pk-box';
-    sec.innerHTML = '<h3>背包</h3><p class="note">遺跡裡撿到的東西都要放進背包的格子；越大的背包裝得越多。倒下的話背的那個會留在遺跡裡（布袋公會會再發）。現在背的是 <b>' + esc(PACKS[s.pack].name) + '</b>。</p><div class="pk-list">'
+    sec.innerHTML = '<h3>公會補給・背包</h3><p class="note">遺跡裡撿到的東西都要放進背包的格子；越大的背包裝得越多。倒下的話背的那個會留在遺跡裡（布袋公會會再發）。現在背的是 <b>' + esc(PACKS[s.pack].name) + '</b>。</p><div class="pk-list">'
       + Object.keys(PACKS).map(k => { const p = PACKS[k], n = s.packs[k] || 0; return '<div class="pk-card' + (s.pack === k ? ' on' : '') + '"><b>' + esc(p.name) + '</b><small>' + p.w + '×' + p.h + '＝' + (p.w * p.h) + ' 格' + (k === 'sack' ? '' : '・' + p.price + ' 費拉・有 ' + n + ' 個') + '</small><span>' + esc(p.desc) + '</span><div class="row">'
         + (k !== 'sack' ? '<button type="button" class="btn" data-pkbuy="' + k + '"' + (s.gold < p.price ? ' disabled' : '') + '>買</button>' : '') + (n > 0 && s.pack !== k ? '<button type="button" class="btn pri" data-pkuse="' + k + '">背這個</button>' : s.pack === k ? '<span class="note">背著</span>' : '') + '</div></div>'; }).join('') + '</div>';
-    body.prepend(sec);
+    body.appendChild(sec);
     sec.querySelectorAll('[data-pkbuy]').forEach(b => { b.onclick = () => { const k = b.dataset.pkbuy, p = PACKS[k]; if (s.gold < p.price) return; s.gold -= p.price; s.packs[k] = (s.packs[k] || 0) + 1; if (s.pack === 'sack') s.pack = k; R.save(); R.sfx && R.sfx('coin'); R.hub(); R.toast('買了' + p.name + '。'); }; });
     sec.querySelectorAll('[data-pkuse]').forEach(b => { b.onclick = () => { s.pack = b.dataset.pkuse; R.save(); R.hub(); }; });
   };

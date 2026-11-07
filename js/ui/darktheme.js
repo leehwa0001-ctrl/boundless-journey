@@ -61,7 +61,7 @@
     // ── 2026-10-13 全遊戲統一（作者：「頁面更新後有些介面格格不入」）──
     // 共用的「紙」色票改成深色漆木：地圖說明欄、遺跡資料卡、怪物標籤等所有用 --paper 的地方一起變暗。
     'html:root{--paper:#211C27;--paper-ink:' + T + ';--paper-dim:' + DIM + ';--paper-line:rgba(201,161,58,.22);--hand-ink:#9EB6E8}',
-    // 一般按鈕（城鎮選單、快速移動、設定、背包…）：米白 → 深色＋細金邊；.pri/.red/.gold/.on 等修飾仍照原樣
+    // 一般按鈕（城鎮選單、快速移動、設定、背包……）：米白 → 深色＋細金邊；.pri/.red/.gold/.on 等修飾仍照原樣
     'html body .btn{background:linear-gradient(180deg,#2E2836,#25202C);color:' + T + ';border-color:#5E5040}',
     'html body .btn:hover:not(:disabled){background:linear-gradient(180deg,#3A3244,#2E2836);border-color:rgba(201,161,58,.7)}',
     'html body .btn.pri{background:linear-gradient(180deg,#8A3826,#6A2A1C);border-color:#A8442F;color:#F2E6D4}',

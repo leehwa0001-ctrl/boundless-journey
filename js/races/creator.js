@@ -42,7 +42,9 @@
     draw(); clearInterval(timer); timer = setInterval(() => { if (!cv.isConnected) { clearInterval(timer); return; } draw(); }, 240);
   };
   const sw = (key, list, cur, dis) => '<div class="swatches">' + list.map(c => '<button type="button" class="sw' + (c === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + c + '" style="--c:' + c + '" aria-label="' + c + '"' + (dis ? ' disabled' : '') + '></button>').join('') + '</div>';
-  const chips = (key, list, cur, dis) => '<div class="chips">' + list.map(([v, n]) => '<button type="button" class="chip' + (v === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + v + '"' + (dis ? ' disabled' : '') + '>' + esc(n) + '</button>').join('') + '</div>';
+  // 2026-11-03：英文、德文版「身高」的「高」要翻成 Tall／Groß，不是字典裡威脅度、等級用的 High——查「身高：高」
+  const chipName = (key, n) => key === 'height' && (R.lang === 'en' || R.lang === 'de') && R.tr ? R.tr('身高：' + n) : n;
+  const chips = (key, list, cur, dis) => '<div class="chips">' + list.map(([v, n]) => '<button type="button" class="chip' + (v === cur ? ' on' : '') + '" data-k="' + key + '" data-v="' + v + '"' + (dis ? ' disabled' : '') + '>' + esc(chipName(key, n)) + '</button>').join('') + '</div>';
   const lookStep = h => {
     const r = R.RACES[st.race], L = st.look, bald = !!r.look.bald, fixedHair = !!r.hairCol, O = R.LOOK_OPTS, FCOL = { ears: 'earCol', horns: 'hornCol', wings: 'wingCol', tail: 'tailCol' };
     h.innerHTML = '<div class="creator"><div class="cr-prev"><canvas id="cr-cv" width="360" height="166"></canvas><p class="note"><b style="color:' + R.TIERS[r.tier].color + '">' + esc(r.tier) + '・' + esc(r.name) + '</b>　' + esc(R.raceBonusText(st.race).join('・')) + '</p></div>'

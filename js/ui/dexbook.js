@@ -4,7 +4,7 @@
 //   右頁是一塊深色的框（四角的括弧、撕紙邊）：名字的布條、撕紙邊框著的大圖、生命值、說明、底下的擊敗次數；右上角紅色的 ✕ 闔上書。
 // - 只換外觀和多翻頁的動畫，內容照 dexui.js（書本外框、分級分頁）和 dexruins.js（左頁、右頁的內容）原本的。
 // - 書籤：dexui.js 的分級分頁搬到書的上緣；右邊多一個「地圖」書籤（＝原本右上角的地圖鈕）；✕＝原本的「東鶴／標題」。
-// - 翻頁：切分級分頁、選遺跡、回上一層、切小分頁（小怪／領主體／遺跡詳情）、右頁「出現的遺跡」跳過去——
+// - 翻頁：切分級分頁、選遺跡、回上一層、切小分頁（小怪／領主體／遺跡詳情）、右頁「出現的遺跡」跳過去──
 //   先把兩頁原本的樣子拍下來（複製一份），換好內容後，一張紙從右頁沿著書脊翻到左頁（往回是左翻到右），翻的時候有陰影、紙的聲音。
 //   點小頭像只換右頁：不翻，右頁的字像墨水一樣浮出來。
 // - A／D 或 ← →：換分級分頁（打字的時候不算）；Esc 闔上書。
@@ -185,11 +185,23 @@
 
   // ---------- 樣子 ----------
   const INK = '#24160C', PAPER = '#D7B37A', PAPER2 = '#C49A5E', GOLD = '#E2B65C';
+  // 2026-10-22 作者：圖鑑的背景（質感）再精細一點──紙的纖維和斑點、更細的木紋和木節、封面的皮革紋（都是 SVG 的雜訊，畫一次就好）
+  const svg = (w, h, body) => 'url("data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="' + w + '" height="' + h + '">' + body + '</svg>') + '")';
+  const noise = (id, bf, oct, seed, mat) => '<filter id="' + id + '" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="' + bf + '" numOctaves="' + oct + '" seed="' + seed + '" stitchTiles="stitch"/><feColorMatrix values="' + mat + '"/></filter>';
+  const FIBER = svg(300, 300, noise('f', '.9 .55', 4, 3, '0 0 0 0 .32 0 0 0 0 .2 0 0 0 0 .08 0 0 0 .9 -.32') + '<rect width="300" height="300" filter="url(#f)"/>');
+  const STAIN = svg(520, 520, noise('s', '.012', 3, 8, '0 0 0 0 .45 0 0 0 0 .28 0 0 0 0 .1 0 0 0 1.6 -.78') + '<rect width="520" height="520" filter="url(#s)"/>');
+  const GRAIN = svg(480, 480, noise('g', '.004 .22', 4, 5, '0 0 0 0 .16 0 0 0 0 .08 0 0 0 0 .03 0 0 0 1.25 -.42') + '<rect width="480" height="480" filter="url(#g)"/>');
+  const KNOT = svg(900, 700, '<g fill="none" stroke="rgba(30,14,4,.35)" stroke-width="2"><ellipse cx="180" cy="220" rx="16" ry="34"/><ellipse cx="180" cy="220" rx="9" ry="20"/><ellipse cx="640" cy="520" rx="12" ry="28"/><ellipse cx="640" cy="520" rx="6" ry="15"/></g><g fill="rgba(30,14,4,.5)"><ellipse cx="180" cy="220" rx="4" ry="8"/><ellipse cx="640" cy="520" rx="3" ry="6"/></g>');
+  const LEATHER = svg(200, 200, noise('l', '.45', 3, 11, '0 0 0 0 .05 0 0 0 0 .03 0 0 0 0 .12 0 0 0 1.4 -.5') + '<rect width="200" height="200" filter="url(#l)"/>');
+  const PAGE_L = STAIN + ',' + FIBER + ',linear-gradient(90deg,' + PAPER2 + ' 0,' + PAPER + ' 6%,' + PAPER + ' 88%,#A87E46 100%)';
+  const PAGE_R = STAIN + ',' + FIBER + ',linear-gradient(270deg,' + PAPER2 + ' 0,' + PAPER + ' 6%,' + PAPER + ' 88%,#A87E46 100%)';
   const css = document.createElement('style');
   css.textContent = [
     // 桌子：木板＋木紋
-    '#bestiary.bk-on{background:#6B4426 repeating-linear-gradient(90deg,rgba(0,0,0,0) 0 236px,rgba(30,16,6,.55) 236px 240px),linear-gradient(180deg,#7A4E2C,#5E3A20);overflow:hidden}',
-    '#bestiary.bk-on::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.35;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'240\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.012 .32\' numOctaves=\'3\' seed=\'4\'/%3E%3CfeColorMatrix values=\'0 0 0 0 .2 0 0 0 0 .1 0 0 0 0 .04 0 0 0 1.1 -.35\'/%3E%3C/filter%3E%3Crect width=\'240\' height=\'240\' filter=\'url(%23n)\'/%3E%3C/svg%3E");mix-blend-mode:multiply}',
+    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat;overflow:hidden}',   // 2026-10-22 作者：圖鑑背後沒有質感──換成畫的木桌（羅盤、墨水瓶、蠟燭、地圖）
+    '#bestiary.bk-on .dx-book .dx-left{background-blend-mode:normal,multiply}',
+    '#bestiary.bk-on .dx-book .dx-left{background-image:linear-gradient(90deg,rgba(140,100,50,.55) 0,rgba(0,0,0,0) 6%,rgba(0,0,0,0) 88%,rgba(150,105,55,.6) 100%),url("assets/art/dex/dex-paper.webp");background-size:auto,320px}',
+    '#bestiary.bk-on::before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.12;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'240\' height=\'240\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'.012 .32\' numOctaves=\'3\' seed=\'4\'/%3E%3CfeColorMatrix values=\'0 0 0 0 .2 0 0 0 0 .1 0 0 0 0 .04 0 0 0 1.1 -.35\'/%3E%3C/filter%3E%3Crect width=\'240\' height=\'240\' filter=\'url(%23n)\'/%3E%3C/svg%3E");mix-blend-mode:multiply}',
     '#bestiary.bk-on::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 45%,rgba(255,200,120,.12),rgba(0,0,0,.5) 85%)}',
     '#bestiary:not(.bk-on) .bk-desk{display:none}.bk-desk{position:absolute;inset:0;pointer-events:none;overflow:hidden}',
     '.bk-p{position:absolute;filter:drop-shadow(0 6px 4px rgba(0,0,0,.35))}',
@@ -198,6 +210,7 @@
     '.bk-candle path:first-of-type{animation:bkflame 1.6s ease-in-out infinite;transform-origin:60px 52px}@keyframes bkflame{0%,100%{transform:scale(1,1)}50%{transform:scale(.92,1.08)}}',
     // 版面：書擺在中間，上面那條、說明藏起來
     '#bestiary.bk-on>.bar,#bestiary.bk-on .b-intro{display:none}',
+    '@media (min-width:1000px){#bestiary.bk-on .b-body{padding:max(84px,12vh) max(48px,10vw) max(36px,7vh)!important}}',   // 2026-10-24 作者：木桌沒看到──書縮小一點，四周露出桌面
     '#bestiary.bk-on .b-body{position:relative;z-index:1;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:84px 24px 22px;overflow:hidden;max-width:none}',
     '#bestiary.bk-on #cards{width:min(1240px,100%);height:100%;max-height:820px;display:block}',
     // 書：紫色封面＋兩頁羊皮紙
@@ -241,7 +254,7 @@
     '#bestiary.bk-on .dx-count{font-family:"LXGW WenKai TC",var(--serif);color:#F2C66A;font-size:17px;text-shadow:0 2px 0 #6A4420}#bestiary.bk-on .dx-count b{color:#FFE29A}',
     '#bestiary.bk-on .dx-left .dx-tabs:not(.dx-gtabs) .dx-tab{border:3px solid ' + INK + ';background:#B08A56;color:#3A2414}#bestiary.bk-on .dx-left .dx-tabs:not(.dx-gtabs) .dx-tab.on{background:#E9CF9C}',
     // 右頁：深色的框（撕紙邊、四角的括弧）
-    '#bestiary.bk-on .dx-right{color:#D9B58A;padding:44px 50px 36px 46px;background:' + PANEL_BG + ',linear-gradient(270deg,' + PAPER2 + ' 0,' + PAPER + ' 6%,' + PAPER + ' 88%,#B08850 100%)}',
+    '#bestiary.bk-on .dx-right{color:#D9B58A;padding:44px 50px 36px 46px;background:' + PANEL_BG + ',' + PAGE_R + '}',
     '#bestiary.bk-on .dx-right p,#bestiary.bk-on .dx-right li{color:#D9B58A;line-height:1.6}#bestiary.bk-on .dx-right .note{color:#B79A7A}#bestiary.bk-on .dx-right b{color:#F2D49A}',
     '#bestiary.bk-on .dx-right .dx-h{font-family:"LXGW WenKai TC",var(--serif);color:' + GOLD + ';font-size:16px;border-bottom:1px solid rgba(226,182,92,.3);padding-bottom:3px;margin:14px 0 6px}',
     // 名字的布條（燕尾）
@@ -266,7 +279,20 @@
     '.bk-leaf.back .bk-face::after{background:linear-gradient(270deg,rgba(40,20,6,.9),rgba(40,20,6,.2) 60%,rgba(255,240,210,.25))}',
     '.bk-face{box-shadow:0 8px 16px rgba(0,0,0,.35)}',   // 不能用 filter：filter 會把 3D 壓平，背面就透出來
     '@property --sh{syntax:"<number>";inherits:true;initial-value:0}',
-    '@media (prefers-reduced-motion:reduce){.bk-leaf{display:none}}'
+    '@media (prefers-reduced-motion:reduce){.bk-leaf{display:none}}',
+    // 2026-10-22 修：瘦高的圖示（高過格子）會凸出框外──圖示一律縮進格子裡
+    '.dr-th img,.dx-th img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;min-width:0;min-height:0}',
+    // 2026-10-22 質感：桌子（細木紋＋木節＋木板接縫的亮邊）、紙（纖維＋斑點）、封面（皮革紋＋縫線）
+    '#bestiary.bk-on{background:#3A2414 url("assets/art/dex/dex-desk.webp") center/cover no-repeat}#bestiary.bk-on .bk-desk{display:none}',   // 2026-10-24 作者：木桌沒看到──換成畫的木桌（蠟燭、羅盤、墨水瓶、地圖都在畫裡，原本的向量小物件收起來）
+    '#bestiary.bk-on::before{opacity:.22}',
+    '#bestiary.bk-on .dx-left{background:' + PAGE_L + '}',
+    '#bestiary.bk-on .dx-book{background:' + LEATHER + ',linear-gradient(180deg,#5A4D9A,#3F3474)}',
+    '#bestiary.bk-on .dx-book::before{content:"";position:absolute;inset:6px;border:2px dashed rgba(220,200,255,.28);border-radius:10px;pointer-events:none}',
+    // 格子：深色的木框裡淡淡的光、選到的那格更亮
+    '#bestiary.bk-on .dr-th:not(.dr-empty),#bestiary.bk-on .dx-th{background:radial-gradient(circle at 50% 40%,#5A3A22,#2E1C10 75%)}',
+    // 書頁的厚度：頁緣一條一條的線
+    '#bestiary.bk-on .dx-left{box-shadow:-3px 3px 0 -1px #C9A46C,-5px 5px 0 -1px #B08A54,-7px 7px 0 -1px #C9A46C,-9px 9px 0 -2px ' + INK + '}',
+    '#bestiary.bk-on .dx-right{box-shadow:3px 3px 0 -1px #C9A46C,5px 5px 0 -1px #B08A54,7px 7px 0 -1px #C9A46C,9px 9px 0 -2px ' + INK + '}'
   ].join('\n');
   document.head.appendChild(css);
 })(window.R);

@@ -1,9 +1,9 @@
 // 無境之旅：領主體多七種（作者：領主體太少），總共十種；克森特級每一層（最後一層以外）都有領主區，大樓層有機會兩個。
-// - 環境專屬：霜冠鹿（凍原）、熔顎蜥（火山）、沙暴鯨（沙漠）、深淵王蛸（深海）——那個環境的克森特級遺跡優先出現。
+// - 環境專屬：霜冠鹿（凍原）、熔顎蜥（火山）、沙暴鯨（沙漠）、深淵王蛸（深海）──那個環境的克森特級遺跡優先出現。
 // - 遺跡形式：萬面樹（迷宮型）、朽翼龍（高塔型）、雷鳴猿（城區型）。
 // - 每一種有四套招式，血越少出招越密；招式都會先在地上畫出範圍（圈、扇形、直線）。
 (function (R) {
-  const W = () => R.W, ART = R.BEAST_ART, rnd = Math.random, wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
+  const W = () => R.W, rnd = Math.random, wrap = a => Math.atan2(Math.sin(a), Math.cos(a));
   const later = (f, ms) => { const run = W().run; setTimeout(() => { if (W().run === run && run && !run.done) f(); }, ms); };
   const targets = () => { const w = W(); return [w.P].concat((w.allies || []).filter(a => !a.downed), R.netTargets ? R.netTargets() : []).filter(t => t && !t.dead); };   // 多人連線：房主這邊也算別人（net2.js）
   const hitT = (t, dmg, e, o) => (t.ally ? R.hurtAlly(t, dmg, e, o) : R.hurtPlayer(dmg, e, o));
@@ -12,67 +12,18 @@
   // ---------- 資料 ----------
   const L = (o) => Object.assign({ ref: '', boss: 1, xp: 85 }, o);
   const NEW = {
-    frostdeer: L({ name: '領主體・霜冠鹿', hp: 700, dmg: 22, speed: 3.4, size: 2.2, ai: 'l_frost', armor: 0.2, env: 'snow', color: '#CFE6FF', eye: '#3A8AFF', desc: '凍原的克森特級遺跡裡的領主體。冰做的大角，走過的地方結霜。會射出一排排冰槍、吹起暴風雪、低頭衝撞，還會叫冰棺守出來。' }),
-    lavajaw: L({ name: '領主體・熔顎蜥', hp: 760, dmg: 24, speed: 2.8, size: 2.3, ai: 'l_lava', armor: 0.3, env: 'volcano', color: '#3A2420', eye: '#FFD04A', desc: '火山的克森特級遺跡裡的領主體。張嘴噴出扇形的火、讓熔岩從天上落下、甩尾掃一圈，地上會留下燒人的熔岩。' }),
-    sandwhale: L({ name: '領主體・沙暴鯨', hp: 820, dmg: 22, speed: 3, size: 2.6, ai: 'l_sand', armor: 0.15, env: 'desert', color: '#B89A6A', eye: '#1A1410', desc: '沙漠的克森特級遺跡裡的領主體。在沙子底下游，從腳下衝出來；捲起會追人的沙暴，噴出遮眼的沙。' }),
-    kraken: L({ name: '領主體・深淵王蛸', hp: 780, dmg: 22, speed: 1.8, size: 2.4, ai: 'l_kraken', armor: 0.15, env: 'deep', color: '#5A2A4A', eye: '#FFD04A', desc: '深海的克森特級遺跡裡的領主體。好幾條觸手一起砸下來，噴墨讓人看不清楚，還會捲起漩渦把人拉過去。' }),
-    faceforest: L({ name: '領主體・萬面樹', hp: 900, dmg: 20, speed: 0, size: 2.6, ai: 'l_tree', armor: 0.25, color: '#3A5A2E', eye: '#F2E6C8', desc: '迷宮型的克森特級遺跡最常見的領主體。不會移動；樹根一路竄過來、種子灑滿整間房、從腳下纏住人，還會結出根童。' }),
-    bonewyvern: L({ name: '領主體・朽翼龍', hp: 720, dmg: 24, speed: 4, size: 2.4, ai: 'l_wyvern', fly: 1, armor: 0.1, color: '#D8D0C0', eye: '#7FD8FF', desc: '高塔型的克森特級遺跡最常見的領主體。只剩骨頭的飛龍，從高處俯衝、吐出直線的骨焰、搧翅膀把人吹開。' }),
-    thunderape: L({ name: '領主體・雷鳴猿', hp: 760, dmg: 24, speed: 3.8, size: 2.2, ai: 'l_ape', armor: 0.15, color: '#4A4A7A', eye: '#FFE04A', desc: '城區型的克森特級遺跡最常見的領主體。跳起來砸地、叫雷落下、連續揮拳，吼一聲就是一圈震波。' })
+    frostdeer: L({ name: '領主體・霜冠鹿', hp: 700, dmg: 22, speed: 3.4, size: 2.2, ai: 'l_frost', armor: 0.2, env: 'snow', color: '#CFE6FF', eye: '#3A8AFF', desc: '頭上是冰做的大角，走過的地方都會結霜。會射出一排排冰槍、吹起暴風雪、低頭衝撞，打到一半還會把冰棺守叫出來。凍原的克森特級遺跡才遇得到。' }),
+    lavajaw: L({ name: '領主體・熔顎蜥', hp: 760, dmg: 24, speed: 2.8, size: 2.3, ai: 'l_lava', armor: 0.3, env: 'volcano', color: '#3A2420', eye: '#FFD04A', desc: '火山型克森特級遺跡的主人。一張嘴就是一片扇形的火，熔岩從天上落下來，尾巴一甩掃一整圈；打完地上到處是燒人的熔岩。' }),
+    sandwhale: L({ name: '領主體・沙暴鯨', hp: 820, dmg: 22, speed: 3, size: 2.6, ai: 'l_sand', armor: 0.15, env: 'desert', color: '#B89A6A', eye: '#1A1410', desc: '在沙子底下游，等你走過去才從腳下衝出來。會捲起追著人跑的沙暴，也會噴沙遮眼。住在沙漠的克森特級遺跡。' }),
+    kraken: L({ name: '領主體・深淵王蛸', hp: 780, dmg: 22, speed: 1.8, size: 2.4, ai: 'l_kraken', armor: 0.15, env: 'deep', color: '#5A2A4A', eye: '#FFD04A', desc: '好幾條觸手一起砸下來。噴墨讓人看不清楚，還會捲起漩渦把人往牠那邊拉。深海的克森特級遺跡裡才有。' }),
+    faceforest: L({ name: '領主體・萬面樹', hp: 900, dmg: 20, speed: 0, size: 2.6, ai: 'l_tree', armor: 0.25, color: '#3A5A2E', eye: '#F2E6C8', desc: '迷宮型的克森特級遺跡，最常碰到的就是牠。牠不會走動，可是樹根會一路竄過來、種子灑滿整間房、從腳下纏住人，還會結出根童。' }),
+    bonewyvern: L({ name: '領主體・朽翼龍', hp: 720, dmg: 24, speed: 4, size: 2.4, ai: 'l_wyvern', fly: 1, armor: 0.1, color: '#D8D0C0', eye: '#7FD8FF', desc: '只剩骨頭的飛龍，高塔型的克森特級遺跡裡最常見。從高處俯衝、吐出一直線的骨焰，翅膀一搧就把人吹開。' }),
+    carrionvulture: L({ name: '領主體・緋喙屍鷲', hp: 760, dmg: 23, speed: 3.6, size: 2.3, ai: 'l_vulture', armor: 0.12, env: 'desert', color: '#5E1210', eye: '#FFD24A', desc: '像人一樣站著的巨大屍鷲，光禿的紅頭，黑紅色的大翅膀拖在地上。在沙漠的克森特級遺跡裡，牠專吃倒在沙裡的東西：旁邊有生物倒下，牠就撲過去啄，吃了會回血，越吃越兇。會射出羽刃、從高處俯衝啄擊、搧起沙塵，還會叫屍鴉來。' }),
+    thunderape: L({ name: '領主體・雷鳴猿', hp: 760, dmg: 24, speed: 3.8, size: 2.2, ai: 'l_ape', armor: 0.15, color: '#4A4A7A', eye: '#FFE04A', desc: '城區型的克森特級遺跡裡最常遇到。跳起來砸地、叫雷劈下來、一拳接一拳；聽到牠吼，就是震波要來了。' })
   };
   Object.keys(NEW).forEach(id => { R.ENEMIES[id] = NEW[id]; });
 
-  // ---------- 點陣圖 ----------
-  const grid = (w, h) => {
-    const g = Array.from({ length: h }, () => Array(w).fill('.'));
-    const o = {
-      p(x, y, c) { x = Math.round(x); y = Math.round(y); if (y >= 0 && y < h && x >= 0 && x < w) g[y][x] = c; },
-      rect(x, y, ww, hh, c) { for (let j = 0; j < hh; j++) for (let i = 0; i < ww; i++) o.p(x + i, y + j, c); },
-      line(x0, y0, x1, y1, c) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) o.p(x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, c); },
-      thick(x0, y0, x1, y1, c, w) { for (let k = -w; k <= w; k++) o.line(x0, y0 + k, x1, y1 + k, c); },
-      ell(cx, cy, rx, ry, c, f) { for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) { const k = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2; if (k <= 1.05 && (!f || f(x, y))) o.p(x, y, c); } },
-      disc(cx, cy, r, c) { o.ell(cx, cy, r, r, c); },
-      rows: () => g.map(r => r.join(''))
-    };
-    return o;
-  };
-  const add = (id, pal, w, h, draw) => { const fr = [0, 1].map(f => { const G = grid(w, h); draw(G, f); return G.rows(); }); ART[id] = { pal, a: fr[0], b: fr[1] }; };
 
-  add('frostdeer', { a: '#CFE6FF', A: '#9AC0E8', d: '#5A78A0', w: '#F4FAFF', e: '#3A8AFF', k: '#1A2A3A' }, 32, 30, (G, fr) => {
-    G.ell(14, 17, 9, 5, 'A'); G.ell(13, 16, 8, 4, 'a'); G.thick(21, 14, 25, 9, 'a', 1); G.ell(26, 8, 3.5, 2.6, 'a'); G.p(27, 7, 'e'); G.p(29, 9, 'k');
-    [[24, 6, 21, 1], [24, 6, 27, 0], [27, 6, 31, 2], [22, 3, 19, 2], [28, 3, 30, 0]].forEach(([x0, y0, x1, y1]) => G.line(x0, y0, x1, y1, 'w'));
-    G.line(5, 15, 3, 12, 'A'); (fr ? [8, 11, 17, 20] : [9, 10, 18, 19]).forEach((x, i) => { G.rect(x, 20, 2, 8, 'd'); G.p(x, 28 + (i % 2 ? fr : 1 - fr), 'k'); }); G.p(10, 14, 'w'); G.p(15, 13, 'w');
-  });
-  add('lavajaw', { s: '#3A2420', S: '#5A3428', l: '#FF7A3A', L: '#FFD04A', e: '#FFD04A', w: '#F0E0C0', k: '#1A0E0A' }, 34, 22, (G, fr) => {
-    G.thick(1, 12, 9, 13, 's', 1); G.ell(15, 13, 8, 4.5, 'S'); G.line(9, 10, 20, 9, 'l'); G.line(11, 15, 19, 16, 'l'); G.p(14, 12, 'L');
-    G.ell(26, 11, 6, 3.5, 's'); G.ell(29, fr ? 15 : 14, 4, fr ? 2.5 : 1.5, 'k'); for (let x = 25; x <= 32; x += 2) { G.p(x, 13, 'w'); G.p(x, fr ? 17 : 15, 'w'); } G.p(26, 9, 'e'); G.p(30, 8, 'l'); G.p(31, 9, 'L');
-    (fr ? [9, 13, 18, 22] : [10, 12, 19, 21]).forEach(x => G.rect(x, 17, 2, 4, 'S'));
-  });
-  add('sandwhale', { s: '#C8A870', S: '#A88850', b: '#E8D8B0', k: '#3A2A18', e: '#1A1410', w: '#F0E0C0' }, 36, 20, (G, fr) => {
-    G.ell(18, 11, 15, 6.5, 'S'); G.ell(18, 13, 13, 3.5, 'b'); G.thick(2, fr ? 6 : 9, 6, 10, 'S', 1); G.line(0, fr ? 3 : 7, 3, fr ? 6 : 9, 'S'); G.line(0, fr ? 9 : 12, 3, 10, 'S');
-    G.p(28, 9, 'e'); G.line(26, 14, 33, 14, 'k'); for (let x = 27; x <= 33; x += 2) G.p(x, 15, 'w'); [10, 15, 20].forEach(x => G.line(x, 6, x + 1, 9, 'b')); for (let x = 3; x < 34; x += 3) G.p(x, 19, 's');
-  });
-  add('kraken', { a: '#5A2A4A', A: '#7A3A6A', s: '#C88AB0', e: '#FFD04A', k: '#1A0E18' }, 32, 30, (G, fr) => {
-    G.ell(16, 9, 9, 8, 'a'); G.ell(14, 6, 4, 3, 'A'); G.disc(12, 12, 2, 'e'); G.disc(20, 12, 2, 'e'); G.p(12, 12, 'k'); G.p(20, 12, 'k');
-    for (let i = 0; i < 6; i++) { const x0 = 8 + i * 3.2, sw = (i % 2 === fr ? 1 : -1) * 2; G.thick(x0, 16, x0 + sw, 23, 'A', 0); G.line(x0 + 1, 16, x0 + 1 + sw, 23, 'a'); G.line(x0 + sw, 23, x0 - sw, 29, 'A'); G.p(x0 + sw * 0.5 + 1, 20, 's'); }
-  });
-  add('faceforest', { t: '#5A3E26', T: '#3E2A18', g: '#3A5A2E', G: '#2A4420', f: '#F2E6C8', e: '#2A1A10', r: '#C83A3A' }, 34, 34, (G, fr) => {
-    G.rect(13, 18, 8, 14, 't'); G.rect(13, 18, 2, 14, 'T'); [[13, 31, 7, 33], [20, 31, 27, 33], [16, 32, 16, 34]].forEach(([a, b, c, d]) => G.thick(a, b, c, d, 't', 0));
-    const o = fr ? 1 : 0; G.ell(17 + o, 11, 16, 10, 'g'); G.ell(11 + o, 7, 7, 5, 'G'); G.ell(25 + o, 8, 6, 4, 'G');
-    [[8, 10], [16, 6], [24, 11], [13, 15], [21, 15]].forEach(([x, y], i) => { G.rect(x - 1 + o, y - 1, 3, 3, 'f'); G.p(x - 1 + o, y - 1, 'e'); G.p(x + 1 + o, y - 1, 'e'); G.p(x + o, y + ((i + fr) % 2), i % 2 ? 'r' : 'e'); });
-    G.rect(15, 22, 4, 3, 'f'); G.p(15, 22, 'e'); G.p(18, 22, 'e'); G.line(15, 24, 18, 24, 'r');
-  });
-  add('bonewyvern', { b: '#E8E0CC', B: '#B8AE98', k: '#2A2420', e: '#7FD8FF', m: '#7A7068' }, 36, 26, (G, fr) => {
-    const wy = fr ? 20 : 2; for (let i = 0; i < 5; i++) { G.line(14, 11, 2 + i * 2.5, wy + (fr ? -i : i), 'B'); } G.line(14, 11, 1, wy, 'b'); G.line(1, wy, 12, fr ? 22 : 3, 'm');
-    G.thick(8, 13, 22, 12, 'b', 1); for (let x = 12; x <= 20; x += 2) G.line(x, 12, x, 16, 'B'); G.line(8, 13, 2, 16, 'b'); G.line(2, 16, 0, 19, 'B');
-    G.thick(22, 12, 27, 8, 'b', 0); G.ell(30, 7, 3.5, 2.4, 'b'); G.line(30, 9, 35, 9, 'B'); G.p(30, 6, 'e'); G.line(28, 4, 26, 1, 'B'); G.line(16, 16, 15, 23, 'B'); G.line(20, 16, 21, 23, 'B'); G.p(14, 24, 'k'); G.p(22, 24, 'k');
-  });
-  add('thunderape', { a: '#4A4A7A', A: '#34345A', s: '#C8B0A0', y: '#FFE04A', e: '#FFE04A', k: '#1A1428' }, 30, 30, (G, fr) => {
-    G.ell(14, 15, 8, 8, 'a'); G.disc(16, 6, 4.5, 'A'); G.ell(17.5, 7, 3, 2.5, 's'); G.p(16, 6, 'e'); G.p(19, 6, 'e'); G.line(16, 9, 20, 9, 'k');
-    G.thick(7, 11, 3, fr ? 24 : 22, 'A', 1); G.thick(21, 11, 26, fr ? 22 : 24, 'A', 1); G.disc(3, fr ? 25 : 23, 2, 'a'); G.disc(26, fr ? 23 : 25, 2, 'a');
-    [[11, 3, 9, 0], [13, 2, 13, 0], [9, 5, 6, 3]].forEach(([a, b, c, d]) => G.line(a, b, c, d, 'y')); G.line(4, 14, 1, 10, 'y'); G.line(1, 10, 3, 9, 'y');
-    (fr ? [9, 18] : [10, 17]).forEach(x => G.rect(x, 22, 3, 7, 'A'));
-  });
 
   // ---------- 招式的小工具 ----------
   const booms = (e, pts, r, t, k, col, after) => { pts.forEach(([x, z]) => R.fx('mark', x, 0, z, { r, t })); later(() => { if (e.dead) return; pts.forEach(([x, z]) => { R.fx('boom', x, 0.3, z, { r, color: col }); targets().forEach(tg => { if (Math.hypot(tg.x - x, tg.z - z) < r) hitT(tg, e.dmg * k, e, { knock: 0.3 }); }); if (after) after(x, z); }); R.shake(0.25); }, t * 1000); };
@@ -177,7 +128,7 @@
   const gf = R.genFloor;
   R.genFloor = (run, f) => {
     const g = run.grade;
-    if (g.lords) { const envL = ENV_LORD[run.env]; g.lords = envL ? [envL, envL, envL].concat(BASE, ['faceforest', 'bonewyvern', 'thunderape']) : BASE.concat(['faceforest', 'bonewyvern', 'thunderape']); }
+    if (g.lords) { const envL = run.env === 'desert' && rnd() < 0.5 ? 'carrionvulture' : ENV_LORD[run.env];   /* 2026-10-18 作者：沙漠多一隻緋喙屍鷲 */ g.lords = envL ? [envL, envL, envL].concat(BASE, ['faceforest', 'bonewyvern', 'thunderape']) : BASE.concat(['faceforest', 'bonewyvern', 'thunderape']); }
     const F = gf(run, f);
     if (g.lords && !F.last) {
       const have = F.rooms.filter(r => r.type === 'lord').length, cand = F.rooms.filter(r => r.type === 'fight' && r.dist >= 2 && !r.big && !r.zone);   // 大空洞打通的房間不行（zones.js；算清空過，領主不會出現）

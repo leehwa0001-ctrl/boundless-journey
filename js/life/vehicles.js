@@ -14,7 +14,9 @@
     van: { name: '輕型貨車', price: 600, max: 11, acc: 7, turn: 1.9, col: '#E8E8EC', len: 4.4, low: 0 },
     sedan: { name: '小轎車', price: 900, max: 14, acc: 9, turn: 2.2, col: '#3A5A8A', len: 4.2, low: 0 },
     sport: { name: '跑車「疾風」', price: 2400, max: 19, acc: 13, turn: 2.5, col: '#C8282A', len: 4.0, low: 1 },
-    dex: { name: '德克斯凡的貨車', price: 0, max: 10, acc: 6, turn: 1.7, col: '#4A6A8A', len: 5.2, low: 0 }
+    dex: { name: '德克斯凡的貨車', price: 0, max: 10, acc: 6, turn: 1.7, col: '#4A6A8A', len: 5.2, low: 0 },
+    emgt: { name: '艾美利亞 GT「星條」', price: 5200, max: 22, acc: 15, turn: 2.6, col: '#1A2A5A', len: 4.3, low: 1, emelia: 1 },   // 板北・艾美利亞造車廠（cityland.js）
+    emvan: { name: '艾美利亞旅行車', price: 1800, max: 15, acc: 9, turn: 2.1, col: '#8A9A7A', len: 4.8, low: 0, emelia: 1 }
   };
   const BIKE = { max: 0, mul: 1.5 };
   const V = { cur: null, list: [], zoom0: null, speed0: null, hitT: 0 };
@@ -42,14 +44,14 @@
     return g;
   };
 
-  V.carMesh = carMesh; V.MODELS = MODELS; V.box = box; V.lam = lam;   // 巡邏車、路障（pursuit.js）也用
+  V.carMesh = carMesh; V.bikeMesh = bikeMesh; V.MODELS = MODELS; V.box = box; V.lam = lam;   // 巡邏車、路障（pursuit.js）也用
 
   // ---------- 停著的車 ----------
   const blocked = (x, z, r) => R.col.list.some(b => b.on !== false && b.tag !== 'deco' && b.tag !== 'veh' && x > b.x0 - r && x < b.x1 + r && z > b.z0 - r && z < b.z1 + r);
   const freeNear = (x, z, r) => { for (let d = 0; d <= 10; d += 0.5) for (let k = 0; k < 12; k++) { const a = k / 12 * Math.PI * 2, nx = x + Math.sin(a) * d, nz = z + Math.cos(a) * d; if (!blocked(nx, nz, r)) return [nx, nz]; } return null; };
   const park = (type, model, x, z, yaw, o) => {
     const t = tw(); if (!t) return null; const p = freeNear(x, z, type === 'car' ? 1.6 : 0.6) || [x, z];
-    const g = type === 'car' ? carMesh(model, o && o.col) : bikeMesh(o && o.col); g.position.set(p[0], 0, p[1]); g.rotation.y = yaw || 0; t.group.add(g);
+    const g = type === 'car' ? V.carMesh(model, o && o.col) : V.bikeMesh(o && o.col);   // 2026-10-22 走 V 上面的（vehiclekit.js 換成新的造型） g.position.set(p[0], 0, p[1]); g.rotation.y = yaw || 0; t.group.add(g);
     const v = Object.assign({ type, model, g, x: p[0], z: p[1], yaw: yaw || 0, v: 0 }, o || {}); V.list.push(v);
     v.it = { get x() { return v.x; }, get z() { return v.z; }, r: type === 'car' ? 3 : 1.8, get label() { return type === 'car' ? (v.own ? '上車（開車）' : '開這台車') : '騎上腳踏車'; }, when: () => !V.cur && V.list.includes(v), act: () => mount(v) };
     solid(v); t.inter.push(v.it); return v;
@@ -108,7 +110,7 @@
         const side = sd >= 0 ? 1 : -1; n.x += -fz * side * 1.4; n.z += fx * side * 1.4; if (n.h) n.h.g.position.set(n.x, 0, n.z); if (n.walk) { n.flee = 2; n.tx = n.x - fz * side * 6; n.tz = n.z + fx * side * 6; }
         // 只有在人走的地方（人行道、斑馬線、巷子……）撞到人才罰；在車道上亂穿越的不罰（traffic.js 的 R.pedZone，作者 2026-10-04）
         if (Math.abs(v.v) > 6 && !n.guard && R.pedZone && !R.pedZone(n.x, n.z)) { v.v *= 0.7; if (V.hitT <= 0) { V.hitT = 4; R.toast('撞到在車道上亂穿越的人了。……衛兵沒有追究。', '#E8C04A'); } }
-        else if (Math.abs(v.v) > 6 && !n.guard) { v.v *= 0.7; if (R.crime) R.crime.cause = 'traffic'; V.hitT = (V.hitT || 0); if (V.hitT <= 0) { V.hitT = 4; const Cr = R.crime; if (Cr) { Cr.heat = Math.min(3, Math.max(Cr.heat, 0) + 1); Cr.lostT = 0; if (R.alertGuards) R.alertGuards(v.x, v.z, 60); } R.banner('撞到人了！', '路人被撞倒在雪地上——衛兵往這裡來了（通緝 ' + '★'.repeat(R.crime ? R.crime.heat : 1) + '）'); R.sfx && R.sfx('swing'); } }
+        else if (Math.abs(v.v) > 6 && !n.guard) { v.v *= 0.7; if (R.crime) R.crime.cause = 'traffic'; V.hitT = (V.hitT || 0); if (V.hitT <= 0) { V.hitT = 4; const Cr = R.crime; if (Cr) { Cr.heat = Math.min(3, Math.max(Cr.heat, 0) + 1); Cr.lostT = 0; if (R.alertGuards) R.alertGuards(v.x, v.z, 60); } R.banner('撞到人了！', '路人被撞倒在雪地上──衛兵往這裡來了（通緝 ' + '★'.repeat(R.crime ? R.crime.heat : 1) + '）'); R.sfx && R.sfx('swing'); } }
         else if (Math.abs(v.v) > 2 && hitMsgT <= 0) { hitMsgT = 1.5; R.toast('「哇！看路啊！」'); }
       }
     });
@@ -172,7 +174,7 @@
     const t = tw(); t.cars = t.cars.filter(o => o !== c);
     const v = { type: 'car', model: 'dex', g: c.g, x: c.x, z: c.z, yaw: c.g.rotation.y, v: 0, stolen: true };
     const Cr = R.crime; if (Cr) { Cr.heat = Math.min(3, Cr.heat + 2); Cr.lostT = 0; if (R.alertGuards) R.alertGuards(c.x, c.z, 70); }
-    R.banner('搶車！', '司機摔在雪地上大喊：「有人搶車——！」（通緝 ' + '★'.repeat(R.crime ? R.crime.heat : 2) + '）');
+    R.banner('搶車！', '司機摔在雪地上大喊：「有人搶車──！」（通緝 ' + '★'.repeat(R.crime ? R.crime.heat : 2) + '）');
     mount(v);
   };
 

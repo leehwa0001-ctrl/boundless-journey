@@ -1,4 +1,4 @@
-// 轉職後的大招（2026-10-08 作者：每個職業轉職後的大招要有個別的差距——狂戰士把敵人往自己吸、劍鬥士在原本的大招上多一道 360 度斬擊、
+// 轉職後的大招（2026-10-08 作者：每個職業轉職後的大招要有個別的差距──狂戰士把敵人往自己吸、劍鬥士在原本的大招上多一道 360 度斬擊、
 //   鬼武者又不一樣；玩家可以選要用原本職業的大招，還是轉職後的大招）
 // - 每一條轉職路線一招「路線大招」：原本的大招照放，再加上這條路線的特殊效果（名字、畫面上的大字也換成路線的）。
 // - 選哪一個存在 R.S.ultPick[職業]（'base'＝原版、其他＝路線版）；轉職後沒選過就用路線版。
@@ -22,7 +22,7 @@
   // 把敵人往某一點吸（領主體、核心不動）
   const pull = (getXZ, r, t, sp) => { let left = t; dyn(dt => { left -= dt; const [x, z] = getXZ(); (W().enemies || []).forEach(e => { if (!alive(e) || (e.def && (e.def.boss || e.def.lordPlus)) || e.id === 'petra') return; const dx = x - e.x, dz = z - e.z, d = Math.hypot(dx, dz); if (d > r || d < 1.2) return; e.x += dx / d * Math.min(d - 1.1, sp * dt); e.z += dz / d * Math.min(d - 1.1, sp * dt); }); return left > 0; }); };
   // 一圈 360 度斬擊
-  // 2026-10-08 作者：360 度斬擊不像斬擊——原本是一圈 0.08 秒就閃完的月牙＋一圈光點。改成：角色轉一圈，四道刀光接著繞一圈掃過去，最後留一道整圈的刀痕
+  // 2026-10-08 作者：360 度斬擊不像斬擊──原本是一圈 0.08 秒就閃完的月牙＋一圈光點。改成：角色轉一圈，四道刀光接著繞一圈掃過去，最後留一道整圈的刀痕
   const spin = (P, r, dmg, o, c) => {
     const a0 = P.aimA || 0, dir = rnd() < 0.5 ? 1 : -1, x = P.x, z = P.z;
     for (let k = 0; k < 4; k++) later(P => { R.fx('swing', P.x, 0, P.z, { a: a0 + dir * k * Math.PI / 2, arc: 2.1, range: r, big: true, dir: -dir, color: c }); if (k % 2 === 0) R.sfx && R.sfx('swing'); }, k * 45);
@@ -134,7 +134,7 @@
   });
 
   // ---------- 技能書：最上面的「大招」卡片，最下面選 ----------
-  // 2026-10-10 作者：卡片上的大圖跟著選的大招換，標題也要跟著換——選了路線的大招，標題寫路線大招的名字、小字寫路線
+  // 2026-10-10 作者：卡片上的大圖跟著選的大招換，標題也要跟著換──選了路線的大招，標題寫路線大招的名字、小字寫路線
   const headOf = cls => { const u = U[cls], p = pathOf(cls), base = u.baseName ? u.baseName() : u.name; return { name: p ? p.name : base, small: p ? advName(cls, advOf(cls)) + '的大招（' + base + '＋路線效果）' : R.CLASSES[cls].name + '的大招' }; };
   (R.SB_HEAD = R.SB_HEAD || []).push((cls, st) => {
     const u = U[cls]; if (!u) return ''; const hd = headOf(cls);
@@ -154,7 +154,7 @@
     }
     const pk = pickOf(cls), on = pk !== 'base';
     box.innerHTML = '<div class="sv-vars"><span class="sv-h">大招</span><button type="button" class="' + (on ? '' : 'on') + '" data-up="base">原版・' + esc(u.baseName ? u.baseName() : '') + '</button><button type="button" class="' + (on ? 'on' : '') + '" data-up="path">' + esc(advName(cls, adv)) + '・' + esc(mine.name) + '</button></div>'
-      + '<div class="up-d">' + (on ? '<b>' + esc(mine.name) + '</b>：原本的大招照放，再加上——' + esc(mine.d) : '<b>原版</b>：用' + esc(R.CLASSES[cls].name) + '原本的大招。') + '</div>';
+      + '<div class="up-d">' + (on ? '<b>' + esc(mine.name) + '</b>：原本的大招照放，再加上──' + esc(mine.d) : '<b>原版</b>：用' + esc(R.CLASSES[cls].name) + '原本的大招。') + '</div>';
     const card = foot.closest('.sb-ult'), art = card && card.querySelector('.sb-ico');
     if (art && R.ultIconURL) art.src = R.ultIconURL(cls);
     if (card) { const hd = headOf(cls), nm = card.querySelector('.up-name'), sm = card.querySelector('.up-small'); if (nm) nm.textContent = hd.name; if (sm) sm.textContent = hd.small; }

@@ -6,7 +6,7 @@
   if (R.CLASS_GLOW) R.CLASS_GLOW.monk = '#FFB45A';
   const later = (f, ms) => { const run = W().run; setTimeout(() => { const w = W(); if (w.run === run && w.P && !w.P.dead && run && !run.done) f(); }, ms); };
   const base = P => R.ultBase(P);   // 一下普攻×ULT_K（ult.js；原本多乘一次傷害倍率）
-  // 2026-10-09 作者：大招可以鎖定同一個目標（還是先打別隻）——六拳照距離輪流分給附近的遺跡生物，不夠六隻就從頭再輪一次
+  // 2026-10-09 作者：大招可以鎖定同一個目標（還是先打別隻）──六拳照距離輪流分給附近的遺跡生物，不夠六隻就從頭再輪一次
   const PUNCH = 6;
   R.monkUltTargets = P => { const w = W(), near = (w.enemies || []).filter(e => !e.dead && !e.under && Math.hypot(e.x - P.x, e.z - P.z) < 12).sort((p, q) => Math.hypot(p.x - P.x, p.z - P.z) - Math.hypot(q.x - P.x, q.z - P.z)).slice(0, PUNCH); return near.length ? Array.from({ length: PUNCH }, (_, i) => near[i % near.length]) : []; };
   // 那一拳的時候：原本的目標倒了就換一隻還活著的

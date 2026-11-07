@@ -134,9 +134,9 @@
     s += '<text x="330" y="72" class="area-name small">矮丘</text><text x="620" y="60" class="area-name">北山</text>';
     // 田
     C.FIELDS.forEach(r => { s += '<rect x="' + r[0] + '" y="' + r[1] + '" width="' + (r[2] - r[0]) + '" height="' + (r[3] - r[1]) + '" fill="url(#field)" stroke="#8A9A6A" stroke-width="1.2"/>'; });
-    // 水：霜溪、西河岸、南渠、外濠
+    // 水：霜溪、鶴川、外濠
     C.water.forEach(w => { s += line(w.pts, w.w + 4, '#7FA8C0', ' opacity=".8"') + line(w.pts, 2, '#5E8FA8'); });
-    s += '<text x="150" y="196" class="area-name small">霜溪</text><text x="236" y="930" class="area-name small" writing-mode="tb">西河岸</text><text x="760" y="975" class="note-name">南渠</text>';
+    s += '<text x="22" y="640" class="area-name small" writing-mode="tb">霜溪</text><text x="600" y="330" class="area-name small">鶴川</text>';
     // 鐵路、東鶴站
     s += '<path d="M0 ' + C.RAIL.y + 'H1000" stroke="' + INK + '" stroke-width="5"/><path d="M0 ' + C.RAIL.y + 'H1000" stroke="' + PAPER + '" stroke-width="2.4" stroke-dasharray="10 10"/>';
     s += '<rect x="' + C.STATION[0] + '" y="' + C.STATION[1] + '" width="' + (C.STATION[2] - C.STATION[0]) + '" height="' + (C.STATION[3] - C.STATION[1]) + '" fill="#9C978D" stroke="' + INK + '" stroke-width="1.6"/><text x="' + (C.STATION[0] + C.STATION[2]) / 2 + '" y="' + (C.STATION[1] - 34) + '" class="note-name">東鶴站</text>';
@@ -152,7 +152,7 @@
     // 橋
     C.bridges.forEach(b => { s += '<g transform="translate(' + b.sx.toFixed(0) + ' ' + b.sy.toFixed(0) + ') rotate(' + (b.ang * 180 / Math.PI).toFixed(0) + ')"><rect x="' + (-b.len / 2) + '" y="' + (-b.wid / 2 - 2) + '" width="' + b.len + '" height="' + (b.wid + 4) + '" fill="#8A6A44" stroke="' + INK + '" stroke-width="1.2"/>' + (b.ok ? '' : '<path d="M-14 -12l28 24M14 -12l-28 24" stroke="' + RED + '" stroke-width="3"/>') + '</g>'; });
     // 地名
-    [['國道一號', 300, 396], ['站前大通', 660, 376], ['站前商店街', 410, 300], ['舊城', 470, 760], ['西市口', 592, 600], ['官廳街', 812, 640], ['新商區', 860, 300], ['寺町', 470, 830], ['城西', 330, 640], ['河西', 90, 520], ['城東', 950, 760]].forEach(([t, x, y]) => { s += '<text x="' + x + '" y="' + y + '" class="note-name">' + t + '</text>'; });
+    [['國道一號', 120, 462], ['大手通', 336, 640], ['站前商店街', 300, 870], ['舊城', 320, 392], ['西市口', 320, 248], ['官廳街', 800, 250], ['新商區', 760, 660], ['寺町', 190, 730], ['城西', 150, 640], ['城南', 470, 650], ['河東', 900, 440], ['漁港', 900, 860]].forEach(([t, x, y]) => { s += '<text x="' + x + '" y="' + y + '" class="note-name">' + t + '</text>'; });
     // 湯山村的溫泉
     s += '<ellipse cx="130" cy="60" rx="22" ry="12" fill="#9CC3C8" stroke="' + INK + '" stroke-width="1.4"/><path d="M120 48q-6 -12 2 -20M136 46q-6 -12 2 -20" fill="none" stroke="#8A7A6A" stroke-width="1.6" stroke-linecap="round"/>';
     // 地點

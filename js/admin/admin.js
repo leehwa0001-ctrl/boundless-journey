@@ -13,11 +13,11 @@
 // 放在所有內容檔的後面（要讀到全部的武器、防具、素材、技能、稱號）。
 (function (R) {
   const S = () => R.S;
-  R.makeAdmin = () => {
+  const mk = () => {
     const s = S(); if (!s) return;
     s.admin = 1; s.gold = (s.gold || 0) + 9999999;
     s.potions = s.potions || {}; s.potions.hp = (s.potions.hp || 0) + 999; s.potions.mp = (s.potions.mp || 0) + 999;
-    s.mats = s.mats || {}; Object.keys(R.MATS).forEach(k => { s.mats[k] = Math.max(s.mats[k] || 0, 999); });
+    s.mats = s.mats || {}; Object.keys(R.MATS).forEach(k => { if (k !== 'anygem') s.mats[k] = Math.max(s.mats[k] || 0, 999); });   /* anygem：配方用的「任一種領主源晶」，不是真的素材 */
     s.packs = s.packs || { sack: 1 }; Object.keys(R.PACKS || {}).forEach(k => { s.packs[k] = Math.max(s.packs[k] || 0, 1); });
     s.xpBooks = (s.xpBooks || 0) + 99; s.raceTickets = (s.raceTickets || 0) + 9999;
     if (R.giveRaceSelect) ['SR', 'SSR', 'UR'].forEach(t => R.giveRaceSelect(t, 5));
@@ -91,8 +91,21 @@
       (R.LEGENDS || []).forEach(l => { if (!R.WEAPONS[l.base] || s.stash.some(it => it.legend === l.id)) return; try { const it = R.makeItem({ kind: 'weapon', base: l.base, ilvl, rarity: 5, identified: true }); it.legend = l.id; s.stash.push(it); } catch (e) { } });
       R.CLASS_IDS.forEach(c => { const st = s.classes[c]; if (!st) return; st.spBonus = Math.max(st.spBonus || 0, 300); if (R.talentSlots) R.talentSlots(c); st.sp.t.T_slot2 = st.sp.t.T_slot2 || 10; });   // talentSlots：先讓天賦樹做完舊點數的退回，第二格才不會被退掉
     } catch (e) { console.warn('[admin]', e); }
+    toVault(s);
     R.save();
   };
+  R.makeAdmin = () => (R.noBagRoute ? R.noBagRoute(mk) : mk());   // 一次幾百件：直接放倉庫，不要每一件都整理一次背包（bagrules.js）
+  // 2026-10-24 作者：解鎖的素材、道具直接放倉庫（背包放不下就不能下遺跡，東西太多還會卡住）；藥水背包留 10 瓶
+  function toVault(s) {
+    const v = s.vault = s.vault && typeof s.vault === 'object' ? s.vault : {};
+    const mv = (obj, k, key, keep) => { const o = obj ? s[obj] : s, n = Math.floor((o && o[k]) || 0) - keep; if (n > 0) { o[k] -= n; v[key] = (v[key] || 0) + n; } };
+    Object.keys(s.mats || {}).forEach(k => mv('mats', k, 'mat:' + k, 0));
+    Object.keys(s.gifts || {}).forEach(g => mv('gifts', g, 'gift:' + g, 0));
+    mv('potions', 'hp', 'pot:hp', 10); mv('potions', 'mp', 'pot:mp', 10); mv(null, 'xpBooks', 'xpBooks', 0); mv(null, 'raceTickets', 'raceTickets', 0);
+  }
+  // 修正前解鎖過的舊存檔：背包裡還塞著上萬個素材，讀檔的時候搬去倉庫
+  const ls0 = R.loadSlot;
+  if (ls0) R.loadSlot = (...a) => { const s = ls0(...a); try { if (s && s.admin && Object.values(s.mats || {}).reduce((t, n) => t + (+n || 0), 0) > 5000) toVault(s); } catch (e) { console.warn('[admin]', e); } return s; };
   // 公會畫面標「管理員」
   const hub0 = R.hub;
   R.hub = (t, f) => {

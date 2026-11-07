@@ -28,12 +28,12 @@
     archer: { n: '千矢', cd: 70, d: '6 秒內持續朝準心處（半徑 4 公尺）降下箭雨，每 0.3 秒一次（吃攻速，攻速越快越密）。', go(P) {
       T.arrow = { end: CT() + 6, acc: 0.3 }; } },
     warrior: { n: '斷岳', cd: 80, d: '原地蓄力 2 秒（期間無敵），接著跳到準心處（最遠 10 公尺）砸下一圈 360 度大斬擊（半徑 5.5 公尺），附帶敵人 100% 最大生命的傷害（首領 10%）。', go(P) {
-      P.stance = Math.max(P.stance || 0, 2); P.iframe = Math.max(P.iframe || 0, 2.2); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2, color: '#E8503A' }); say(P, '蓄力…', 'heal');
+      P.stance = Math.max(P.stance || 0, 2); P.iframe = Math.max(P.iframe || 0, 2.2); R.fx && R.fx('ring', P.x, 0.1, P.z, { r: 2, color: '#E8503A' }); say(P, '蓄力……', 'heal');
       sched(2, () => { const [x, z] = aimPt(P, 10); P.jump = { t: 0, dur: 0.6, x0: P.x, z0: P.z, x1: x, z1: z }; P.air = 0.6; P.iframe = Math.max(P.iframe || 0, 0.7); R.fx && R.fx('mark', x, 0, z, { r: 5.5, t: 0.6 });
         sched(0.62, () => { R.fx && R.fx('boom', x, 0.4, z, { r: 5.5, color: '#E8503A' }); R.fx && R.fx('swing', x, 1.1, z, { a: P.aimA, range: 5.5, arc: 6.28, color: '#FFB45A', big: true }); R.shake && R.shake(0.6);
           within(x, z, 5.5).forEach(e => R.hurtEnemy(e, base(P) * 2 + e.hpMax * (isBoss(e) ? 0.1 : 1), { kb: 2, primary: false })); }); }); } },
     mage: { n: '天墜', cd: 90, d: '蓄力 2 秒後砸下大隕石（半徑 7 公尺）：範圍內的遺跡生物全部斬殺（無視減傷、護盾、無敵），首領額外受到 20% 最大生命的傷害。代價：佩特拉的注意直接滿 100。', go(P) {
-      const [x, z] = aimPt(P, 16); P.stance = Math.max(P.stance || 0, 2); R.fx && R.fx('mark', x, 0, z, { r: 7, t: 2 }); say(P, '詠唱…', 'heal');
+      const [x, z] = aimPt(P, 16); P.stance = Math.max(P.stance || 0, 2); R.fx && R.fx('mark', x, 0, z, { r: 7, t: 2 }); say(P, '詠唱……', 'heal');
       sched(2, () => { R.fx && R.fx('boom', x, 0.6, z, { r: 7, color: '#FF7A3A' }); R.fx && R.fx('ring', x, 0.1, z, { r: 7, color: '#FFB45A' }); R.shake && R.shake(0.7);
         within(x, z, 7).forEach(e => { if (isBoss(e)) { R.hurtEnemy(e, base(P) * 3, { burn: true, primary: false }); rawHit(e, e.hpMax * 0.2); } else slay(e); });
         if (R.addAware) R.addAware(1000, 'boom'); else if (W().run) W().run.aware = 100; }); } },
@@ -56,12 +56,11 @@
       sched(2.5, () => { const g = T.guard; if (!g) return; T.guard = null; if (P.speed < g.sp * 0.5) P.speed /= 0.2;   /* 2026-10-16 修正：這 2.5 秒內速度被別的效果改過（例如加速到期）時，原本的「等於才還原」會一直卡在 20%；還在減速中就把 ×0.2 拿掉 */
         const v = (g.rec + P.hpMax * 0.01) * 100; R.fx && R.fx('boom', P.x, 0.4, P.z, { r: 5, color: '#FFE8A0' }); R.shake && R.shake(0.5);
         within(P.x, P.z, 5).forEach(e => R.hurtEnemy(e, v, { kb: 3, primary: false })); P.shield = (P.shield || 0) + P.hpMax * 0.4; P.buff = P.buff || {}; P.buff.shieldT = Math.max(P.buff.shieldT || 0, 10); say(P, '反擊 ' + Math.round(v)); }); } },
-    monk: { n: '百裂拳', cd: 60, d: '2 秒內往前連打 19 拳（每拳 0.6 倍普攻），最後一下是重拳（5 倍、擊飛；生命 30% 以下的敵人吃 3 倍——斬殺），連段直接 +20。', go(P) {
+    monk: { n: '百裂拳', cd: 60, d: '2 秒內往前連打 19 拳（每拳 0.6 倍普攻），最後一下是重拳（5 倍、擊飛；生命 30% 以下的敵人吃 3 倍──斬殺）。', go(P) {
       const dmg = ((P.ws && P.ws.dmg) || 10) * 0.6; for (let i = 0; i < 19; i++) sched(i * 0.1, () => { R.swingAnim && R.swingAnim(P.h, 0.02, 0.08); R.melee(P.aimA + (rnd() - 0.5) * 0.5, 3, 1.2, dmg, 0, 0, 0, { dir: i % 2 ? -1 : 1, hs: 1, primary: false }); });
       sched(2.05, () => { const a = P.aimA; R.swingAnim && R.swingAnim(P.h, 0.05, 0.3); R.fx && R.fx('boom', P.x + Math.sin(a) * 2, 0.8, P.z + Math.cos(a) * 2, { r: 2.2, color: '#FFB45A' }); R.shake && R.shake(0.45);
         foes().forEach(e => { const dx = e.x - P.x, dz = e.z - P.z, d = Math.hypot(dx, dz), r = (e.def.size || 1) * 0.5; if (d > 3.6 + r) return; const da = Math.atan2(Math.sin(Math.atan2(dx, dz) - a), Math.cos(Math.atan2(dx, dz) - a)); if (Math.abs(da) > 0.9 && d > r + 0.8) return;
-          const exe = e.hp < e.hpMax * 0.3; R.hurtEnemy(e, dmg * 5 * (exe ? 3 : 1), { kb: 4, stun: 0.6, crit: exe, primary: false }); if (exe) R.num && R.num(e.x, 1.8 * (e.def.size || 1) + 1, e.z, '斬殺', 'crit'); }); });
-      const C = R.CORE && R.CORE.monk; P._combo = Math.min(C && C.max ? C.max(P) : 100, (P._combo || 0) + 20); P._comboT = CT(); } },
+          const exe = e.hp < e.hpMax * 0.3; R.hurtEnemy(e, dmg * 5 * (exe ? 3 : 1), { kb: 4, stun: 0.6, crit: exe, primary: false }); if (exe) R.num && R.num(e.x, 1.8 * (e.def.size || 1) + 1, e.z, '斬殺', 'crit'); }); }); } },
     bard: { n: '大合奏', cd: 75, d: '按下就把樂譜連續演奏兩次（音符一個一個射出去，不用等演奏時間）；從第一下開始，滑鼠處半徑 7 公尺（吃攻擊範圍加成）內的敵人一直被聚到滑鼠的位置，演奏完在那裡爆開：500% 最大魔力 ×（100＋√最大魔力）% 的傷害。', go(P, s) {
       const notes = R.bardChord && R.bardChord.SV().notes; if (!R.bardEncore || !notes || !notes.length || !R.bardEncore(P, 2)) { R.toast && R.toast('樂譜是空的：先按住 X 寫一段樂譜'); return false; }
       const r = ((s && s.r) || 7) * (P.rangeMult || 1), dur = Math.max(1.5, notes.length * 2 * 0.1 + 0.3); T.bard = { end: CT() + dur, r, fx: waves(r) }; P.castT = dur; sched(0, () => { P.castT = 0; });   // castT：天啟的傷害加成撐到演奏完爆開   // s.r：天啟會把它放大
@@ -200,7 +199,7 @@
   const EC = R.CORE && R.CORE.enchanter;
   if (EC) ['mod', 'onHit', 'act'].forEach(k => { const f0 = EC[k]; if (typeof f0 !== 'function') return; EC[k] = function (...a) { if ((T.enchOff || 0) > CT()) { if (k === 'act') R.toast && R.toast('刻印暫時失去力量'); return k === 'mod' ? a[1] : undefined; } return f0.apply(this, a); }; });
   // 新的一趟：效果歸零
-  // 2026-10-16 修正：換樓層時舊的場景整個丟掉——山神、雷神的影子、大合奏的特效也要收掉（不然山神看不見卻還在幫你擋傷害、扣魔力）
+  // 2026-10-16 修正：換樓層時舊的場景整個丟掉──山神、雷神的影子、大合奏的特效也要收掉（不然山神看不見卻還在幫你擋傷害、扣魔力）
   const lf0 = R.loadFloor; if (lf0) R.loadFloor = (...a) => { if (T.bear) bearGone(); if (T.thunder && T.thunder.shade) T.thunder.shade.rm(); T.thunder = null; if (T.bard && T.bard.fx) T.bard.fx.rm(); T.bard = null; return lf0(...a); };
   const sr0 = R.startRun; if (sr0) R.startRun = (...a) => { if (T.bear) bearGone(); if (T.thunder && T.thunder.shade) T.thunder.shade.rm(); if (T.bard && T.bard.fx) T.bard.fx.rm(); Object.keys(T).forEach(k => { T[k] = null; }); Q = []; return sr0(...a); };
 })(window.R);

@@ -1,4 +1,4 @@
-// 城裡的穿模再清一次（作者 2026-10-04：城市有很多穿模——房子、樹、路燈）
+// 城裡的穿模再清一次（作者 2026-10-04：城市有很多穿模──房子、樹、路燈）
 // tidy.js 只收「中心點在房子裡」的東西；樹冠比樹幹大，種在牆邊的樹，樹冠會插進牆和屋頂。這裡再收一次：
 // - 點陣圖的樹（松樹、小樹）、行道樹（sprites.js 的 R.treeField，用它的 hide）：離房子的牆不到 1.1 公尺的收起來，碰撞也拿掉。
 // - 「回報穿模」：城裡的選單、暫停選單多一顆鈕，按了會記下你現在的位置和鏡頭方向，顯示一行可以複製的字（貼給 Claude 就知道是哪裡）。
@@ -13,10 +13,10 @@
     const nearWall = (x, z, r) => H.some(b => Math.abs((b.x0 + b.x1) / 2 - x) < 40 && Math.abs((b.z0 + b.z1) / 2 - z) < 40 && dBox(x, z, b) < r);
     const dropTree = (x, z) => R.col.list.forEach(b => { if (b.tag === 'tree' && b.on !== false && x > b.x0 - 0.2 && x < b.x1 + 0.2 && z > b.z0 - 0.2 && z < b.z1 + 0.2) b.on = false; });
     let n = 0;
-    // 種在車道上的樹也收（例如舊城北門底下的本町通——作者 2026-10-04 回報 x=52.7 z=-15.3）
+    // 種在車道上的樹也收（例如舊城北門底下的本町通──作者 2026-10-04 回報 x=52.7 z=-15.3）
     const C = R.CITY, onCar = (x, z) => !!(C && C.inCarriage && C.inCarriage(x / C.S + 500, z / C.S + 500, 0));
     // 點陣圖的樹：一個群組只有看板（自己帶 onBeforeRender 的平面）和影子。
-    // （2026-10-04 修：原本只看 onBeforeRender——每個 three.js 物件都有這個函式——把整個東鶴港、停著的車、腳踏車都當成樹收掉了）
+    // （2026-10-04 修：原本只看 onBeforeRender──每個 three.js 物件都有這個函式──把整個東鶴港、停著的車、腳踏車都當成樹收掉了）
     const isTree = o => o.isGroup && o.visible && o.userData.tree3d ? true : o.isGroup && o.visible && o.position.y <= 1 && (o.position.x || o.position.z) && o.children.length <= 2 && o.children[0] && o.children[0].isMesh && o.children[0].geometry && o.children[0].geometry.type === 'PlaneGeometry' && Object.prototype.hasOwnProperty.call(o.children[0], 'onBeforeRender');
     tw.group.children.forEach(o => { if (!isTree(o)) return; if ((tw.npcs || []).some(q => q.h && q.h.g === o)) return; if (nearWall(o.position.x, o.position.z, 1.0) || onCar(o.position.x, o.position.z)) { o.visible = false; dropTree(o.position.x, o.position.z); n++; } });
     // 行道樹（sprites.js 的 R.treeField）：用它自己的 hide（轉鏡頭重排的時候才不會又冒出來），影子也收

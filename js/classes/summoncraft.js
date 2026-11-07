@@ -1,4 +1,4 @@
-// 召喚師（2026-10-13 作者：霍克派——召喚物的身體是用元素「材質」捏出來的，材質看遺跡的環境；X 換意念）
+// 召喚師（2026-10-13 作者：霍克派──召喚物的身體是用元素「材質」捏出來的，材質看遺跡的環境；X 換意念）
 // 2026-10-13 第二版（作者回饋）：
 // - 拿掉「精神」條（遊戲本來就有理智條，不另外加新的資源）。理智照舊：召喚物打倒的人不算你親手殺的（san.js）。
 // - 召喚物不再有時間限制：在場的每一隻每秒吃一點魔力（小隻約 0.6、大隻約 2 魔力/秒）。魔力見底時，最弱、最早的那隻先散掉（一次一隻）。
@@ -171,7 +171,7 @@
       R.shake && R.shake(0.25); say(P, '獻祭 ×' + ps.length, 'crit');
     };
     L.sn_sacrifice.type = 'sm_sac';
-    if (R.SKILLS && R.SKILLS.sn_sacrifice) R.SKILLS.sn_sacrifice.desc = '（想用再帶）讓在場的召喚物在原地炸開；沒有召喚物時改成在身邊炸一圈。不用也完全沒關係——想收回召喚物請按住 X。';
+    if (R.SKILLS && R.SKILLS.sn_sacrifice) R.SKILLS.sn_sacrifice.desc = '（想用再帶）讓在場的召喚物在原地炸開；沒有召喚物時改成在身邊炸一圈。不用也完全沒關係──想收回召喚物請按住 X。';
   }
   C.gauge = function (P) {
     const n = pets().length, cl = coopLeft(), m = MODES.find(x => x[0] === modeOf(P))[1], pair = matsHere(), up = Math.round(totalUp(P) * 10) / 10;

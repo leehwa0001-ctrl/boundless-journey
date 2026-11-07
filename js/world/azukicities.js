@@ -14,58 +14,58 @@
   const CITIES = [
     {
       id: 'huangling', name: '皇嶺', role: '首都', tag: '觀光・政治中心', fare: 90, days: 1, needDan: 0,
-      blurb: '山嶺都城。象徵意義比實際價值更濃——昭皇居所、古蹟與向日塔。現代化之後仍偏觀光與政治中心。',
+      blurb: '山嶺都城。象徵意義比實際價值更濃──昭皇居所、古蹟與向日塔。現代化之後仍偏觀光與政治中心。',
       guild: '公會昭旭分館',
       fac: [
-        ['guild', '公會昭旭分館', '綠旗石樓比東鶴的更大一圈。館員說：「首都分館的委託，多半是護送與典禮警備。」'],
-        ['bank', '世界央行昭旭分館', '石柱大廳。費拉的母行之一；櫃檯後面掛著昭旭與大聯合國的旗。'],
-        ['uni', '昭皇大學・魔力學院分院', '校園在山腰。魔力學院的玻璃溫室晚上會自己發光。'],
+        ['guild', '公會昭旭分館', '綠旗石樓，比東鶴的大了一圈。館員一邊蓋章一邊說：「首都的委託喔，不是護送就是典禮警備。」'],
+        ['bank', '世界央行昭旭分館', '大廳的石柱粗得兩個人抱不住。費拉的母行之一，櫃檯後面掛著昭旭和大聯合國的旗子。'],
+        ['uni', '昭皇大學・魔力學院分院', '校園蓋在山腰上。天黑以後，魔力學院的玻璃溫室會自己亮起來，從城裡都看得到。'],
         ['castle', '皇城（外苑）', '一般人只能到外苑。衛兵看了你的勇者證：「今天沒有覲見。」'],
-        ['tower', '向日塔', '塔頂對準日出。觀光客排隊買票登塔。'],
-        ['shrine', '山城神社', '參道很陡。木札上寫著「願旅途平安」。'],
+        ['tower', '向日塔', '塔頂對著日出的方向。售票口前的隊伍，一早就排到了馬路上。'],
+        ['shrine', '山城神社', '參道陡得要扶著欄杆走。掛滿的木札裡，寫最多的是「願旅途平安」。'],
         ['airport', '山嶺國際機場（展望台）', '魔導飛機起降。展望台賣冷飲。'],
-        ['park', '山嶺遊樂場', '旋轉木馬和小型摩天輪。小孩比勇者多。']
+        ['park', '山嶺遊樂場', '有旋轉木馬，還有一座小小的摩天輪。這裡的小孩比勇者多。']
       ],
       sights: [
         ['hl_tower', '向日塔', '塔頂', '登到最上層時，整座皇嶺與遠方的天宮島海岸線一覽無遺。'],
         ['hl_castle', '皇城外苑', '皇城', '石垣上的紋章磨得很亮。導覽說戰後重修過三次。'],
         ['hl_uni', '昭皇大學正門', '大學', '門柱刻著「昭光不滅」。學生騎腳踏車穿過正門。'],
-        ['hl_shrine', '山城神社', '山城', '鈴繩很沉。搖一下，整座山好像應了一聲。']
+        ['hl_shrine', '山城神社', '山城', '鈴繩很沉，你用兩隻手才搖得動。噹的一聲，整座山好像應了你一下。']
       ],
       food: [['皇嶺點心組合', 12, '百貨地下的和菓子', { mp: 0.06 }], ['向日塔咖啡', 8, '塔下喫茶', { skillCd: 0.04 }]],
       act: { id: 'climb', name: '登向日塔（觀光）', cost: 15, desc: '買票登塔。天氣好的日子，看得到北州的雪線。', do: 'tower' }
     },
     {
       id: 'jishan', name: '吉山', role: '陪都', tag: '工業・賽博和式', fare: 70, days: 1, needDan: 0,
-      blurb: '奉主淪陷後的人口第一大都、第一大工業城。德克斯凡入股後第一個開發的城市——賽博霓虹底下仍是和式町屋。',
+      blurb: '奉主淪陷後的人口第一大都、第一大工業城。德克斯凡入股後第一個開發的城市──賽博霓虹底下仍是和式町屋。',
       guild: '公會吉山分館',
       fac: [
-        ['guild', '公會吉山分館', '夾在兩棟玻璃大樓中間。門口的告示寫滿工廠區的委託。'],
+        ['guild', '公會吉山分館', '分館夾在兩棟玻璃大樓中間，小小的。門口的告示板貼滿了工廠區的委託，舊的還沒撕就貼上新的。'],
         ['bank', '世界央行吉山分館', '股票開盤時間人最多。'],
-        ['factory', '重工廠展望廊', '高爐的熱氣隔著玻璃都感覺得到。'],
+        ['factory', '重工廠展望廊', '隔著玻璃，臉還是被高爐烤得發燙。'],
         ['tech', '朝日科技展示廳', '外骨骼試穿要預約。魔導具櫃檯排到門外。'],
-        ['mine', '礦場吊橋', '原材料從這裡送進市區。吊橋晚上會亮藍燈。'],
+        ['mine', '礦場吊橋', '原料從這裡送進市區。到了晚上，吊橋會亮起一整排藍燈。'],
         ['casino', '地下賭場（傳聞入口）', '後巷的鐵門。門衛看勇者證：「會員制。今天的籌碼換現金。」'],
         ['rent', '租車・魔導懸浮車行', '懸浮車要特別駕照。租普通魔導車一天 40 費拉。']
       ],
       sights: [
-        ['js_neon', '霓虹十字路口', '商務區', '和式屋簷掛滿賽博招牌。德克斯凡的廣告機器人會跟你鞠躬。'],
-        ['js_furnace', '高爐夜景', '工業區', '整片天空被燒成橘色。工人說這才是吉山的月亮。'],
+        ['js_neon', '霓虹十字路口', '商務區', '和式的屋簷下掛滿了發光的招牌。德克斯凡的廣告機器人看到你，一板一眼地鞠了個躬。'],
+        ['js_furnace', '高爐夜景', '工業區', '整片天空都被燒成橘色的。下夜班的工人說，這才是吉山的月亮。'],
         ['js_stock', '股票交易所大廳', '金融區', '開盤鈴一響，整層樓像遺跡反應一樣吵。']
       ],
       food: [['機械町拉麵', 10, '工廠下班人潮', { hp: 0.05, dmg: 0.03 }], ['能量罐（德克斯凡）', 7, '自動販賣機', { mp: 0.05 }]],
-      act: { id: 'casino', name: '地下賭場・小賭一場', cost: 20, desc: '籌碼換現金。贏了高興，輸了當買教訓。', do: 'gamble' }
+      act: { id: 'casino', name: '地下賭場・骰寶', cost: 0, desc: '三顆骰子：大小、單雙、豹子、點數。', do: 'gamble' }
     },
     {
       id: 'futing', name: '府廳', role: '軍事城市', tag: '軍營・訓練', fare: 55, days: 1, needDan: 1,
       blurb: '昭旭軍事重鎮。多數區域不開放一般民眾；因遺跡蹤跡，公會獲有限定駐紮。',
       guild: '公會府廳特劃區',
       fac: [
-        ['guild', '分會特劃區', '鐵絲網內的臨時舘舍。衛兵比館員多。'],
-        ['camp', '軍營（參觀通道）', '只能走畫好的黃線。新兵在操場喊號。'],
+        ['guild', '分會特劃區', '鐵絲網圍起來的臨時館舍。站崗的衛兵，比裡面的館員還多。'],
+        ['camp', '軍營（參觀通道）', '只能走地上畫好的黃線。操場那邊，新兵喊號喊到破音。'],
         ['hq', '軍部正面', '門禁森嚴。你的勇者證只能換一張「暫時通行證」。'],
         ['park', '戰爭公園', '舊火砲與紀念碑。解說牌寫第二次大陸會戰。'],
-        ['house', '小住宅區', '軍眷宿舍。晾衣繩上飄著制服。'],
+        ['house', '小住宅區', '軍眷宿舍。每一戶的晾衣繩上都是制服，連小孩的也是。'],
         ['shrine', '軍神社', '供著陣亡者的牌子。香灰很厚。']
       ],
       sights: [
@@ -73,21 +73,21 @@
         ['ft_shrine', '軍神社', '神社', '鈴繩旁放著一排舊頭盔。']
       ],
       food: [['軍糧便當', 6, '特劃區食堂', { hp: 0.04, regen: 0.15 }], ['黑咖啡（軍部販賣部）', 4, '苦到說話變少', { skillCd: 0.05 }]],
-      act: { id: 'drill', name: '戰爭公園・體能課', cost: 10, desc: '跟新兵一起跑圈。今天遺跡裡移動與傷害稍好。', do: 'drill' }
+      act: { id: 'drill', name: '戰爭公園・越野障礙賽', cost: 10, desc: '跳矮牆、滑過鐵絲網，跑 60 秒。照成績拿軍功章，到軍部旁的軍需處換府廳軍規的裝備。', do: 'drill' }
     },
     {
       id: 'xijian', name: '西見', role: '港都', tag: '港口・海洋大學', fare: 65, days: 1, needDan: 0,
       blurb: '曾是殖民地生意第一港；第二次大陸會戰遭轟炸封鎖後，改為對外貿易港。',
       guild: '公會西見分館',
       fac: [
-        ['guild', '公會西見分館', '靠碼頭的石樓。潮汐表貼在門口。'],
+        ['guild', '公會西見分館', '靠碼頭的石樓，門口貼著今天的潮汐表。'],
         ['uni', '西見海洋大學', '附設魔力學院分院與水下訓練營。學生穿潛水衣走過中庭。'],
-        ['port', '西見港', '貨櫃與漁船並排。汽笛一整天下不停。'],
-        ['fish', '漁港拍賣場', '清晨最熱鬧。鯖魚箱子堆得比人高。'],
+        ['port', '西見港', '貨櫃船和漁船並排停著，汽笛從早響到晚。'],
+        ['fish', '漁港拍賣場', '清晨最熱鬧。鯖魚的箱子堆得比人還高，地上都是冰水。'],
         ['air', '西見遠督機場', '短跑道。飛往南瀧、東鶴的小班機。'],
         ['beach', '海灘公園', '會戰彈坑填平後改的公園。夏天有攤販。'],
         ['consul', '艾美利亞領事館', '圍牆很高。大門掛兩國旗。'],
-        ['ship', '造船廠／軍艦停靠處', '民用船台旁邊停著一艘退役巡洋艦。']
+        ['ship', '造船廠／軍艦停靠處', '民用船台旁邊，停著一艘退役的巡洋艦，砲管已經拆掉了。']
       ],
       sights: [
         ['xj_beach', '海灘公園', '海邊', '浪聲蓋過遠處機場的引擎。沙子裡還找得到彈殼改的飾品。'],
@@ -95,41 +95,41 @@
         ['xj_consul', '艾美利亞領事館外', '港區', '衛兵用共通語問你有沒有預約。']
       ],
       food: [['港灣刺身定食', 14, '漁港直送', { hp: 0.06, mp: 0.03 }], ['鹽烤鯖魚', 9, '路邊摊', { hp: 0.05 }]],
-      act: { id: 'dive', name: '水下訓練營體驗', cost: 18, desc: '穿上借用的潛水裝。今天魔力回復與魔力上限感覺好一點。', do: 'dive' }
+      act: { id: 'dive', name: '水下訓練營・潛水打撈', cost: 18, desc: '潛到港外的沉船撈古物、貝殼、寶箱，小心會戰留下的舊水雷。船越大潛得越深。', do: 'dive' }
     },
     {
       id: 'nanlong', name: '南瀧', role: '國際港都', tag: '深海港・外貿', fare: 75, days: 1, needDan: 0,
       blurb: '西見沒落後的第二港都（第一為東鶴）。深海港、國際停靠；清晨川湍急、夜晚霧朦朧。',
       guild: '公會南瀧分館',
       fac: [
-        ['guild', '公會南瀧分館', '商業區轉角。館員會說三國語言。'],
+        ['guild', '公會南瀧分館', '在商業區的轉角。這裡的館員會說三國語言，你用哪一種問，他就用哪一種回。'],
         ['bank', '世界央行南瀧分館', '外貿匯款窗口最長。'],
         ['uni', '湍遊國際大學', '附設魔力學院與聖教學院。校園面向港口。'],
         ['statue', '卸貨第一雕像', '碼頭工人的銅像。基座刻著三年裝卸紀錄。'],
-        ['cargo', '貨輪港', '起重機日夜不停。霧夜要靠燈塔。'],
+        ['cargo', '貨輪港', '起重機白天晚上都在動。起霧的晚上，船全靠燈塔進港。'],
         ['yard', '造船廠', '民用船殼一排排。電焊火花像夏日祭。'],
         ['mall', '商業區拱廊', '各國商品。德克斯凡罐頭堆成山。'],
-        ['consul', '德克斯凡領事館', '玻璃帷幕。門口的魔導門衛會微笑。']
+        ['consul', '德克斯凡領事館', '整面都是玻璃。門口的魔導門衛對每個人微笑，對你也是。']
       ],
       sights: [
-        ['nl_statue', '卸貨第一雕像', '碼頭', '銅像的肩膀被摸得發亮——據說摸了會找到好工作。'],
-        ['nl_fog', '霧夜碼頭', '貨輪港', '霧裡只剩霧笛與腳步聲。川派說這才是南瀧。'],
+        ['nl_statue', '卸貨第一雕像', '碼頭', '銅像的肩膀被摸得發亮。聽說摸了會找到好工作，排隊的大多是學生。'],
+        ['nl_fog', '霧夜碼頭', '貨輪港', '霧裡只聽得到霧笛，還有自己的腳步聲。川派的人說，這樣才是南瀧。'],
         ['nl_uni', '湍遊國際大學鐘樓', '大學', '鐘聲混著汽笛。外籍學生在草坪野餐。']
       ],
       food: [['南瀧霧茶', 7, '拱廊茶屋', { mp: 0.07 }], ['碼頭炒麵', 11, '工人最愛', { hp: 0.05, dmg: 0.02 }]],
-      act: { id: 'trade', name: '外貿公司臨工', cost: 0, desc: '搬半天貨物。給當日工錢，日子照過。', do: 'trade' }
+      act: { id: 'trade', name: '外貿公司・外貿訂單', cost: 0, desc: '每天三張訂單：把幾箱貨送到某座城，期限內交貨拿報酬。', do: 'trade' }
     },
     {
       id: 'woqi', name: '渦旗', role: '漁港', tag: '漁汛・市集', fare: 85, days: 2, needDan: 0, island: 1,
-      blurb: '連接納瓦與天宮的漁港。秋季銀旗魚順渦流海灣下大洋繁衍——漁民出海的時機，也是城名由來。',
+      blurb: '連接納瓦與天宮的漁港。秋季銀旗魚順渦流海灣下大洋繁衍──漁民出海的時機，也是城名由來。',
       guild: '公會渦旗分館',
       fac: [
-        ['guild', '公會渦旗分館', '魚市樓上。整棟都是海的味道。'],
+        ['guild', '公會渦旗分館', '在魚市的樓上，整棟樓都是海的味道。'],
         ['port', '渦旗漁港', '秋季最擠。網與盒子佔滿碼頭。'],
         ['market', '海魚市集', '銀旗魚拍賣聲比汽笛還大聲。'],
         ['hall', '漁業會館', '牆上記著歷年漁獲。法蘭克漁業的牌子很新。'],
         ['sushi', '壽司・渦潮', '師傅只收當天的魚。'],
-        ['logi', '物流倉庫', '開發中地區旁邊。半建成的棚架。'],
+        ['logi', '物流倉庫', '在開發中的地區旁邊，棚架只搭了一半，工人正在午休。'],
         ['trade', '華爾納外貿協會', '共通語與昭旭語並用。']
       ],
       sights: [
@@ -138,7 +138,7 @@
         ['wq_sushi', '壽司・渦潮的櫃台', '港邊', '師傅把魚刺排成渦旗的形狀。']
       ],
       food: [['銀旗魚握壽司', 16, '季節限定', { hp: 0.07, mp: 0.04 }], ['漁港味噌湯', 5, '會館食堂', { regen: 0.2 }]],
-      act: { id: 'auction', name: '海魚市集・幫忙喊價', cost: 0, desc: '幫一天忙。魚販給你小費與一盒鮮魚。', do: 'fish' }
+      act: { id: 'auction', name: '渦旗漁港・出海釣魚', cost: 15, desc: '一趟五竿。秋天銀旗魚順著渦流下來；船越大出得越遠、魚越大。釣到的魚賣給海魚市集，或請壽司店捏。', do: 'fish' }
     },
     {
       id: 'zhengyuan', name: '征遠', role: '海軍造船', tag: '造船・軍港', fare: 70, days: 1, needDan: 1,
@@ -146,13 +146,13 @@
       guild: '公會征遠分館',
       fac: [
         ['guild', '公會征遠分館', '軍港檢查哨旁邊。'],
-        ['yard', '造船廠', '船台長度誇張。火花整夜不停。'],
+        ['yard', '造船廠', '船台長得看不到另一頭。焊接的火花一整晚都沒停過。'],
         ['steel', '鋼鐵廠', '原料從港過來，鋼板從這裡出去。'],
         ['museum', '軍艦博物館', '退役艦改的展場。武聖號的模型在正中央。'],
         ['harbor', '大型海港／軍港', '民用與軍用碼頭隔開。'],
         ['train', '海軍訓練所（參觀）', '操艇課的口令傳得很遠。'],
-        ['house', '船屋區', '住在水上的人家。木板路會晃。'],
-        ['wreck', '舊艦遺址（岸邊）', '半沉的艦體當紀念。公會在附近設了遺跡監看。'],
+        ['house', '船屋區', '住在水上的人家。木板路一踩就晃，老人家走起來倒是很穩。'],
+        ['wreck', '舊艦遺址（岸邊）', '半沉的武德號當紀念。公會在附近設了遺跡監看。'],
         ['consul', '英尼爾斯領事館', '製藥公司也在同一條街。']
       ],
       sights: [
@@ -161,7 +161,7 @@
         ['zy_yard', '造船廠夜景', '船台', '電焊像夏天的祭典煙火。']
       ],
       food: [['船屋海鮮鍋', 13, '船屋區', { hp: 0.06 }], ['鋼鐵廠食堂咖哩', 8, '份量驚人', { hp: 0.05, dmg: 0.03 }]],
-      act: { id: 'navy', name: '海軍訓練所體驗操艇', cost: 12, desc: '手臂酸、衣服濕。今天翻滾與體力比較耐用。', do: 'navy' }
+      act: { id: 'navy', name: '船屋「老錨」・買船', cost: 0, desc: '買自己的船：貨箱變多，渦旗出海、西見潛水都能去更遠更深。', do: 'navy' }
     },
     {
       id: 'banbei', name: '板北', role: '橋樑・開放港', tag: '外資・夜生活', fare: 60, days: 1, needDan: 0,
@@ -170,7 +170,7 @@
       fac: [
         ['guild', '公會板北分館', '渡輪站走路三分鐘。'],
         ['bank', '世界央行板北分館', '外匯窗口有三種語言說明。'],
-        ['car', '艾美利亞造車廠', '試駕車道不開放。展示間可以坐進駕駛座。'],
+        ['car', '艾美利亞造車廠', '試駕的車道沒開。不過展示間的車，可以坐進駕駛座摸一摸。'],
         ['pharma', '英尼爾斯製藥廠', '白袍與消毒水味。'],
         ['air', '板北國際機場', '北州航線的樞紐。'],
         ['ferry', '渡輪港', '開往岳北、古森的夜船。'],
@@ -183,10 +183,10 @@
       sights: [
         ['bb_ferry', '渡輪港夜景', '渡輪港', '北州的燈火在對岸一排。'],
         ['bb_car', '造車廠展示間', '工廠', '艾美利亞的車漆亮得像鏡子。'],
-        ['bb_hotel', '港灣酒店大廳', '酒店', '鋼琴師在彈沒聽過的華爾納曲子。']
+        ['bb_hotel', '港灣酒店大廳', '酒店', '鋼琴師在彈一首沒聽過的華爾納曲子，彈到一半自己笑了。']
       ],
       food: [['機場咖哩麵包', 6, '出發前必買', { hp: 0.03, mp: 0.03 }], ['酒店下午茶', 18, '貴但好看', { mp: 0.06 }]],
-      act: { id: 'casino2', name: '地下賭場・骰子', cost: 25, desc: '燈光很暗。贏或輸都算體驗。', do: 'gamble' }
+      act: { id: 'casino2', name: '地下賭場・骰寶', cost: 0, desc: '三顆骰子：大小、單雙、豹子、點數。', do: 'gamble' }
     },
     {
       id: 'bannan', name: '板南', role: '觀光', tag: '城・寺・鐵路', fare: 55, days: 1, needDan: 0,
@@ -196,20 +196,20 @@
         ['guild', '公會板南分館', '中樞鐵路站前。'],
         ['castle', '板南城', '石垣與天守。觀光票含導覽。'],
         ['road', '通天道', '參道石階很長。兩邊是茶店。'],
-        ['temple', '仰天寺', '鐘樓朝北。冬天鐘聲傳得很遠。'],
+        ['temple', '仰天寺', '鐘樓朝北。冬天空氣冷，鐘聲可以傳到很遠的地方。'],
         ['camp', '舊陸軍營地（外圍）', '封鎖線外可以看碉堡。'],
-        ['yokai', '妖物寺', '香火與封印札。住持不喜歡被拍照。'],
+        ['yokai', '妖物寺', '香火很旺，牆上貼滿封印札。住持不太喜歡被拍照，你把相機收起來了。'],
         ['air', '板南機場', '國內線。'],
         ['rail', '板南中樞鐵路', '往皇嶺、東鶴、板北。'],
         ['corp', '日下森電器／森川重工', '兩棟辦公樓對望。']
       ],
       sights: [
-        ['bn_castle', '板南城天守', '城', '從天守看橫山，碉堡像一排牙齒。'],
+        ['bn_castle', '板南城天守', '城', '從天守看出去，橫山上的碉堡一座接一座，像一排牙齒。'],
         ['bn_temple', '仰天寺大鐘', '寺', '敲一下要香油錢。鐘聲往北州方向飄。'],
         ['bn_yokai', '妖物寺山門', '寺', '札很多。住持說：「不要念出聲音。」']
       ],
       food: [['通天道茶菓子', 9, '茶店', { mp: 0.05 }], ['城下烏龍麵', 10, '車站前', { hp: 0.05 }]],
-      act: { id: 'pilgrim', name: '通天道參拜', cost: 5, desc: '走完石階、敲鐘、蓋朱印。理智回一點。', do: 'pilgrim' }
+      act: { id: 'pilgrim', name: '通天道一千階', cost: 0, desc: '左右腳照節奏踩，60 秒內爬到仰天寺。爬到頂蓋朱印、理智回復。', do: 'pilgrim' }
     },
     {
       id: 'gusen', name: '古森', role: '自然', tag: '生態・精靈', fare: 95, days: 2, needDan: 0, island: 1,
@@ -228,12 +228,12 @@
         ['zoo', '動物園', '小型、重視復育。']
       ],
       sights: [
-        ['gs_tree', '大古森木根系步道', '森林', '根像房屋的樑。精靈說樹還在做夢。'],
+        ['gs_tree', '大古森木根系步道', '森林', '樹根粗得像房子的樑。精靈說，這棵樹還在做夢，別吵它。'],
         ['gs_rice', '梯田黃昏', '梯田', '水光把天空切成一塊一塊。'],
         ['gs_elf', '精靈部落會客橋', '部落', '橋上掛著風鈴。你不會精靈語，但點頭就夠。']
       ],
       food: [['古森茶套餐', 11, '茶廠', { mp: 0.08 }], ['梯田野菜飯', 10, '老街', { hp: 0.05, regen: 0.15 }]],
-      act: { id: 'plant', name: '植樹場幫忙', cost: 0, desc: '種一天樹苗。協會給津貼，理智也回一點。', do: 'plant' }
+      act: { id: 'plant', name: '植樹場・你的六塊地', cost: 0, desc: '種下古森木的樹苗，四天後長大，砍下來是古森木材（貨物）。', do: 'plant' }
     },
     {
       id: 'yuebei', name: '岳北', role: '美食觀光', tag: '山礦洋・名物', fare: 100, days: 2, needDan: 0, island: 1,
@@ -266,6 +266,7 @@
   ];
   R.AZUKI_CITIES = CITIES;
   const byId = id => CITIES.find(c => c.id === id);
+  const fareOf = c => (R.railPass && R.railPass() ? Math.ceil(c.fare / 2) : c.fare);   // 板南中樞鐵路的周遊券：電車半價（cityland.js）
 
   // ---------- 存檔 ----------
   const st = () => { const s = S(); if (!s) return null; s.cityHub = s.cityHub || { stamps: {}, visit: {}, questDay: {}, questDone: {} }; return s.cityHub; };
@@ -281,27 +282,54 @@
   const toastOk = (t, c) => { R.sfx && R.sfx('pick'); R.toast(t, c || '#E8C04A'); };
 
   // ---------- 觀光章 ----------
+  // 2026-10-26 作者：觀光景點也要升級──每個景點一張明信片（assets/art/sights/景點.webp）；照「最佳時刻」去，拿到燙金的限定明信片
+  // BEST：[說明, (時, 季節) => 是不是最佳時刻]
+  const hr = (a, b) => h => (a <= b ? h >= a && h < b : h >= a || h < b), DAY = hr(9, 17), DAWN = hr(5, 8), DUSK = hr(16, 19), NIGHT = hr(19, 3);
+  const BEST = {
+    hl_tower: ['清晨（日出）', DAWN], hl_castle: ['白天', DAY], hl_uni: ['白天', DAY], hl_shrine: ['黃昏', DUSK],
+    js_neon: ['晚上', NIGHT], js_furnace: ['晚上', NIGHT], js_stock: ['開盤（9～15 點）', hr(9, 15)],
+    ft_park: ['清晨', DAWN], ft_shrine: ['白天', DAY],
+    xj_beach: ['黃昏', DUSK], xj_uni: ['白天', DAY], xj_consul: ['白天', DAY],
+    nl_statue: ['白天', DAY], nl_fog: ['夜裡到清晨（霧最濃）', hr(19, 7)], nl_uni: ['白天', DAY],
+    wq_eddy: ['秋天', (h, se) => se === '秋'], wq_market: ['清晨（開市）', hr(4, 8)], wq_sushi: ['晚上', hr(18, 22)],
+    zy_museum: ['白天', DAY], zy_wreck: ['黃昏', DUSK], zy_yard: ['晚上', NIGHT],
+    bb_ferry: ['晚上', NIGHT], bb_car: ['白天', DAY], bb_hotel: ['晚上', NIGHT],
+    bn_castle: ['白天', DAY], bn_temple: ['清晨', DAWN], bn_yokai: ['晚上', NIGHT],
+    gs_tree: ['白天', DAY], gs_rice: ['黃昏', DUSK], gs_elf: ['黃昏', DUSK],
+    yb_food: ['晚上', NIGHT], yb_mine: ['冬天', (h, se) => se === '冬'], yb_port: ['清晨', DAWN],
+    dh_shrine: ['清晨', DAWN], dh_bell: ['黃昏', DUSK], dh_clock: ['正午（木頭鶴出來的時候）', hr(11, 13)], dh_pillar: ['晚上（約見面的時間）', hr(18, 22)], dh_theater: ['晚上', NIGHT], dh_market: ['清晨（開市）', hr(4, 8)],
+    dh_beach: ['夏天', (h, se) => se === '夏'], dh_light: ['晚上', NIGHT], dh_whitelight: ['清晨（日出）', DAWN], dh_brick: ['黃昏', DUSK], dh_bridge: ['冬天', (h, se) => se === '冬'], dh_hokora: ['白天', DAY], dh_onsen: ['晚上', NIGHT],
+    hs_station: ['白天', DAY], hs_castle: ['白天', DAY], hs_billboard: ['晚上', NIGHT], hs_canal: ['晚上', NIGHT], hs_tower: ['晚上', NIGHT], hs_port: ['黃昏', DUSK]
+  };
+  const best = sid => BEST[sid] || ['任何時候', () => true];
+  const nowBest = sid => { const sv = S(), h = sv && sv.hour != null ? sv.hour % 24 : 12, se = R.dateOf ? R.dateOf(sv.day || 0).season : ''; return best(sid)[1](h, se); };
+  const card = (sid, gold) => '<div class="pc' + (gold ? ' gold' : '') + '"><img src="assets/art/sights/' + sid + '.webp" alt="" loading="lazy" onerror="this.style.visibility=\'hidden\'">' + (gold ? '<i>限定</i>' : '') + '</div>';
+  R.postcard = { card, best: sid => best(sid)[0], isNow: nowBest };   // 東鶴（sights.js）、奉主（hosu.js）也用
   const stamp = (city, sg) => {
     const g = st(); if (!g) return;
-    const key = city.id + ':' + sg[0], first = !g.stamps[key], n0 = stampCount();
-    if (first) { g.stamps[key] = S().day || 1; R.save(); R.sfx && R.sfx('pick'); }
+    g.gold = g.gold || {};
+    const key = city.id + ':' + sg[0], first = !g.stamps[key], n0 = stampCount(), isBest = nowBest(sg[0]), goldNew = isBest && !g.gold[key];
+    if (first) g.stamps[key] = S().day || 1;
+    if (goldNew) { g.gold[key] = S().day || 1; S().gold += 150; if (R.sanAdd) R.sanAdd(5); }
+    if (first || goldNew) { R.save(); R.sfx && R.sfx(goldNew ? 'chest' : 'pick'); }
     const n = stampCount(), total = allStamps();
-    R.sheet('<p class="kicker">' + esc(city.name) + '・觀光章</p><h2>' + esc(sg[1]) + '</h2><p class="note">' + esc(sg[2]) + '</p><p>' + esc(sg[3]) + '</p>'
-      + '<p class="note">' + (first ? '在昭旭觀光手冊上蓋了章。' : '這裡的章已經蓋過了。') + '（全國 ' + n + '／' + total + '）</p>',
-      '<div class="row"><button type="button" class="btn pri" id="az-x">好</button><button type="button" class="btn" id="az-book">昭旭觀光手冊</button><button type="button" class="btn" id="az-back">回據點</button></div>');
-    $('az-x').onclick = R.closeSheet; $('az-book').onclick = bookAll; $('az-back').onclick = () => hub(city.id);
+    R.sheet('<p class="kicker">' + esc(city.name) + '・觀光景點</p><h2>' + esc(sg[1]) + '</h2>' + card(sg[0], !!g.gold[key]) + '<p>' + esc(sg[3]) + '</p>'
+      + '<p class="note">最佳時刻：' + esc(best(sg[0])[0]) + (isBest ? '──就是現在。' : '。') + (goldNew ? '<b>拿到燙金的限定明信片！（+150 費拉、理智回復）</b>' : g.gold[key] ? '限定明信片已經有了。' : '在最佳時刻來，可以拿到燙金的限定明信片。') + '</p>'
+      + '<p class="note">' + (first ? '在昭旭觀光手冊上蓋了章、收下一張明信片。' : '這裡的章已經蓋過了。') + '（全國 ' + n + '／' + total + '・限定 ' + Object.keys(g.gold).length + '）</p>',
+      '<div class="row"><button type="button" class="btn pri" id="az-x">好</button><button type="button" class="btn" id="az-book">明信片冊</button></div>');
+    $('az-x').onclick = R.closeSheet; $('az-book').onclick = bookAll;
     if (first && n >= total && n0 < total) {
       S().gold += 2000; R.save(); R.awardTitle && R.awardTitle('azukitsu');
       setTimeout(() => R.banner && R.banner('昭旭觀光章蓋齊了！', '觀光局送來 2000 費拉和稱號「昭旭通」。'), 500);
     }
   };
   const bookAll = () => {
-    const g = st() || { stamps: {} };
-    R.sheet('<p class="kicker">昭旭觀光局</p><h2>昭旭觀光手冊</h2><p class="note">從東鶴站售票口搭車到各城，在據點蓋章。蓋齊 ' + allStamps() + ' 個：2000 費拉與稱號「昭旭通」。（目前 ' + stampCount() + '）</p>'
+    const g = st() || { stamps: {} }, gold = g.gold || {};
+    R.sheet('<p class="kicker">昭旭觀光局</p><h2>昭旭明信片冊</h2><p class="note">到各城的觀光景點收明信片。收齊 ' + allStamps() + ' 張：2000 費拉與稱號「昭旭通」。在最佳時刻去，拿到燙金的限定版。（' + stampCount() + '／' + allStamps() + '・限定 ' + Object.keys(gold).length + '）</p>'
       + CITIES.map(c => {
         const got = c.sights.filter(sg => g.stamps[c.id + ':' + sg[0]]).length;
-        return '<h3>' + esc(c.name) + '（' + got + '／' + c.sights.length + '）</h3><ul class="sg-list">'
-          + c.sights.map(sg => '<li class="' + (g.stamps[c.id + ':' + sg[0]] ? 'ok' : '') + '"><b>' + (g.stamps[c.id + ':' + sg[0]] ? '✓ ' : '・') + esc(sg[1]) + '</b><small>' + esc(sg[2]) + '</small></li>').join('') + '</ul>';
+        return '<h3>' + esc(c.name) + '（' + got + '／' + c.sights.length + '）</h3><div class="pc-grid">'
+          + c.sights.map(sg => { const k = c.id + ':' + sg[0], has = g.stamps[k]; return '<figure class="pc-cell' + (has ? '' : ' none') + '">' + (has ? card(sg[0], !!gold[k]) : '<div class="pc empty">？</div>') + '<figcaption><b>' + esc(sg[1]) + '</b><small>最佳：' + esc(best(sg[0])[0]) + '</small></figcaption></figure>'; }).join('') + '</div>';
       }).join(''),
       '<div class="row"><button type="button" class="btn pri" id="az-x">關上</button></div>');
     $('az-x').onclick = R.closeSheet;
@@ -309,34 +337,12 @@
   R.azukiBook = bookAll;
 
   // ---------- 招牌活動 ----------
+  // 2026-10-26 作者：各城不要換皮──有自己玩法的城（citytrade.js、citysea.js、cityland.js）在 R.CITY_ACT／R.CITY_FAC／R.CITY_QUESTS 登記，這裡先問它們
+  R.CITY_ACT = R.CITY_ACT || {}; R.CITY_FAC = R.CITY_FAC || {}; R.CITY_QUESTS = R.CITY_QUESTS || {};
   const doAct = (city) => {
     const a = city.act, s = S(); if (!a || !s) return;
+    if (R.CITY_ACT[city.id]) return R.CITY_ACT[city.id](city);
     if (a.cost > 0 && !pay(a.cost, a.name)) return;
-    if (a.do === 'gamble') {
-      const win = Math.random() < 0.42, gain = win ? (a.cost * 2 + 10) : 0;
-      if (win) { s.gold += gain; toastOk('贏了 ' + gain + ' 費拉。', '#7CF0A0'); }
-      else toastOk('輸光這筆籌碼。門衛笑了一下。', '#FF9A6A');
-      R.save(); hub(city.id); return;
-    }
-    if (a.do === 'drill') { buff({ dmg: 0.04, hp: 0.03 }); toastOk('體能課結束。今天下遺跡：傷害與生命稍好。'); R.save(); hub(city.id); return; }
-    if (a.do === 'dive') { buff({ mp: 0.08, regen: 0.1 }); toastOk('肺還有點緊。今天下遺跡：魔力相關加成。'); R.save(); hub(city.id); return; }
-    if (a.do === 'trade') {
-      R.advanceDays(1); const payG = 35 + Math.floor(Math.random() * 25); s.gold += payG; R.save();
-      R.banner && R.banner(city.name + '・臨工', '搬了一天貨，領到 ' + payG + ' 費拉。'); hub(city.id); return;
-    }
-    if (a.do === 'fish') {
-      R.advanceDays(1); const tip = 28 + Math.floor(Math.random() * 30); s.gold += tip;
-      s.mats = s.mats || {}; s.mats.shell = (s.mats.shell || 0) + 2;
-      R.save(); R.banner && R.banner('海魚市集', '小費 ' + tip + ' 費拉，還塞了兩枚貝殼。'); hub(city.id); return;
-    }
-    if (a.do === 'navy') { buff({ hp: 0.03, skillCd: 0.03 }); toastOk('衣服乾了。今天翻滾與冷卻感覺輕一點。'); R.save(); hub(city.id); return; }
-    if (a.do === 'pilgrim') {
-      if (R.sanAdd) R.sanAdd(12); toastOk('朱印蓋好了。心情平一點（理智回復）。'); R.save(); hub(city.id); return;
-    }
-    if (a.do === 'plant') {
-      R.advanceDays(1); s.gold += 40; if (R.sanAdd) R.sanAdd(8); R.save();
-      R.banner && R.banner('植樹場', '種完一排樹苗。協會給 40 費拉。'); hub(city.id); return;
-    }
     if (a.do === 'gourmet') {
       buff({ hp: 0.1, mp: 0.08, dmg: 0.05 }); toastOk('三種名物都進肚子了。今天下遺跡加成很豐盛。'); R.save(); hub(city.id); return;
     }
@@ -357,6 +363,7 @@
     ['採購分館食材', 50, '照清單買齊，發票拿回來。']
   ];
   const questSheet = (city) => {
+    if (R.CITY_QUESTS[city.id]) return R.CITY_QUESTS[city.id](city);
     const g = st(), s = S(), day = s.day || 1;
     if (g.questDone[city.id] === day) {
       R.townTalk(city.guild, ['「今天的地方委託你做過了。明天再來。」', '「遠方的遺跡委託，還是回東鶴或奉主分館看板。」']);
@@ -379,6 +386,7 @@
   // ---------- 設施 ----------
   const facSheet = (city, f) => {
     const [id, name, line] = f;
+    if (R.CITY_FAC[city.id + ':' + id]) return R.CITY_FAC[city.id + ':' + id](city, f);
     if (id === 'guild') {
       R.sheet('<p class="kicker">' + esc(city.name) + '</p><h2>' + esc(name) + '</h2><p>' + esc(line) + '</p>',
         '<div class="row"><button type="button" class="btn pri" id="az-q">看今日地方委託</button><button type="button" class="btn" id="az-back">回據點</button></div>');
@@ -413,7 +421,7 @@
     const ruin = (R.SITES || []).filter(s => s.kind === 'ruin' && (R.RUIN_CITY && R.RUIN_CITY[s.id] ? R.RUIN_CITY[s.id] === id : Math.hypot((s.x || 0) - ((R.SITES.find(x => x.id === id) || {}).x || 0), (s.z || 0) - ((R.SITES.find(x => x.id === id) || {}).z || 0)) < 0.55));   // 2026-10-21：照 ruincity.js 的表
     R.sheet('<p class="kicker">' + esc(city.role) + '・' + esc(city.tag) + '</p><h2>' + esc(city.name) + '</h2><p>' + esc(city.blurb) + '</p>'
       + '<p class="note">費拉 ' + S().gold + '・已造訪城市 ' + visited + '／' + CITIES.length + '・觀光章 ' + stampCount() + '／' + allStamps() + '</p>'
-      + (ruin.length ? '<p class="note">附近遺跡：' + ruin.map(r => esc(r.name) + (r.status === 'lock' ? '（未開放）' : '')).join('、') + '——回東鶴公會或驛站接委託出發。</p>' : '')
+      + (ruin.length ? '<p class="note">附近遺跡：' + ruin.map(r => esc(r.name) + (r.status === 'lock' ? '（未開放）' : '')).join('、') + '──回東鶴公會或驛站接委託出發。</p>' : '')
       + '<div class="az-grid">'
       + '<button type="button" class="btn pri" data-az="guild">公會分館／地方委託</button>'
       + '<button type="button" class="btn" data-az="fac">城市設施（' + city.fac.length + '）</button>'
@@ -422,7 +430,7 @@
       + '<button type="button" class="btn" data-az="act">' + esc(city.act.name) + (city.act.cost ? '（' + city.act.cost + '）' : '') + '</button>'
       + '<button type="button" class="btn" data-az="book">昭旭觀光手冊</button>'
       + '</div>',
-      '<div class="row"><button type="button" class="btn pri" id="az-home">回東鶴（' + city.fare + ' 費拉・' + city.days + ' 日）</button><button type="button" class="btn" id="az-other">轉往他城</button><button type="button" class="btn" id="az-x">先留在據點選單外</button></div>');
+      '<div class="row"><button type="button" class="btn pri" id="az-home">回東鶴（' + fareOf(city) + ' 費拉・' + city.days + ' 日）</button><button type="button" class="btn" id="az-other">轉往他城</button><button type="button" class="btn" id="az-x">先留在據點選單外</button></div>');
     document.querySelectorAll('[data-az]').forEach(b => {
       b.onclick = () => {
         const k = b.dataset.az;
@@ -464,36 +472,26 @@
     if (first && n >= 8) R.awardTitle && R.awardTitle('railhand');
   };
 
-  const travelTo = (id, fromId) => {
+  // o：{ fare, days, how }（搭飛機：citylife.js 的機場）
+  const travelTo = (id, fromId, o) => {
     const city = byId(id); if (!city) return;
     if (dan() < city.needDan) { R.toast(city.name + '目前只接待冒險段以上的勇者（軍事／軍港管制）。', '#FF9A6A'); return; }
     const s = S(); if (!s) return;
-    if (s.gold < city.fare) { R.toast('錢不夠（要 ' + city.fare + ' 費拉）。'); return; }
-    // 錢不夠也比照奉主：勇者可先上車——但這裡仍要求付得起，避免白嫖刷日子；與 hosu 不同城際較遠
+    const fare = o && o.fare != null ? o.fare : fareOf(city), days = o && o.days != null ? o.days : city.days, how = (o && o.how) || (city.island ? '渡輪與接駁' : '魔導電車');
+    if (s.gold < fare) { R.toast('錢不夠（要 ' + fare + ' 費拉）。'); return; }
     R.closeSheet();
     R.fade(() => {
-      // 2026-10-08：有精緻 3D 城的（citykit.js），直接進城走路（不先回到東鶴的街上：exitInterior 會晚一點把場景換回東鶴）
-      if (R.CK && R.CK.cities && R.CK.cities[id]) {
-        s.gold -= city.fare; R.advanceDays(city.days); markVisit(id); R.save();
-        R.CK.enter(id);
-        const how = city.island ? '渡輪與接駁' : '魔導電車';
-        R.banner && R.banner(city.name, '搭' + how + '抵達・' + city.role + (fromId ? '（自' + ((byId(fromId) || {}).name || '') + '）' : ''));
-        return;
-      }
-      if (W.inside && R.exitInterior) R.exitInterior();
-      s.gold -= city.fare;
-      R.advanceDays(city.days);
-      markVisit(id);
-      R.save();
-      const how = city.island ? '渡輪與接駁' : '魔導電車';
+      if (!(R.CK && R.CK.cities && R.CK.cities[id]) && W.inside && R.exitInterior) R.exitInterior();
+      s.gold -= fare; if (days) R.advanceDays(days); markVisit(id); R.save();
+      if (R.CK && R.CK.cities && R.CK.cities[id]) R.CK.enter(id);   // 有精緻 3D 城的直接進城走路
       R.banner && R.banner(city.name, '搭' + how + '抵達・' + city.role + (fromId ? '（自' + ((byId(fromId) || {}).name || '') + '）' : ''));
-      setTimeout(() => hub(id), 280);
+      if (!(R.CK && R.CK.cities && R.CK.cities[id])) setTimeout(() => hub(id), 280);
     });
   };
   R.travelAzuki = travelTo;
 
   const goHome = (city) => {
-    if (!pay(city.fare, '回東鶴')) return;
+    if (!pay(fareOf(city), '回東鶴')) return;
     R.closeSheet();
     R.fade(() => {
       R.advanceDays(city.days);
@@ -520,7 +518,7 @@
       + CITIES.map(c => {
         const lock = dan() < c.needDan;
         return '<button type="button" class="btn' + (lock ? '' : '') + '" data-azgo="' + c.id + '"' + (lock ? ' title="需要冒險段以上"' : '') + '>'
-          + esc(c.name) + '・' + esc(c.role) + '<br><small>' + c.fare + ' 費拉・' + c.days + ' 日' + (c.island ? '・渡輪' : '') + (lock ? '・管制' : '') + '</small></button>';
+          + esc(c.name) + '・' + esc(c.role) + '<br><small>' + fareOf(c) + ' 費拉・' + c.days + ' 日' + (c.island ? '・渡輪' : '') + (lock ? '・管制' : '') + '</small></button>';
       }).join('')
       + '</div>',
       '<div class="row">' + (!fromId ? '<button type="button" class="btn" id="az-ruin">到遠方的遺跡</button>' : '') + '<button type="button" class="btn" id="az-x">不搭了</button></div>');
@@ -536,7 +534,7 @@
     });
   };
   let ticketOrig = null;
-  // 東鶴站的發車資訊（2026-10-13 作者：東鶴站不一定要顯示往奉主——每班車隨機一個目的地）
+  // 東鶴站的發車資訊（2026-10-13 作者：東鶴站不一定要顯示往奉主──每班車隨機一個目的地）
   // 每 30 分鐘（遊戲時間）一班；目的地由「第幾天＋第幾班」決定（同一班車看幾次都一樣），從電車到得了的城（奉主＋不用換渡輪的城）抽，每班跟上一班不同。
   const DEST_POOL = () => ['奉主'].concat(CITIES.filter(c => !c.island).map(c => c.name));
   const hsh = n => { let x = Math.imul(n | 0, 2654435761) >>> 0; x ^= x >>> 15; x = Math.imul(x, 2246822519) >>> 0; x ^= x >>> 13; return x >>> 0; };
@@ -573,6 +571,6 @@
   };
 
   const css = document.createElement('style');
-  css.textContent = '.az-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin:8px 0}.az-grid .btn{text-align:left;white-space:normal}';
+  css.textContent = '.pc{position:relative;margin:6px 0;border-radius:6px;overflow:hidden;border:4px solid #F4ECD8;box-shadow:0 2px 8px rgba(0,0,0,.35);aspect-ratio:3/2;background:#2A2420}.pc img{display:block;width:100%;height:100%;object-fit:cover}.pc.gold{border-color:#E8C04A;box-shadow:0 0 0 2px #8A6A1A,0 0 14px rgba(232,192,74,.6)}.pc i{position:absolute;right:6px;top:6px;background:#E8C04A;color:#3A2A0A;font-style:normal;font-weight:700;font-size:12px;padding:1px 6px;border-radius:3px}.pc.empty{display:flex;align-items:center;justify-content:center;color:#6A5A4A;font-size:28px;border-color:#4A4038}.pc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}.pc-cell{margin:0}.pc-cell.none{opacity:.6}.pc-cell figcaption{font-size:12px}.pc-cell figcaption small{display:block;opacity:.7}' + '.az-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin:8px 0}.az-grid .btn{text-align:left;white-space:normal}';
   document.head.appendChild(css);
 })(window.R);
